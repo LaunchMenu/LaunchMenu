@@ -21,12 +21,21 @@
     * Any react elements can be added to the stack.
     * Only top N(=2?) opaque views will be rendered.
     * Substacks can be added to stacks to allow for shielding.
-* [x] How to shelf applications with their state to later return to.
-    * Create a new query by hitting win+space again.
-    * Have a menu to switch between applications.
-    * Close top application by hitting escape.
-* [ ] Mnemonics
-* [ ] Undo/Redo.
+* [x] How to shelf applications with their state to later return to [implDetail](#How%20to%20shelf%20applications%20with%20their%20state%20to%20later%20return%20to).
+    * Create a new session by hitting win+space again.
+    * Have a menu to switch between sessions.
+    * Close top session by hitting escape.
+* [X] Mnemonics [implDetail](#Mnemonics)
+    * Create Mnemonics data context (storing whether Mnemonics should be shown, and what keys are pressed)
+    * Create Mnemonics component that uses the context and triggers activation
+    * Mnemonic has callback handler to trigger action (e.g. click button, focus text field, ...)
+* [X] Undo/Redo. [implDetail](#Undo/Redo)
+    * Undo redo in global context
+    * Ctrl Z, Ctrl Y
+    * Undo redo is provided as a LM wide system, which is unique to the session.
+    * Undo redo works by submitting undoable commands to undoSystem for execution/reversion
+    * Space given for asynchronous commands (for running in parallel etc)
+    * Can potentially have issues when transferring large files while heavily multitasking, more about this later.
 * [ ] Settings.
 * [ ] Applet installation.
 
@@ -75,6 +84,8 @@ Option 2.
 
 
 ```tsx
+type ILMContext = {}; // Expanded upon in future chapters
+
 type IQuery = {
     raw: string,
     context: {
@@ -103,7 +114,7 @@ type ISearchResult = {
 };
 
 class Applet implements IApplet {
-    static * getQueryItems(query: IQuery, panes: IPaneStacks): Generator<ISearchResult, undefined> {
+    static * getQueryItems(query: IQuery, context: ILMContext): Generator<ISearchResult, undefined> {
        yield ...;
     }
     ...
@@ -211,6 +222,9 @@ const {item, priority}: createMenuItem();
 
 
 ```tsx
+type ILMContext = {
+    panes: IPaneStacks
+}
 type IEventID = string;
 type IContentID = string;
 type IViewStack = {
@@ -232,7 +246,7 @@ type IPaneStacks = {
 }
 
 class Applet implements IApplet {
-    public constructor(controls: IPaneStacks){
+    public constructor(context: ILMContext){
 
     }
     ...
@@ -242,13 +256,13 @@ class Applet implements IApplet {
 
 # How to shelf applications with their state to later return to
 
-- Create new instance using the normal win+space shortcut.
+- Create new sessions using the normal win+space shortcut.
 - Opens ontop of the current stack.
-- Shift+tab to switch between instances.
+- Shift+tab to switch between sessions.
 - Implementation wise:
-    - Push new substack when opening instance.
-    - Remove substack and add again when switching to instance.
-    - These instances need to be tracked by something.
+    - Push new substack when opening sessions.
+    - Remove substack and add again when switching to session.
+    - These sessions need to be tracked by something.
 
 ## Context menus
 ### Applet Context Menu
@@ -294,6 +308,206 @@ createMenuItem({
 - (shift+tab) Switch &Instances 
 - &Settings
 - ???? (alt) Show Mnemonics
-- 
+
+- (ctrl+z) Undo
+- (ctrl+y) Redo
+
 - About
 - Help
+
+
+# Mnemonics
+- Mnemonics to initially be created for alt followed by single key press.
+- Later implementation (unless easy) to do it for a sequence of presses (e.g. alt-f-o for File>Open or Group-Group-Button or whatever)
+- Will use react context to pass visibility information to element and mnemonic class will handle triggering based on activation data.
+- Different settings for Hovering Box showing key vs highlight character in text ...e 
+- Add interface to `MnemonicContext` controller to programmatically call mnemonics 
+
+
+```tsx
+import MnemonicContext from "...";
+
+const Mnemonic = ({text, key, onTrigger})=>{
+    const {isShown, activatedMnemonics}: {isShown: boolean, activatedMnemonics: string[]} 
+        = useContext(MnemonicContext);
+    
+    const activated = activatedMnemonics.includes(key);
+    useEffect(()=>{
+        if(activated) onTrigger();
+    }, [activated]);
+
+    if(isShown)
+        return <div>{text}: {key}</div>
+    return <div>{text}</div>
+}
+
+// Single key
+shit = <div><Mnemonic text="oranges" key="o" onTrigger={()=>console.log("shit")} /></div>
+
+// Multiple keys
+shit = <div><Mnemonic text="oranges" key={["f","o"]} onTrigger={()=>console.log("shit")} /></div>
+```
+
+## Undo/Redo
+- Interface used for "reversable commands", which are passed to UndoRedoFacility
+- Undo redo is unique to LaunchMenu session (recall win+space launches new session)
+- Undo and Redo commands are available in global context menu
+- Text field which considers idle detection in undo/redo mapping
+- ComposableCommands classes to batch commands
+- 'addToBatch' flag to automatically combine with the previous command for batching
+- When first executing a command, it will instantly be executed, even if previously executed commands haven't finished yet
+    - When undoing a command it will have to wait for prior undone commands to finish reverting
+    - When redoing a command it will have to wait for prior redone commands to finish executing
+
+
+```tsx
+type ILMContext = {
+    panes: IPaneStacks,
+    undoFacility: IUndoRedoFacility
+};
+
+
+type IUndoRedoFacilityState = "undoing" | "redoing" | "ready";
+type IUndoRedoFacility = {
+    execute(command: ICommand, addToBatch: boolean|(previous: ICommand)=>boolean): Promise<void>;
+    /** Alias of execute(EmptyCommand, false) */
+    splitBatch(): void;
+    undo(): Promise<void>;
+    redo(): Promise<void>;
+    getState(hook: IDataHook): IUndoRedoFacilityState;
+}
+
+
+type ICommandState = "executing" | "reverting" | "executed" | "ready";
+type ICommand = {
+    execute(): Promise<void>;
+    revert(): Promise<void>;
+    getState(hook: IDataHook): ICommandState;
+}
+
+// Waits until a certain predicate becomes true
+const waitFor = (cb:(hook:IDataHook)=>boolean)=>getAsync(h=>{
+    if(!cb(hook)) h.markIsLoading();
+});
+
+class ComposableCommand implements ICommand {
+    protected commands: ICommand[];
+    protected executingIndex = 0;
+    protected state = new Field("ready" as ICommandState);
+
+    public constructor(commands: ICommand[]){
+        this.commands = commands;
+
+        // If there are any commands executing, state is executing, if one command is executed, state is executed, otherwise state is ready
+        this.state.set(commands.reduce((cur, cmd)=>{
+            const s = cmd.getState();
+            if(s=="executing") return s;
+            if(s=="executed" && cur=="ready") return s;
+            return cur;
+        }, "ready" as ICommandState));
+    }
+
+    async execute(){
+        if(this.state.get()!="ready") throw Error("Can only revery command if ready");
+        this.state.set("executing");
+        for(; executingIndex<this.commands.length; executingIndex++){
+            const cmd = this.commands[executingIndex];
+            if(cmd.getState()=="ready")
+                await cmd.execute();
+            if(cmd.getState()=="executing")
+                await waitFor(h=>cmd.getState(h)=="executed");
+        }
+        this.state.set("executed");
+    }
+    async revert(){
+        if(this.state.get()!="executed") throw Error("Can only revery command if executed");
+        this.state.set("reverting");
+        for(executingIndex-=1; executingIndex>=0; executingIndex--){
+            const cmd = this.commands[executingIndex];
+            await cmd.revert();
+        }
+        this.state.set("ready");
+    }
+    getState(hook?: IDataHook){
+        return this.state.get(hook);
+    }
+}
+
+// Suggested people don't use this in general since it's dangerous, don't you know that your toxic!
+class AugmentableComposableCommand extends ComposableCommand {
+    async push(cmd: ICommand){
+        if(cmd.getState()!="ready") throw Error("Fuck you");
+        this.commands.push(cmd);
+        const state = this.getState();
+
+        if(state == "ready"){
+            // Nothing needs to happen, stuff is ready to be executed
+        }else if(state == "executing"){
+            // Just execute the command right away, when the ComposableCommand gets to 'execute' this command, it will just wait until the executed state is reached
+            await cmd.execute();
+        } else if(state == "executed"){
+            // Make sure the state is still accurate, NOTICE: it's possible that a command goes into executing state after already have been executed
+            this.state.set("ready");
+            this.execute(); 
+        } else if(state == "reverting"){
+            // Nothing has to happen, this command is already ready
+        }
+    }
+}
+```
+
+Example usage of commands for typing
+```tsx
+const facility: IUndoRedoFacility;
+const someField: Field<String>;
+
+const TextField = ()=>{
+    const [h] = useDataHook();
+    useEffect(()=>{
+        //LM OnIdle event achieved via polling power-monitor electron APIs
+        //https://www.electronjs.org/docs/api/power-monitor#methods
+        const listenerID = LM.addEventListener("OnIdle",()=>{
+            facility.splitBatch();
+        });
+        return ()=>LM.removeEventListener(listenerID);
+    });
+
+    return <TextField 
+        value={someField.get(h)} 
+        onChange={(v)=>facility.execute(new FieldChangeCommand(someField, v), true)}>;
+}
+```
+
+Example usage of commands for moving files as a batch
+```ts
+let files = [
+    {file: "a/b/a.txt", to: "newDest/a.txt"},
+    {file: "a/b/b.txt", to: "newDest/b.txt"},
+    {file: "a/b/c.txt", to: "newDest/c.txt"}
+];
+facility.execute(new ParallelComposableCommand(files.map(({file, to})=>new FileMoveCommand(file, to))));
+
+class ParallelComposableCommand implements ICommand {
+    protected commands: ICommand[];
+    protected state = new Field("ready" as ICommandState);
+
+    public constructor(commands: ICommand[]){
+        this.commands = commands;
+    }
+
+    async execute(){
+        this.state.set("executing");
+        await Promise.all(this.commands.map(cmd=>cmd.execute()));
+        this.state.set("executed");
+    }
+    async revert(){
+        this.state.set("reverting");
+        await Promise.all(this.commands.map(cmd=>cmd.revert()));
+        this.state.set("reverted");
+    }
+    getState(hook?: IDataHook){
+        return this.state.get(hook);
+    }
+}
+```
+
