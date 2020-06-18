@@ -1,8 +1,32 @@
-# LaunchMenu
+178# LaunchMenu
 
 ## Expectations
 * [ ] General behaviour.
     * Focussed on being controlled via Keyboard only (mouse optional).
+* [ ] Coding conduct
+    * Typings: 
+        * All types begin with I, e.g. `IInstance`, `IMenu`, `IColorPicker`, ...
+            * Benefit: can search `I*.ts` for types
+            * Benefit: can easily tell something is an interface, not an actual class etc
+        * 1 type per file
+        * Keep types close to where they are needed, preferably in a '_types' folder.
+        * All types exported from files.
+        * Have an index file which imports all types, classes, functions and exports them again
+    * VSCode workspace?
+    * Use prettier for automatic formatting
+    * Attempt to keep things OOP
+    * Git:
+        * Create feature branches:
+            * E.G. feature/settingsHandler
+            * Merge development into your branch before merging to development
+        * Use master as development for versions being tested (but should in theory work)
+        * Create release branches as E.G. release/v1
+* [X] Applet Format
+* [x] Creating Menu Items [implDetail](#Creating%20Menu%20Items).
+    * Consists of interaction handler and visual representation.
+        * Will be in charge of creating content themselves when applicable.
+    * Will have helpers to create consistent looking items.
+* [ ] Multi-item selection.
 * [x] Quick Search [implDetail](Querying%20in%20the%20LaunchMenu%20search%20bar).
     * Search across multiple applets at once.
     * Search for applets based on current context (e.g. window open prior to LaunchMenu).
@@ -12,10 +36,6 @@
     * Program selection applet to select applets without knowing their specific patterns.
         * Implemented as an applet, and will have to know its pattern by heart.
     * When an applet is opened, a new instance of the class is created.
-* [x] Creating Menu Items [implDetail](#Creating%20Menu%20Items).
-    * Consists of interaction handler and visual representation.
-        * Will be in charge of creating content themselves when applicable.
-    * Will have helpers to create consistent looking items.
 * [x] Modularity of 3 areas and stacks [implDetail](#Modularity%20of%203%20areas%20and%20stacks).
     * All 3 areas will be panes containing stacks of views.
     * Any react elements can be added to the stack.
@@ -37,8 +57,14 @@
     * Space given for asynchronous commands (for running in parallel etc)
     * Can potentially have issues when transferring large files while heavily multitasking, more about this later.
 * [ ] Settings.
+    * Settings based on schema containing value and ui react components.
+    * Setting react component displayed by launch menu system when user wants to change settings.
+    * Settings stored as JSON file.
+    * Settings system passes appID via appContext which is the identifier to find settings for that applet in the JSON file. 
 * [ ] Applet installation.
+    * Can instantiate other applets within applet. E.G. Using a color picker within your own applet.
 
+* [ ] Styles and styling
 
 * Specific Applets
     * App Search .
@@ -54,6 +80,62 @@
 * LM singleton instance for API accessible through import
 * LM singleton available in window object (for debugging, scripting, experimentation)
 
+
+### Applet format
+
+Types:
+
+```tsx
+type ILMContext = {
+    ...
+};
+type IApplet = {
+    ... // (E.G. someRequiredMethod)
+};
+type IAppletClass = {
+    new (context: ILMContext): IApplet;
+    ... // (E.G. someRequiredStaticMethod)
+};
+type IAppContext = {
+    appID: string;
+    ...
+};
+
+// Some helper to check typings
+export const declare = <C extends IAppletClass>(
+    declaration: (context: IAppContext) => C
+) => declaration;
+
+export default {
+    declare
+};
+```
+
+Defining plugin:
+```tsx
+import {declare, IApplet, ILMContext} from "@launchmenu/core";
+
+export default declare((appContext) => {
+    return class Applet implements IApplet {
+        public static someRequiredStaticMethod(): string {
+            return ...;
+        }
+        public static somePluginSpecificStaticMethod(): boolean {
+            return ...;
+        }
+        
+        constructor(context: ILMContext) {}
+        
+        public someRequiredMethod(): string {
+            return ...;
+        }
+        public somePluginSpecificMethod(): number {
+            return ...;
+        }
+    };
+});
+
+```
 
 ### Querying in the LaunchMenu search bar
 
@@ -102,25 +184,205 @@ type IQuery = {
     ]
 };
 
-type IMenuItemView = FC<{selected: boolean, onClick: ()=>void}>;
+type IMenuItemView = FC<{selected: boolean, onClick: ()=>void, search: string, context: IMenuContext}>;
 type IMenuItem = {
     view: IMenuItemView,
-    onSelect: (selected: boolean)=>void,
-    onClick: ()=>void,
+    interfaces: {
+        [Interaction]: {
+            [OnExecute]: (menuContext: IMenuContext)=>{},
+            [OnSelect]: (selected: boolean)=>void; 
+            [OnSearch]: (search: string, path: string)=>Generator<ISearchResult, undefined>;
+        },
+        [MainContextMenu]: {
+            [OnExecuteContext]:{
+                execute: ()=>{}
+                text: "Open"
+            },
+            [ICopyImageData]: {
+
+            },
+            [ICopyFile]: {
+                path: string,
+            },
+            [ICopyCompoundFile]: {
+                getSourcePaths(): string[],
+                getDestinationPaths(source: string, destDir: string): string,
+            },
+            [IShellScriptID]: {
+                getPathOfScript(): string
+            }
+        }
+    }
 };
+
+// What items to show?
+
+ICopyCompoundFile = Symbol("Copy");
+
+LM.registerActionUI(ICopyPasteHandler, shit as (...args: any[])=>Generator<IMenuItem>);
+
+LM.registerActionExecuter(ICopyPasteHandler, ICopyCompoundFile, {
+    onCopy: shit, 
+    onPaste: shit
+});
+
+// Where to register handlers?
+//Globally (Menu)
+
+const createContextMenu = createContextMenuCreator([{
+    name: "copy",
+    onExecute: (path: string)=>Clipboard.createPushFileCommand(path)
+}]);
+
+
+const file = ...;
+const contextMenu = createContextMenu(file.getPath());
+
+
+context.getSelectedChildren()
+
 type ISearchResult = {
     priority: number,
     item: IMenuItem
 };
+```
 
-class Applet implements IApplet {
-    static * getQueryItems(query: IQuery, context: ILMContext): Generator<ISearchResult, undefined> {
-       yield ...;
+```tsx
+// Register action (ICopyPasteAction) type for menu items
+// Actions don't have any consistent interface at all, though ones used for the context menu should have a consistent getUI function
+Menu.registerAction(ICopyPasteAction, (handlers: {handler: any, items: IMenuItem[]}[])=>{
+    const onCopy = () => {
+        handlers.forEach({handler, items})=>{
+            handler.onCopy();
+        });
     }
-    ...
-}
+    const copyMenuItem = {
+        view: ({selected})=>{
+            return <div>Copy</div>
+        },
+        interfaces: {
+            [Interaction]: {
+                [OnExecute]: (menuContext: IMenuContext)=>onCopy(),
+                [OnSelect]: (selected: boolean)=>void; 
+                [OnSearch]: (search: string, path: string)=>Generator<ISearchResult, undefined>;
+            },
+        }
+    };
+    return ({
+        onCopy,
+        copyMenuItem,
+        * getUI(){
+            return copyMenuItem
+        }
+    })
+});
 
-LM.registerApplet(Applet);
+//Register different implementations of Action, (here 2 ICopyFile and ICopyCompoundFile)
+Menu.registerActionExecuter(ICopyPasteAction, ICopyFile, (items: {path: string}[])=>{
+    onCopy: ()=>{
+        items.forEach(item=>{
+            // do shit;
+        });
+        // do other combined shit here
+    }, 
+    onPaste: ()=>{
+
+    }
+});
+Menu.registerActionExecuter(ICopyPasteAction, ICopyCompoundFile, (items: 
+        {
+            getSourcePaths(): string[],
+            getDestinationPaths(source: string, destDir: string): string,
+        }[])=>{
+   
+    // Compound files have the ability to display 1 file (e.g. test.tab) but copy both files simultaneously to their new destination I.e. Behave as 1 file.
+    // ------------------------------------
+    // test.tab   --> copy --> copies test.tab and test.dat
+    // --> paste into ./poop/ --> pastes to ./poop/test.tab and ./poop/test.dat
+
+    onCopy: ()=>{
+        items.forEach(item=>{
+            // do shit;
+        });
+        // do other combined shit here
+    }, 
+    onPaste: ()=>{
+
+    }
+});
+
+// Programmatic usage of actions
+LM.getActionHandler(ICopyPasteAction, selectedItems as IMenuItem[]).onCopy();
+
+// Example context menu ui usage of actions
+const myFile = {
+    view: ({context})=>{
+        useEffect(()=>{
+            const handler = ()=>{
+                const items: IMenuItem[] = context.getSelectedItems();
+                const foundActions = {} as {[action: any]: IMenuItem[]};
+                items.forEach(item=>
+                    getItemContextMenuInterfaces(item).forEach(interface=>{
+                        const action = getInterfaceAction(interface);
+                        if(!(action in foundActions))
+                            foundActions[action] = [];
+                        foundActions[action].push(item);
+                    });
+                );
+                const items: Generator<IMenuItem>[] = Object.keys(foundActions).map(action=>{
+                    return context.getActionHandler(action, foundActions[action]).getUI?.();
+                }).filter(ui=>ui);
+                stack.push(new Menu(generatorArrayToGenerator(items)));
+            };
+
+            registerHandler("tab", handler);
+            return ()=>removeHandler("tab", handler);
+        }, []);
+
+        return <div>Bob</div>;
+    },
+    interfaces: {
+        [Interaction]: {
+            [OnExecute]: (menuContext: IMenuContext)=>{
+                alert('Bob!');
+            },
+            [OnSelect]: (selected: boolean)=>void; 
+            [OnSearch]: (search: string, path: string)=>Generator<ISearchResult, undefined>;
+        },
+        [MainContextMenu]: {
+            [OnExecuteContext]:{
+                execute: ()=>{
+                    alert('Bob!')
+                }
+                text: "Amazeballz"
+            },
+            [ICopyFile]: {
+                path: "bob",
+            },
+            [ICopyCompoundFile]: {
+                getSourcePaths(): string[],
+                getDestinationPaths(source: string, destDir: string): string,
+            },
+            [IShellScriptID]: {
+                getPathOfScript(): string
+            }
+        }
+    }
+}
+```
+
+
+```tsx
+...
+export default declare((appContext) => {
+
+    return class Applet implements IApplet {
+        static * getQueryItems(query: IQuery, context: ILMContext): Generator<ISearchResult, undefined> {
+            yield ...;
+        }
+        ...
+    }
+}
 ```
 
 
@@ -142,23 +404,26 @@ type IAppletInfo = {
     tags: string[]
 }
 
-class Applet implements IApplet {
-    /** Optional method? */
-    static matchesAppPattern(query: IQuery): boolean {
-        // Example:
-        return /F:.+/.test(query.raw);
+```
+```tsx
+...
+export default declare((appContext) => {
+    return class Applet implements IApplet {
+        /** Optional method? */
+        static matchesAppPattern(query: IQuery): boolean {
+            // Example:
+            return /F:.+/.test(query.raw);
+        }
+        /** 
+         * Can get elements for use in settings and name for app search.
+         * Quick Search uses this for name + icon etc.
+        */
+        static getAppletInfo(): IAppletInfo {
+            //
+        }
+        ...
     }
-    /** 
-     * Can get elements for use in settings and name for app search.
-     * Quick Search uses this for name + icon etc.
-    */
-    static getAppletInfo(): IAppletInfo {
-        //
-    }
-    ...
-}
-
-LM.registerApplet(Applet);
+});
 ```
 
 ### Creating Menu Items
@@ -168,27 +433,47 @@ LM.registerApplet(Applet);
 - Items can still add extra behavior/interaction through their view.
 - Menu items will add/remove content.
 - 
+```tsx    
+// ... Realistically hidden behind some abstraction, but you could also do this if needed:
+const createLMItem = ({text, icon, content, onClick}): IMenuItem =>{
+    let contentID: number;
+    return {
+        view: ({selected, onClick})=>{
+            return <div onClick={onClick}>{text} {icon}</div>;
+        },
+        onSelect: (selected: boolean)=>{
+            if(content){
+                if(selected) contentID = content.stack.push(content.item);
+                else content.stack.pop(contentID);
+            }
+        },
+        onClick,
+    };
+};
+
+class BaseLMItem implements IMenuItem {
+    protected item;
+    protected contentID: number;
+    public constructor(item) {
+        this.item = item;
+    }
+    public view = ({selected, onClick})=>{
+        return <div onClick={onClick}>{this.item.text} {this.item.icon}</div>;
+    }
+    public onSelect = (selected: boolean)=>{
+        if(this.item.content){
+            if(selected) this.contentID = this.item.content.stack.push(this.item.content.item);
+            else this.item.content.stack.pop(contentID);
+        }
+    }
+    public onClick = ()=>this.item.onClick();
+}
+```
 
 ```tsx
-function createMenuItem(): ISearchItem {
-    
-    // ... Realistically hidden behind some abstraction, but you could also do this if needed:
-    const createLMItem = ({text, icon, content, onClick})=>{
-        let contentID: number;
-        return {
-            view: ({selected, onClick})=>{
-                return <div onClick={onClick}>{text} {icon}</div>;
-            },
-            onSelect: (selected: boolean, firstSelect: boolean)=>{
-                if(content){
 
-                    if(selected) contentID = content.stack.push(content.item);
-                    else content.stack.pop(contentID);
-                }
-            },
-            onClick,
-        };
-    };
+
+function createShitItem(): ISearchResult {
     
     return {
         item: createLMItem({
@@ -244,13 +529,17 @@ type IPaneStacks = {
     menu: IViewStack,
     content: IViewStack,
 }
+```
+```tsx
+...
+export default declare((appContext) => {
+    class Applet implements IApplet {
+        public constructor(context: ILMContext){
 
-class Applet implements IApplet {
-    public constructor(context: ILMContext){
-
+        }
+        ...
     }
-    ...
-}
+});
 ```
 
 
@@ -291,7 +580,7 @@ createMenuItem({
                 icon: "shit3",
                 text: "doShit3",
                 onClick: ()=>{},
-            })]
+            })],
             pane: menuPane
         })] as ReactElement[],
         pane: menuPane
@@ -511,3 +800,102 @@ class ParallelComposableCommand implements ICommand {
 }
 ```
 
+
+## Settings
+* LaunchMenu generates ID (likely the file path), stores in IAppContext and passes this to Applet class.
+* `appContext.getSettings` takes an argument which takes a "schema" for the settings. In this you can pass a default initial value and the UI used to modify the settings value.
+* 
+
+```tsx
+
+type ISettingSchema = {
+    default: any,
+    ui: FC<{context: ILMContext, curValue: any, onChange:(newValue: any)=>void, settings: ISettings}>
+};
+type ISettingSchemaDir = {[name: string]: ISettingSchemaDir} | ISettingSchema;
+
+type ISettingsSchema = {
+    version: string|number,
+    settings: {[name: string]:ISettingSchemaDir}
+};
+
+type ISettingsValues = {
+    version: string|number;
+    settings: {[name: string]:any}
+}
+
+type IAppContext = {
+    appID: string;
+    getSettings: (getSchema: 
+        (oldSchema:ISettingsValues)=>Promise<ISettingsSchema>|ISettingsSchema
+    )=>Promise<ISettings>;   
+}
+
+// Exposed plugin util function
+export const declare = <C extends IAppletClass>(
+    declaration: (context: IAppContext)=>C
+) => declaration;
+
+```
+
+```tsx
+type ISetting<T> = IMenuItem & {
+    get(hook: IDataHook): T
+    set(v: T): void
+};
+type ISettingGroup<T extends {[name: string]: ISettingGroup}> = (IMenuItem & {
+    children: T,
+}) | ISetting;
+
+
+```
+
+
+```tsx
+...
+export default declare((appContext: IAppContext)=>{  
+    const settings = await appContext.createSettings((currentlyStored)=>({
+        version: "1",
+        settings: {
+            crap: createSettingsCategory({
+                name: "bob",
+                children: {
+                    shit: createSetting({default: 5, ui: null}),
+                }
+            }),
+            stuff: createSetting({default: 5, ui: null})
+        },
+        settingsRenderer: ui
+    }));
+
+    const crap = settings.crap.children;
+    crap.shit.get();
+    settings.get("crap.shit");
+    
+    return class Applet implements IApplet {
+        //...
+    }   
+});
+```
+
+
+
+```tsx
+type IAppContext = {
+    appID: string;
+    getSettings: (getSchema: 
+        (oldSchema:ISettingsValues)=>Promise<ISettingsSchema>|ISettingsSchema
+    )=>Promise<ISettings>;   
+    getSubContext(name: string) : IAppContext;
+}
+```
+```tsx
+export default declare((appContext: IAppContext)=>{  
+    const ColorPickerClass = ColorPicker(appContext.getSubContext("color picker"));
+    // NOTE: getSubContext and getSettings error if called after the applet has been returned
+    
+    return class Applet implements IApplet {
+        //...
+    }   
+});
+```

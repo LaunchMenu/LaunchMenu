@@ -1,0 +1,44 @@
+{
+    "name": "launch-menu",
+    "version": "0.0.0",
+    "description": "A applet environment for visual keyboard controlled applets",
+    "types": "build/index.d.ts",
+    "files": [
+        "build/**/*.{js,d.ts}"
+    ],
+    "scripts": {
+        "start": "snowpack dev",
+        "build": "snowpack build",
+        "test": "jest"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/TarVK/model-react.git"
+    },
+    "keywords": [
+        "React",
+        "LaunchMenu",
+        "Applet"
+    ],
+    "author": "Tar van Krieken",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/LaunchMenu/LaunchMenu/issues"
+    },
+    "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
+    "dependencies": {
+        "react": "^16.13.0",
+        "react-dom": "^16.13.0"
+    },
+    "devDependencies": {
+        "electron": "^9.0.4",
+        "typescript": "^3.8.0",
+        "snowpack": "^2.5.1",
+        "@snowpack/app-scripts-react": "^1.2.0",
+        "@types/react": "^16.9.35",
+        "@types/react-dom": "^16.9.8",
+        "jest": "^25.4.0",
+        "@testing-library/jest-dom": "^5.5.0",
+        "@testing-library/react": "^10.0.3"
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "extends": "@snowpack/app-scripts-react",
+    "scripts": {
+        "run:tsc": "tsc --noEmit",
+        "run:tsc::watch": "$1 --watch"
+    },
+    "plugins": []
+}
