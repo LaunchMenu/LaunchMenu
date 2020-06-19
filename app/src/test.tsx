@@ -209,6 +209,7 @@ const addCountsAction = createAction(
 );
 
 // Add path length handler
+console.log("bob");
 const pathCount = addCountsAction.createHandler((items: {path: string}[]) => {
     return {
         name: "path length",
@@ -229,3 +230,5 @@ const items = [
 ];
 
 addCountsAction.get(items).execute(); // [{name: "path length" count: 7}]
+
+export const poo = 3;

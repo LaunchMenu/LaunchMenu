@@ -7,13 +7,14 @@
         "build/**/*.{js,d.ts}"
     ],
     "scripts": {
-        "start": "snowpack dev",
-        "build": "snowpack build",
+        "build": "webpack --env prod",
+        "dev": "webpack-dev-server --env dev --watch",
+        "start": "set NODE_ENV=production&& electron build/index.js",
         "test": "jest"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/TarVK/model-react.git"
+        "url": "git+https://github.com/LaunchMenu/LaunchMenu.git"
     },
     "keywords": [
         "React",
@@ -27,18 +28,28 @@
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
     "dependencies": {
+        "electron": "^9.0.4",
         "react": "^16.13.0",
         "react-dom": "^16.13.0"
     },
     "devDependencies": {
-        "electron": "^9.0.4",
-        "typescript": "^3.8.0",
-        "snowpack": "^2.5.1",
         "@snowpack/app-scripts-react": "^1.2.0",
+        "@testing-library/jest-dom": "^5.5.0",
+        "@testing-library/react": "^10.0.3",
         "@types/react": "^16.9.35",
         "@types/react-dom": "^16.9.8",
+        "concurrently": "^5.2.0",
+        "copy-webpack-plugin": "^6.0.2",
+        "file-loader": "^6.0.0",
         "jest": "^25.4.0",
-        "@testing-library/jest-dom": "^5.5.0",
-        "@testing-library/react": "^10.0.3"
+        "nodemon": "^2.0.4",
+        "nodemon-webpack-plugin": "^4.3.2",
+        "ts-loader": "^7.0.5",
+        "typescript": "^3.8.0",
+        "webpack": "^4.43.0",
+        "webpack-cli": "^3.3.12",
+        "webpack-dev-server": "^3.11.0",
+        "webpack-fix-default-import-plugin": "^1.0.3",
+        "write-file-webpack-plugin": "^4.5.1"
     }
 }
