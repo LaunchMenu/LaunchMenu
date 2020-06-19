@@ -11,7 +11,7 @@
         * 1 type per file
         * Keep types close to where they are needed, preferably in a '_types' folder.
         * All types exported from files.
-        * Have an index file which imports all types, classes, functions and exports them again
+        * Have an index file which imports all types, classes, functions and exports them again.
     * VSCode workspace?
     * Use prettier for automatic formatting
     * Attempt to keep things OOP
@@ -21,8 +21,10 @@
             * Merge development into your branch before merging to development
         * Use master as development for versions being tested (but should in theory work)
         * Create release branches as E.G. release/v1
-* [X] Applet Format
-* [x] Creating Menu Items [implDetail](#Creating%20Menu%20Items).
+        * TODO: git commit message conventions
+* [X] Applet Format [implDetail](#Applet%20format).
+* [ ] Menu [implDetail](#Menu).
+    * TODO:
     * Consists of interaction handler and visual representation.
         * Will be in charge of creating content themselves when applicable.
     * Will have helpers to create consistent looking items.
@@ -134,7 +136,149 @@ export default declare((appContext) => {
         }
     };
 });
+```
 
+### Menus
+A menu in LM is a list on the left side of the screen, which contains items that can be navigated through and interacted with using the keyboard. 
+
+The menu handles tracking of selected items and triggering them, but the items themselves specify their design and behavior.
+
+#### What are menu items
+- Menu Items will be combination of a view component and action bindings.
+- Menu Items can add extra behavior/interaction through their view, which won't be controlled by the menu.
+- Actions are things that can be executed on certain menu items:
+    - Handlers can be added to actions to describe what the action should do for a particular item.
+        - Action handler is implemented outside the MenuItem
+        - This action handler has a semi static/global implementation
+        - Action handlers are to be used by many different implementations of MenuItems
+            - This is required behavior for multi-item selection actions.
+        - Action can have multiple implementations:
+            - E.G. "Copy" action could have different implementations for:
+                 - CopyText - Copies text to clipboard
+                 - CopyImage - Copies image data to clipboard
+                 - CopyFile  - Copies file item to clipboard (OS specific)
+                 - CopyCompoundFile - Copies multiple file items to clipboard (which are represented as a single file in LM)
+                 - ...
+        - Applets can implement their own ActionHandlers
+    - Items will have bindings to action handlers. 
+    - The binding contains item specific data to be used on execution.
+    - Either actions or action handlers can be called on a set of items
+    - LM has a couple of built-in actions:
+        - onCursor: Called when item becomes cursor or stops being cursor
+        - onSelect: Called when item is selected or stops being selected
+        - onExecute: Called when item was selected and is either clicked again or EXECUTE_KEY button is pressed.
+- Applets can implement their own Menus and MenuItems.
+
+```tsx
+let createAction = <I, O> (actionCore: IActionCore<I, O>): IAction<I, O> => {
+    return null; // Actual implementation would go here
+};
+
+type IActionHandlerBinding<I> = {
+    handler: IActionHandler<any, I, any>;
+    items: IMenuItem[];
+}[];
+type IActionCore<I, O> = (handlers: IActionHandlerBinding<I>) => O;
+type IAction<I, O> = {
+    readonly createHandler: <T>(
+        handlerCore: IActionHandlerCore<T, I>
+    ) => IActionHandler<T, I, IAction<I, O>>;
+    readonly get: (items: IMenuItem[]) => O;
+};
+type IActionHandlerCore<I, O> = (bindingData: I[]) => O;
+type IActionHandler<I, O, A extends IAction<any, any>> = {
+    readonly action: A;
+    readonly createBinding: (data: I) => IActionBinding<I>;
+    readonly get: (bindingData: I[] | IMenuItem[]) => O;
+};
+type IActionBinding<I> = {
+    readonly handler: IActionHandler<any, any, IAction<any, any>>;
+    readonly data: I;
+    readonly tags: string[];
+};
+type IMenuItemView = FC<{
+    readonly isCursor: boolean;
+    readonly isSelected: boolean;
+    readonly item: IMenuItem;
+    readonly menu: IMenu;
+}>;
+type IMenuItem = {
+    readonly view: IMenuItemView;
+    readonly actionBindings: IActionBinding<any>[];
+};
+```
+
+Test example:
+```tsx
+// Test implementation
+const addCountsAction = createAction(
+    (handlers: IActionHandlerBinding<{name: string; count: number}>) => {
+        return {
+            execute: () => {
+                return handlers.map(({handler, items}) => handler.get(items));
+            },
+        };
+    }
+);
+
+// Add path length handler
+const pathCount = addCountsAction.createHandler((items: {path: string}[]) => {
+    return {
+        name: "path length",
+        count: items.reduce((cur, {path}) => cur + path.length, 0),
+    };
+});
+
+// Use action on your items
+const items = [
+    {
+        view: null,
+        actionBindings: [pathCount.createBinding({path: "bang"})],
+    },
+    {
+        view: null,
+        actionBindings: [pathCount.createBinding({path: "foo"})],
+    },
+];
+
+addCountsAction.get(items).execute(); // [{name: "path length" count: 7}]
+```
+
+#### Menus for multiple selected items
+
+
+
+#### Our wrappers of menu items:
+
+- Simple function to create standard items will be provided by LM.
+
+
+//TODO: Code example moved to ADL
+
+
+```tsx
+
+
+function createShitItem(): ISearchResult {
+    
+    return {
+        item: createLMItem({
+            text:"crap", 
+            icon:"shit", 
+            content: {
+                item: <ContentLayout date={} name={}>extra data</ContentLayout>,
+                pane: contentStack
+            }, 
+            onClick: ()=>{}
+        }),
+        priority: 1
+    }
+}
+
+
+// Usage from LM
+const {item, priority}: createMenuItem();
+<item.view selected={true} onClick={item.onClick}/>;
 ```
 
 ### Querying in the LaunchMenu search bar
@@ -164,7 +308,7 @@ Option 2.
     Articles   HamsterPie
 ```
 
-
+<!-- 
 ```tsx
 type ILMContext = {}; // Expanded upon in future chapters
 
@@ -297,8 +441,8 @@ Menu.registerActionExecuter(ICopyPasteAction, ICopyCompoundFile, (items:
    
     // Compound files have the ability to display 1 file (e.g. test.tab) but copy both files simultaneously to their new destination I.e. Behave as 1 file.
     // ------------------------------------
-    // test.tab   --> copy --> copies test.tab and test.dat
-    // --> paste into ./poop/ --> pastes to ./poop/test.tab and ./poop/test.dat
+    // test.tab   -> copy -> copies test.tab and test.dat
+    // -> paste into ./poop/ -> pastes to ./poop/test.tab and ./poop/test.dat
 
     onCopy: ()=>{
         items.forEach(item=>{
@@ -383,7 +527,7 @@ export default declare((appContext) => {
         ...
     }
 }
-```
+``` -->
 
 
 ### Selecting applets
@@ -424,75 +568,6 @@ export default declare((appContext) => {
         ...
     }
 });
-```
-
-### Creating Menu Items
-
-- Simple function to create standard items will be provided by LM.
-- Items will be combination of a view component and interaction handlers.
-- Items can still add extra behavior/interaction through their view.
-- Menu items will add/remove content.
-- 
-```tsx    
-// ... Realistically hidden behind some abstraction, but you could also do this if needed:
-const createLMItem = ({text, icon, content, onClick}): IMenuItem =>{
-    let contentID: number;
-    return {
-        view: ({selected, onClick})=>{
-            return <div onClick={onClick}>{text} {icon}</div>;
-        },
-        onSelect: (selected: boolean)=>{
-            if(content){
-                if(selected) contentID = content.stack.push(content.item);
-                else content.stack.pop(contentID);
-            }
-        },
-        onClick,
-    };
-};
-
-class BaseLMItem implements IMenuItem {
-    protected item;
-    protected contentID: number;
-    public constructor(item) {
-        this.item = item;
-    }
-    public view = ({selected, onClick})=>{
-        return <div onClick={onClick}>{this.item.text} {this.item.icon}</div>;
-    }
-    public onSelect = (selected: boolean)=>{
-        if(this.item.content){
-            if(selected) this.contentID = this.item.content.stack.push(this.item.content.item);
-            else this.item.content.stack.pop(contentID);
-        }
-    }
-    public onClick = ()=>this.item.onClick();
-}
-```
-
-```tsx
-
-
-function createShitItem(): ISearchResult {
-    
-    return {
-        item: createLMItem({
-            text:"crap", 
-            icon:"shit", 
-            content: {
-                item: <ContentLayout date={} name={}>extra data</ContentLayout>,
-                pane: contentStack
-            }, 
-            onClick: ()=>{}
-        }),
-        priority: 1
-    }
-}
-
-
-// Usage from LM
-const {item, priority}: createMenuItem();
-<item.view selected={true} onClick={item.onClick}/>;
 ```
 
 # Modularity of 3 areas and stacks
