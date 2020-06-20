@@ -1,4 +1,5 @@
 import {app, BrowserWindow} from "electron";
+import Path from "path";
 import page from "./index.html";
 
 const mode = process.env.NODE_ENV;
@@ -17,7 +18,7 @@ function createWindow() {
         win.loadURL("http://localhost:3000");
         win.webContents.openDevTools();
     } else {
-        win.loadFile(page);
+        win.loadURL(Path.join(__dirname, page));
     }
 }
 

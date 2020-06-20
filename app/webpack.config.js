@@ -26,6 +26,10 @@ module.exports = env => {
     return [
         {
             target: "electron-renderer",
+            node: {
+                __dirname: false, // allows usage of __dirname in code
+                __filename: false, // allows usage of __filename in code
+            },
             entry: ["./src/app.tsx", "./src/index.html"],
             devtool: mode == "production" ? undefined : "inline-source-map",
             mode,
@@ -60,6 +64,10 @@ module.exports = env => {
         },
         {
             target: "electron-main",
+            node: {
+                __dirname: false, // allows usage of __dirname in code
+                __filename: false, // allows usage of __filename in code
+            },
             entry: "./src/index.ts",
             devtool: mode == "production" ? undefined : "inline-source-map",
             mode,
