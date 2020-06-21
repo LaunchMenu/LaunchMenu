@@ -76,11 +76,11 @@ class BaseLMItem implements IMenuItem {
 
 ### Use Functional approach when:
 * Where there are many expected implementations of an Object.
-    * Most of our internal code (e.g code dealing with Stacks, Settings, UI...)  will take this approach
-    * For User code which creates ReactElements.
+    * A lot of our internal 'helper'/wrapper code (e.g code dealing Settings, UI, Undo/Redo...) will take this approach
+    * For any react component (functional components instead of class component).
 
 ### Use Class based approach when:
 * Where there is only 1 expected implementation of an Object.
     * For custom built applets
-    * Whenever implementation of generators are required
+    * As much as possible when implementation of generators are required
     * For Utilities like `Clipboard`
