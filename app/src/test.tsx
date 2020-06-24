@@ -15,6 +15,8 @@
 //     declaration: (context: IAppContext) => C
 // ) => declaration;
 
+import {GeneratorUtils} from "./utils/GeneratorUtils";
+
 // export default declare(({appID}) => {
 //     return class Applet implements IApplet {
 //         constructor(context: ILMContext) {}
@@ -157,32 +159,41 @@
 type FC<P> = P;
 type IMenu = number;
 
-let createAction = <I, O>(actionCore: IActionCore<I, O>): IAction<I, O> => {
-    return null; // Actual implementation would go here
-};
+class Action<I, O> implements Action<I, O> {
+    public constructor(actionCore: IActionCore<I, O>) {}
 
-type IActionHandlerBinding<I> = {
+    public createHandler<T>(
+        handlerCore: IActionHandlerCore<T, I>
+    ): IActionHandler<T, I, Action<I, O>> {
+        return null;
+    }
+    public get(items: IMenuItem[]): O {
+        return null;
+    }
+}
+
+type IActionHandlerItems<I> = {
     handler: IActionHandler<any, I, any>;
     items: IMenuItem[];
 }[];
-type IActionCore<I, O> = (handlers: IActionHandlerBinding<I>) => O;
-type IAction<I, O> = {
-    // readonly createHandler: {
-    //     <T>(handlerCore: IActionHandlerCore<T, I>): IActionHandler<T, I, IAction<I, O>>;
-    // }; //commented for markdown highlighting.
-    readonly createHandler: <T>(
-        handlerCore: IActionHandlerCore<T, I>
-    ) => IActionHandler<T, I, IAction<I, O>>;
-    readonly get: (items: IMenuItem[]) => O;
-};
+type IActionCore<I, O> = (handlers: IActionHandlerItems<I>) => O;
+// type IAction<I, O> = {
+//     // readonly createHandler: {
+//     //     <T>(handlerCore: IActionHandlerCore<T, I>): IActionHandler<T, I, IAction<I, O>>;
+//     // }; //commented for markdown highlighting.
+//     readonly createHandler: <T>(
+//         handlerCore: IActionHandlerCore<T, I>
+//     ) => IActionHandler<T, I, IAction<I, O>>;
+//     readonly get: (items: IMenuItem[]) => O;
+// };
 type IActionHandlerCore<I, O> = (bindingData: I[]) => O;
-type IActionHandler<I, O, A extends IAction<any, any>> = {
+type IActionHandler<I, O, A extends Action<any, any>> = {
     readonly action: A;
     readonly createBinding: (data: I) => IActionBinding<I>;
     readonly get: (bindingData: I[] | IMenuItem[]) => O;
 };
 type IActionBinding<I> = {
-    readonly handler: IActionHandler<any, any, IAction<any, any>>;
+    readonly handler: IActionHandler<any, any, Action<any, any>>;
     readonly data: I;
     readonly tags: string[];
 };
@@ -198,8 +209,8 @@ type IMenuItem = {
 };
 
 // Test implementation
-const addCountsAction = createAction(
-    (handlers: IActionHandlerBinding<{name: string; count: number}>) => {
+const addCountsAction = new Action(
+    (handlers: IActionHandlerItems<{name: string; count: number}>) => {
         return {
             execute: () => {
                 return handlers.map(({handler, items}) => handler.get(items));
@@ -209,7 +220,6 @@ const addCountsAction = createAction(
 );
 
 // Add path length handler
-console.log("bob");
 const pathCount = addCountsAction.createHandler((items: {path: string}[]) => {
     return {
         name: "path length",
@@ -232,3 +242,84 @@ const items = [
 addCountsAction.get(items).execute(); // [{name: "path length" count: 7}]
 
 export const poo = 3;
+
+/**
+ * Search action test
+ */
+type IQuery = {
+    raw: string;
+    context: {
+        currentWindow: {
+            title: string;
+            id: string | number;
+        };
+        clipboard: {
+            // ...
+        };
+    };
+    historicWindows: [/* ...? */];
+};
+type ISearchResult = {
+    priority: number;
+    item: IMenuItem;
+};
+
+type IGeneratorCallback<T> =
+    /**
+     * A callback to pass items that were generated
+     * @param item The generated item
+     * @returns A promise that resolves once the next item should be retrieved, when the last item to be retrieved is passed, the promise will return true (last requested item)
+     */
+    (item: T) => Promise<boolean>;
+type ISearchCallback = IGeneratorCallback<ISearchResult>;
+
+// Test implementation
+type ISearchAble = {
+    search: (search: IQuery, callback: ISearchCallback) => Promise<void>;
+};
+const searchAction = new Action((handlers: IActionHandlerItems<ISearchAble>) => {
+    return {
+        search: async (search: IQuery, push: ISearchCallback) => {
+            for (const {handler, items} of handlers) {
+                await handler.get(items).search(search, push);
+            }
+        },
+    };
+});
+
+// Add path length handler
+const searchHandler = searchAction.createHandler((items: ISearchAble[]) => {
+    return {
+        search: async (search: IQuery, push: ISearchCallback) => {
+            for (const item of items) {
+                await item.search(search, push);
+            }
+        },
+    };
+});
+
+// Use action on your items
+const myChildren = [] as IMenuItem[];
+const searchItems = [
+    {
+        view: null,
+        actionBindings: [
+            searchHandler.createBinding({
+                search: async (search: IQuery, push: ISearchCallback) => {
+                    await push({priority: Infinity, item: null as IMenuItem});
+                    await searchAction.get(myChildren).search(search, push);
+                },
+            }),
+        ],
+    },
+];
+
+// Performing search
+const Utils: any = null;
+const generatorCallback = Utils.createGeneratorCallback((item: ISearchResult) => {
+    // do smth
+});
+searchAction.get(searchItems).search(null as IQuery, generatorCallback);
+setTimeout(() => {
+    generatorCallback.stop();
+}, 5000);
