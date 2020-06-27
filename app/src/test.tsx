@@ -160,10 +160,11 @@ type FC<P> = P;
 type IMenu = number;
 
 class Action<I, O> implements Action<I, O> {
-    public constructor(actionCore: IActionCore<I, O>) {}
+    public constructor(actionCore: IActionCore<I, O>, defaultTags?: string[]) {}
 
     public createHandler<T>(
-        handlerCore: IActionHandlerCore<T, I>
+        handlerCore: IActionHandlerCore<T, I>,
+        defaultTags?: string[]
     ): IActionHandler<T, I, Action<I, O>> {
         return null;
     }
@@ -189,7 +190,7 @@ type IActionCore<I, O> = (handlers: IActionHandlerItems<I>) => O;
 type IActionHandlerCore<I, O> = (bindingData: I[]) => O;
 type IActionHandler<I, O, A extends Action<any, any>> = {
     readonly action: A;
-    readonly createBinding: (data: I) => IActionBinding<I>;
+    readonly createBinding: (data: I, tags?: string[]) => IActionBinding<I>;
     readonly get: (bindingData: I[] | IMenuItem[]) => O;
 };
 type IActionBinding<I> = {
