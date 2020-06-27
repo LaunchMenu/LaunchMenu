@@ -147,6 +147,9 @@ export default declare((appContext) => {
 
 ### Modularity of 3 areas and stacks
 
+<details>
+<summary>Show detail</summary>
+
 - Each of the 3 program sections will have a 'stack' of ReactElements.
 - Topmost element of stack is the visible element.
 - Can add IStackItems, which are specific react components, allowing any content to be displayed.
@@ -193,6 +196,7 @@ export default declare((appContext) => {
     }
 });
 ```
+</details>
 
 
 ### Menus
@@ -219,8 +223,8 @@ type IGeneratorCallback<T> =
 type IMenuItemCallback = IGeneratorCallback<IPrioritizedMenuItem>;
 
 class Menu {
-    public static populateFromGenerator(generator: (cb: IMenuItemCallback)=>Promise<void>, menu: Menu): void;
-    public static populateFromArray(items: IMenuItem[], menu: Menu): void;
+    public static populateFromGenerator(menu: Menu, generator: (cb: IMenuItemCallback)=>Promise<void>): void;
+    public static populateFromArray(menu: Menu, items: IMenuItem[]): void;
 
     // For searching a menu see SearchField class
 
@@ -265,14 +269,14 @@ MenuItems can easily represent category headers by specifying they are not selec
 
 - Menu Items will be combination of a view component and action bindings.
 - Menu Items can add extra behavior/interaction through their view, which won't be controlled by the menu.
-- Actions are things that can be executed on certain menu items:
+- Actions are things that can be executed on certain menu items.
     - Handlers can be added to actions to describe what the action should do for a particular item.
-        - Action handler is implemented outside the MenuItem
-        - This action handler has a semi static/global implementation
-        - Action handlers are to be used by many different implementations of MenuItems
+        - Action handler is implemented outside the MenuItem.
+        - This action handler has a semi static/global implementation.
+        - Action handlers are to be used by many different implementations of MenuItems.
             - This is required behavior for multi-item selection actions.
-        - Action can have multiple implementations:
-            - E.G. "Copy" action could have different implementations for:
+        - Action can have multiple implementations.
+            - E.G. "Copy" action could have different implementations for.
                  - CopyText - Copies text to clipboard
                  - CopyImage - Copies image data to clipboard
                  - CopyFile  - Copies file item to clipboard (OS specific)
@@ -282,7 +286,7 @@ MenuItems can easily represent category headers by specifying they are not selec
     - Items will have bindings to action handlers. 
     - The binding contains item specific data to be used on execution.
     - Either actions or action handlers can be called on a set of items
-    - LM has a couple of built-in actions:
+    - LM has a couple of built-in actions.
         - onCursor: Called when item becomes cursor or stops being cursor
         - onSelect: Called when item is selected or stops being selected
         - onExecute: Called when item was selected and is either clicked again or EXECUTE_KEY button is pressed.
@@ -296,29 +300,29 @@ type IActionHandlerItems<I> = {
 }[];
 type IActionCore<I, O> = (handlers: IActionHandlerItems<I>) => O;
 class Action<I, O> implements Action<I, O> {
-    public constructor(actionCore: IActionCore<I, O>) { }
+    public constructor(
+        actionCore: IActionCore<I, O>, 
+        defaultTags?: string[]);
     
     public createHandler<T>(
-        handlerCore: IActionHandlerCore<T, I>
-    ): IActionHandler<T, I, Action<I, O>> {
-        return null;
-    }
-    public get(items: IMenuItem[]): O {
-        return null;
-    }
+        handlerCore: IActionHandlerCore<T, I>,
+        defaultTags?: string[]
+    ): IActionHandler<T, I, Action<I, O>>;
+
+    public get(items: IMenuItem[]): O;
 }
 // Action handler
 type IActionHandlerCore<I, O> = (bindingData: I[]) => O;
 type IActionHandler<I, O, A extends Action<any, any>> = {
     readonly action: A;
-    readonly createBinding: (data: I) => IActionBinding<I>;
+    readonly createBinding: (data: I, tags?: string[]) => IActionBinding<I>;
     readonly get: (bindingData: I[] | IMenuItem[]) => O;
 };
 // Item
 type IActionBinding<I> = {
     readonly handler: IActionHandler<any, any, Action<any, any>>;
     readonly data: I;
-    readonly tags: string[];
+    readonly tags: any[];
 };
 type IMenuItemView = FC<{
     readonly isCursor: boolean;
@@ -356,12 +360,14 @@ const pathCount = addCountsAction.createHandler((items: {path: string}[]) => {
 // Use action on your items
 const items = [
     {
-        view: ({selected})=><div>{selected?"I am selected":"I am not selected"}</div>,
+        view: ({selected}) => <div>{selected ? "I am selected" : "I am not selected"}</div>,
         actionBindings: [pathCount.createBinding({path: "bang"})],
     },
     {
-        view: ({menu, item})=>
-            <div onClick={menu.select(item)}>{selected?"I am selected":"I am not selected"}</div>,
+        view: ({selected, menu, item}) =>
+            <div onClick={() => menu.select(item)}>
+                {selected ? "I am selected" : "I am not selected"}
+            </div>,
         actionBindings: [pathCount.createBinding({path: "foo"})],
     },
 ];
@@ -373,31 +379,102 @@ addCountsAction.get(items).execute(); // [{name: "path length" count: 7}]
 #### Context menu for multiple selected items
 <details>
 <summary>Show detail</summary>
-TODO: describe how to aggregate views of actions from a selected set of items
+- Action bindings contain a list of tags, which can indicate whether to be visible in the context menu.
+    - Actions can define default tags that are kept if not overwritten.
+    - Action handlers can define default tags that are kept if not overwritten.
+- Any action that wants to be visible in context menus, needs to specify a getMenuItem retriever function.
+    - Function takes in the category the action should be in as an argument.
+- Opening context menus is entirely controlled by menu items, typically the cursor menu item.
+    - Tooling similar to the react hook defined below will be available to make usage easier.
+
+```tsx
+const exampleAction = new Action((handlers: IActionHandlerItems<ISearchAble>) => {
+    const performAction = () => { ... };
+    return {
+        performAction,
+        getMenuItem: (category?: IMenuItem) => {
+            ...
+            return item as IMenuItem
+        };
+    };
+}, ["context"]);
+
+// A hook to deal with context menu opening
+const useContextHandler = (menu: Menu, viewStack: IViewStack, enable: boolean) => useEffect(() => {
+    const handler = () => {
+        if(!enable) return;
+
+        const selectedItems = menu.getSelectedItems();
+        const foundActions = [] as { action: Action, items: IMenuItem[] }[];
+
+        // Go through all action bindings and collect actions
+        selectedItems.forEach(item => {
+            item.actionBindings.forEach(binding => {
+                // Make sure the item should show in the menu
+                if (!binding.tags.includes("context")) return;
+
+                // Aggregate the items for this action
+                const itemAction = binding.handler.action;
+                const foundAction = actions.find(({action}) => action == itemAction);
+                if (foundAction) {
+                    if (!foundAction.items.includes(item))
+                        foundAction.items.push(item);
+                } else {
+                    foundAction = { action, items: [item] };
+                    foundActions.push(foundAction)
+                }
+            })
+        });
+
+        // Go through all actions and collect them in a menu
+        const contextMenu = new Menu();
+        Menu.populateFromArray(
+            contextMenu, 
+            foundActions.map(({action, items}) => {
+                return action.get(items).getMenuItem?.(
+                    // Pass a category, which can label actions that aren't available on all selected items
+                    getContextCategory(items.length < selectedItems.length)
+                );
+            }).filter(item => item)
+        ));
+    };
+    LM.onKeyPress("tab", handler);
+    return () => LM.offKeyPress("tab", handler);
+}, [menu, enable]);
+
+// An example item to use the context menu
+const item = {
+    view: ({menu, item, isCursor}) => {
+        useContextHandler(menu, menuStack, isCursor);
+        return <div>hoi</div>;
+    },
+    actionBindings: [],
+};
+```
 
 </details>
 
-
-#### Our wrappers of menu items
+#### Wrappers of menu items
 
 <details>
 <summary>Show detail</summary>
-- Simple function to create standard items will be provided by LM.
 
-
-TODO: Code example moved to ADL
-
+Most items will look similar to each other in practice, therefore standard creator functions will be provided.
+- Functions will create items by combining other helper functions and or components.
+- The resulting items will still be simple items implementing the IMenuItem interface.
 
 ```tsx
-const menuItem: IMenuItem = createLMItem({
-    text:"crap", 
-    icon:"shit", 
+const menuItem: IMenuItem = Utils.menuItems.createSimpleItem({
+    text:"Some item", 
+    icon:"home", 
     content: {
-        item: <ContentLayout date={} name={}>extra data</ContentLayout>,
+        view: () => <div>oranges</div>,
         pane: contentStack
     }, 
+    contextMenuStack: menuStack,
     onClick: ()=>{}
 });
+
 ```
 </details>
 
@@ -406,7 +483,12 @@ const menuItem: IMenuItem = createLMItem({
 <details>
 <summary>Show detail</summary>
 
-TODO: write about wtf is going on
+- Search action that defines a search function to retrieve menu items.
+    - Takes the query data and and a push function as arguments.
+    - Items should be returned by pushing them, and the push result should be awaited.
+- Search on a item can be implemented recursively, by calling search on any potential children of the item.
+- Search can be canceled at any time by the caller (by not resolving the promise).
+- Asynchronous nature ensures that other events can be processed during a search.
 
 
 ```tsx
@@ -482,16 +564,30 @@ setTimeout(() => {
 ```
 </details>
 
-#### Context menu through actions
+### Fields
 
 <details>
 <summary>Show detail</summary>
 
+TODO: finish
+
+```tsx
+class SearchField {
+    /**
+     * Menu passed for ability to search the menu
+     */ 
+    constructor(menu: Menu){
+        
+    }
+}
+```
+
 </details>
 
-### Fields
-
 ### Querying in the LaunchMenu search bar
+
+<details>
+<summary>Show detail</summary>
 
 - Ask all applets for results on search query.
 - Applets return generator.
@@ -499,10 +595,12 @@ setTimeout(() => {
 - Results limited to top matches via settings.
 - Default result limit is 10 per app.
 - LM categorizes per app, and sorts apps based max priority within results (potentially according to settings).
-- LM provides some standard categorisation bands (Low, Medium, High, Urgent).
-- Categorisation based on Apps could be like the following:
+- LM provides some standard categorization bands (Low, Medium, High, Urgent).
+- Categorization based on Apps could be like the following:
+
+
 ```
-Option 1.
+Option 1 (chosen).
     Dictionary
     |- Hamster
     |- Hamsterine
@@ -519,239 +617,30 @@ Option 2.
 ```
 
 ```tsx
-class SearchField {
-    /**
-     * Menu passed for ability to search the menu
-     */ 
-    constructor(menu: Menu){
-        
-    }
-}
-```
-
-<!-- 
-```tsx
-type ILMContext = {}; // Expanded upon in future chapters
-
-type IQuery = {
-    raw: string,
-    context: {
-        currentWindow: {
-            title: string,
-            id: string|number
-        },
-        clipboard : {
-            // ...
-        }
-    },
-    historicWindows: [
-        // ...?
-    ]
-};
-
-type IMenuItemView = FC<{selected: boolean, onClick: ()=>void, search: string, context: IMenuContext}>;
-type IMenuItem = {
-    view: IMenuItemView,
-    interfaces: {
-        [Interaction]: {
-            [OnExecute]: (menuContext: IMenuContext)=>{},
-            [OnSelect]: (selected: boolean)=>void; 
-            [OnSearch]: (search: string, path: string)=>Generator<ISearchResult, undefined>;
-        },
-        [MainContextMenu]: {
-            [OnExecuteContext]:{
-                execute: ()=>{}
-                text: "Open"
-            },
-            [ICopyImageData]: {
-
-            },
-            [ICopyFile]: {
-                path: string,
-            },
-            [ICopyCompoundFile]: {
-                getSourcePaths(): string[],
-                getDestinationPaths(source: string, destDir: string): string,
-            },
-            [IShellScriptID]: {
-                getPathOfScript(): string
-            }
-        }
-    }
-};
-
-// What items to show?
-
-ICopyCompoundFile = Symbol("Copy");
-
-LM.registerActionUI(ICopyPasteHandler, shit as (...args: any[])=>Generator<IMenuItem>);
-
-LM.registerActionExecuter(ICopyPasteHandler, ICopyCompoundFile, {
-    onCopy: shit, 
-    onPaste: shit
-});
-
-// Where to register handlers?
-//Globally (Menu)
-
-const createContextMenu = createContextMenuCreator([{
-    name: "copy",
-    onExecute: (path: string)=>Clipboard.createPushFileCommand(path)
-}]);
-
-
-const file = ...;
-const contextMenu = createContextMenu(file.getPath());
-
-
-context.getSelectedChildren()
-
-type ISearchResult = {
-    priority: number,
-    item: IMenuItem
-};
-```
-
-```tsx
-// Register action (ICopyPasteAction) type for menu items
-// Actions don't have any consistent interface at all, though ones used for the context menu should have a consistent getUI function
-Menu.registerAction(ICopyPasteAction, (handlers: {handler: any, items: IMenuItem[]}[])=>{
-    const onCopy = () => {
-        handlers.forEach({handler, items})=>{
-            handler.onCopy();
-        });
-    }
-    const copyMenuItem = {
-        view: ({selected})=>{
-            return <div>Copy</div>
-        },
-        interfaces: {
-            [Interaction]: {
-                [OnExecute]: (menuContext: IMenuContext)=>onCopy(),
-                [OnSelect]: (selected: boolean)=>void; 
-                [OnSearch]: (search: string, path: string)=>Generator<ISearchResult, undefined>;
-            },
-        }
-    };
-    return ({
-        onCopy,
-        copyMenuItem,
-        * getUI(){
-            return copyMenuItem
-        }
-    })
-});
-
-//Register different implementations of Action, (here 2 ICopyFile and ICopyCompoundFile)
-Menu.registerActionExecuter(ICopyPasteAction, ICopyFile, (items: {path: string}[])=>{
-    onCopy: ()=>{
-        items.forEach(item=>{
-            // do shit;
-        });
-        // do other combined shit here
-    }, 
-    onPaste: ()=>{
-
-    }
-});
-Menu.registerActionExecuter(ICopyPasteAction, ICopyCompoundFile, (items: 
-        {
-            getSourcePaths(): string[],
-            getDestinationPaths(source: string, destDir: string): string,
-        }[])=>{
-   
-    // Compound files have the ability to display 1 file (e.g. test.tab) but copy both files simultaneously to their new destination I.e. Behave as 1 file.
-    // ------------------------------------
-    // test.tab   -> copy -> copies test.tab and test.dat
-    // -> paste into ./poop/ -> pastes to ./poop/test.tab and ./poop/test.dat
-
-    onCopy: ()=>{
-        items.forEach(item=>{
-            // do shit;
-        });
-        // do other combined shit here
-    }, 
-    onPaste: ()=>{
-
-    }
-});
-
-// Programmatic usage of actions
-LM.getActionHandler(ICopyPasteAction, selectedItems as IMenuItem[]).onCopy();
-
-// Example context menu ui usage of actions
-const myFile = {
-    view: ({context})=>{
-        useEffect(()=>{
-            const handler = ()=>{
-                const items: IMenuItem[] = context.getSelectedItems();
-                const foundActions = {} as {[action: any]: IMenuItem[]};
-                items.forEach(item=>
-                    getItemContextMenuInterfaces(item).forEach(interface=>{
-                        const action = getInterfaceAction(interface);
-                        if(!(action in foundActions))
-                            foundActions[action] = [];
-                        foundActions[action].push(item);
-                    });
-                );
-                const items: Generator<IMenuItem>[] = Object.keys(foundActions).map(action=>{
-                    return context.getActionHandler(action, foundActions[action]).getUI?.();
-                }).filter(ui=>ui);
-                stack.push(new Menu(generatorArrayToGenerator(items)));
-            };
-
-            registerHandler("tab", handler);
-            return ()=>removeHandler("tab", handler);
-        }, []);
-
-        return <div>Bob</div>;
-    },
-    interfaces: {
-        [Interaction]: {
-            [OnExecute]: (menuContext: IMenuContext)=>{
-                alert('Bob!');
-            },
-            [OnSelect]: (selected: boolean)=>void; 
-            [OnSearch]: (search: string, path: string)=>Generator<ISearchResult, undefined>;
-        },
-        [MainContextMenu]: {
-            [OnExecuteContext]:{
-                execute: ()=>{
-                    alert('Bob!')
-                }
-                text: "Amazeballz"
-            },
-            [ICopyFile]: {
-                path: "bob",
-            },
-            [ICopyCompoundFile]: {
-                getSourcePaths(): string[],
-                getDestinationPaths(source: string, destDir: string): string,
-            },
-            [IShellScriptID]: {
-                getPathOfScript(): string
-            }
-        }
-    }
-}
-```
-
-
-```tsx
 ...
 export default declare((appContext) => {
-
     return class Applet implements IApplet {
-        static * getQueryItems(query: IQuery, context: ILMContext): Generator<ISearchResult, undefined> {
-            yield ...;
+        static async getQueryItems(
+            query: IQuery, 
+            context: ILMContext, 
+            push: IMenuItemCallback
+        ): Promise<void> {
+            ...
+            await push(...);
+            ...
         }
         ...
     }
 }
-``` -->
+```
+
+</details>
 
 
 ### Selecting applets
+
+<details>
+<summary>Show detail</summary>
 
 - Applet to select other applets from list (likely with special syntax e.g. `>\s+MyApp`).
 - Each applet has a static function to return applet info.
@@ -779,20 +668,25 @@ export default declare((appContext) => {
             // Example:
             return /F:.+/.test(query.raw);
         }
+
         /** 
          * Can get elements for use in settings and name for app search.
          * Quick Search uses this for name + icon etc.
         */
         static getAppletInfo(): IAppletInfo {
-            //
+            ...
         }
         ...
     }
 });
 ```
 
+</details>
 
 ### How to shelf applications with their state to later return to
+
+<details>
+<summary>Show detail</summary>
 
 - Create new sessions using the normal win+space shortcut.
 - Opens ontop of the current stack.
@@ -802,44 +696,14 @@ export default declare((appContext) => {
     - Remove substack and add again when switching to session.
     - These sessions need to be tracked by something.
 
-### Context menus
-#### Applet Context Menu
-- (tab) Open context menu for selected item
+</details>
 
-
-```tsx
-
-// Item creation with context example
-createMenuItem({
-    text:"crap", 
-    icon:"shit", 
-    content: {
-        item: <ContentLayout date={} name={}>extra data</ContentLayout>,
-        pane: contentPane
-    }, 
-    contextMenu: {
-        items: [createContextItem({
-            icon: "shit",
-            text: "doShit",
-            onClick: ()=>{},
-        }), createContextItemCategory({
-            icon: "shit2",
-            text: "doShit2",
-            children: [createContextItem({
-                icon: "shit3",
-                text: "doShit3",
-                onClick: ()=>{},
-            })],
-            pane: menuPane
-        })] as ReactElement[],
-        pane: menuPane
-    },
-    onClick: ()=>{}
-});
-```
 
 #### Global Context Menu (F1) with mnemonics
 
+TODO: put this in an appropriate section
+<details>
+<summary>Show detail</summary>
 - (esc) &Close
 - (shift+esc) &Hide
 - (win+space) &New Instance
@@ -853,8 +717,13 @@ createMenuItem({
 - About
 - Help
 
+</details>
 
 ### Mnemonics
+
+<details>
+<summary>Show detail</summary>
+
 - Mnemonics to initially be created for alt followed by single key press.
 - Later implementation (unless easy) to do it for a sequence of presses (e.g. alt-f-o for File>Open or Group-Group-Button or whatever)
 - Will use react context to pass visibility information to element and mnemonic class will handle triggering based on activation data.
@@ -880,13 +749,18 @@ const Mnemonic = ({text, key, onTrigger})=>{
 }
 
 // Single key
-shit = <div><Mnemonic text="oranges" key="o" onTrigger={()=>console.log("shit")} /></div>
+buttonText = <div><Mnemonic text="oranges" key="o" onTrigger={()=>console.log("shit")} /></div>
 
 // Multiple keys
-shit = <div><Mnemonic text="oranges" key={["f","o"]} onTrigger={()=>console.log("shit")} /></div>
+buttonText = <div><Mnemonic text="oranges" key={["f","o"]} onTrigger={()=>console.log("shit")} /></div>
 ```
 
+</details>
+
 ### Undo/Redo
+
+<details>
+<summary>Show detail</summary>
 - Interface used for "reversable commands", which are passed to UndoRedoFacility
 - Undo redo is unique to LaunchMenu session (recall win+space launches new session)
 - Undo and Redo commands are available in global context menu
@@ -928,7 +802,7 @@ const waitFor = (cb:(hook:IDataHook)=>boolean)=>getAsync(h=>{
     if(!cb(hook)) h.markIsLoading();
 });
 
-class ComposableCommand implements ICommand {
+class CompoundCommand implements ICommand {
     protected commands: ICommand[];
     protected executingIndex = 0;
     protected state = new Field("ready" as ICommandState);
@@ -972,7 +846,7 @@ class ComposableCommand implements ICommand {
 }
 
 // Suggested people don't use this in general since it's dangerous, don't you know that your toxic!
-class AugmentableComposableCommand extends ComposableCommand {
+class AugmentableCompoundCommand extends CompoundCommand {
     async push(cmd: ICommand){
         if(cmd.getState()!="ready") throw Error("Fuck you");
         this.commands.push(cmd);
@@ -981,7 +855,7 @@ class AugmentableComposableCommand extends ComposableCommand {
         if(state == "ready"){
             // Nothing needs to happen, stuff is ready to be executed
         }else if(state == "executing"){
-            // Just execute the command right away, when the ComposableCommand gets to 'execute' this command, it will just wait until the executed state is reached
+            // Just execute the command right away, when the CompoundCommand gets to 'execute' this command, it will just wait until the executed state is reached
             await cmd.execute();
         } else if(state == "executed"){
             // Make sure the state is still accurate, NOTICE: it's possible that a command goes into executing state after already have been executed
@@ -1023,9 +897,9 @@ let files = [
     {file: "a/b/b.txt", to: "newDest/b.txt"},
     {file: "a/b/c.txt", to: "newDest/c.txt"}
 ];
-facility.execute(new ParallelComposableCommand(files.map(({file, to})=>new FileMoveCommand(file, to))));
+facility.execute(new ParallelCompoundCommand(files.map(({file, to})=>new FileMoveCommand(file, to))));
 
-class ParallelComposableCommand implements ICommand {
+class ParallelCompoundCommand implements ICommand {
     protected commands: ICommand[];
     protected state = new Field("ready" as ICommandState);
 
@@ -1049,8 +923,15 @@ class ParallelComposableCommand implements ICommand {
 }
 ```
 
+</details>
 
 ### Settings
+
+
+<details>
+<summary>Show detail</summary>
+TODO: properly work out this section
+
 * LaunchMenu generates ID (likely the file path), stores in IAppContext and passes this to Applet class.
 * `appContext.getSettings` takes an argument which takes a "schema" for the settings. In this you can pass a default initial value and the UI used to modify the settings value.
 * 
@@ -1119,7 +1000,6 @@ export default declare((appContext: IAppContext)=>{
 
     const crap = settings.crap.children;
     crap.shit.get();
-    settings.get("crap.shit");
     
     return class Applet implements IApplet {
         //...
@@ -1127,8 +1007,7 @@ export default declare((appContext: IAppContext)=>{
 });
 ```
 
-
-
+TODO: move to appropriate seciton
 ```tsx
 type IAppContext = {
     appID: string;
@@ -1138,6 +1017,7 @@ type IAppContext = {
     getSubContext(name: string) : IAppContext;
 }
 ```
+
 ```tsx
 export default declare((appContext: IAppContext)=>{  
     const ColorPickerClass = ColorPicker(appContext.getSubContext("color picker"));
@@ -1148,3 +1028,5 @@ export default declare((appContext: IAppContext)=>{
     }   
 });
 ```
+
+</details>
