@@ -4,7 +4,6 @@ import {IActionHandler} from "./_types/IActionHandler";
 import {IActionCore} from "./_types/IActionCore";
 import {IMenuItem} from "../_types/IMenuItem";
 import {ITagsOverride} from "./_types/ITagsOverride";
-import {IActionBinding} from "./_types/IActionBinding";
 import {createActionHandler} from "./createActionHandler";
 
 /**
