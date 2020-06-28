@@ -299,7 +299,7 @@ type IActionHandlerItems<I> = {
     items: IMenuItem[];
 }[];
 type IActionCore<I, O> = (handlers: IActionHandlerItems<I>) => O;
-class Action<I, O> implements Action<I, O> {
+class Action<I, O> {
     public constructor(
         actionCore: IActionCore<I, O>, 
         defaultTags?: string[]);
