@@ -1,6 +1,14 @@
-import * as fs from "fs";
+import ReactDOM from "react-dom";
+import React from "react";
+import {TestComp} from "./TestComp";
+import {ThemeProvider} from "./styling/theming/ThemeContext";
+import {defaultTheme} from "./styling/theming/defaultTheme";
+import {loadTheme, getTheme} from "./styling/theming/loadTheme";
 
-console.log("I sucks");
-fs.readdir(process.cwd(), (err, files) => {
-    console.log(files);
-});
+loadTheme(defaultTheme);
+ReactDOM.render(
+    <ThemeProvider>
+        <TestComp />
+    </ThemeProvider>,
+    document.getElementById("root")
+);

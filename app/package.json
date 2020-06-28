@@ -44,10 +44,12 @@
         }
     },
     "dependencies": {
+        "@emotion/core": "^10.0.28",
         "@fluentui/react": "^7.121.4",
         "@material-ui/icons": "^4.9.1",
         "@uifabric/icons": "^7.3.55",
         "color": "^3.1.2",
+        "model-react": "^3.0.2",
         "react": "^16.13.0",
         "react-dom": "^16.13.0"
     },
@@ -73,7 +75,6 @@
         "webpack": "^4.43.0",
         "webpack-cli": "^3.3.12",
         "webpack-dev-server": "^3.11.0",
-        "webpack-fix-default-import-plugin": "^1.0.3",
         "write-file-webpack-plugin": "^4.5.1"
     }
 }

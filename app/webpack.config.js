@@ -5,7 +5,6 @@ const src = path.join(process.cwd(), "src");
 const NodemonPlugin = require("nodemon-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const WriteFilePlugin = require("write-file-webpack-plugin");
-const FixDefaultImportPlugin = require("webpack-fix-default-import-plugin");
 
 const rules = [
     {
@@ -50,7 +49,6 @@ module.exports = env => {
                 path: build,
             },
             plugins: [
-                new FixDefaultImportPlugin(),
                 new WriteFilePlugin(),
                 new CopyPlugin({
                     patterns: [
@@ -83,7 +81,6 @@ module.exports = env => {
                 path: build,
             },
             plugins: [
-                new FixDefaultImportPlugin(),
                 new WriteFilePlugin(),
                 new NodemonPlugin({
                     script: path.join(build, "index.js"),
