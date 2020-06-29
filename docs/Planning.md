@@ -231,7 +231,7 @@ class Menu {
     public constructor(maxItemCount?: number){}
     public addItem(item: IPrioritizedItem): void;
     public addItem(item: IMenuItem, index:number = Infinity): void;
-    public removeItem(item: IPrioritizedItem): void;
+    public removeItem(item: IPrioritizedMenuItem): void;
     public removeItem(item: IMenuItem): void;
     
     public setSelected(item: IMenuItem, selected: boolean = true): void;
