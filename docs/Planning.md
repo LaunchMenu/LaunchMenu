@@ -162,6 +162,7 @@ export default declare((appContext) => {
 ```tsx
 type ILMContext = {
     panes: IPaneStacks
+    inputs: IListenerStack
 }
 
 type IStackItem = FC<{width: number, height: number, onTop: boolean, index: number}>;
@@ -183,6 +184,19 @@ type IPaneStacks = {
     search: IViewStack,
     menu: IViewStack,
     content: IViewStack,
+}
+
+type IKeyInput = {...};
+type IInputListener = (input: IKeyInput)=>Promise<boolean|undefined>;
+type IListenerStack = {
+    // Transition speed and existence controlled by settings
+    push(listener: IInputListener | IListenerStack,: IContentID; 
+    insert(listener: IInputListener | IListenerStack): IContentID; // Advise rarely used
+    remove(ID: IContentID): void;
+    pop(ID?: IContentID): void; // Only pop if ID is topmost item
+
+    emit(input: IKeyInput): void;
+    
 }
 ```
 ```tsx
@@ -1030,3 +1044,31 @@ export default declare((appContext: IAppContext)=>{
 ```
 
 </details>
+
+### Theme and styling
+
+We have the best styles, modifiable in settings.
+
+```js
+{
+    colors: {
+        primary,
+        secondary,
+        tertiary,
+        bgPrimary,
+        bgSecondary,
+        bgTertiary,
+        
+        fontPrimary,
+        fontSecondary,
+        fontTertiary,
+        fontBgPrimary,
+        fontBgSecondary,
+        fontBgTertiary              // Description (or other less important stuff) color by using lower opacity
+    },
+    compatibility: {
+        highlight: [...],           // To be gradient between primary, secondary and tertiary                          // THINK OF THE VIDEO JOHN \\
+        neutral: [...]              // To be gradient bgPrimary, bgSecondary and bgTertiary to black (default theme)
+    }
+}
+```
