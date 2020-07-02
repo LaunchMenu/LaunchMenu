@@ -1,7 +1,6 @@
 import {Action} from "../actions/Action";
 import {IActionHandlerItems} from "../actions/_types/IActionHandlerItems";
 import {createActionHandler} from "../actions/createActionHandler";
-import {IActionHandler} from "../actions/_types/IActionHandler";
 import {IMenuItem} from "../_types/IMenuItem";
 import {IActionBinding} from "../actions/_types/IActionBinding";
 

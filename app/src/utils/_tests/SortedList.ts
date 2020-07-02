@@ -48,7 +48,34 @@ describe("SortedList", () => {
                 expect(index).toBe(-1);
             });
         });
-        describe("Finds item by check callback", () => {});
+        describe("Finds item by check callback", () => {
+            const data = [{k: 5}, {k: 3}, {k: 6}, {k: 2}, {k: 7}, {k: 4}, {k: 1}];
+            it("Finds the item if present", () => {
+                const list = new SortedList(
+                    (a: {k: number}, b: {k: number}) => a.k < b.k,
+                    data
+                );
+                const l = 6;
+                const item = list.find(({k}) => (l < k ? -1 : l > k ? 1 : 0));
+                expect(item).toEqual({index: 5, item: {k: 6}});
+
+                const list2 = new SortedList(
+                    (a: {k: number}, b: {k: number}) => a.k > b.k,
+                    data
+                );
+                const item2 = list2.find(({k}) => (l > k ? -1 : l < k ? 1 : 0));
+                expect(item2).toEqual({index: 1, item: {k: 6}});
+            });
+            it("Returns -1 if absent", () => {
+                const list = new SortedList(
+                    (a: {k: number}, b: {k: number}) => a.k < b.k,
+                    data
+                );
+                const l = 10;
+                const item = list.find(({k}) => (l < k ? -1 : l > k ? 1 : 0));
+                expect(item).toEqual({index: -1});
+            });
+        });
     });
     describe("SortedList.add", () => {
         let list: SortedList<number>;

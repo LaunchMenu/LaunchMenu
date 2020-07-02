@@ -40,23 +40,29 @@ export class SortedList<T> {
      * @param item The item to look for
      * @returns The index if found, or -1 otherwise
      */
-    public find(checkItem: (item: T) => -1 | 0 | 1): {index: number; item: T};
+    public find(
+        checkItem: (item: T) => -1 | 0 | 1
+    ): {index: -1} | {index: number; item: T};
     public find(
         checkItem: ((item: T) => -1 | 0 | 1) | T
-    ): number | {index: number; item: T} {
+    ): number | {index: number; item: T} | {index: -1} {
         const l = this.list.get(null);
         let start = 0;
         let end = l.length - 1;
         if (checkItem instanceof Function) {
-            return 1; // TODO: add implementation
+            while (start < end) {
+                const middle = Math.floor((start + end) / 2);
+                const s = checkItem(l[middle]);
+                if (s == 0) return {index: middle, item: l[middle]};
+                else if (s == 1) start = middle + 1;
+                else end = middle;
+            }
+            return {index: -1};
         } else {
             while (start < end) {
-                let middle = Math.floor((start + end) / 2);
-                if (this.condition(l[middle], checkItem)) {
-                    start = middle + 1;
-                } else {
-                    end = middle;
-                }
+                const middle = Math.floor((start + end) / 2);
+                if (this.condition(l[middle], checkItem)) start = middle + 1;
+                else end = middle;
             }
             return l[start] == checkItem ? start : -1;
         }
@@ -115,14 +121,16 @@ export class SortedList<T> {
     /**
      * Removes the given items from the list (more efficient than removing one at a time)
      * @param items The items to be removed
+     * @returns Whether any items were remove
      */
-    public remove(items: T[]): void;
+    public remove(items: T[]): boolean;
     /**
      * Removes the given item from the list
      * @param item The item to be removed
+     * @returns Whether the item was removed
      */
-    public remove(item: T): void;
-    public remove(items: T[] | T) {
+    public remove(item: T): boolean;
+    public remove(items: T[] | T): void | boolean {
         const curItems = this.list.get(null);
         let out: T[] = new Array(curItems.length);
         let n = 0;
@@ -142,6 +150,7 @@ export class SortedList<T> {
 
         out.length = n;
         this.list.set(out);
+        return out.length < curItems.length;
     }
 
     /**
