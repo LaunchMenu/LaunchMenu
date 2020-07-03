@@ -107,7 +107,10 @@ export class SortedList<T> {
             let n = 0;
             let found = false;
             for (var i = 0; i < out.length; i++) {
-                if (!found && !this.condition(curItems[n], items)) {
+                if (
+                    !found &&
+                    (n >= curItems.length || !this.condition(curItems[n], items))
+                ) {
                     found = true;
                     out[i] = items;
                 } else {

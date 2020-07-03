@@ -1,4 +1,5 @@
 import {IGenerator} from "./_types/IGenerator";
+import {Field, IDataHook} from "model-react";
 
 /**
  * A class used to extract items from a (custom) generator
@@ -7,9 +8,9 @@ export class GeneratorStreamExtractor<T> {
     protected generator: IGenerator<T>;
     protected itemCallback: (item: T) => void;
 
-    protected started: boolean;
-    protected paused: boolean;
-    protected stopped: boolean;
+    protected started = new Field(false);
+    protected paused = new Field(false);
+    protected stopped = new Field(false);
 
     protected sentStopSignal: boolean = false;
     protected pausedItem: T | null; // The last item caught after pausing
@@ -34,21 +35,21 @@ export class GeneratorStreamExtractor<T> {
      * @returns A promise that resolves when extraction finished or was stopped
      */
     public start(): Promise<void> {
-        if (this.stopped)
+        if (this.stopped.get(null))
             throw Error(
                 "Item extraction can't continue after having finished or been stopped"
             );
 
-        if (!this.started) {
+        if (!this.started.get(null)) {
             // If extraction hasn't started yet, start it
-            this.started = true;
+            this.started.set(true);
             this.generatorResult = new Promise(res => (this.resolveStart = res));
             this.generator(item => {
-                if (this.paused) {
+                if (this.paused.get(null)) {
                     // Don't pass item to callback since generation was already paused
                     this.pausedItem = item;
                     return new Promise(res => (this.continueExtraction = res));
-                } else if (!this.stopped) {
+                } else if (!this.stopped.get(null)) {
                     // On standard stream mode, forward the item and return a resolved promise
                     this.itemCallback(item);
                     return Promise.resolve(false);
@@ -61,15 +62,15 @@ export class GeneratorStreamExtractor<T> {
                     return new Promise<false>(() => {}); // A promise that never resolves
                 }
             }).then(() => {
-                this.stopped = true;
+                this.stopped.set(true);
                 if (this.resolveStart) {
                     this.resolveStart();
                     this.resolveStart = null;
                 }
             });
-        } else if (this.paused) {
+        } else if (this.paused.get(null)) {
             // Continue execution
-            this.paused = false;
+            this.paused.set(false);
 
             if (this.pausedItem) this.itemCallback(this.pausedItem);
             if (this.continueExtraction) {
@@ -85,20 +86,20 @@ export class GeneratorStreamExtractor<T> {
      * Pauses item extraction, which may be continued later
      */
     public pause(): void {
-        if (this.started && !this.stopped) this.paused = true;
+        if (this.started.get(null) && !this.stopped.get(null)) this.paused.set(true);
     }
 
     /**
      * Stops item extraction, which can't be continued later
      */
     public stop(): void {
-        this.stopped = true;
+        this.stopped.set(true);
         if (this.resolveStart) {
             this.resolveStart();
             this.resolveStart = null;
         }
-        if (this.paused) {
-            this.paused = false;
+        if (this.paused.get(null)) {
+            this.paused.set(false);
             if (this.continueExtraction) {
                 this.sentStopSignal = true;
                 this.continueExtraction(true);
@@ -110,25 +111,28 @@ export class GeneratorStreamExtractor<T> {
     // State getters
     /**
      * Retrieves whether the item extraction has started
+     * @param hook The hook to subscribe to changes
      * @returns Whether started
      */
-    public hasStarted(): boolean {
-        return this.started;
+    public hasStarted(hook: IDataHook = null): boolean {
+        return this.started.get(hook);
     }
 
     /**
      * Retrieves whether item extraction has been paused
+     * @param hook The hook to subscribe to changes
      * @returns Whether paused
      */
-    public isPaused(): boolean {
-        return this.paused;
+    public isPaused(hook: IDataHook = null): boolean {
+        return this.paused.get(hook);
     }
 
     /**
      * Retrieves whether all items were extracted from the generator
+     * @param hook The hook to subscribe to changes
      * @returns Whether the generator extracted all items, or the extractor was stopped
      */
-    public hasFinished(): boolean {
-        return this.stopped;
+    public hasFinished(hook: IDataHook = null): boolean {
+        return this.stopped.get(hook);
     }
 }

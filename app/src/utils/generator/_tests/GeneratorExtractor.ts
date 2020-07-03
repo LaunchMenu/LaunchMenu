@@ -81,4 +81,72 @@ describe("GeneratorExtractor", () => {
             expect(await generator.next()).toEqual(undefined);
         });
     });
+
+    describe("GeneratorExtractor.hasStarted", () => {
+        let generator: GeneratorExtractor<number>;
+        beforeEach(() => {
+            generator = new GeneratorExtractor(async cb => {
+                for (let i = 0; i < 5; i++) {
+                    await cb(i);
+                }
+            });
+        });
+
+        it("Properly indicates whether the first item has been extracted", () => {
+            expect(generator.hasStarted()).toBeFalsy();
+            generator.next();
+            expect(generator.hasStarted()).toBeTruthy();
+        });
+        it("Can be subscribed to", () => {
+            const cb = jest.fn(() => {});
+            expect(
+                generator.hasStarted({
+                    call: cb,
+                    registerRemover: () => {},
+                })
+            ).toBeFalsy();
+            expect(cb.mock.calls.length).toBe(0);
+            generator.next();
+            expect(cb.mock.calls.length).toBe(1);
+        });
+    });
+
+    describe("GeneratorExtractor.hasFinished", () => {
+        let generator: GeneratorExtractor<number>;
+        beforeEach(() => {
+            generator = new GeneratorExtractor(async cb => {
+                for (let i = 0; i < 5; i++) {
+                    await cb(i);
+                }
+            });
+        });
+
+        it("Properly indicates whether the last item is known to be extracted", async () => {
+            await generator.next();
+            await generator.next();
+            await generator.next();
+            await generator.next();
+            await generator.next();
+            expect(generator.hasFinished()).toBeFalsy();
+            expect(await generator.next()).toEqual(undefined);
+            expect(generator.hasFinished()).toBeTruthy();
+        });
+        it("Can be subscribed to", async () => {
+            const cb = jest.fn(() => {});
+            await generator.next();
+            await generator.next();
+            await generator.next();
+            await generator.next();
+            await generator.next();
+            expect(
+                generator.hasFinished({
+                    call: cb,
+                    registerRemover: () => {},
+                })
+            ).toBeFalsy();
+            expect(cb.mock.calls.length).toBe(0);
+            await generator.next();
+            expect(cb.mock.calls.length).toBe(1);
+        });
+    });
 });

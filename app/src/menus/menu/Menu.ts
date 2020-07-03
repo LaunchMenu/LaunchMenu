@@ -71,7 +71,7 @@ export class Menu {
      * @param index The index to add the item at (defaults to the last index; Infinity)
      * @param batchInsert Whether to batch multiple items before inserting (defaults to false)
      */
-    public addItem(item: IMenuItem, index?: number): void;
+    public addItem(item: IMenuItem, index?: number, batchInsert?: boolean): void;
     public addItem(
         item: IMenuItem | IPrioritizedMenuItem,
         index: number | boolean | undefined,
@@ -81,16 +81,30 @@ export class Menu {
         // Normalize the item
         if (!("priority" in item)) {
             const items = this.items.get();
+
+            // Find the correct priority to insert the item at the specified index
             if (items.length > 0) {
-                const da =
-                    items[
-                        Math.max(
-                            0,
-                            Math.min((index as number) || Infinity, items.length - 1)
-                        )
-                    ];
-                item = {item: item, priority: da.priority * 0.999};
-            } else item = {item: item, priority: 1e6};
+                const clampedIndex = Math.max(
+                    0,
+                    Math.min(
+                        index == undefined ? Infinity : (index as number),
+                        items.length
+                    )
+                );
+                const itemBefore = items[clampedIndex - 1];
+                const itemAfter = items[clampedIndex];
+                if (itemBefore && itemAfter) {
+                    item = {
+                        item: item,
+                        priority: (itemBefore.priority + itemAfter.priority) / 2,
+                    };
+                } else if (itemBefore) {
+                    item = {item: item, priority: itemBefore.priority - 1e5};
+                } else if (itemAfter) {
+                    item = {item: item, priority: itemAfter.priority + 1e5};
+                } else item = {item: item, priority: 1e5};
+            } else item = {item: item, priority: 1e5};
+
             batch = batchInsert || false;
         } else {
             batch = index as boolean;
@@ -121,20 +135,26 @@ export class Menu {
     /**
      * Adds all the items from the given array
      * @param items The generator to get items from
+     * @param batchInsert Whether to batch multiple items before inserting (defaults to false)
      */
-    public addItems(items: IMenuItem[]): void;
+    public addItems(items: IMenuItem[], batchInsert?: boolean): void;
     /**
      * Adds items from the given generator function
      * @param generator The generator to get items from
+     * @param batchInsert Whether to batch multiple items before inserting (defaults to false)
      * @returns A promise that resolves when all items are added, or the generator is canceled
      */
-    public addItems(generator: (cb: IMenuItemCallback) => Promise<void>): Promise<void>;
     public addItems(
-        items: IMenuItem[] | ((cb: IMenuItemCallback) => Promise<void>)
+        generator: (cb: IMenuItemCallback) => Promise<void>,
+        batchInsert?: boolean
+    ): Promise<void>;
+    public addItems(
+        items: IMenuItem[] | ((cb: IMenuItemCallback) => Promise<void>),
+        batchInsert?: boolean
     ): void | Promise<void> {
         if (items instanceof Function) {
             const generator = new GeneratorStreamExtractor(items, item =>
-                this.addItem(item)
+                this.addItem(item, batchInsert)
             );
 
             this.generators.set([...this.generators.get(null), generator]);
@@ -146,7 +166,7 @@ export class Menu {
                     this.generators.set(generators.filter(gen => gen == generator));
             });
         } else {
-            items.forEach(item => this.addItem(item));
+            items.forEach(item => this.addItem(item, Infinity, batchInsert));
         }
     }
 
@@ -206,7 +226,7 @@ export class Menu {
      * @param hook The hook to subscribe to changes
      * @returns The menu items
      */
-    public getItems(hook: IDataHook): IMenuItem[] {
+    public getItems(hook: IDataHook = null): IMenuItem[] {
         this.flushItemBatch();
         return this.items.get(hook).map(({item}) => item);
     }
@@ -216,7 +236,7 @@ export class Menu {
      * @param hook The hook to subscribe to changes
      * @returns The selected menu items
      */
-    public getSelected(hook: IDataHook): IMenuItem[] {
+    public getSelected(hook: IDataHook = null): IMenuItem[] {
         return this.selected.get(hook);
     }
 
@@ -225,7 +245,7 @@ export class Menu {
      * @param hook The hook to subscribe to changes
      * @returns The cursor item
      */
-    public getCursor(hook: IDataHook): IMenuItem | null {
+    public getCursor(hook: IDataHook = null): IMenuItem | null {
         const cursor = this.cursor.get(hook);
         if (!cursor) {
             // If no cursor is selected, select the first index by default
@@ -241,7 +261,7 @@ export class Menu {
      * @returns The generators
      */
     public getGenerators(
-        hook: IDataHook
+        hook: IDataHook = null
     ): GeneratorStreamExtractor<IPrioritizedMenuItem>[] {
         return this.generators.get(hook);
     }
