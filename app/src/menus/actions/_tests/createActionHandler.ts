@@ -1,8 +1,8 @@
-import {IAction} from "../actions/_types/IAction";
-import {IActionHandlerCore} from "../actions/_types/IActionHandlerCore";
-import {createActionHandler} from "../actions/createActionHandler";
-import {IMenuItem} from "../_types/IMenuItem";
-import {IActionHandler} from "../actions/_types/IActionHandler";
+import {IAction} from "../_types/IAction";
+import {IActionHandlerCore} from "../_types/IActionHandlerCore";
+import {createActionHandler} from "../createActionHandler";
+import {IMenuItem} from "../../_types/IMenuItem";
+import {IActionHandler} from "../_types/IActionHandler";
 
 const createItem = (data: string, handler: IActionHandler<any, any, any>): IMenuItem => ({
     view: null as any,

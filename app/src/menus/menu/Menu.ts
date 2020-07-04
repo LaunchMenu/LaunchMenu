@@ -1,173 +1,105 @@
 import {IMenuItem} from "../_types/IMenuItem";
-import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
 import {IDataHook, Field} from "model-react";
-import {SortedList} from "../../utils/SortedList";
-import {IMenuItemCallback} from "./_types/IMenuItemCallback";
-import {GeneratorStreamExtractor} from "../../utils/generator/GeneratorStreamExtractor";
+import {IMenuCategoryConfig} from "./_types/IMenuCategoryConfig";
+import {TFull} from "../../_types/TFull";
+import {ICategory} from "../category/_types/ICategory";
+import {getMenuCategory} from "../category/getCategoryAction";
 
 /**
  * A menu class to control menu items and their state
  */
 export class Menu {
-    protected maxItemCount?: number;
+    protected categoryConfig: TFull<IMenuCategoryConfig>;
 
     // Tracking menu items
-    protected items = new SortedList<IPrioritizedMenuItem>(
-        ({priority: a}, {priority: b}) => a > b
-    );
+    protected categories = [{items: [], category: undefined}] as {
+        items: IMenuItem[];
+        category: ICategory | undefined;
+    }[];
+    protected items = new Field([] as IMenuItem[]);
     protected cursor = new Field(null as IMenuItem | null);
     protected selected = new Field([] as IMenuItem[]);
 
-    // Batch insert items data
-    protected insertingItems: IPrioritizedMenuItem[] = [];
-    protected timeoutID: NodeJS.Timeout | null;
-
-    // Item generator data
-    protected generators = new Field(
-        [] as GeneratorStreamExtractor<IPrioritizedMenuItem>[]
-    );
-
     /**
      * Creates a new menu
-     * @param maxItemCount The maximum number of items to store (defaults to infinite)
+     * @param categoryConfig The configuration for category options
      */
-    public constructor(maxItemCount?: number);
+    public constructor(categoryConfig?: IMenuCategoryConfig);
+
     /**
      * Creates a new menu
      * @param items The initial items to store
-     * @param maxItemCount  The maximum number of items to store (defaults to infinite)
+     * @param categoryConfig The configuration for category options
      */
+    public constructor(items: IMenuItem[], categoryConfig?: IMenuCategoryConfig);
     public constructor(
-        items: IMenuItem[] | ((cb: IMenuItemCallback) => Promise<void>),
-        maxItemCount?: number
-    );
-    public constructor(
-        items:
-            | IMenuItem[]
-            | ((cb: IMenuItemCallback) => Promise<void>)
-            | number
-            | undefined,
-        maxItemCount?: number
+        items: IMenuItem[] | IMenuCategoryConfig | undefined,
+        categoryConfig?: IMenuCategoryConfig
     ) {
-        if (typeof items == "number") {
-            this.maxItemCount = items;
+        let config: IMenuCategoryConfig | undefined;
+        if (items instanceof Array) {
+            config = categoryConfig;
         } else {
-            if (items instanceof Array) this.addItems(items);
-            else if (items instanceof Function) this.addItems(items);
-            this.maxItemCount = maxItemCount;
+            config = items;
         }
+
+        // Create the category config
+        this.categoryConfig = {
+            getCategory: config?.getCategory || getMenuCategory,
+            sortCategories:
+                config?.sortCategories ||
+                (categories => categories.map(({category}) => category)),
+            maxCategoryItemCount: config?.maxCategoryItemCount || Infinity,
+        };
+
+        // Add the default items
+        if (items instanceof Array) this.addItems(items);
     }
 
     // Item management
     /**
-     * Adds an item to the the menu
-     * @param item The item to add with its priority
-     * @param batchInsert Whether to batch multiple items before inserting (defaults to false)
-     */
-    public addItem(item: IPrioritizedMenuItem, batchInsert?: boolean): void;
-    /**
      * Adds an item to the menu
      * @param item The item to add
-     * @param index The index to add the item at (defaults to the last index; Infinity)
-     * @param batchInsert Whether to batch multiple items before inserting (defaults to false)
+     * @param index The index to add the item at within its category (defaults to the last index; Infinity)
      */
-    public addItem(item: IMenuItem, index?: number, batchInsert?: boolean): void;
-    public addItem(
-        item: IMenuItem | IPrioritizedMenuItem,
-        index: number | boolean | undefined,
-        batchInsert?: boolean
-    ) {
-        let batch: boolean;
-        // Normalize the item
-        if (!("priority" in item)) {
-            const items = this.items.get();
+    public addItem(item: IMenuItem, index: number = Infinity) {
+        const category = this.categoryConfig.getCategory(item);
+        const categoryIndex = this.categories.findIndex(({category: c}) => c == category);
 
-            // Find the correct priority to insert the item at the specified index
-            if (items.length > 0) {
-                const clampedIndex = Math.max(
-                    0,
-                    Math.min(
-                        index == undefined ? Infinity : (index as number),
-                        items.length
-                    )
-                );
-                const itemBefore = items[clampedIndex - 1];
-                const itemAfter = items[clampedIndex];
-                if (itemBefore && itemAfter) {
-                    item = {
-                        item: item,
-                        priority: (itemBefore.priority + itemAfter.priority) / 2,
-                    };
-                } else if (itemBefore) {
-                    item = {item: item, priority: itemBefore.priority - 1e5};
-                } else if (itemAfter) {
-                    item = {item: item, priority: itemAfter.priority + 1e5};
-                } else item = {item: item, priority: 1e5};
-            } else item = {item: item, priority: 1e5};
-
-            batch = batchInsert || false;
+        // Add the item to a new or existing category
+        if (categoryIndex == -1) {
+            this.categories.push({category, items: [item]});
         } else {
-            batch = index as boolean;
+            const {items} = this.categories[categoryIndex];
+            if (items.length >= this.categoryConfig.maxCategoryItemCount) return;
+            items.splice(index, 0, item);
         }
 
-        // Add the item directly or add to the batch to be added later
-        if (batch) {
-            this.insertingItems.push(item);
-            if (!this.timeoutID)
-                this.timeoutID = setTimeout(() => this.flushItemBatch(), 100);
-        } else {
-            this.items.add(item, this.maxItemCount);
-        }
+        this.updateItemsList();
     }
 
     /**
-     * Flushes the batch of items that are currently inserting to the main items list
-     */
-    protected flushItemBatch(): void {
-        if (!this.insertingItems.length) return;
-        if (this.timeoutID) clearTimeout(this.timeoutID);
-        this.timeoutID = null;
-        const items = this.insertingItems;
-        this.insertingItems = [];
-        this.items.add(items, this.maxItemCount);
-    }
-
-    /**
-     * Adds all the items from the given array
+     * Adds all the items from the given array at once (slightly more efficient than adding one by one)
      * @param items The generator to get items from
-     * @param batchInsert Whether to batch multiple items before inserting (defaults to false)
      */
-    public addItems(items: IMenuItem[], batchInsert?: boolean): void;
-    /**
-     * Adds items from the given generator function
-     * @param generator The generator to get items from
-     * @param batchInsert Whether to batch multiple items before inserting (defaults to false)
-     * @returns A promise that resolves when all items are added, or the generator is canceled
-     */
-    public addItems(
-        generator: (cb: IMenuItemCallback) => Promise<void>,
-        batchInsert?: boolean
-    ): Promise<void>;
-    public addItems(
-        items: IMenuItem[] | ((cb: IMenuItemCallback) => Promise<void>),
-        batchInsert?: boolean
-    ): void | Promise<void> {
-        if (items instanceof Function) {
-            const generator = new GeneratorStreamExtractor(items, item =>
-                this.addItem(item, batchInsert)
+    public addItems(items: IMenuItem[]): void {
+        items.forEach(item => {
+            const category = this.categoryConfig.getCategory(item);
+            const categoryIndex = this.categories.findIndex(
+                ({category: c}) => c == category
             );
 
-            this.generators.set([...this.generators.get(null), generator]);
+            // Add the item to a new or existing category
+            if (categoryIndex == -1) {
+                this.categories.push({category, items: [item]});
+            } else {
+                const {items} = this.categories[categoryIndex];
+                if (items.length >= this.categoryConfig.maxCategoryItemCount) return;
+                items.splice(Infinity, 0, item);
+            }
+        });
 
-            return generator.start().then(() => {
-                // Remove the generator when it's finished
-                const generators = this.generators.get(null);
-                if (generators.includes(generator))
-                    this.generators.set(generators.filter(gen => gen == generator));
-            });
-        } else {
-            items.forEach(item => this.addItem(item, Infinity, batchInsert));
-        }
+        this.updateItemsList();
     }
 
     /**
@@ -175,25 +107,74 @@ export class Menu {
      * @param item The item to remove
      * @returns Whether the item was in the menu (and now removed)
      */
-    public removeItem(item: IPrioritizedMenuItem): boolean;
-    /**
-     * Removes an item from the menu
-     * @param item The item to remove
-     * @returns Whether the item was in the menu (and now removed)
-     */
-    public removeItem(item: IMenuItem): boolean;
-    public removeItem(item: IMenuItem | IPrioritizedMenuItem): boolean {
-        if (!("priority" in item)) {
-            const items = this.items.get();
-            const index = items.findIndex(it => it.item == item);
+    public removeItem(item: IMenuItem): boolean {
+        const category = this.categoryConfig.getCategory(item);
+        const categoryIndex = this.categories.findIndex(({category: c}) => c == category);
+
+        // Add the item to a new or existing category
+        if (categoryIndex != -1) {
+            const {items} = this.categories[categoryIndex];
+            const index = items.indexOf(item);
             if (index != -1) {
-                this.items.removeIndex(index);
+                items.splice(index, 1);
+                if (items.length == 0) this.categories.splice(categoryIndex, 1);
+
+                this.updateItemsList();
                 return true;
             }
-        } else {
-            return this.items.remove(item);
+        }
+
+        return false;
+    }
+
+    /**
+     * Removes all the items from the given array at once (slightly more efficient than removing one by one)
+     * @param item The item to remove
+     * @returns Whether any item was in the menu (and now removed)
+     */
+    public removeItems(items: IMenuItem[]): boolean {
+        let altered = false;
+        items.forEach(item => {
+            const category = this.categoryConfig.getCategory(item);
+            const categoryIndex = this.categories.findIndex(
+                ({category: c}) => c == category
+            );
+
+            // Add the item to a new or existing category
+            if (categoryIndex != -1) {
+                const {items} = this.categories[categoryIndex];
+                const index = items.indexOf(item);
+                if (index != -1) {
+                    items.splice(index, 1);
+                    if (items.length == 0) this.categories.splice(categoryIndex, 1);
+
+                    altered = true;
+                }
+            }
+        });
+
+        if (altered) {
+            this.updateItemsList();
+            return true;
         }
         return false;
+    }
+
+    /**
+     * Synchronizes the item list to be up to date with the categories data
+     */
+    protected updateItemsList(): void {
+        const order = this.categoryConfig.sortCategories(this.categories);
+
+        // Combine the items and categories into a single list
+        const items = [] as IMenuItem[];
+        order.forEach(category => {
+            const categoryData = this.categories.find(({category: c}) => c == category);
+            if (categoryData)
+                if (category) items.push(category.item, ...categoryData.items);
+                else items.push(...categoryData.items);
+        });
+        this.items.set(items);
     }
 
     /**
@@ -227,8 +208,7 @@ export class Menu {
      * @returns The menu items
      */
     public getItems(hook: IDataHook = null): IMenuItem[] {
-        this.flushItemBatch();
-        return this.items.get(hook).map(({item}) => item);
+        return this.items.get(hook);
     }
 
     /**
@@ -253,16 +233,5 @@ export class Menu {
         } else {
             return cursor;
         }
-    }
-
-    /**
-     * Retrieves the generators that are currently adding items to this menu
-     * @param hook The hook to subscribe to changes
-     * @returns The generators
-     */
-    public getGenerators(
-        hook: IDataHook = null
-    ): GeneratorStreamExtractor<IPrioritizedMenuItem>[] {
-        return this.generators.get(hook);
     }
 }

@@ -6,4 +6,4 @@ export type IActionCore<I, O> =
      * @param handlers The handlers and items to use
      * @returns The action execution function(s)
      */
-    (handlers: IActionHandlerItems<any, I>) => O;
+    (handlers: IActionHandlerItems<I, any>) => O;
