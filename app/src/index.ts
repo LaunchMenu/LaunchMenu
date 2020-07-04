@@ -21,3 +21,5 @@ function createWindow() {
         win.loadURL(Path.join(__dirname, page));
     }
 }
+
+app.whenReady().then(createWindow);

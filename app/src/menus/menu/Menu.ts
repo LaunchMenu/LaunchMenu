@@ -234,6 +234,5 @@ export class Menu {
         } else {
             return cursor;
         }
-        //poop
     }
 }

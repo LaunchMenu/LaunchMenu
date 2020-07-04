@@ -6,11 +6,11 @@ export const MenuItemIcon: FC<{icon: string}> = ({icon}) => (
     <Box
         width={20}
         css={{
-            backgroundImage: icon,
+            backgroundImage: `url(${icon})`,
             backgroundRepeat: "no-repeat",
-            backgroundSize: "fit",
-            color: "orange",
-        }}>
-        Poop
-    </Box>
+            backgroundSize: "contain",
+            width: "100%",
+            height: "100%",
+        }}
+    />
 );

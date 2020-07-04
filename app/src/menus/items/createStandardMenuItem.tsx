@@ -9,6 +9,7 @@ import {IActionBinding} from "../actions/_types/IActionBinding";
 import {MenuItemFrame} from "./components/MenuItemFrame";
 import {MenuItemIcon} from "./components/MenuItemIcon";
 import {Truncated} from "../../components/Truncated";
+import {MenuItemLayout} from "./components/MenuItemLayout";
 
 export function createStandardMenuItem({
     name,
@@ -23,19 +24,22 @@ export function createStandardMenuItem({
     if (onCursor) bindings.push(onCursorHandler.createBinding(onCursor));
 
     return {
-        view: ({isSelected, isCursor, item, menu}) => (
-            <MenuItemFrame isSelected={isSelected} isCursor={isCursor}>
-                <Box display="flex">
-                    {icon &&
-                        (typeof icon == "string" ? <MenuItemIcon icon={icon} /> : icon)}
-                    <Box flexGrow={1}>
-                        {name}
-                        <Truncated title={description}>{description}</Truncated>
-                    </Box>
-                </Box>
+        view: props => (
+            <MenuItemFrame {...props} onExecute={onExecute}>
+                <MenuItemLayout
+                    icon={
+                        icon &&
+                        (typeof icon == "string" ? <MenuItemIcon icon={icon} /> : icon)
+                    }
+                    content={
+                        <>
+                            {name}
+                            <Truncated title={description}>{description}</Truncated>
+                        </>
+                    }
+                />
             </MenuItemFrame>
         ),
-
         actionBindings: bindings,
     };
 }

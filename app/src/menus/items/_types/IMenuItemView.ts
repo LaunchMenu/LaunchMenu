@@ -25,5 +25,5 @@ export type IMenuItemView = FC<{
     /**
      * Views won't have any children
      */
-    children: never;
+    children?: never;
 }>;
