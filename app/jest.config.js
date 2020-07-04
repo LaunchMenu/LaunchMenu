@@ -4,7 +4,7 @@ module.exports = {
         "^.+\\.tsx?$": "ts-jest",
     },
     testRegex: ["./_tests/.*(?<!\\.helper|\\.setup)\\.tsx?"], // Any ts or tsx file in a _tests folder that doesn't end with .helper.ts
-    verbose: true,
+    verbose: false,
     globals: {
         "ts-jest": {
             tsConfig: "tsconfig.json",

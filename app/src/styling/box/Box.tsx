@@ -36,9 +36,9 @@ export const Box = (props: IBoxProps) => {
                     className={
                         css(cssProps) +
                         " " +
-                        domAttributes.className +
+                        css(props.css) +
                         " " +
-                        css(props.css)
+                        (domAttributes.className || "")
                     }
                 />
             )}

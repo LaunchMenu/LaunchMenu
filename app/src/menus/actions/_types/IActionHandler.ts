@@ -1,7 +1,7 @@
-import {IMenuItem} from "../../_types/IMenuItem";
 import {IAction} from "./IAction";
 import {IActionBinding} from "./IActionBinding";
 import {ITagsOverride} from "./ITagsOverride";
+import {IMenuItem} from "../../items/_types/IMenuItem";
 
 /**
  * A handler for an action, specifying a certain implementation for the action

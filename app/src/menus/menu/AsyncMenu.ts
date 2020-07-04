@@ -1,9 +1,9 @@
-import {IMenuItem} from "../_types/IMenuItem";
 import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
 import {IDataHook, Field} from "model-react";
 import {SortedList} from "../../utils/SortedList";
 import {IMenuItemCallback} from "./_types/IMenuItemCallback";
 import {GeneratorStreamExtractor} from "../../utils/generator/GeneratorStreamExtractor";
+import {IMenuItem} from "../items/_types/IMenuItem";
 
 /**
  * A menu class to control menu items and their state

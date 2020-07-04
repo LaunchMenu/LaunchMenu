@@ -1,5 +1,5 @@
 import {IDataHook} from "model-react";
-import {IMenuItem} from "../../_types/IMenuItem";
+import {IMenuItem} from "../../items/_types/IMenuItem";
 
 export type IMenu = {
     /**

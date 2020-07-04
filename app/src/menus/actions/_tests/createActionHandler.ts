@@ -1,7 +1,7 @@
 import {IAction} from "../_types/IAction";
 import {IActionHandlerCore} from "../_types/IActionHandlerCore";
 import {createActionHandler} from "../createActionHandler";
-import {IMenuItem} from "../../_types/IMenuItem";
+import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IActionHandler} from "../_types/IActionHandler";
 
 const createItem = (data: string, handler: IActionHandler<any, any, any>): IMenuItem => ({

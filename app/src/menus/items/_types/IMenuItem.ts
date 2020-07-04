@@ -1,5 +1,5 @@
 import {IMenuItemView} from "./IMenuItemView";
-import {IActionBinding} from "../actions/_types/IActionBinding";
+import {IActionBinding} from "../../actions/_types/IActionBinding";
 
 /**
  * An item to appear on a menu

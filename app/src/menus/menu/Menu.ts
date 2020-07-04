@@ -1,4 +1,4 @@
-import {IMenuItem} from "../_types/IMenuItem";
+import {IMenuItem} from "../items/_types/IMenuItem";
 import {IDataHook, Field} from "model-react";
 import {IMenuCategoryConfig} from "./_types/IMenuCategoryConfig";
 import {TFull} from "../../_types/TFull";
@@ -16,6 +16,7 @@ export class Menu {
         items: IMenuItem[];
         category: ICategory | undefined;
     }[];
+    /** Flat structure containing items (as IMenuItems) and categories headers (as IMenuItems) */
     protected items = new Field([] as IMenuItem[]);
     protected cursor = new Field(null as IMenuItem | null);
     protected selected = new Field([] as IMenuItem[]);
@@ -233,5 +234,6 @@ export class Menu {
         } else {
             return cursor;
         }
+        //poop
     }
 }

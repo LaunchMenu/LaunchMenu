@@ -3,7 +3,7 @@ import {IActionHandlerCore} from "./_types/IActionHandlerCore";
 import {ITagsOverride} from "./_types/ITagsOverride";
 import {IActionBinding} from "./_types/IActionBinding";
 import {IActionHandler} from "./_types/IActionHandler";
-import {IMenuItem} from "../_types/IMenuItem";
+import {IMenuItem} from "../items/_types/IMenuItem";
 
 /**
  * Checks whether the data is a menu item array

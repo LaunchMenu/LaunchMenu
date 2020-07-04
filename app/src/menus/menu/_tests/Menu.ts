@@ -426,7 +426,7 @@ describe("Menu", () => {
                 const items2 = [createMenuItem(someCategory), createMenuItem(someCategory), createMenuItem(someCategory)];
                 menu.addItems(items);
                 menu.addItems(items2);
-                expect(menu.getItems()).toEqual([...items.slice(0, 2), someCategory.item, ...items2.slice(0, 2));
+                expect(menu.getItems()).toEqual([...items.slice(0, 2), someCategory.item, ...items2.slice(0, 2)]);
             });
         });
 

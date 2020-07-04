@@ -1,4 +1,4 @@
-import {IMenuItem} from "./IMenuItem";
+import {IMenuItem} from "../items/_types/IMenuItem";
 
 export type IPrioritizedMenuItem = {
     priority: number;

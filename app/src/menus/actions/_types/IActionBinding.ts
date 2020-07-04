@@ -1,7 +1,7 @@
 import {IAction} from "./IAction";
 import {IActionHandler} from "./IActionHandler";
 /**
- * A binding to an action handler, and thus actin, specifying the data to execute the handler on an item
+ * A binding to an action handler (and thus action), specifying the data to execute the handler on an item
  */
 export type IActionBinding<I> = {
     /**

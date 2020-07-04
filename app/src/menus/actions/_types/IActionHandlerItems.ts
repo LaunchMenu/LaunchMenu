@@ -1,5 +1,5 @@
-import {IMenuItem} from "../../_types/IMenuItem";
 import {IActionHandler} from "./IActionHandler";
+import {IMenuItem} from "../../items/_types/IMenuItem";
 
 /**
  * The combination of action handlers and the items that have bindings for them

@@ -1,4 +1,3 @@
-import {IMenuItem} from "../../_types/IMenuItem";
 import {ICategory} from "../../category/_types/ICategory";
 import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
 import {SortedList} from "../../../utils/SortedList";

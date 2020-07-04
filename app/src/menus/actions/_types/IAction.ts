@@ -1,5 +1,5 @@
 import {IActionHandlerCore} from "./IActionHandlerCore";
-import {IMenuItem} from "../../_types/IMenuItem";
+import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IActionHandler} from "./IActionHandler";
 import {ITagsOverride} from "./ITagsOverride";
 

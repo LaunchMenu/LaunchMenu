@@ -1,7 +1,7 @@
 import {Action} from "../Action";
 import {IActionHandlerItems} from "../_types/IActionHandlerItems";
 import {createActionHandler} from "../createActionHandler";
-import {IMenuItem} from "../../_types/IMenuItem";
+import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IActionBinding} from "../_types/IActionBinding";
 
 const createItem = (...bindings: IActionBinding<any>[]): IMenuItem => ({

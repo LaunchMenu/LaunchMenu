@@ -2,9 +2,10 @@ import {IAction} from "./_types/IAction";
 import {IActionHandlerCore} from "./_types/IActionHandlerCore";
 import {IActionHandler} from "./_types/IActionHandler";
 import {IActionCore} from "./_types/IActionCore";
-import {IMenuItem} from "../_types/IMenuItem";
+
 import {ITagsOverride} from "./_types/ITagsOverride";
 import {createActionHandler} from "./createActionHandler";
+import {IMenuItem} from "../items/_types/IMenuItem";
 
 /**
  * An action that can be executed on menu items

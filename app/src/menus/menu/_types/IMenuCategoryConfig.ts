@@ -1,5 +1,5 @@
-import {IMenuItem} from "../../_types/IMenuItem";
 import {ICategory} from "../../category/_types/ICategory";
+import {IMenuItem} from "../../items/_types/IMenuItem";
 
 /**
  * Configuration for the categories in a menu
