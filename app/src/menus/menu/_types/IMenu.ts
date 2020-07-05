@@ -1,6 +1,9 @@
 import {IDataHook} from "model-react";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 
+/**
+ * An interface for common menu interactions
+ */
 export type IMenu = {
     /**
      * Selects or deselects the given item
@@ -14,6 +17,11 @@ export type IMenu = {
      * @param item The new cursor
      */
     setCursor(item: IMenuItem): void;
+
+    /**
+     * Destroys the menu, making sure that all items become unselected
+     */
+    destroy(): void;
 
     /**
      * Retrieves all items in the menu

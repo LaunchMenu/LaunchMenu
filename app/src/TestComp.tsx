@@ -2,8 +2,6 @@ import React, {FC, useState} from "react";
 import {useTheme} from "./styling/theming/ThemeContext";
 import {PrimaryButton} from "@fluentui/react";
 import {Box} from "./styling/box/Box";
-import {Truncated} from "./components/Truncated";
-import {MenuItemIcon} from "./menus/items/components/MenuItemIcon";
 import {createStandardMenuItem} from "./menus/items/createStandardMenuItem";
 import {Menu} from "./menus/menu/Menu";
 import {useDataHook} from "model-react";
@@ -12,6 +10,9 @@ const items = [
     createStandardMenuItem({
         name: "Bob",
         onExecute: () => alert("piss off, I am bob"),
+        onCursor: selected => {
+            console.log("Bob selected:", selected);
+        },
     }),
     createStandardMenuItem({
         name: "John",

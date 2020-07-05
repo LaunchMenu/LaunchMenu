@@ -5,6 +5,8 @@ import {IMenuItemCallback} from "../_types/IMenuItemCallback";
 import {createPrioritizedMenuItem} from "./PrioritizedMenuItem.helper";
 import {wait} from "../../../_tests/wait.helper";
 import {ICategory} from "../../category/_types/ICategory";
+import {onSelectHandler} from "../../actions/types/onSelect/onSelectHandler";
+import {onCursorHandler} from "../../actions/types/onCursor/onCursorHandler";
 
 describe("Menu", () => {
     describe("new Menu", () => {
@@ -344,6 +346,40 @@ describe("Menu", () => {
             menu.setSelected(items[0], false);
             expect(menu.getSelected()).toEqual([]);
         });
+        it("Calls onSelect actions", () => {
+            const item = createMenuItem();
+            let selectCount = 0;
+            let deselectCount = 0;
+            item.actionBindings.push(
+                onSelectHandler.createBinding(selected => {
+                    if (selected) selectCount++;
+                    else deselectCount++;
+                })
+            );
+            const menu = new Menu([...items, item]);
+            expect(selectCount).toBe(0);
+            expect(deselectCount).toBe(0);
+            menu.setSelected(item, true);
+            expect(selectCount).toBe(1);
+            expect(deselectCount).toBe(0);
+            menu.setSelected(item, false);
+            expect(selectCount).toBe(1);
+            expect(deselectCount).toBe(1);
+        });
+        it("Can't select items that aren't in the menu", () => {
+            const menu = new Menu(items);
+            const item = createMenuItem();
+            menu.setSelected(item, true);
+            expect(menu.getSelected()).toEqual([]);
+        });
+        it("Automatically deselects items when removed", () => {
+            const item = createMenuItem();
+            const menu = new Menu([...items, item]);
+            menu.setSelected(item, true);
+            expect(menu.getSelected()).toEqual([item]);
+            menu.removeItem(item);
+            expect(menu.getSelected()).toEqual([]);
+        });
     });
 
     describe("Menu.setCursor / Menu.getCursor", () => {
@@ -354,13 +390,130 @@ describe("Menu", () => {
         };
         const items = [createMenuItem(), createMenuItem(), createMenuItem(someCategory)];
         it("Has the correct initial cursor", () => {
-            expect(new Menu().getCursor()).toEqual(undefined);
+            expect(new Menu().getCursor()).toEqual(null);
             expect(new Menu(items).getCursor()).toEqual(items[0]);
         });
         it("Properly updates the cursor", () => {
             const menu = new Menu(items);
             menu.setCursor(items[2]);
             expect(menu.getCursor()).toEqual(items[2]);
+        });
+        it("Calls onCursor actions", () => {
+            const item = createMenuItem();
+            let selectCount = 0;
+            let deselectCount = 0;
+            item.actionBindings.push(
+                onCursorHandler.createBinding(selected => {
+                    if (selected) selectCount++;
+                    else deselectCount++;
+                })
+            );
+            const menu = new Menu([...items, item]);
+            expect(selectCount).toBe(0);
+            expect(deselectCount).toBe(0);
+            menu.setCursor(item);
+            expect(selectCount).toBe(1);
+            expect(deselectCount).toBe(0);
+            menu.setCursor(null);
+            expect(selectCount).toBe(1);
+            expect(deselectCount).toBe(1);
+        });
+        it("Can't set item as cursor if not in th emenu", () => {
+            const menu = new Menu(items);
+            const item = createMenuItem();
+            menu.setCursor(item);
+            expect(menu.getCursor()).not.toEqual(item);
+        });
+        it("Automatically selects another cursor when cursor is removed", () => {
+            const item = createMenuItem();
+            const menu = new Menu([...items, item]);
+            menu.setCursor(item);
+            expect(menu.getCursor()).toEqual(item);
+            menu.removeItem(item);
+            expect(menu.getCursor()).not.toEqual(item);
+        });
+    });
+    describe("Menu.destroy", () => {
+        const someCategory: ICategory = {
+            name: "Bob",
+            description: "some category for Bob",
+            item: createMenuItem(),
+        };
+        const items = [createMenuItem(), createMenuItem(), createMenuItem(someCategory)];
+        let menu: Menu;
+        beforeEach(() => {
+            menu = new Menu(items);
+        });
+        it("Deselects all items", () => {
+            const item = createMenuItem();
+            let deselectCount = 0;
+            item.actionBindings.push(
+                onSelectHandler.createBinding(selected => {
+                    if (!selected) deselectCount++;
+                })
+            );
+            menu.addItem(item);
+            menu.setSelected(item, true);
+            expect(menu.getSelected()).toEqual([item]);
+            expect(deselectCount).toBe(0);
+            menu.destroy();
+            expect(menu.getSelected()).toEqual([]);
+            expect(deselectCount).toBe(1);
+        });
+        it("Deselects the cursor", () => {
+            const item = createMenuItem();
+            let deselectCount = 0;
+            item.actionBindings.push(
+                onCursorHandler.createBinding(selected => {
+                    if (!selected) deselectCount++;
+                })
+            );
+            menu.addItem(item);
+            menu.setCursor(item);
+            expect(menu.getCursor()).toEqual(item);
+            expect(deselectCount).toBe(0);
+            menu.destroy();
+            expect(menu.getCursor()).toEqual(null);
+            expect(deselectCount).toBe(1);
+        });
+        it("Removes all items", () => {
+            expect(menu.getItems()).toEqual([
+                items[0],
+                items[1],
+                someCategory.item,
+                items[2],
+            ]);
+            menu.destroy();
+            expect(menu.getItems()).toEqual([]);
+        });
+        it("Blocks changing the cursor", () => {
+            const item = createMenuItem();
+            let selectCount = 0;
+            item.actionBindings.push(
+                onCursorHandler.createBinding(selected => {
+                    if (selected) selectCount++;
+                })
+            );
+            menu.addItem(item);
+            expect(menu.getCursor()).not.toEqual(null);
+            menu.destroy();
+            menu.setCursor(items[0]);
+            expect(menu.getCursor()).toEqual(null);
+            expect(selectCount).toBe(0);
+        });
+        it("Blocks selecting of items", () => {
+            const item = createMenuItem();
+            let selectCount = 0;
+            item.actionBindings.push(
+                onSelectHandler.createBinding(selected => {
+                    if (selected) selectCount++;
+                })
+            );
+            menu.addItem(item);
+            menu.destroy();
+            menu.setSelected(items[0], true);
+            expect(menu.getSelected()).toEqual([]);
+            expect(selectCount).toBe(0);
         });
     });
 
@@ -408,14 +561,14 @@ describe("Menu", () => {
     });
 
     describe("categoryConfig", () => {
-        describe("categoryConfig.maxCategoryItemCount", ()=>{
-            it("Allows the number of items for each category to be limited", ()=>{
+        describe("categoryConfig.maxCategoryItemCount", () => {
+            it("Allows the number of items for each category to be limited", () => {
                 const menu = new Menu({maxCategoryItemCount: 2});
                 const items = [createMenuItem(), createMenuItem(), createMenuItem()];
                 menu.addItems(items);
                 expect(menu.getItems()).toEqual(items.slice(0, 2));
             });
-            it("Considers separate categories", ()=>{
+            it("Considers separate categories", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
@@ -423,65 +576,92 @@ describe("Menu", () => {
                 };
                 const menu = new Menu({maxCategoryItemCount: 2});
                 const items = [createMenuItem(), createMenuItem(), createMenuItem()];
-                const items2 = [createMenuItem(someCategory), createMenuItem(someCategory), createMenuItem(someCategory)];
+                const items2 = [
+                    createMenuItem(someCategory),
+                    createMenuItem(someCategory),
+                    createMenuItem(someCategory),
+                ];
                 menu.addItems(items);
                 menu.addItems(items2);
-                expect(menu.getItems()).toEqual([...items.slice(0, 2), someCategory.item, ...items2.slice(0, 2)]);
+                expect(menu.getItems()).toEqual([
+                    ...items.slice(0, 2),
+                    someCategory.item,
+                    ...items2.slice(0, 2),
+                ]);
             });
         });
 
-        describe("categoryConfig.getCategory", ()=>{
-            it("Allows categories to be ignored", ()=>{
+        describe("categoryConfig.getCategory", () => {
+            it("Allows categories to be ignored", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new Menu({getCategory: ()=>undefined});
+                const menu = new Menu({getCategory: () => undefined});
                 const items = [createMenuItem(), createMenuItem(), createMenuItem()];
-                const items2 = [createMenuItem(someCategory), createMenuItem(someCategory), createMenuItem(someCategory)];
+                const items2 = [
+                    createMenuItem(someCategory),
+                    createMenuItem(someCategory),
+                    createMenuItem(someCategory),
+                ];
                 menu.addItems(items);
                 menu.addItems(items2);
                 expect(menu.getItems()).toEqual([...items, ...items2]);
             });
-            it("Allows categories to be altered", ()=>{
+            it("Allows categories to be altered", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new Menu({getCategory: ()=>someCategory});
+                const menu = new Menu({getCategory: () => someCategory});
                 const items = [createMenuItem(), createMenuItem(), createMenuItem()];
-                const items2 = [createMenuItem(someCategory), createMenuItem(someCategory), createMenuItem(someCategory)];
+                const items2 = [
+                    createMenuItem(someCategory),
+                    createMenuItem(someCategory),
+                    createMenuItem(someCategory),
+                ];
                 menu.addItems(items);
                 menu.addItems(items2);
                 expect(menu.getItems()).toEqual([someCategory.item, ...items, ...items2]);
             });
         });
 
-        describe("categoryConfig.sortCategories", ()=>{
-            it("Allows category orders to be changed", ()=>{
+        describe("categoryConfig.sortCategories", () => {
+            it("Allows category orders to be changed", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new Menu({sortCategories: (categories)=>categories.map(({category})=>category).reverse()});
+                const menu = new Menu({
+                    sortCategories: categories =>
+                        categories.map(({category}) => category).reverse(),
+                });
                 const items = [createMenuItem(), createMenuItem(), createMenuItem()];
-                const items2 = [createMenuItem(someCategory), createMenuItem(someCategory), createMenuItem(someCategory)];
+                const items2 = [
+                    createMenuItem(someCategory),
+                    createMenuItem(someCategory),
+                    createMenuItem(someCategory),
+                ];
                 menu.addItems(items);
                 menu.addItems(items2);
                 expect(menu.getItems()).toEqual([someCategory.item, ...items2, ...items]);
             });
-            it("Allows categories to be left out", ()=>{
+            it("Allows categories to be left out", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new Menu({sortCategories: ()=>[undefined]});
+                const menu = new Menu({sortCategories: () => [undefined]});
                 const items = [createMenuItem(), createMenuItem(), createMenuItem()];
-                const items2 = [createMenuItem(someCategory), createMenuItem(someCategory), createMenuItem(someCategory)];
+                const items2 = [
+                    createMenuItem(someCategory),
+                    createMenuItem(someCategory),
+                    createMenuItem(someCategory),
+                ];
                 menu.addItems(items);
                 menu.addItems(items2);
                 expect(menu.getItems()).toEqual(items);

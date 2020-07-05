@@ -1,6 +1,5 @@
-import React from "react";
+import React, {memo} from "react";
 import {IMenuItem} from "./_types/IMenuItem";
-import {Box} from "../../styling/box/Box";
 import {executeHandler} from "../actions/types/execute/executeHandler";
 import {IStandardMenuItemData} from "./_types/IStandardMenuItemData";
 import {onSelectHandler} from "../actions/types/onSelect/onSelectHandler";
@@ -24,7 +23,7 @@ export function createStandardMenuItem({
     if (onCursor) bindings.push(onCursorHandler.createBinding(onCursor));
 
     return {
-        view: props => (
+        view: memo(props => (
             <MenuItemFrame {...props} onExecute={onExecute}>
                 <MenuItemLayout
                     icon={
@@ -39,7 +38,7 @@ export function createStandardMenuItem({
                     }
                 />
             </MenuItemFrame>
-        ),
+        )),
         actionBindings: bindings,
     };
 }
