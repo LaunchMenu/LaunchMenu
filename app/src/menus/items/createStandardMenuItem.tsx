@@ -1,14 +1,14 @@
 import React, {memo} from "react";
 import {IMenuItem} from "./_types/IMenuItem";
-import {executeHandler} from "../actions/types/execute/executeHandler";
 import {IStandardMenuItemData} from "./_types/IStandardMenuItemData";
-import {onSelectHandler} from "../actions/types/onSelect/onSelectHandler";
-import {onCursorHandler} from "../actions/types/onCursor/onCursorHandler";
 import {IActionBinding} from "../actions/_types/IActionBinding";
 import {MenuItemFrame} from "./components/MenuItemFrame";
 import {MenuItemIcon} from "./components/MenuItemIcon";
 import {Truncated} from "../../components/Truncated";
 import {MenuItemLayout} from "./components/MenuItemLayout";
+import {executeAction} from "../actions/types/execute/executeAction";
+import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
+import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
 
 export function createStandardMenuItem({
     name,
@@ -18,9 +18,9 @@ export function createStandardMenuItem({
     onSelect,
     onCursor,
 }: IStandardMenuItemData): IMenuItem {
-    let bindings: IActionBinding<any>[] = [executeHandler.createBinding(onExecute)];
-    if (onSelect) bindings.push(onSelectHandler.createBinding(onSelect));
-    if (onCursor) bindings.push(onCursorHandler.createBinding(onCursor));
+    let bindings: IActionBinding<any>[] = [executeAction.createBinding(onExecute)];
+    if (onSelect) bindings.push(onSelectAction.createBinding(onSelect));
+    if (onCursor) bindings.push(onCursorAction.createBinding(onCursor));
 
     return {
         view: memo(props => (
