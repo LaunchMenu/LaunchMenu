@@ -1,6 +1,6 @@
-import {Action} from "../actions/Action";
+import {Action} from "../../Action";
 import {ICategory} from "./_types/ICategory";
-import {IMenuItem} from "../items/_types/IMenuItem";
+import {IMenuItem} from "../../../items/_types/IMenuItem";
 /**
  * An action to get the category an item is in
  */

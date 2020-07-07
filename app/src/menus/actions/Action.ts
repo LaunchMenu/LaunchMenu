@@ -3,9 +3,8 @@ import {IActionCore} from "./_types/IActionCore";
 import {ITagsOverride} from "./_types/ITagsOverride";
 import {IActionBinding} from "./_types/IActionBinding";
 import {IMenuItem} from "../items/_types/IMenuItem";
-import {IActionInput} from "./_types/IActionInput";
 
-type IActionData = {action: IAction<any, any>; data: any[]; items: IMenuItem[][]};
+export type IActionData = {action: IAction<any, any>; data: any[]; items: IMenuItem[][]};
 
 /**
  * A class to get action executers of a certain type for a list of items
@@ -45,7 +44,12 @@ export class Action<I, O> implements IAction<I, O> {
         if (parent) this.ancestors = [...parent.ancestors, parent];
     }
 
-    /** @override */
+    /**
+     * Creates a new handler for this action, specifying how this action can be executed
+     * @param handlerCore The function describing the execution process
+     * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
+     * @returns The created action handler
+     */
     public createHandler<T>(
         handlerCore: IActionCore<T, I>,
         defaultTags: ITagsOverride = tags => tags
@@ -57,7 +61,12 @@ export class Action<I, O> implements IAction<I, O> {
         );
     }
 
-    /** @override */
+    /**
+     * Creates a binding for this action
+     * @param data The data to bind
+     * @param tags The tags for the binding, inherited from the action if left out
+     * @returns The binding
+     */
     public createBinding(data: I, tags: ITagsOverride = tags => tags): IActionBinding<I> {
         return {
             action: this,
@@ -99,7 +108,20 @@ export class Action<I, O> implements IAction<I, O> {
         actionData.items.push(sourceItems);
     }
 
-    /** @override */
+    /**
+     * Retrieves the action data for a set of items, in order to be executed
+     * @param items The items to get the data for
+     * @returns The action execution functions
+     */
+    public get(items: IMenuItem[]): O;
+
+    /**
+     * Retrieves the action data for the given input data
+     * @param data The data to run the core on
+     * @param items The item array that the data was retrieved from, indices correspond to data indices
+     * @returns The action execution functions or other data
+     */
+    public get(data: I[], items: IMenuItem[][]): O;
     public get(items: IMenuItem[] | I[], sourceItems?: IMenuItem[][]): O {
         // Obtain the input data from all the items
         if (this.isItemArray(items)) {
@@ -151,8 +173,8 @@ export class Action<I, O> implements IAction<I, O> {
             }
 
             // Retrieve the input data for this action
-            items = actionsData[0].data as I[];
-            sourceItems = actionsData[0].items;
+            items = (actionsData[0]?.data || []) as I[];
+            sourceItems = actionsData[0]?.items || [];
         }
 
         // Retrieve the result of this action core

@@ -1,5 +1,4 @@
 import {Action} from "../Action";
-import {IActionInput} from "../_types/IActionInput";
 import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
 import {IMenuItem} from "../../items/_types/IMenuItem";
@@ -129,6 +128,10 @@ describe("Action", () => {
                         createItem(action.createBinding(4)),
                     ])
                 ).toBe(6);
+            });
+            it("Doesn't error on empty lists", () => {
+                expect(action.get([])).toBe(0);
+                expect(action.get([createItem()])).toBe(0);
             });
             it("Properly works for handlers", () => {
                 const handler = action.createHandler((inputs: string[]) => {

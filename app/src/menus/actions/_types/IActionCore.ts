@@ -1,4 +1,3 @@
-import {IActionInputs} from "./IActionInput";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 
 /**
