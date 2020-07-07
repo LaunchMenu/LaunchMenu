@@ -1,20 +1,23 @@
 import {Action} from "../actions/Action";
-import {IActionHandlerItems} from "../actions/_types/IActionHandlerItems";
 import {ICategory} from "./_types/ICategory";
 import {IMenuItem} from "../items/_types/IMenuItem";
-
 /**
  * An action to get the category an item is in
  */
 export const getCategoryAction = new Action(
-    (handlers: IActionHandlerItems<ICategory[]>) => {
-        const categories = [] as {category: ICategory; item: IMenuItem}[];
-        handlers.forEach(({handler, data, items}) => {
-            categories.push(
-                ...handler.get(data).map((c, i) => ({category: c, item: items[i]}))
-            );
+    (categories: ICategory[], items: IMenuItem[][]) => {
+        // Group all categories such that the resulting array contains no duplicate categories
+        const categoriesData = [] as {category: ICategory; items: IMenuItem[]}[];
+        categories.forEach((category, index) => {
+            const categoryItems = items[index];
+            const categoryData = categoriesData.find(({category: c}) => c == category);
+
+            if (categoryData) categoryData.items.push(...categoryItems);
+            else categoriesData.push({category, items: categoryItems});
         });
-        return categories;
+
+        // Return all the grouped categories
+        return categoriesData;
     }
 );
 
