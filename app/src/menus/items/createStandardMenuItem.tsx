@@ -17,8 +17,12 @@ export function createStandardMenuItem({
     onExecute,
     onSelect,
     onCursor,
+    actionBindings = [],
 }: IStandardMenuItemData): IMenuItem {
-    let bindings: IActionBinding<any>[] = [executeAction.createBinding(onExecute)];
+    let bindings: IActionBinding<any>[] = [
+        ...actionBindings,
+        executeAction.createBinding(onExecute),
+    ];
     if (onSelect) bindings.push(onSelectAction.createBinding(onSelect));
     if (onCursor) bindings.push(onCursorAction.createBinding(onCursor));
 
