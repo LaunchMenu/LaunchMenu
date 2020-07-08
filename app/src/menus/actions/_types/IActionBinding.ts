@@ -1,13 +1,13 @@
-import {IAction} from "./IAction";
-import {IActionHandler} from "./IActionHandler";
+import { IAction } from "./IAction";
+
 /**
- * A binding to an action handler (and thus action), specifying the data to execute the handler on an item
+ * A binding to an action action, specifying the data to execute the handler on an item
  */
 export type IActionBinding<I> = {
     /**
-     * The action handler to bind
+     * The action to bind
      */
-    readonly handler: IActionHandler<I, unknown, IAction<unknown, unknown>>;
+    readonly action: IAction<I, any>;
     /**
      * The binding data to be used by the action handler
      */

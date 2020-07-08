@@ -1,12 +1,8 @@
-import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
 import {createMenuItem} from "./MenuItem.helper";
 import {Menu} from "../Menu";
-import {IMenuItemCallback} from "../_types/IMenuItemCallback";
-import {createPrioritizedMenuItem} from "./PrioritizedMenuItem.helper";
-import {wait} from "../../../_tests/wait.helper";
-import {ICategory} from "../../category/_types/ICategory";
-import {onSelectHandler} from "../../actions/types/onSelect/onSelectHandler";
-import {onCursorHandler} from "../../actions/types/onCursor/onCursorHandler";
+import {ICategory} from "../../actions/types/category/_types/ICategory";
+import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
+import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
 
 describe("Menu", () => {
     describe("new Menu", () => {
@@ -351,7 +347,7 @@ describe("Menu", () => {
             let selectCount = 0;
             let deselectCount = 0;
             item.actionBindings.push(
-                onSelectHandler.createBinding(selected => {
+                onSelectAction.createBinding(selected => {
                     if (selected) selectCount++;
                     else deselectCount++;
                 })
@@ -403,7 +399,7 @@ describe("Menu", () => {
             let selectCount = 0;
             let deselectCount = 0;
             item.actionBindings.push(
-                onCursorHandler.createBinding(selected => {
+                onCursorAction.createBinding(selected => {
                     if (selected) selectCount++;
                     else deselectCount++;
                 })
@@ -448,7 +444,7 @@ describe("Menu", () => {
             const item = createMenuItem();
             let deselectCount = 0;
             item.actionBindings.push(
-                onSelectHandler.createBinding(selected => {
+                onSelectAction.createBinding(selected => {
                     if (!selected) deselectCount++;
                 })
             );
@@ -464,7 +460,7 @@ describe("Menu", () => {
             const item = createMenuItem();
             let deselectCount = 0;
             item.actionBindings.push(
-                onCursorHandler.createBinding(selected => {
+                onCursorAction.createBinding(selected => {
                     if (!selected) deselectCount++;
                 })
             );
@@ -490,7 +486,7 @@ describe("Menu", () => {
             const item = createMenuItem();
             let selectCount = 0;
             item.actionBindings.push(
-                onCursorHandler.createBinding(selected => {
+                onCursorAction.createBinding(selected => {
                     if (selected) selectCount++;
                 })
             );
@@ -505,7 +501,7 @@ describe("Menu", () => {
             const item = createMenuItem();
             let selectCount = 0;
             item.actionBindings.push(
-                onSelectHandler.createBinding(selected => {
+                onSelectAction.createBinding(selected => {
                     if (selected) selectCount++;
                 })
             );

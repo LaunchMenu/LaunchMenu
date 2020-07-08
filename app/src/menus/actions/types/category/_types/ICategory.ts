@@ -1,4 +1,4 @@
-import {IMenuItem} from "../../items/_types/IMenuItem";
+import {IMenuItem} from "../../../../items/_types/IMenuItem";
 
 /**
  * A category to group menu items in menus

@@ -1,9 +1,13 @@
-import {IActionHandlerItems} from "./IActionHandlerItems";
+import {IMenuItem} from "../../items/_types/IMenuItem";
 
+/**
+ * The core transformer of an action
+ */
 export type IActionCore<I, O> =
     /**
-     * Transforms the handlers and their items to the output action function
-     * @param handlers The handlers and items to use
-     * @returns The action execution function(s)
+     * Transforms the input data to the output data
+     * @param data The input data array
+     * @param items The 2d array of items, indices correspond to data indices
+     * @returns The output
      */
-    (handlers: IActionHandlerItems<I, any>) => O;
+    (data: I[], items: IMenuItem[][]) => O;

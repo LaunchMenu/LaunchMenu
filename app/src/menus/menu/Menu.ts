@@ -2,8 +2,8 @@ import {IMenuItem} from "../items/_types/IMenuItem";
 import {IDataHook, Field} from "model-react";
 import {IMenuCategoryConfig} from "./_types/IMenuCategoryConfig";
 import {TFull} from "../../_types/TFull";
-import {ICategory} from "../category/_types/ICategory";
-import {getMenuCategory} from "../category/getCategoryAction";
+import {ICategory} from "../actions/types/category/_types/ICategory";
+import {getMenuCategory} from "../actions/types/category/getCategoryAction";
 import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
 

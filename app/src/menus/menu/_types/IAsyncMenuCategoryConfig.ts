@@ -1,4 +1,4 @@
-import {ICategory} from "../../category/_types/ICategory";
+import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
 import {SortedList} from "../../../utils/SortedList";
 
