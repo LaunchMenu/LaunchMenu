@@ -1,6 +1,6 @@
 import {AnyProps} from "./_types/anyProps";
 import {getAttributes} from "./getAttributes";
-import {ReactNode, CSSProperties, DOMAttributes} from "react";
+import {ReactNode, CSSProperties, DOMAttributes, Ref} from "react";
 
 /**
  * All the acceptable dom attributes, mapped to either true if the DOM camelcase attribute name is the same,
@@ -30,7 +30,7 @@ export type DomAttributes = {
     class?: string;
     style?: CSSProperties;
     draggable?: boolean;
-    elRef?: (element: HTMLElement) => void;
+    elRef?: Ref<any>;
 } & DOMAttributes<Element>; // Standard event listeners
 
 /**
