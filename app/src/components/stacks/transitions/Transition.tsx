@@ -3,23 +3,14 @@ import {SlideOpenTransition} from "./open/SlideOpenTransition";
 import {SlideCloseTransition} from "./close/SlideCloseTransition";
 import {v4 as uuid} from "uuid";
 import {SlideChangeTransition} from "./change/SlideChangeTransition";
-import {ICloseTransition} from "./close/_types/ICloseTransition";
-import {IOpenTransition} from "./open/_types/IOpenTransition";
-import {IChangeTransition} from "./change/_types/IChangeTransition";
+import {ITransitionProps} from "./_types/ITransitionProps";
 
-export const Transition: FC<{
-    children?: JSX.Element;
-    onOpen?: () => void;
-    onClose?: () => void;
-    onChange?: () => void;
-    OpenTransitionComp?: IOpenTransition;
-    ChangeTransitionComp?: IChangeTransition;
-    CloseTransitionComp?: ICloseTransition;
-}> = ({
+export const Transition: FC<ITransitionProps> = ({
     children: child,
     onOpen,
     onClose,
     onChange,
+    hidden,
     OpenTransitionComp = SlideOpenTransition,
     ChangeTransitionComp = SlideChangeTransition,
     CloseTransitionComp = SlideCloseTransition,
@@ -47,14 +38,13 @@ export const Transition: FC<{
     }
 
     // Handle change transitions
-    const changeable =
-        prevChildren.current.length > 1 ? (
-            <ChangeTransitionComp key={changeID} onComplete={_onChange}>
-                {prevChildren.current}
-            </ChangeTransitionComp>
-        ) : (
-            child || lastChild.current
-        );
+    const changeable = hidden ? undefined : prevChildren.current.length > 1 ? (
+        <ChangeTransitionComp key={changeID} onComplete={_onChange}>
+            {prevChildren.current}
+        </ChangeTransitionComp>
+    ) : (
+        child || lastChild.current
+    );
 
     // Handle open and close changes
     const closable = (
