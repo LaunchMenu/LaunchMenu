@@ -16,11 +16,15 @@ export const TransitionTest: FC = () => {
     const click = useCallback(e => {
         const c = count.current;
         if (c == 0) {
-            setEl(<FillBox background="neutral9">Hoi</FillBox>);
+            setEl(<FillBox background="bgPrimary">Hoi</FillBox>);
         } else if (c == 1) {
-            setEl(<FillBox background="neutral7">Poop</FillBox>);
+            setEl(
+                <FillBox background="primary" color="fontPrimary">
+                    Poop
+                </FillBox>
+            );
         } else if (c == 2) {
-            setEl(<FillBox background="neutral5">Potatoes</FillBox>);
+            setEl(<FillBox background="bgTertiary">Potatoes</FillBox>);
         } else if (c == 3) {
             setEl(undefined);
         }
@@ -35,9 +39,7 @@ export const TransitionTest: FC = () => {
                 position={"relative"}
                 onClick={click}
                 onMouseDown={e => e.preventDefault()}>
-                <FillBox background="neutral0" color="white">
-                    Hallo I am the background here
-                </FillBox>
+                <FillBox background="bgTertiary">Hallo I am the background here</FillBox>
                 <Transition
                     OpenTransitionComp={OpenDown}
                     key={id}

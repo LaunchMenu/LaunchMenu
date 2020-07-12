@@ -7,8 +7,8 @@ import {SlideOpenTransition} from "../components/stacks/transitions/open/SlideOp
 
 export const TransitionTypeTest: FC = () => {
     const [children, setChildren] = useState([
-        <FillBox background="neutral9">shits</FillBox>,
-        <FillBox background="neutral7">shits2</FillBox>,
+        <FillBox background="bgPrimary">shits</FillBox>,
+        <FillBox background="bgSecondary">shits2</FillBox>,
     ]);
 
     return (
@@ -22,7 +22,7 @@ export const TransitionTypeTest: FC = () => {
                         ...children,
                         <FillBox
                             background={
-                                (["primary", "neutral9", "neutral4"] as const)[
+                                (["bgPrimary", "bgSecondary", "bgTertiary"] as const)[
                                     Math.floor(Math.random() * 3)
                                 ]
                             }>
