@@ -1,6 +1,6 @@
 import React, {FC} from "react";
-import {StackViewTest} from "./componentTests/StackViewTest";
+import {KeyHandlerTest} from "./componentTests/KeyHandlerTest";
 
 export const TestComp: FC = () => {
-    return <StackViewTest />;
+    return <KeyHandlerTest />;
 };
