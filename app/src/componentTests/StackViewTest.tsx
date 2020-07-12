@@ -1,5 +1,5 @@
 import React, {FC, useState, useCallback} from "react";
-import {IStackItem} from "../stacks/_types/IStackItem";
+import {IIdentifiedItem} from "../stacks/_types/IIdentifiedItem";
 import {IViewStackItem} from "../stacks/_types/IViewStackItem";
 import {StackView} from "../components/stacks/StackView";
 import {Box} from "../styling/box/Box";
@@ -34,7 +34,7 @@ const getRandomItem = () => {
 };
 
 export const StackViewTest: FC = () => {
-    const [items, setItems] = useState([] as IStackItem<IViewStackItem>[]);
+    const [items, setItems] = useState([] as IIdentifiedItem<IViewStackItem>[]);
     const add = useCallback(() => setItems(items => [...items, getRandomItem()]), []);
     const remove = useCallback(
         () => setItems(items => items.slice(0, items.length - 1)),

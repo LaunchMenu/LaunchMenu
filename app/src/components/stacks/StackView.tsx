@@ -2,7 +2,7 @@ import React, {FC, useRef, createElement, useState} from "react";
 import {IStackViewProps} from "./_types/IStackViewProps";
 import {useDataHook} from "model-react";
 import {findStackChanges} from "../../stacks/findStackChanges";
-import {IStackItem} from "../../stacks/_types/IStackItem";
+import {IIdentifiedItem} from "../../stacks/_types/IIdentifiedItem";
 import {IViewStackItem} from "../../stacks/_types/IViewStackItem";
 import {Transition} from "./transitions/Transition";
 
@@ -30,8 +30,8 @@ type IStackViewChild = {
  * @param children The children list to modify
  */
 function updateChildren(
-    items: IStackItem<IViewStackItem>[],
-    prevItems: IStackItem<IViewStackItem>[],
+    items: IIdentifiedItem<IViewStackItem>[],
+    prevItems: IIdentifiedItem<IViewStackItem>[],
     children: IStackViewChild[]
 ): void {
     const {added, removed} = findStackChanges(prevItems, items);
@@ -95,7 +95,7 @@ export const StackView: FC<IStackViewProps> = ({
     const [h] = useDataHook();
     if ("get" in items) items = items.get(h);
     if (items instanceof Function) items = items(h);
-    const prevItems = useRef<IStackItem<IViewStackItem>[]>([]);
+    const prevItems = useRef<IIdentifiedItem<IViewStackItem>[]>([]);
 
     // Keep track of the children to render
     const childrenRef = useRef([] as IStackViewChild[]);

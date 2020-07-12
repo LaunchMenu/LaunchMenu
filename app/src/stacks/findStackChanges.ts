@@ -1,4 +1,4 @@
-import {IStackItem} from "./_types/IStackItem";
+import {IIdentifiedItem} from "./_types/IIdentifiedItem";
 
 /**
  * Retrieves the changes between two stacks of items. Items are only allowed to be removed or added, not switch places (swaps are ignored)
@@ -7,7 +7,7 @@ import {IStackItem} from "./_types/IStackItem";
  * @param equals A function to determine equivalence of two items
  * @returns The added and removed items lists
  */
-export function findStackChanges<D extends IStackItem<any>>(
+export function findStackChanges<D extends IIdentifiedItem<any>>(
     oldItems: D[],
     newItems: D[]
 ): {added: {index: number; item: D}[]; removed: {index: number; item: D}[]} {
