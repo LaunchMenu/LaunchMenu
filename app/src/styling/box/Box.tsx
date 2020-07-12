@@ -1,4 +1,4 @@
-import React from "react";
+import React, {FC} from "react";
 import {getSpacingAttributes} from "./attributeRetrievers/getSpacingAttributes";
 import {getColorAttributes} from "./attributeRetrievers/getColorAttributes";
 import {getMappedAttributes} from "./attributeRetrievers/getMappedAttributes";
@@ -11,7 +11,7 @@ import {useTheme} from "../theming/ThemeContext";
  * A standard box element, which takes attributes/properties and translates them to css
  * @param props
  */
-export const Box = (props: IBoxProps) => {
+export const Box: FC<IBoxProps> = props => {
     // The LaunchMenu theme to use
     const theme = useTheme();
 
@@ -34,11 +34,9 @@ export const Box = (props: IBoxProps) => {
                 <Comp
                     {...domAttributes}
                     className={
-                        css(cssProps) +
-                        " " +
-                        domAttributes.className +
-                        " " +
-                        css(props.css)
+                        (Object.keys(cssProps).length ? css(cssProps) + " " : "") +
+                        (domAttributes.className ? domAttributes.className + " " : "") +
+                        (props.css ? css(props.css) : "")
                     }
                 />
             )}
