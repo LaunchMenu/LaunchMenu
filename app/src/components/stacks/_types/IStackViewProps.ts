@@ -8,9 +8,9 @@ import {IOpenTransition} from "../transitions/open/_types/IOpenTransition";
 export type IStackViewProps = {
     /** The items to visualize, with the last item to be on the top of the stack */
     items:
-        | ((hook: IDataHook) => IIdentifiedItem<IViewStackItem>[])
-        | {get: (hook: IDataHook) => IIdentifiedItem<IViewStackItem>[]}
-        | IIdentifiedItem<IViewStackItem>[];
+        | ((hook: IDataHook) => readonly IIdentifiedItem<IViewStackItem>[])
+        | {get: (hook: IDataHook) => readonly IIdentifiedItem<IViewStackItem>[]}
+        | readonly IIdentifiedItem<IViewStackItem>[];
     /** Component takes no children, only items */
     children?: undefined;
     /** Whether to stop rendering items that are hidden, defaults to true */

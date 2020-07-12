@@ -30,8 +30,8 @@ type IStackViewChild = {
  * @param children The children list to modify
  */
 function updateChildren(
-    items: IIdentifiedItem<IViewStackItem>[],
-    prevItems: IIdentifiedItem<IViewStackItem>[],
+    items: readonly IIdentifiedItem<IViewStackItem>[],
+    prevItems: readonly IIdentifiedItem<IViewStackItem>[],
     children: IStackViewChild[]
 ): void {
     const {added, removed} = findStackChanges(prevItems, items);
@@ -95,7 +95,7 @@ export const StackView: FC<IStackViewProps> = ({
     const [h] = useDataHook();
     if ("get" in items) items = items.get(h);
     if (items instanceof Function) items = items(h);
-    const prevItems = useRef<IIdentifiedItem<IViewStackItem>[]>([]);
+    const prevItems = useRef<readonly IIdentifiedItem<IViewStackItem>[]>([]);
 
     // Keep track of the children to render
     const childrenRef = useRef([] as IStackViewChild[]);

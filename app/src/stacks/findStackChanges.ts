@@ -8,8 +8,8 @@ import {IIdentifiedItem} from "./_types/IIdentifiedItem";
  * @returns The added and removed items lists
  */
 export function findStackChanges<D extends IIdentifiedItem<any>>(
-    oldItems: D[],
-    newItems: D[]
+    oldItems: readonly D[],
+    newItems: readonly D[]
 ): {added: {index: number; item: D}[]; removed: {index: number; item: D}[]} {
     // Check ids in old and new group
     const oldIds = {};

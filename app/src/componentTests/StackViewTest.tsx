@@ -6,6 +6,7 @@ import {Box} from "../styling/box/Box";
 import {v4 as uuid} from "uuid";
 import {FillBox} from "../components/FillBox";
 import {PrimaryButton} from "@fluentui/react";
+import {ViewStack} from "../stacks/ViewStack";
 
 const urls = [
     "https://images.unsplash.com/photo-1542261777448-23d2a287091c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1000&q=80",
@@ -33,43 +34,26 @@ const getRandomItem = () => {
     };
 };
 
+const stack = new ViewStack();
 export const StackViewTest: FC = () => {
-    const [items, setItems] = useState([] as IIdentifiedItem<IViewStackItem>[]);
-    const add = useCallback(() => setItems(items => [...items, getRandomItem()]), []);
-    const remove = useCallback(
-        () => setItems(items => items.slice(0, items.length - 1)),
-        []
-    );
-    const change = useCallback(
-        () => setItems(items => [...items.slice(0, items.length - 1), getRandomItem()]),
-        []
-    );
+    const add = useCallback(() => stack.push(getRandomItem()), []);
+    const remove = useCallback(() => stack.pop(), []);
+    const change = useCallback(() => {
+        stack.pop();
+        stack.push(getRandomItem());
+    }, []);
     const addM = useCallback(
-        () =>
-            setItems(items => [
-                ...items.slice(0, items.length - 1),
-                getRandomItem(),
-                ...items.slice(items.length - 1),
-            ]),
+        () => stack.insert(getRandomItem(), stack.get().length - 1),
         []
     );
-    const removeM = useCallback(
-        () =>
-            setItems(items => [
-                ...items.slice(0, items.length - 2),
-                ...items.slice(items.length - 1),
-            ]),
-        []
-    );
-    const changeM = useCallback(
-        () =>
-            setItems(items => [
-                ...items.slice(0, items.length - 2),
-                getRandomItem(),
-                ...items.slice(items.length - 1),
-            ]),
-        []
-    );
+    const removeM = useCallback(() => {
+        const items = stack.get();
+        if (items.length > 1) stack.remove(items[items.length - 2]);
+    }, []);
+    const changeM = useCallback(() => {
+        removeM();
+        addM();
+    }, []);
     return (
         <Box>
             <Box
@@ -77,7 +61,7 @@ export const StackViewTest: FC = () => {
                 height={300}
                 position={"relative"}
                 onMouseDown={e => e.preventDefault()}>
-                <StackView items={items} />
+                <StackView items={stack} />
             </Box>
             <PrimaryButton onClick={add}>add</PrimaryButton>
             <PrimaryButton onClick={remove}>remove</PrimaryButton>
