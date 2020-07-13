@@ -1,4 +1,4 @@
-import {AnyProps} from "./_types/anyProps";
+import {IAnyProps} from "./_types/IAnyProps";
 import {getAttributes} from "./getAttributes";
 import {ITheme} from "../../theming/_types/ITheme";
 
@@ -13,11 +13,11 @@ export const spacingAttributesCustom = {
     marginRightCustom: "marginRight",
     marginBottomCustom: "marginBottom",
     marginLeftCustom: "marginLeft",
-    marginXCustom: (props: AnyProps, value: any) => {
+    marginXCustom: (props: IAnyProps, value: any) => {
         props["marginLeft"] = value;
         props["marginRight"] = value;
     },
-    marginYCustom: (props: AnyProps, value: any) => {
+    marginYCustom: (props: IAnyProps, value: any) => {
         props["marginTop"] = value;
         props["marginBottom"] = value;
     },
@@ -26,11 +26,11 @@ export const spacingAttributesCustom = {
     paddingRightCustom: "paddingRight",
     paddingBottomCustom: "paddingBottom",
     paddingLeftCustom: "paddingLeft",
-    paddingXCustom: (props: AnyProps, value: any) => {
+    paddingXCustom: (props: IAnyProps, value: any) => {
         props["paddingLeft"] = value;
         props["paddingRight"] = value;
     },
-    paddingYCustom: (props: AnyProps, value: any) => {
+    paddingYCustom: (props: IAnyProps, value: any) => {
         props["paddingTop"] = value;
         props["paddingBottom"] = value;
     },
@@ -39,11 +39,11 @@ export const spacingAttributesCustom = {
     borderRightCustom: "borderRightWidth",
     borderBottomCustom: "borderBottomWidth",
     borderLeftCusom: "borderLeftWidth",
-    borderXCustom: (props: AnyProps, value: any) => {
+    borderXCustom: (props: IAnyProps, value: any) => {
         props["borderLeftWidth"] = value;
         props["borderRightWidth"] = value;
     },
-    borderYCustom: (props: AnyProps, value: any) => {
+    borderYCustom: (props: IAnyProps, value: any) => {
         props["borderTopWidth"] = value;
         props["borderRightWidth"] = value;
     },
@@ -68,11 +68,11 @@ export const spacingAttributesTheme = {
     marginRight: true,
     marginBottom: true,
     marginLeft: true,
-    marginX: (props: AnyProps, value: any) => {
+    marginX: (props: IAnyProps, value: any) => {
         props["marginLeft"] = value;
         props["marginRight"] = value;
     },
-    marginY: (props: AnyProps, value: any) => {
+    marginY: (props: IAnyProps, value: any) => {
         props["marginTop"] = value;
         props["marginBottom"] = value;
     },
@@ -81,11 +81,11 @@ export const spacingAttributesTheme = {
     paddingRight: true,
     paddingBottom: true,
     paddingLeft: true,
-    paddingX: (props: AnyProps, value: any) => {
+    paddingX: (props: IAnyProps, value: any) => {
         props["paddingLeft"] = value;
         props["paddingRight"] = value;
     },
-    paddingY: (props: AnyProps, value: any) => {
+    paddingY: (props: IAnyProps, value: any) => {
         props["paddingTop"] = value;
         props["paddingBottom"] = value;
     },
@@ -94,11 +94,11 @@ export const spacingAttributesTheme = {
     borderRight: "borderRightWidth",
     borderBottom: "borderBottomWidth",
     borderLeft: "borderLeftWidth",
-    borderX: (props: AnyProps, value: any) => {
+    borderX: (props: IAnyProps, value: any) => {
         props["borderLeftWidth"] = value;
         props["borderRightWidth"] = value;
     },
-    borderY: (props: AnyProps, value: any) => {
+    borderY: (props: IAnyProps, value: any) => {
         props["borderTopWidth"] = value;
         props["borderRightWidth"] = value;
     },
@@ -138,7 +138,7 @@ export type SpacingAttributes = {
  * @param theme The theme to get the spacing values from
  * @returns The css props
  */
-export function getSpacingAttributes(props: AnyProps, theme: ITheme): AnyProps {
+export function getSpacingAttributes(props: IAnyProps, theme: ITheme): IAnyProps {
     return getAttributes(
         props,
         spacingAttributes,

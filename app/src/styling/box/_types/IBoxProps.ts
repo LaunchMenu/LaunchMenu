@@ -4,6 +4,7 @@ import {ColorAttributes} from "../attributeRetrievers/getColorAttributes";
 import {MappedAttributes} from "../attributeRetrievers/getMappedAttributes";
 import {DomAttributes} from "../attributeRetrievers/getDomAttributes";
 import {Interpolation} from "@emotion/core";
+import {ElevationAttributes} from "../attributeRetrievers/getElevation";
 
 /**
  * The properties that can be applied to style a box
@@ -17,4 +18,5 @@ export type IBoxProps = {
 } & SpacingAttributes &
     ColorAttributes &
     MappedAttributes &
-    DomAttributes;
+    DomAttributes &
+    ElevationAttributes;

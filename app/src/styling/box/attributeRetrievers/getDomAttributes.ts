@@ -1,4 +1,4 @@
-import {AnyProps} from "./_types/anyProps";
+import {IAnyProps} from "./_types/IAnyProps";
 import {getAttributes} from "./getAttributes";
 import {ReactNode, CSSProperties, DOMAttributes, Ref} from "react";
 
@@ -8,11 +8,11 @@ import {ReactNode, CSSProperties, DOMAttributes, Ref} from "react";
  */
 export const domAttributes = {
     children: true,
-    className: (out: AnyProps, value: string) => {
+    className: (out: IAnyProps, value: string) => {
         if (out["className"]) out["className"] += " " + value;
         else out["className"] = value;
     },
-    class: (out: AnyProps, value: string) => {
+    class: (out: IAnyProps, value: string) => {
         if (out["className"]) out["className"] += " " + value;
         else out["className"] = value;
     },
@@ -38,7 +38,7 @@ export type DomAttributes = {
  * @param props The props to retrieve the data from
  * @returns The css props
  */
-export function getDomAttributes(props: AnyProps): AnyProps {
+export function getDomAttributes(props: IAnyProps): IAnyProps {
     return getAttributes(
         props,
         key => {

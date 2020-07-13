@@ -6,6 +6,7 @@ import {ClassNames} from "@emotion/core";
 import {getDomAttributes} from "./attributeRetrievers/getDomAttributes";
 import {IBoxProps} from "./_types/IBoxProps";
 import {useTheme} from "../theming/ThemeContext";
+import {getElevationAttribute} from "./attributeRetrievers/getElevation";
 
 /**
  * A standard box element, which takes attributes/properties and translates them to css
@@ -19,7 +20,8 @@ export const Box: FC<IBoxProps> = props => {
     const spacings = getSpacingAttributes(props, theme);
     const colors = getColorAttributes(props, theme);
     const general = getMappedAttributes(props);
-    const cssProps = {...spacings, ...colors, ...general};
+    const elevation = getElevationAttribute(props, theme);
+    const cssProps = {...spacings, ...colors, ...general, ...elevation};
 
     // Extract dom attributes to apply
     const domAttributes = getDomAttributes(props);
