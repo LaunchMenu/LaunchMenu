@@ -1,4 +1,6 @@
-import {AnyProps} from "./_types/anyProps";
+import {IAnyProps} from "./_types/IAnyProps";
+import {IPropValueGetter} from "./_types/IPropValueGetter";
+import {IPropDef} from "./_types/IPropDef";
 
 /**
  * Helper function to retrieve attributes their css equivalent, with the value obtained from the theme
@@ -8,19 +10,14 @@ import {AnyProps} from "./_types/anyProps";
  * @returns The css props
  */
 export function getAttributes(
-    props: AnyProps,
+    props: IAnyProps,
     attributes:
         | {
-              [attribute: string]:
-                  | string
-                  | boolean
-                  | ((props: AnyProps, value: any) => void);
+              [attribute: string]: IPropDef;
           }
-        | ((
-              attribute: string
-          ) => string | boolean | ((props: AnyProps, value: any) => void)),
-    getValue: (value: any, key: string, outProps: AnyProps) => any
-): AnyProps {
+        | ((attribute: string) => IPropDef),
+    getValue: IPropValueGetter
+): IAnyProps {
     const out = {};
     Object.keys(props).forEach(key => {
         const css = attributes instanceof Function ? attributes(key) : attributes[key];
@@ -32,7 +29,7 @@ export function getAttributes(
             if (typeof css == "string") {
                 out[css] = value;
             } else if (typeof css == "function") {
-                css(out, value);
+                css(out, value, key, props[key], getValue);
             } else {
                 out[key] = value;
             }

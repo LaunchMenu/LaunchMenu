@@ -1,4 +1,4 @@
-import React from "react";
+import React, {FC} from "react";
 import {getSpacingAttributes} from "./attributeRetrievers/getSpacingAttributes";
 import {getColorAttributes} from "./attributeRetrievers/getColorAttributes";
 import {getMappedAttributes} from "./attributeRetrievers/getMappedAttributes";
@@ -6,12 +6,13 @@ import {ClassNames} from "@emotion/core";
 import {getDomAttributes} from "./attributeRetrievers/getDomAttributes";
 import {IBoxProps} from "./_types/IBoxProps";
 import {useTheme} from "../theming/ThemeContext";
+import {getElevationAttribute} from "./attributeRetrievers/getElevation";
 
 /**
  * A standard box element, which takes attributes/properties and translates them to css
  * @param props
  */
-export const Box = (props: IBoxProps) => {
+export const Box: FC<IBoxProps> = props => {
     // The LaunchMenu theme to use
     const theme = useTheme();
 
@@ -19,7 +20,8 @@ export const Box = (props: IBoxProps) => {
     const spacings = getSpacingAttributes(props, theme);
     const colors = getColorAttributes(props, theme);
     const general = getMappedAttributes(props);
-    const cssProps = {...spacings, ...colors, ...general};
+    const elevation = getElevationAttribute(props, theme);
+    const cssProps = {...spacings, ...colors, ...general, ...elevation};
 
     // Extract dom attributes to apply
     const domAttributes = getDomAttributes(props);
@@ -34,11 +36,9 @@ export const Box = (props: IBoxProps) => {
                 <Comp
                     {...domAttributes}
                     className={
-                        css(cssProps) +
-                        " " +
-                        css(props.css) +
-                        " " +
-                        (domAttributes.className || "")
+                        (Object.keys(cssProps).length ? css(cssProps) + " " : "") +
+                        (domAttributes.className ? domAttributes.className + " " : "") +
+                        (props.css ? css(props.css) : "")
                     }
                 />
             )}

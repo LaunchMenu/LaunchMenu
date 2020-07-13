@@ -1,4 +1,4 @@
-export type CssDisplay =
+export type ICssDisplay =
     | "inline"
     | "block"
     | "contents"
@@ -23,7 +23,7 @@ export type CssDisplay =
     | "initial"
     | "inherit";
 
-export type CssPosition =
+export type ICssPosition =
     | "static"
     | "absolute"
     | "fixed"
@@ -31,7 +31,7 @@ export type CssPosition =
     | "sticky"
     | "initial"
     | "inherit";
-export type CssVerticalAlign =
+export type ICssVerticalAlign =
     | "baseline"
     | "bottom"
     | "inherit"
@@ -44,7 +44,7 @@ export type CssVerticalAlign =
     | "top"
     | "unset";
 
-export type CssOverflow =
+export type ICssOverflow =
     | "visible"
     | "hidden"
     | "scroll"
@@ -52,7 +52,7 @@ export type CssOverflow =
     | "initial"
     | "inherit";
 
-export type CssBorderStyle =
+export type ICssBorderStyle =
     | "none"
     | "hidden"
     | "dotted"
@@ -66,24 +66,24 @@ export type CssBorderStyle =
     | "initial"
     | "inherit";
 
-export type CssFlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
-export type CssFlexWrap = "nowrap" | "wrap" | "wrap-reverse";
-export type CssJustifyContent =
+export type ICssFlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
+export type ICssFlexWrap = "nowrap" | "wrap" | "wrap-reverse";
+export type ICssJustifyContent =
     | "flex-start"
     | "flex-end"
     | "center"
     | "space-between"
     | "space-around"
     | "space-evenly";
-export type CssAlignItems = "stretch" | "flex-start" | "flex-end" | "center" | "baselin";
-export type CssAlignContent =
+export type ICssAlignItems = "stretch" | "flex-start" | "flex-end" | "center" | "baselin";
+export type ICssAlignContent =
     | "flex-start"
     | "flex-end"
     | "center"
     | "space-between"
     | "space-around"
     | "stretch";
-export type CssAlignSelf =
+export type ICssAlignSelf =
     | "auto"
     | "flex-start"
     | "flex-end"
