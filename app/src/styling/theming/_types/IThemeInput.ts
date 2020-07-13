@@ -15,5 +15,12 @@ export type IThemeInput = {
             background: string;
         };
     };
+    elevations?: {
+        extraSmall?: string;
+        small?: string;
+        medium?: string;
+        large?: string;
+        extraLarge?: string;
+    };
     spacingMultiple: number;
 };

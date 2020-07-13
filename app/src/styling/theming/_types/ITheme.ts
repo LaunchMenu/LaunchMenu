@@ -16,6 +16,14 @@ export type ITheme = {
         fontBgSecondary: string;
         fontBgTertiary: string;
     };
+    elevations: {
+        extraSmall: string;
+        small: string;
+        medium: string;
+        large: string;
+        extraLarge: string;
+    };
+    spacing: (multiple: number) => number;
     /** Additional data for compatibility with fluent-ui theming */
     compatibility: {
         colors: {
@@ -43,5 +51,4 @@ export type ITheme = {
             white: string;
         };
     };
-    spacing: (multiple: number) => number;
 };

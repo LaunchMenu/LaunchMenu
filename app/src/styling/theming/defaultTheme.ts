@@ -9,8 +9,8 @@ export const defaultTheme = createTheme({
         },
         background: {
             primary: "#FFFFFF",
-            secondary: "#CFCFCF",
-            tertiary: "#AFAFAF",
+            secondary: "#E7E7E7",
+            tertiary: "#CCCCCC",
         },
         font: {
             accent: "#FFFFFF",

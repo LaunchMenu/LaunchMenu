@@ -1,17 +1,17 @@
-import {AnyProps} from "./_types/anyProps";
+import {IAnyProps} from "./_types/IAnyProps";
 import {getAttributes} from "./getAttributes";
 import {
-    CssDisplay,
-    CssPosition,
-    CssFlexDirection,
-    CssJustifyContent,
-    CssAlignItems,
-    CssAlignContent,
-    CssAlignSelf,
-    CssVerticalAlign,
-    CssOverflow,
-    CssBorderStyle,
-} from "./_types/cssTypes";
+    ICssDisplay,
+    ICssPosition,
+    ICssFlexDirection,
+    ICssJustifyContent,
+    ICssAlignItems,
+    ICssAlignContent,
+    ICssAlignSelf,
+    ICssVerticalAlign,
+    ICssOverflow,
+    ICssBorderStyle,
+} from "./_types/ICssTypes";
 
 /**
  * All the standard attributes, mapped to either true if the css camelcase name is the same,
@@ -54,23 +54,23 @@ export const mappedAttributes = {
  * The attributes that can be assigned
  */
 export type MappedAttributes = {
-    display?: CssDisplay;
-    position?: CssPosition;
-    overflow?: CssOverflow;
-    overflowX?: CssOverflow;
-    overflowY?: CssOverflow;
-    borderStyle?: CssBorderStyle;
-    borderTopStyle?: CssBorderStyle;
-    borderRightStyle?: CssBorderStyle;
-    borderBottomStyle?: CssBorderStyle;
-    borderLeftStyle?: CssBorderStyle;
-    verticalAlign?: CssVerticalAlign;
-    flexDirection?: CssFlexDirection;
-    flexWrap?: CssFlexDirection;
-    justifyContent?: CssJustifyContent;
-    alignItems?: CssAlignItems;
-    alignContent?: CssAlignContent;
-    alignSelf?: CssAlignSelf;
+    display?: ICssDisplay;
+    position?: ICssPosition;
+    overflow?: ICssOverflow;
+    overflowX?: ICssOverflow;
+    overflowY?: ICssOverflow;
+    borderStyle?: ICssBorderStyle;
+    borderTopStyle?: ICssBorderStyle;
+    borderRightStyle?: ICssBorderStyle;
+    borderBottomStyle?: ICssBorderStyle;
+    borderLeftStyle?: ICssBorderStyle;
+    verticalAlign?: ICssVerticalAlign;
+    flexDirection?: ICssFlexDirection;
+    flexWrap?: ICssFlexDirection;
+    justifyContent?: ICssJustifyContent;
+    alignItems?: ICssAlignItems;
+    alignContent?: ICssAlignContent;
+    alignSelf?: ICssAlignSelf;
     zIndex?: number;
     order?: number;
     flexGrow?: number;
@@ -92,6 +92,6 @@ export type MappedAttributes = {
  * @param props The props to retrieve the data from
  * @returns The css props
  */
-export function getMappedAttributes(props: AnyProps): AnyProps {
+export function getMappedAttributes(props: IAnyProps): IAnyProps {
     return getAttributes(props, mappedAttributes, (value: any) => value);
 }
