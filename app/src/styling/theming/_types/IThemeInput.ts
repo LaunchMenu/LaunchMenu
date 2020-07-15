@@ -1,21 +1,26 @@
 export type IThemeInput = {
     colors: {
-        primary: {
-            light: string;
-            default: string;
-            dark: string;
+        accent: {
+            primary: string; // light (for light theme)
+            secondary: string; // darker (for light theme)
+            tertiary: string; // darkest (for light theme)
         };
-        secondary: {
-            light: string;
-            default: string;
-            dark: string;
+        background: {
+            primary: string; // light (for light theme)
+            secondary: string; // darker (for light theme)
+            tertiary: string; // darkest (for light theme)
         };
-        neutral: {
-            start: string;
-            end: string;
+        font: {
+            accent: string;
+            background: string;
         };
-        black: string;
-        white: string;
+    };
+    elevations?: {
+        extraSmall?: string;
+        small?: string;
+        medium?: string;
+        large?: string;
+        extraLarge?: string;
     };
     spacingMultiple: number;
 };

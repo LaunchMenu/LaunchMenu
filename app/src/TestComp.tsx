@@ -1,45 +1,10 @@
-import React, {FC, useState} from "react";
-import {useTheme} from "./styling/theming/ThemeContext";
-import {PrimaryButton} from "@fluentui/react";
-import {Box} from "./styling/box/Box";
-import {createStandardMenuItem} from "./menus/items/createStandardMenuItem";
-import {Menu} from "./menus/menu/Menu";
-import {useDataHook} from "model-react";
-
-const items = [
-    createStandardMenuItem({
-        name: "Bob",
-        onExecute: () => alert("piss off, I am bob"),
-        onCursor: selected => {
-            console.log("Bob selected:", selected);
-        },
-    }),
-    createStandardMenuItem({
-        name: "John",
-        icon:
-            "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fvtk.org%2FWiki%2Fimages%2F0%2F03%2FVTK_Examples_Baseline_IO_TestReadTIFF.png",
-        onExecute: () => alert("piss off, I am john"),
-    }),
-];
-const menu = new Menu(items);
+import React, {FC} from "react";
+import {KeyHandlerTest} from "./componentTests/KeyHandlerTest";
+import {StackViewTest} from "./componentTests/StackViewTest";
+import {ThemeTest} from "./componentTests/ThemeTest";
 
 export const TestComp: FC = () => {
-    const [h] = useDataHook();
-    const items = menu.getItems(h);
-    const selectedItems = menu.getSelected(h);
-    const cursorItem = menu.getCursor(h);
-
-    return (
-        <Box>
-            {items.map((menuItem, i) => (
-                <menuItem.view
-                    key={i}
-                    isSelected={selectedItems.includes(menuItem)}
-                    isCursor={cursorItem == menuItem}
-                    menu={menu}
-                    item={menuItem}
-                />
-            ))}
-        </Box>
-    );
+    // return <StackViewTest />;
+    // return <KeyHandlerTest />;
+    return <ThemeTest />;
 };

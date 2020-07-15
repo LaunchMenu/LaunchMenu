@@ -22,7 +22,7 @@ export const MenuItemFrame: FC<{
                 else menu.setCursor(item);
             }, [onExecute, menu, item])
         }
-        background={isCursor ? "primary" : isSelected ? "secondary" : "neutral5"}>
+        background={isCursor ? "primary" : isSelected ? "secondary" : "bgPrimary"}>
         {children}
     </Box>
 );

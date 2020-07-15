@@ -1,6 +1,7 @@
-import {AnyProps} from "./_types/anyProps";
+import {IAnyProps} from "./_types/IAnyProps";
 import {getAttributes} from "./getAttributes";
 import {ITheme} from "../../theming/_types/ITheme";
+import {IPropValueGetter} from "./_types/IPropValueGetter";
 
 /**
  * All the color attributes that accept any color,
@@ -12,7 +13,7 @@ export const colorsAttributesCustom = {
     borderColorCustom: "borderColor",
     borderTopColorCustom: "borderTopColor",
     borderRightColorCustom: "borderRightColor",
-    borderBottomColorCUstom: "borderBottomColor",
+    borderBottomColorCustom: "borderBottomColor",
     borderLeftColorCustom: "borderLeftColor",
     caretColorCustom: "caretColor",
     colorCustom: "color",
@@ -27,7 +28,23 @@ export const colorsAttributesCustom = {
  * or a string if it's different
  */
 export const colorsAttributesTheme = {
-    background: true,
+    background: (
+        out: IAnyProps,
+        value: string,
+        key: string,
+        rawValue: string,
+        getValue: IPropValueGetter
+    ) => {
+        out.background = value;
+        // Pair the background color with a text color
+        if (!("color" in out))
+            out.color = getValue(
+                "font" + rawValue.charAt(0).toUpperCase() + rawValue.slice(1),
+                "color",
+                out
+            );
+    },
+    backgroundColor: true,
     borderColor: true,
     borderTopColor: true,
     borderRightColor: true,
@@ -58,6 +75,14 @@ export type ColorAttributes = {
 } &
     {
         [P in keyof typeof colorsAttributesTheme]?: keyof ITheme["colors"];
+    } & {
+        background?:
+            | "primary"
+            | "secondary"
+            | "tertiary"
+            | "bgPrimary"
+            | "bgSecondary"
+            | "bgTertiary";
     };
 
 /**
@@ -66,7 +91,7 @@ export type ColorAttributes = {
  * @param theme The theme to get the colors from
  * @returns The css props
  */
-export function getColorAttributes(props: AnyProps, theme: ITheme): AnyProps {
+export function getColorAttributes(props: IAnyProps, theme: ITheme): IAnyProps {
     return getAttributes(
         props,
         colorsAttributes,
