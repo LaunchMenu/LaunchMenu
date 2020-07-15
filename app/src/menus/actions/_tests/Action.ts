@@ -64,6 +64,65 @@ describe("Action", () => {
             expect(binding3.tags).toEqual(["potatoes", "oranges"]);
         });
     });
+    describe("Action.createBinding", () => {
+        // Notice that these action cores are only for testing and don't make any sense
+        it("Creates a binding to this action", () => {
+            const action = new Action((input: number[]) => {
+                return 3;
+            });
+            const binding = action.createBinding(2);
+            expect(binding.action).toEqual(action);
+            expect(binding.data).toEqual(2);
+            expect(binding.tags).toEqual([]);
+
+            const binding2 = action.createBinding(12, ["hoi", "hi"]);
+            expect(binding2.action).toEqual(action);
+            expect(binding2.data).toEqual(12);
+            expect(binding2.tags).toEqual(["hoi", "hi"]);
+        });
+        it("Inherits bindings from the action", () => {
+            const action = new Action(
+                (input: number[]) => {
+                    return 3;
+                },
+                ["potatoes"]
+            );
+            const binding = action.createBinding(2);
+            expect(binding.tags).toEqual(["potatoes"]);
+
+            const binding2 = action.createBinding(2, ["oranges"]);
+            expect(binding2.tags).toEqual(["oranges"]);
+
+            const binding3 = action.createBinding(2, tags => [...tags, "oranges"]);
+            expect(binding3.tags).toEqual(["potatoes", "oranges"]);
+        });
+    });
+    describe("Action.canBeAppliedTo", () => {
+        it("Correctly indicates whether a given item has a direct binding for this action", () => {
+            const action = new Action((input: number[]) => {
+                return 3;
+            });
+            const item = createItem(action.createBinding(2));
+            expect(action.canBeAppliedTo(item)).toBeTruthy();
+            expect(action.canBeAppliedTo(createItem())).toBeFalsy();
+            expect(
+                action.canBeAppliedTo(
+                    createItem(new Action(() => {}).createBinding(undefined))
+                )
+            ).toBeFalsy();
+        });
+        it("Correctly indicates whether a given item has an indirect binding for this action", () => {
+            const action = new Action((input: number[]) => {
+                return 3;
+            });
+            const handler = action.createHandler((n: string[]) => {
+                return 3;
+            });
+            const item = createItem(handler.createBinding("test"));
+            expect(action.canBeAppliedTo(item)).toBeTruthy();
+            expect(action.canBeAppliedTo(createItem())).toBeFalsy();
+        });
+    });
     describe("Action.createHandler", () => {
         // Notice that these action cores are only for testing and don't make any sense
         it("Creates an action with this action as ancestor", () => {

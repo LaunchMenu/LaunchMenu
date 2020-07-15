@@ -31,8 +31,8 @@ export type DomAttributes = {
     class?: string;
     style?: CSSProperties;
     draggable?: boolean;
-    elRef?: Ref<any>;
     title?: string;
+    elRef?: Ref<any>;
 } & DOMAttributes<Element>; // Standard event listeners
 
 /**

@@ -6,6 +6,7 @@ import {ICategory} from "../actions/types/category/_types/ICategory";
 import {getMenuCategory} from "../actions/types/category/getCategoryAction";
 import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
+import {isItemSelectable} from "../items/isItemSelectable";
 
 /**
  * A menu class to control menu items and their state,
@@ -165,7 +166,12 @@ export class Menu {
 
         // Sets the current cursor if there isn't any yet
         const cursor = this.cursor.get(null);
-        if (cursor == null || !items.includes(cursor)) this.setCursor(items[0] || null);
+        if (cursor == null || !items.includes(cursor))
+            for (let i = 0; i < items.length; i++)
+                if (isItemSelectable(items[i])) {
+                    this.setCursor(items[i] || null);
+                    break;
+                }
     }
 
     /**
@@ -245,6 +251,19 @@ export class Menu {
     public getCursor(hook: IDataHook = null): IMenuItem | null {
         if (this.isDestroyed(hook)) return null;
         return this.cursor.get(hook);
+    }
+
+    /**
+     * Retrieves all the selected items including the cursor
+     * @param hook The hook to subscribe to changes
+     * @returns The selected items including the cursor
+     */
+    public getAllSelected(hook: IDataHook = null): IMenuItem[] {
+        if (this.isDestroyed(hook)) return [];
+        const cursor = this.cursor.get(hook);
+        const selected = this.getSelected(hook);
+        if (cursor && !selected.includes(cursor)) return [...selected, cursor];
+        return selected;
     }
 
     /**

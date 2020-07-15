@@ -9,7 +9,13 @@ import {MenuItemLayout} from "./components/MenuItemLayout";
 import {executeAction} from "../actions/types/execute/executeAction";
 import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
 import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
+import {getCategoryAction} from "../actions/types/category/getCategoryAction";
 
+/**
+ * Creates a new standard menu item
+ * @param data The data to create a simple menu item with
+ * @returns The menu item
+ */
 export function createStandardMenuItem({
     name,
     description,
@@ -17,10 +23,14 @@ export function createStandardMenuItem({
     onExecute,
     onSelect,
     onCursor,
+    category,
+    actionBindings = [],
 }: IStandardMenuItemData): IMenuItem {
-    let bindings: IActionBinding<any>[] = [executeAction.createBinding(onExecute)];
+    let bindings: IActionBinding<any>[] = [...actionBindings];
+    if (onExecute) bindings.push(executeAction.createBinding(onExecute));
     if (onSelect) bindings.push(onSelectAction.createBinding(onSelect));
     if (onCursor) bindings.push(onCursorAction.createBinding(onCursor));
+    if (category) bindings.push(getCategoryAction.createBinding(category));
 
     return {
         view: memo(props => (

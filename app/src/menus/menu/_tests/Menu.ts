@@ -384,10 +384,15 @@ describe("Menu", () => {
             description: "some category for Bob",
             item: createMenuItem(),
         };
-        const items = [createMenuItem(), createMenuItem(), createMenuItem(someCategory)];
+        const items = [
+            createMenuItem(undefined, true),
+            createMenuItem(),
+            createMenuItem(someCategory),
+        ];
         it("Has the correct initial cursor", () => {
             expect(new Menu().getCursor()).toEqual(null);
-            expect(new Menu(items).getCursor()).toEqual(items[0]);
+            // It won't select unselectable items
+            expect(new Menu(items).getCursor()).toEqual(items[1]);
         });
         it("Properly updates the cursor", () => {
             const menu = new Menu(items);
@@ -414,7 +419,7 @@ describe("Menu", () => {
             expect(selectCount).toBe(1);
             expect(deselectCount).toBe(1);
         });
-        it("Can't set item as cursor if not in th emenu", () => {
+        it("Can't set item as cursor if not in the menu", () => {
             const menu = new Menu(items);
             const item = createMenuItem();
             menu.setCursor(item);
@@ -427,6 +432,35 @@ describe("Menu", () => {
             expect(menu.getCursor()).toEqual(item);
             menu.removeItem(item);
             expect(menu.getCursor()).not.toEqual(item);
+        });
+    });
+    describe("Menu.getAllSelected", () => {
+        const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+        it("Combines the selection and cursor if present", () => {
+            const item = createMenuItem();
+            const item2 = createMenuItem();
+            const menu = new Menu([...items, item, item2]);
+            menu.setCursor(item);
+            expect(menu.getAllSelected()).toEqual([item]);
+            menu.setSelected(item2);
+            expect(menu.getAllSelected()).toEqual([item2, item]);
+        });
+        it("Returns the selection if no cursor is present", () => {
+            const item = createMenuItem();
+            const item2 = createMenuItem();
+            const menu = new Menu([...items, item, item2]);
+            menu.setCursor(null);
+            menu.setSelected(item2);
+            expect(menu.getAllSelected()).toEqual([item2]);
+        });
+        it("Only includes items once", () => {
+            const item = createMenuItem();
+            const item2 = createMenuItem();
+            const menu = new Menu([...items, item, item2]);
+            menu.setCursor(item);
+            expect(menu.getAllSelected()).toEqual([item]);
+            menu.setSelected(item);
+            expect(menu.getAllSelected()).toEqual([item]);
         });
     });
     describe("Menu.destroy", () => {
@@ -512,7 +546,6 @@ describe("Menu", () => {
             expect(selectCount).toBe(0);
         });
     });
-
     describe("Getters can be subscribed to", () => {
         let menu: Menu;
         const items = [createMenuItem(), createMenuItem(), createMenuItem()];
@@ -552,6 +585,19 @@ describe("Menu", () => {
                 expect(callback.mock.calls.length).toBe(0);
                 menu.setCursor(items[2]);
                 expect(callback.mock.calls.length).toBe(1);
+            });
+        });
+        describe("Menu.getAllSelected", () => {
+            it("Correctly subscribes to changes", () => {
+                const callback = jest.fn(() => {});
+                expect(
+                    menu.getAllSelected({call: callback, registerRemover: () => {}})
+                ).toEqual([items[0]]);
+                expect(callback.mock.calls.length).toBe(0);
+                menu.setCursor(items[2]);
+                expect(callback.mock.calls.length).toBe(1);
+                menu.setSelected(items[1], true);
+                expect(callback.mock.calls.length).toBe(2);
             });
         });
     });
