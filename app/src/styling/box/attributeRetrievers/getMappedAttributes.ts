@@ -83,6 +83,7 @@ export type MappedAttributes = {
     minHeight?: string | number;
     maxWidth?: string | number;
     maxHeight?: string | number;
+    cursor?: string;
 
     // TODO: add grid attributes
 };

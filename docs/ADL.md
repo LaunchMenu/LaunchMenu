@@ -261,3 +261,8 @@ The async await syntax however has potential for other events to creep in betwee
   - Cleaner syntax
   - No unfamiliar syntax
 - Hopefully the overhead will be acceptable
+
+
+
+
+# 3. Hooks TODO:

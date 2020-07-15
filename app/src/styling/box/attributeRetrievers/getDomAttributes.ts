@@ -19,6 +19,7 @@ export const domAttributes = {
     elRef: "ref",
     style: true,
     draggable: true,
+    title: true,
 };
 
 /**
@@ -31,10 +32,11 @@ export type DomAttributes = {
     style?: CSSProperties;
     draggable?: boolean;
     elRef?: Ref<any>;
+    title?: string;
 } & DOMAttributes<Element>; // Standard event listeners
 
 /**
- * Retrieves all aplicable attributes
+ * Retrieves all applicable attributes
  * @param props The props to retrieve the data from
  * @returns The css props
  */
