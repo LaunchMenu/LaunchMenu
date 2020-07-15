@@ -29,6 +29,13 @@ export type IAction<I, O> = {
     createBinding(data: I, tags?: ITagsOverride): IActionBinding<I>;
 
     /**
+     * Checks whether the item contains a direct or indirect binding for this action
+     * @param item The item to check
+     * @returns Whether it contains a binding
+     */
+    canBeAppliedTo(item: IMenuItem): boolean;
+
+    /**
      * Retrieves the action data for a set of items, in order to be executed
      * @param items The items to get the data for
      * @returns The action execution functions

@@ -13,16 +13,19 @@ export const MenuItemFrame: FC<{
     item?: IMenuItem;
     onExecute?: () => void;
 }> = ({isCursor, isSelected, menu, item, onExecute, children}) => (
-    <Box
-        cursor="pointer"
-        onClick={
-            onExecute &&
-            useCallback(() => {
-                if (!menu || !item || menu.getCursor() == item) onExecute();
-                else menu.setCursor(item);
-            }, [onExecute, menu, item])
-        }
-        background={isCursor ? "primary" : isSelected ? "secondary" : "neutral5"}>
-        {children}
+    <Box background={isSelected ? "secondary" : "bgPrimary"} paddingLeft={1}>
+        <Box
+            cursor="pointer"
+            onClick={
+                onExecute &&
+                useCallback(() => {
+                    if (!menu || !item || menu.getCursor() == item) onExecute();
+                    else menu.setCursor(item);
+                }, [onExecute, menu, item])
+            }
+            onContextMenu={() => console.log("detect")}
+            background={isCursor ? "primary" : "bgPrimary"}>
+            {children}
+        </Box>
     </Box>
 );

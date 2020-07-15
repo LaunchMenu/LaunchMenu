@@ -43,4 +43,11 @@ export type IMenu = {
      * @returns The cursor item
      */
     getCursor(hook?: IDataHook): IMenuItem | null;
+
+    /**
+     * Retrieves all the selected items including the cursor
+     * @param hook The hook to subscribe to changes
+     * @returns The selected items including the cursor
+     */
+    getAllSelected(hook?: IDataHook): IMenuItem[];
 };
