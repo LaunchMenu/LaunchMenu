@@ -76,6 +76,18 @@ export class Action<I, O> implements IAction<I, O> {
     }
 
     /**
+     * Checks whether the item contains a direct or indirect binding for this action
+     * @param item The item to check
+     * @returns Whether it contains a binding
+     */
+    public canBeAppliedTo(item: IMenuItem): boolean {
+        return !!item.actionBindings.find(
+            ({action}) =>
+                action == this || action.ancestors[this.ancestors.length] == this
+        );
+    }
+
+    /**
      * Checks whether the given array is an items array
      * @param array The array to check
      * @returns Whether the given array is an items array
