@@ -1,9 +1,10 @@
 import {IDataHook, Field, DataCacher} from "model-react";
+import {IStack} from "./_types/IStack";
 
 /**
  * A stack of items and substacking system
  */
-export class Stack<T> {
+export class Stack<T> implements IStack<T> {
     protected rawItems = new Field([] as (T | this)[]);
     protected items = new DataCacher(h =>
         this.rawItems
