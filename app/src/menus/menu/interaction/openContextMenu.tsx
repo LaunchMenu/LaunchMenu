@@ -1,31 +1,20 @@
 import React from "react";
 import {IMenu} from "../_types/IMenu";
-import {ViewStack} from "../../../stacks/ViewStack";
-import {KeyHandlerStack} from "../../../stacks/keyHandlerStack/KeyHandlerStack";
 import {getContextMenu} from "../../utils/getContextMenu";
-import {createMenuKeyHandler} from "./keyHandler/createMenuKeyHandler";
-import {MenuView} from "../MenuView";
+import {IViewStack} from "../../../stacks/_types/IViewStack";
+import {IKeyHandlerStack} from "../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
+import {openUI} from "../../../context/openUI/openUI";
 
 /**
  * Opens a context menu for the selection of the given menu
  * @param menu The menu to perform the event for
- * @param viewStack The view stack to add the context menu to
- * @param inputStack The key input handler stack
+ * @param ioContext The IO context to use to open the context menu
  */
 export function openContextMenu(
     menu: IMenu,
-    viewStack: ViewStack,
-    inputStack: KeyHandlerStack
+    ioContext: {panes: {menu: IViewStack}; keyHandler: IKeyHandlerStack}
 ): void {
-    const close = () => {
-        viewStack.pop(view);
-        inputStack.pop(keyHandler);
-    };
-    const contextMenu = getContextMenu(menu.getAllSelected(), close);
-    if (contextMenu.getItems().length == 0) return;
-
-    const view = <MenuView menu={contextMenu} />;
-    const keyHandler = createMenuKeyHandler(contextMenu, viewStack, inputStack, close);
-    viewStack.push(view);
-    inputStack.push(keyHandler);
+    let close = () => {}; // placeholder
+    const contextMenu = getContextMenu(menu.getAllSelected(), () => close());
+    if (contextMenu.getItems().length > 0) close = openUI(ioContext, {menu: contextMenu});
 }

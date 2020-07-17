@@ -8,5 +8,5 @@ export type IIOContext = {
         content: IViewStack;
     };
     keyHandler: IKeyHandlerStack;
-    // TODO: add settings
+    // TODO: add common/global settings
 };
