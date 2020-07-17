@@ -1,6 +1,7 @@
 import {IOpenableUI} from "../_types/IOpenableUI";
 import {TPartialContextFromContent} from "../_types/TPartialContextFromContent";
 import {openMenu} from "./openMenu";
+import {openKeyHandler} from "./openKeyHandler";
 
 /**
  * Opens the given content within the given ui context
@@ -38,6 +39,9 @@ export function openUI<D extends IOpenableUI>(
     // Open all requested elements
     const closeMenu = openMenu(context, content, close);
     if (closeMenu) closers.unshift(...closeMenu);
+
+    const closeKeyHandlers = openKeyHandler(context, content);
+    if (closeKeyHandlers) closers.unshift(...closeKeyHandlers);
 
     // Returning the closing function
     return close;

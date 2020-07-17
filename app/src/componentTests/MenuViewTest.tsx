@@ -50,7 +50,7 @@ const alertHandlerAction = alertAction.createHandler((data: {message: string}[])
 
 // Create stacks and some menu
 const viewStack = new ViewStack();
-const inputStack = new KeyHandlerStack(new KeyHandler(document));
+const inputStack = new KeyHandlerStack(new KeyHandler(window));
 const menu = new Menu([
     createStandardMenuItem({
         name: "bob (alert)",

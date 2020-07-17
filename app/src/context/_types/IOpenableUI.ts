@@ -1,14 +1,12 @@
-import {IMenu} from "../../menus/menu/_types/IMenu";
 import {IOpenableField} from "./IOpenableField";
 import {IOpenableContent} from "./IOpenableContent";
 import {IOpenableMenu} from "./IOpenableMenu";
-import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {IOpenableKeyHandler} from "./IOpenableKeyHandler";
 
 /**
  * Any data that can be opened in a stack
  */
 export type IOpenableUI = IOpenableMenu &
     IOpenableField &
-    IOpenableContent & {
-        keyHandler?: IKeyEventListener | IKeyEventListener[];
-    };
+    IOpenableContent &
+    IOpenableKeyHandler;

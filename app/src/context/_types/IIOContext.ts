@@ -9,4 +9,5 @@ export type IIOContext = {
     };
     keyHandler: IKeyHandlerStack;
     // TODO: add common/global settings
+    // TODO: add undo/redo facility
 };

@@ -12,4 +12,5 @@ export type TPartialContextFromContent<IOpenable> = (IOpenable extends {menu: an
     : unknown) &
     (IOpenable extends {search: any} ? {panes: {search: IViewStack}} : unknown) &
     (IOpenable extends {content: any} ? {panes: {content: IViewStack}} : unknown) &
-    (IOpenable extends {menu: IMenu} ? {keyHandler: IKeyHandlerStack} : unknown) & {};
+    (IOpenable extends {menu: IMenu} ? {keyHandler: IKeyHandlerStack} : unknown) &
+    (IOpenable extends {keyHandler: any} ? {keyHandler: IKeyHandlerStack} : unknown) & {};
