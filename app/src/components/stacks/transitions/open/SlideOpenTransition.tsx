@@ -8,7 +8,7 @@ import {ISlideOpenTransitionProps} from "./_types/ISlideOpenTransition";
 export const SlideOpenTransition: FC<ISlideOpenTransitionProps> = ({
     onComplete,
     children,
-    duration = 500,
+    duration = 150,
     direction = "right",
     activate = true,
 }) => {

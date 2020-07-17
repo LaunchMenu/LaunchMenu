@@ -1,7 +1,7 @@
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {IDataHook, Field} from "model-react";
 import {IMenuCategoryConfig} from "./_types/IMenuCategoryConfig";
-import {TFull} from "../../_types/TFull";
+import {TRequired} from "../../_types/TRequired";
 import {ICategory} from "../actions/types/category/_types/ICategory";
 import {getMenuCategory} from "../actions/types/category/getCategoryAction";
 import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
@@ -13,7 +13,7 @@ import {isItemSelectable} from "../items/isItemSelectable";
  * optimized for small item sets.
  */
 export class Menu {
-    protected categoryConfig: TFull<IMenuCategoryConfig>;
+    protected categoryConfig: TRequired<IMenuCategoryConfig>;
     protected destroyed = new Field(false);
 
     // Tracking menu items

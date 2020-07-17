@@ -8,7 +8,7 @@ import {ISlideCloseTransitionProps} from "./_types/ISlideCloseTransition";
 export const SlideCloseTransition: FC<ISlideCloseTransitionProps> = ({
     onComplete,
     children,
-    duration = 500,
+    duration = 150,
     direction = "right",
     activate = true,
 }) => {

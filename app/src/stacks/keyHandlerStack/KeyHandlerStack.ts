@@ -2,11 +2,13 @@ import {Stack} from "../Stack";
 import {IKeyEventListener} from "./_types/IKeyEventListener";
 import {IKeyEvent} from "./_types/IKeyEvent";
 import {KeyHandler} from "./KeyHandler";
+import {IKeyHandlerStack} from "./_types/IKeyHandlerStack";
 
 /**
  * A stack to handle keyboard inputs
  */
-export class KeyHandlerStack extends Stack<IKeyEventListener> {
+export class KeyHandlerStack extends Stack<IKeyEventListener>
+    implements IKeyHandlerStack {
     /**
      * Creates a new key handler stack
      * @param handler The handler to create the stack for

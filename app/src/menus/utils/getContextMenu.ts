@@ -15,7 +15,6 @@ export function getContextMenu(items: IMenuItem[], close: () => void): Menu {
     const foundActions = [] as {
         action: IAction<any, any>;
         items: IMenuItem[];
-        skip: boolean;
     }[];
 
     // Go through all action bindings and collect actions
@@ -32,7 +31,10 @@ export function getContextMenu(items: IMenuItem[], close: () => void): Menu {
                 if (foundAction) {
                     if (!foundAction.items.includes(item)) foundAction.items.push(item);
                 } else {
-                    foundActions.push({action: itemAction, items: [item], skip: false});
+                    foundActions.push({
+                        action: itemAction,
+                        items: [item],
+                    });
                 }
 
                 // Go to the next item action
@@ -41,43 +43,46 @@ export function getContextMenu(items: IMenuItem[], close: () => void): Menu {
         });
     });
 
-    // Sort the actions such that deeper actions are handler first
-    foundActions.sort((a, b) => b.items.length - a.items.length);
+    // Get all the menu items
+    const foundActionsWithData = foundActions
+        .map(foundAction => {
+            const actionItem = foundAction.action
+                .get(foundAction.items)
+                .getMenuItem?.(close) as IMenuItem;
+            if (foundAction.items.length < count)
+                actionItem.actionBindings.push(
+                    getCategoryAction.createBinding(
+                        getContextCategory(foundAction.items.length, count)
+                    )
+                );
+            return {
+                ...foundAction,
+                actionItem,
+                childHitCount: 0,
+            };
+        })
+        .filter(({actionItem}) => actionItem);
+
+    // Set the child hit counts
+    foundActionsWithData.forEach(({action, items: actionItems}) => {
+        action.ancestors.forEach(ancestor => {
+            const ancestorData = foundActionsWithData.find(
+                ({action}) => action == ancestor
+            );
+            if (ancestorData) {
+                ancestorData.childHitCount = Math.max(
+                    ancestorData.childHitCount,
+                    actionItems.length
+                );
+            }
+        });
+    });
+
+    // Filter redundant actions
+    const filteredActions = foundActionsWithData.filter(
+        ({items: actionItems, childHitCount}) => actionItems.length > childHitCount
+    );
 
     // Go through all actions and collect them in a menu
-    return new Menu(
-        foundActions
-            .map(({action, items: actionItems, skip}) => {
-                // Retrieve the item
-                const item =
-                    !skip &&
-                    (action.get(actionItems).getMenuItem?.(close) as
-                        | IMenuItem
-                        | undefined);
-
-                // If the action has an item and has full coverage, or should be skipped, its parent should be skipped
-                if ((item && count == actionItems.length) || skip) {
-                    const parent = action.ancestors[action.ancestors.length - 1];
-                    if (parent) {
-                        const actionData = foundActions.find(
-                            ({action}) => action == parent
-                        );
-                        if (actionData) actionData.skip = true;
-                    }
-                }
-
-                // If there is no item, or the item should be skipped return nothing
-                if (!item || skip) return;
-
-                // Pass a category, which labels actions with partial coverage
-                if (actionItems.length != count) {
-                    const category = getContextCategory(actionItems.length, count);
-                    item.actionBindings.push(getCategoryAction.createBinding(category));
-                }
-
-                // Return the item
-                return item;
-            })
-            .filter(item => item) as IMenuItem[]
-    );
+    return new Menu(filteredActions.map(({actionItem}) => actionItem));
 }

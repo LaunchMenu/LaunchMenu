@@ -1,13 +1,13 @@
 import React, {FC} from "react";
 import {Menu} from "../menus/menu/Menu";
-import {MenuView} from "../menus/menu/MenuView";
 import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
-import {createMenuKeyHandler} from "../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {createStandardMenuItem} from "../menus/items/createStandardMenuItem";
 import {ViewStack} from "../stacks/ViewStack";
 import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
 import {StackView} from "../components/stacks/StackView";
 import {Action} from "../menus/actions/Action";
+import {createMenuKeyHandler} from "../menus/menu/interaction/keyHandler/createMenuKeyHandler";
+import {IOContext} from "../context/IOContext";
 
 // Create some context action
 const alertAction = new Action(
@@ -16,12 +16,12 @@ const alertAction = new Action(
         const execute = () => alert(text);
         return {
             execute,
-            getMenuItem: (close: () => void) =>
+            getMenuItem: (closeMenu: () => void) =>
                 createStandardMenuItem({
                     name: "Alert All",
                     onExecute: () => {
                         execute();
-                        close();
+                        closeMenu();
                     },
                 }),
         };
@@ -34,20 +34,23 @@ const alertHandlerAction = alertAction.createHandler((data: {message: string}[])
     return {
         message: text,
         execute,
-        getMenuItem: (close: () => void) =>
+        getMenuItem: (closeMenu: () => void) =>
             createStandardMenuItem({
                 name: "Sub Alert",
                 onExecute: () => {
                     execute();
-                    close();
+                    closeMenu();
                 },
+                actionBindings: [
+                    alertHandlerAction.createBinding({message: "Meta alert! " + text}),
+                ],
             }),
     };
 });
 
 // Create stacks and some menu
 const viewStack = new ViewStack();
-const inputStack = new KeyHandlerStack(new KeyHandler(document));
+const inputStack = new KeyHandlerStack(new KeyHandler(window));
 const menu = new Menu([
     createStandardMenuItem({
         name: "bob (alert)",
@@ -76,8 +79,11 @@ const menu = new Menu([
     }),
     createStandardMenuItem({name: "Wow", onExecute: () => console.log("Wow")}),
 ]);
-viewStack.push(<MenuView menu={menu} />);
-inputStack.push(createMenuKeyHandler(menu, viewStack, inputStack));
+const context = new IOContext({
+    panes: {menu: viewStack, content: viewStack, field: viewStack},
+    keyHandler: inputStack,
+});
+context.openUI({menu, menuHandler: createMenuKeyHandler(menu, context)});
 
 export const MenuViewTest: FC = () => {
     return <StackView items={viewStack} />;

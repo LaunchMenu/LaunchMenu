@@ -9,7 +9,7 @@ import {v4 as uuid} from "uuid";
 export const SlideChangeTransition: FC<ISlideChangeTransitionProps> = ({
     onComplete,
     children,
-    duration = 500,
+    duration = 150,
     direction = "right",
     activate = true,
 }) => {
