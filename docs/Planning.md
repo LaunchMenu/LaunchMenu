@@ -226,6 +226,7 @@ type IMenuItem = { ... }
 type IPrioritizedMenuItem = {
     priority: number;
     item: IMenuItem;
+    getUpdatedPriority: (query: IQuery)=>number;
 };
 type IGeneratorCallback<T> =
     /**
@@ -558,13 +559,14 @@ const searchItems = [
         actionBindings: [
             searchHandler.createBinding({
                 search: async (search: IQuery, push: IMenuItemCallback) => {
-                    await push({priority: Infinity, item: null as IMenuItem});
+                    await push({priority: Infinity, item: null as IMenuItem, getUpdatedPriority: (search: IQuery)=>3});
                     await searchAction.get(myChildren).search(search, push);
                 },
             }),
         ],
     },
 ];
+
 
 // Performing search
 const Utils: any = null;

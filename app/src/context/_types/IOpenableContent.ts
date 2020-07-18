@@ -8,6 +8,6 @@ export type IOpenableContent =
     | {content?: IViewStackItem}
     | {
           content: string; // TODO: replace with content interface
-          contentView: IViewStackItem;
-          contentHandler: IKeyEventListener;
+          contentView?: IViewStackItem;
+          contentHandler?: IKeyEventListener;
       };

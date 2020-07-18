@@ -8,6 +8,6 @@ export type IOpenableField =
     | {field?: IViewStackItem}
     | {
           field: string; // TODO: replace with field interface
-          fieldView: IViewStackItem;
-          fieldHandler: IKeyEventListener;
+          fieldView?: IViewStackItem;
+          fieldHandler?: IKeyEventListener;
       };
