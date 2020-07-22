@@ -1,7 +1,7 @@
 import React, {FC, useCallback} from "react";
-import {Box} from "../../../styling/box/Box";
-import {IMenu} from "../../menu/_types/IMenu";
-import {IMenuItem} from "../_types/IMenuItem";
+import {Box} from "../../styling/box/Box";
+import {IMenu} from "../../menus/menu/_types/IMenu";
+import {IMenuItem} from "../../menus/items/_types/IMenuItem";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution

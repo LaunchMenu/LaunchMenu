@@ -1,7 +1,7 @@
 import React, {memo} from "react";
 import {ICategory} from "../actions/types/category/_types/ICategory";
-import {MenuItemFrame} from "../items/components/MenuItemFrame";
-import {MenuItemLayout} from "../items/components/MenuItemLayout";
+import {MenuItemFrame} from "../../components/items/MenuItemFrame";
+import {MenuItemLayout} from "../../components/items/MenuItemLayout";
 
 /**
  * Creates a new context menu category, based on the number of items that have the action in this category

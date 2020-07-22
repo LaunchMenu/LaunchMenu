@@ -1,4 +1,4 @@
-import React, {FC} from "react";
+import React, {FC, useState, useCallback} from "react";
 import {Menu} from "../menus/menu/Menu";
 import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
 import {createStandardMenuItem} from "../menus/items/createStandardMenuItem";
@@ -8,6 +8,9 @@ import {StackView} from "../components/stacks/StackView";
 import {Action} from "../menus/actions/Action";
 import {createMenuKeyHandler} from "../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {IOContext} from "../context/IOContext";
+import {TextField} from "@fluentui/react";
+import {Box} from "../styling/box/Box";
+import {SearchMenu} from "../menus/menu/SearchMenu";
 
 // Create some context action
 const alertAction = new Action(
@@ -85,6 +88,28 @@ const context = new IOContext({
 });
 context.openUI({menu, menuHandler: createMenuKeyHandler(menu, context)});
 
+const searchMenu = new SearchMenu();
+searchMenu.setSearchItems(menu.getItems());
+context.openUI({
+    menu: searchMenu,
+    menuHandler: createMenuKeyHandler(searchMenu, context),
+});
+
 export const MenuViewTest: FC = () => {
-    return <StackView items={viewStack} />;
+    const [search, setSearch] = useState("");
+    const performSearch = useCallback((search: string) => {
+        setSearch(search);
+        searchMenu.setSearch(search);
+    }, []);
+    return (
+        <Box display="flex" flexDirection="column" height="100%">
+            <TextField
+                value={search}
+                onChange={(e, v) => v != undefined && performSearch(v)}
+            />
+            <Box position="relative" flexGrow={1}>
+                <StackView items={viewStack} />
+            </Box>
+        </Box>
+    );
 };

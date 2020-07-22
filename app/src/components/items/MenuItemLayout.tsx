@@ -1,5 +1,5 @@
 import React, {FC, ReactNode} from "react";
-import {Box} from "../../../styling/box/Box";
+import {Box} from "../../styling/box/Box";
 
 /**
  * The standard layout for menu items, having the icon on the left, and vertically stacked content on the right

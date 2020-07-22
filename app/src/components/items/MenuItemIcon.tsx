@@ -1,6 +1,6 @@
 import {FC} from "react";
 import React from "react";
-import {Box} from "../../../styling/box/Box";
+import {Box} from "../../styling/box/Box";
 
 export const MenuItemIcon: FC<{icon: string}> = ({icon}) => (
     <Box

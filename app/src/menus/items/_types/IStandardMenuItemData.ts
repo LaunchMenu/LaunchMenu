@@ -15,6 +15,9 @@ export type IStandardMenuItemData = {
     /** The description of the menu item */
     description?: string;
 
+    /** Any tags that can be used for searching */
+    tags?: string[];
+
     /** The function to execute when executing the menu item's default action */
     onExecute?: () => void; // TODO: also add command based signature once undo/redo is made
 

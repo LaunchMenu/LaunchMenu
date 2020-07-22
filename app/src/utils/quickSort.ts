@@ -15,7 +15,7 @@ export function quickSort<T>(
     if (start >= end) return arr;
 
     let pivotIndex = partition(arr, condition, start, end);
-    quickSort(arr, condition, start, pivotIndex);
+    quickSort(arr, condition, start, pivotIndex - 1);
     quickSort(arr, condition, pivotIndex + 1, end);
 
     return arr;
@@ -30,25 +30,25 @@ function partition<T>(
     start: number,
     end: number
 ) {
-    let pivot = arr[start],
+    let pivot = arr[end],
         pointer = start;
 
     if (condition) {
-        for (let i = start; i <= end; i++) {
+        for (let i = start; i < end; i++) {
             if (condition(arr[i], pivot)) {
-                pointer++;
                 swap(arr, pointer, i);
+                pointer++;
             }
         }
     } else {
-        for (let i = start; i <= end; i++) {
+        for (let i = start; i < end; i++) {
             if (arr[i] < pivot) {
-                pointer++;
                 swap(arr, pointer, i);
+                pointer++;
             }
         }
     }
-    swap(arr, start, pointer);
+    swap(arr, pointer, end);
 
     return pointer;
 }
