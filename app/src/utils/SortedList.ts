@@ -83,14 +83,22 @@ export class SortedList<T> {
     public add(items: T[], maxItems?: number): void;
     public add(items: T[] | T, maxItems?: number): void {
         const curItems = this.list.get(null);
+        const lastItem = curItems[curItems.length - 1];
         let out: T[];
         if (items instanceof Array) {
+            // Ignore any items that aren't in the range
+            if (maxItems && lastItem && curItems.length === maxItems) {
+                items = items.filter(item => !this.condition(lastItem, item));
+                if (items.length == 0) return;
+            }
+
             // Perform a simple sort on the batch of items, and perform a merge of the lists
             quickSort(items, this.condition);
 
             let n = 0;
             let m = 0;
-            out = new Array(maxItems ? maxItems : curItems.length + items.length);
+            const maxOutLength = curItems.length + items.length;
+            out = new Array(maxItems ? Math.min(maxItems, maxOutLength) : maxOutLength);
             for (var i = 0; i < out.length; i++) {
                 if (
                     n != items.length &&
@@ -102,8 +110,19 @@ export class SortedList<T> {
                 }
             }
         } else {
+            // If the item is not within the range, bail
+            if (
+                maxItems &&
+                lastItem &&
+                curItems.length === maxItems &&
+                lastItem &&
+                this.condition(lastItem, items)
+            )
+                return;
+
             // Perform inserting sort iteration
-            out = new Array(maxItems ? maxItems : curItems.length + 1);
+            const maxOutLength = curItems.length + 1;
+            out = new Array(maxItems ? Math.min(maxItems, maxOutLength) : maxOutLength);
             let n = 0;
             let found = false;
             for (var i = 0; i < out.length; i++) {
@@ -124,31 +143,45 @@ export class SortedList<T> {
     /**
      * Removes the given items from the list (more efficient than removing one at a time)
      * @param items The items to be removed
+     * @param equals Check whether two items equal one and another
      * @returns Whether any items were remove
      */
-    public remove(items: T[]): boolean;
+    public remove(items: T[], equals?: (a: T, b: T) => boolean): boolean;
     /**
      * Removes the given item from the list
      * @param item The item to be removed
+     * @param equals Check whether two items equal one and another
      * @returns Whether the item was removed
      */
-    public remove(item: T): boolean;
-    public remove(items: T[] | T): void | boolean {
+    public remove(item: T, equals?: (a: T, b: T) => boolean): boolean;
+    public remove(
+        items: T[] | T,
+        equals: (a: T, b: T) => boolean = (a, b) => a == b
+    ): void | boolean {
         const curItems = this.list.get(null);
-        let out: T[] = new Array(curItems.length);
+        const lastItem = curItems[curItems.length - 1];
+        let out: T[] = new Array();
         let n = 0;
 
         if (items instanceof Array) {
+            // Ignore any items that aren't in the range
+            if (!lastItem) return;
+            items = items.filter(item => !this.condition(lastItem, item));
+            if (items.length == 0) return;
+
             // Sort the array, and perform a kind of 'merge filter'
             quickSort(items, this.condition);
             let m = 0;
-            for (var i = 0; i < out.length; i++)
-                if (items[m] != curItems[i]) out[n++] = curItems[i];
+            for (var i = 0; i < curItems.length; i++)
+                if (!items[m] || !equals(items[m], curItems[i])) out[n++] = curItems[i];
                 else m++;
         } else {
+            // If the item is not within the range, bail
+            if (!lastItem || this.condition(lastItem, items)) return;
+
             // Filter out this 1 item but copy the rest
-            for (var i = 0; i < out.length; i++)
-                if (items != curItems[i]) out[n++] = curItems[i];
+            for (var i = 0; i < curItems.length; i++)
+                if (!equals(items, curItems[i])) out[n++] = curItems[i];
         }
 
         out.length = n;
@@ -183,6 +216,19 @@ export class SortedList<T> {
 
         out.length = n;
         this.list.set(out);
+    }
+
+    /**
+     * Removes all items that don't pass the filter
+     * @param include The callback to determine whether to include a given item
+     * @returns Whether any items were returned
+     */
+    public filter(include: (item: T) => boolean): boolean {
+        const curItems = this.list.get(null);
+        const out = curItems.filter(include);
+        if (out.length >= curItems.length) return false;
+        this.list.set(out);
+        return true;
     }
 
     /**

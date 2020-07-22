@@ -52,6 +52,7 @@
         "model-react": "^3.0.2",
         "react": "^16.13.0",
         "react-dom": "^16.13.0",
+        "regexp-match-indices": "^1.0.2",
         "uuid": "^8.2.0"
     },
     "devDependencies": {

@@ -1,5 +1,6 @@
 import {IDataHook} from "model-react";
 import {IMenuItem} from "../../items/_types/IMenuItem";
+import {IQuery} from "./IQuery";
 
 /**
  * An interface for common menu interactions
@@ -50,4 +51,11 @@ export type IMenu = {
      * @returns The selected items including the cursor
      */
     getAllSelected(hook?: IDataHook): IMenuItem[];
+
+    /**
+     * Retrieves data that can be used to highlight parts of items
+     * @param hook The hook to subscribe to changes
+     * @returns The highlight data
+     */
+    getHighlight?: (hook?: IDataHook) => IQuery | null;
 };

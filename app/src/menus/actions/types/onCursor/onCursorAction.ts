@@ -1,7 +1,7 @@
 import {Action} from "../../Action";
 
 /**
- * A action to inform item(s) it is now the cursor
+ * An action that's use as an event listener for when an item becomes the cursor
  */
 export const onCursorAction = new Action((listeners: ((isCursor: boolean) => void)[]) => {
     return {

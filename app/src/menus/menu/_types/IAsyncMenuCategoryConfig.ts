@@ -1,36 +1,39 @@
 import {ICategory} from "../../actions/types/category/_types/ICategory";
-import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
+import {IPrioritizedMenuItem} from "./IPrioritizedMenuItem";
 import {SortedList} from "../../../utils/SortedList";
 
 /**
- * Configuration for the categories in an async menu
+ * Configuration for the categories in a prioritized menu
  */
-export type IASyncMenuCategoryConfig = {
+export type IPrioritizedMenuCategoryConfig<T> = {
     /**
      * Retrieves a category menu item
      * @param item The item and priority to obtain the category of
      * @returns The category to group this item under, if any
      */
-    getCategory(item: IPrioritizedMenuItem): ICategory | undefined;
+    readonly getCategory?: (item: IPrioritizedMenuItem<T>) => ICategory | undefined;
 
     /**
      * Retrieves the order of the categories
      * @param categories The categories to sort with relevant data
      * @returns The order of the categories
      */
-    sortCategories(
+    readonly sortCategories?: (
         categories: {
             /** The category */
-            category: ICategory;
+            category: ICategory | undefined;
             /** The items in this category */
-            items: SortedList<IPrioritizedMenuItem>;
-            /** The average priority of items in this category */
-            averagePriority: number;
+            items: SortedList<IPrioritizedMenuItem<T>>;
         }[]
-    ): ICategory[];
+    ) => (undefined | ICategory)[];
 
     /**
      * The maximum number of items per category
      */
-    maxCategoryItemCount?: number;
+    readonly maxCategoryItemCount?: number;
+
+    /**
+     * The interval at which to add the batched items
+     */
+    readonly batchInterval?: number;
 };

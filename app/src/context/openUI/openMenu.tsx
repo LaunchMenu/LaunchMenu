@@ -3,7 +3,7 @@ import {TPartialContextFromContent} from "../_types/TPartialContextFromContent";
 import {IOpenableMenu} from "../_types/IOpenableMenu";
 import {containsMenuStack} from "../partialContextChecks/containsMenuStack";
 import {isView, IViewStackItem} from "../../stacks/_types/IViewStackItem";
-import {MenuView} from "../../menus/menu/MenuView";
+import {MenuView} from "../../components/menu/MenuView";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {containsKeyHandlerStack} from "../partialContextChecks/containsKeyHandlerStack";

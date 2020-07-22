@@ -2,14 +2,16 @@ import React, {memo} from "react";
 import {IMenuItem} from "./_types/IMenuItem";
 import {IStandardMenuItemData} from "./_types/IStandardMenuItemData";
 import {IActionBinding} from "../actions/_types/IActionBinding";
-import {MenuItemFrame} from "./components/MenuItemFrame";
-import {MenuItemIcon} from "./components/MenuItemIcon";
+import {MenuItemFrame} from "../../components/items/MenuItemFrame";
 import {Truncated} from "../../components/Truncated";
-import {MenuItemLayout} from "./components/MenuItemLayout";
 import {executeAction} from "../actions/types/execute/executeAction";
 import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
 import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
 import {getCategoryAction} from "../actions/types/category/getCategoryAction";
+import {MenuItemLayout} from "../../components/items/MenuItemLayout";
+import {MenuItemIcon} from "../../components/items/MenuItemIcon";
+import {createSimpleSearchBinding} from "../actions/types/search/simpleSearch/simpleSearchHandler";
+import {SimpleSearchHighlight} from "../../components/items/SimpleSearchHighlight";
 
 /**
  * Creates a new standard menu item
@@ -19,6 +21,7 @@ import {getCategoryAction} from "../actions/types/category/getCategoryAction";
 export function createStandardMenuItem({
     name,
     description,
+    tags,
     icon,
     onExecute,
     onSelect,
@@ -26,14 +29,17 @@ export function createStandardMenuItem({
     category,
     actionBindings = [],
 }: IStandardMenuItemData): IMenuItem {
-    let bindings: IActionBinding<any>[] = [...actionBindings];
+    let bindings: IActionBinding<any>[] = [
+        createSimpleSearchBinding({name, description, tags}),
+        ...actionBindings,
+    ];
     if (onExecute) bindings.push(executeAction.createBinding(onExecute));
     if (onSelect) bindings.push(onSelectAction.createBinding(onSelect));
     if (onCursor) bindings.push(onCursorAction.createBinding(onCursor));
     if (category) bindings.push(getCategoryAction.createBinding(category));
 
     return {
-        view: memo(props => (
+        view: memo(({highlight, ...props}) => (
             <MenuItemFrame {...props} onExecute={onExecute}>
                 <MenuItemLayout
                     icon={
@@ -42,8 +48,16 @@ export function createStandardMenuItem({
                     }
                     content={
                         <>
-                            {name}
-                            <Truncated title={description}>{description}</Truncated>
+                            <SimpleSearchHighlight query={highlight}>
+                                {name}
+                            </SimpleSearchHighlight>
+                            {description && (
+                                <Truncated title={description}>
+                                    <SimpleSearchHighlight query={highlight}>
+                                        {description}
+                                    </SimpleSearchHighlight>
+                                </Truncated>
+                            )}
                         </>
                     }
                 />

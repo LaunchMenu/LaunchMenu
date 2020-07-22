@@ -1,7 +1,7 @@
 import {Action} from "../../Action";
 
 /**
- * The default execute action of any menu item
+ * An action that's use as an event listener for when an item gets selected
  */
 export const onSelectAction = new Action((listeners: ((selected: boolean) => void)[]) => {
     return {

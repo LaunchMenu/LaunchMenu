@@ -132,6 +132,26 @@ describe("SortedList", () => {
             list.remove(9);
             expect(list.get()).toEqual([0, 2, 4, 6, 8]);
         });
+        it("Removes items correctly according to a 'equal' function", () => {
+            const list = new SortedList((a: {v: number}, b: {v: number}) => a.v < b.v, [
+                {v: 2},
+                {v: 1},
+                {v: 0},
+                {v: 3},
+                {v: 8},
+                {v: 9},
+                {v: 4},
+                {v: 7},
+                {v: 6},
+                {v: 5},
+            ]);
+            // Note, equals still uses the sorting for efficiency, and assumes the input data has the same format
+            list.remove([{v: 1}, {v: 5}, {v: 3}], (a, b) => a.v == b.v);
+            list.remove({v: 7}, (a, b) => a.v == b.v);
+            list.remove({v: 9}, (a, b) => a.v == b.v);
+            list.remove({v: 8}); // Should be ignored, since no value is strictly equivalent
+            expect(list.get()).toEqual([{v: 0}, {v: 2}, {v: 4}, {v: 6}, {v: 8}]);
+        });
     });
     describe("SortedList.removeIndex", () => {
         let list: SortedList<number>;
@@ -160,6 +180,24 @@ describe("SortedList", () => {
             list.removeIndex(3);
             list.removeIndex(1);
             expect(list.get()).toEqual([1, 3, 5, 7, 9]);
+        });
+    });
+    describe("SortedList.filter", () => {
+        it("Removes all items that don't match the filter", () => {
+            const list = new SortedList((a: number, b: number) => a < b, [
+                2,
+                1,
+                3,
+                0,
+                8,
+                9,
+                4,
+                7,
+                6,
+                5,
+            ]);
+            list.filter(a => a % 2 == 0);
+            expect(list.get()).toEqual([0, 2, 4, 6, 8]);
         });
     });
     describe("SortedList.clear", () => {

@@ -1,6 +1,8 @@
 import {Action} from "../../Action";
 import {ICategory} from "./_types/ICategory";
 import {IMenuItem} from "../../../items/_types/IMenuItem";
+import {IPrioritizedMenuItem} from "../../../menu/_types/IPrioritizedMenuItem";
+
 /**
  * An action to get the category an item is in
  */
@@ -26,6 +28,9 @@ export const getCategoryAction = new Action(
  * @param item The item to retrieve the category for
  * @returns The first category the item is in, if any
  */
-export function getMenuCategory(item: IMenuItem): ICategory | undefined {
+export function getMenuCategory(
+    item: IMenuItem | IPrioritizedMenuItem<any>
+): ICategory | undefined {
+    if ("priority" in item) item = item.item;
     return getCategoryAction.get([item])[0]?.category;
 }
