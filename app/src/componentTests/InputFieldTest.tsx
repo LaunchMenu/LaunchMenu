@@ -19,7 +19,7 @@ import {createTextFieldKeyHandler} from "../textFields/interaction/keyHandler.ts
 import {useDataHook} from "model-react";
 
 const inputStack = new KeyHandlerStack(new KeyHandler(window));
-const textField = new TextField("oranges are \n cool ");
+const textField = new TextField("oranges are \n cool\n");
 inputStack.push(createTextFieldKeyHandler(textField, true));
 
 export const InputFieldTest: FC = () => {

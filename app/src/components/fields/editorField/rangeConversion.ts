@@ -53,7 +53,7 @@ export function get2dSelectionRange(text: string, selection: ITextSelection): Ac
 export function get1dIndex(text: string, index: {row: number; column: number}): number {
     const lines = getTextLines(text);
     let row = index.row;
-    let out = Math.min(lines[row]?.length - 1 || 0, index.column);
+    let out = Math.min(Math.max(0, lines[row]?.length - 1 || 0), index.column);
     while (row > 0) out += lines[--row]?.length || 0;
     return out;
 }

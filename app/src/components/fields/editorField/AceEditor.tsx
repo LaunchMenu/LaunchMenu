@@ -63,10 +63,13 @@ export const AceEditor: FC<IAceEditorProps> = ({
             onChange?.(editor?.getValue() || "", delta);
         });
     }, [editor]);
-    const mouseMove = useAceSelectionListener(
+
+    const lastSelectionProp = useRef<Ace.Range | null>(null);
+    const onMouseUp = useAceSelectionListener(
         editor,
         onSelectionChange,
-        options?.readOnly
+        lastSelectionProp,
+        options?.unfocusable
     );
 
     // Update data on changes
@@ -82,14 +85,17 @@ export const AceEditor: FC<IAceEditorProps> = ({
 
     useEffect(() => {
         if (editor) {
-            if (selection)
-                editor.selection.setRange(
-                    get2dSelectionRange(editor.getValue(), selection)
-                );
-            else if (selectionRange) editor.selection.setRange(selectionRange);
+            let s: Ace.Range | null = null;
+            if (selection) s = get2dSelectionRange(editor.getValue(), selection);
+            else if (selectionRange) s = selectionRange;
+
+            if (s) {
+                lastSelectionProp.current = s;
+                editor.selection.setRange(s);
+            }
         }
     }, [selection?.start, selection?.end, selectionRange, editor]);
 
     // Return the div
-    return <Box elRef={divRef} {...rest} onMouseMove={mouseMove} />;
+    return <Box elRef={divRef} {...rest} onMouseUp={onMouseUp} />;
 };
