@@ -6,6 +6,8 @@ import {handleVerticalCursorInput} from "./handleVerticalCursorInput";
 import {handleCharacterInput} from "./handleCharacterInput";
 import {handleNewlineInput} from "./handleNewlineInput";
 import {handleRemovalInput} from "./handleRemovalInput";
+import {handleCursorJumpInput} from "./handleCursorJumpInput";
+import {handleCopyPasteInput} from "./handleCopyPasteInput";
 
 /**
  * Creates a standard text field key handler
@@ -23,6 +25,8 @@ export function createTextFieldKeyHandler(
         if (handleCharacterInput(e, textField)) return true;
         if (handleRemovalInput(e, textField)) return true;
         if (handleHorizontalCursorInput(e, textField)) return true;
+        if (handleCursorJumpInput(e, textField)) return true;
+        if (handleCopyPasteInput(e, textField)) return true;
         if (multiline) {
             if (handleVerticalCursorInput(e, textField)) return true;
             if (handleNewlineInput(e, textField)) return true;
@@ -31,7 +35,5 @@ export function createTextFieldKeyHandler(
             onExit();
             return true;
         }
-
-        //TODO: copy/paste, home/end
     };
 }

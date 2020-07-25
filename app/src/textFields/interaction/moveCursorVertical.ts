@@ -35,7 +35,6 @@ export function moveCursorVertical(
         point.row += direction;
         startPoint = endPoint = point;
     }
-    console.log(endPoint);
 
     // Convert back to 1d index representation
     const startIndex = get1dIndex(text, startPoint);

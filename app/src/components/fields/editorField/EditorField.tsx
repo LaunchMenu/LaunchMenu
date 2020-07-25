@@ -1,8 +1,8 @@
 import React, {FC, useCallback} from "react";
 import {AceEditor} from "./AceEditor";
-import {useDataHook} from "model-react";
 import {IEditorFieldProps} from "./_types/IEditorFieldProps";
 import {mergeStyles} from "../../../utils/mergeStyles";
+import {useDataHook} from "../../../utils/modelReact/useDataHook";
 
 /**
  * An editor field that uses ace to highlight text
@@ -16,6 +16,7 @@ export const EditorField: FC<IEditorFieldProps> = ({
     ...rest
 }) => {
     const [h] = useDataHook();
+    console.log("Rerender");
     const value = field.get(h);
     const selection = field.getSelection(h);
     return (

@@ -1,7 +1,7 @@
 import React, {FC, useRef, useEffect, useState, useCallback} from "react";
-import {edit, Ace, Range} from "ace-builds";
+import {edit, Ace} from "ace-builds";
 import {IAceEditorProps} from "./_types/IAceEditorProps";
-import {get2dSelectionRange, get1dSelectionRange} from "./rangeConversion";
+import {get2dSelectionRange} from "./rangeConversion";
 import {Box} from "../../../styling/box/Box";
 import {useAceSelectionListener} from "./useAceSelectionListener";
 
@@ -73,28 +73,31 @@ export const AceEditor: FC<IAceEditorProps> = ({
     );
 
     // Update data on changes
+    let setRange = useCallback(
+        (selection, selectionRange) => {
+            if (editor) {
+                let s: Ace.Range | null = null;
+                if (selection) s = get2dSelectionRange(editor.getValue(), selection);
+                else if (selectionRange) s = selectionRange;
+
+                if (s) {
+                    lastSelectionProp.current = s;
+                    editor.selection.setRange(s);
+                }
+            }
+        },
+        [editor]
+    );
+    useEffect(() => {
+        setRange(selection, selectionRange);
+    }, [selection?.start, selection?.end, selectionRange, editor]);
+
     useEffect(() => {
         if (editor && value !== undefined) {
             editor.getSession().setValue(value);
-            if (selection)
-                editor.selection.setRange(
-                    get2dSelectionRange(editor.getValue(), selection)
-                );
+            if (selection || selectionRange) setRange(selection, selectionRange);
         }
     }, [value, editor]);
-
-    useEffect(() => {
-        if (editor) {
-            let s: Ace.Range | null = null;
-            if (selection) s = get2dSelectionRange(editor.getValue(), selection);
-            else if (selectionRange) s = selectionRange;
-
-            if (s) {
-                lastSelectionProp.current = s;
-                editor.selection.setRange(s);
-            }
-        }
-    }, [selection?.start, selection?.end, selectionRange, editor]);
 
     // Return the div
     return <Box elRef={divRef} {...rest} onMouseUp={onMouseUp} />;

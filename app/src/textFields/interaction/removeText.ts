@@ -22,7 +22,7 @@ export function removeText(
     if (start != end) newText = allText.slice(0, start) + allText.slice(end);
     // If the direction is backwards remove before the cursor and move the cursor backwards
     else if (direction < 0) {
-        newText = allText.slice(0, start + direction) + allText.slice(end);
+        newText = allText.slice(0, Math.max(0, start + direction)) + allText.slice(end);
         newCaretPos = caret.start + direction;
     }
     // If the direction is forwards remove after the cursor

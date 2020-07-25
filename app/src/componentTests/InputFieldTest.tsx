@@ -16,7 +16,7 @@ import {EditorField} from "../components/fields/editorField/EditorField";
 import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
 import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
 import {createTextFieldKeyHandler} from "../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
-import {useDataHook} from "model-react";
+import {useDataHook} from "../utils/modelReact/useDataHook";
 
 const inputStack = new KeyHandlerStack(new KeyHandler(window));
 const textField = new TextField("oranges are \n cool\n");
