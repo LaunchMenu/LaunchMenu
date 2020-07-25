@@ -1,4 +1,4 @@
-import {CSSProperties, DOMAttributes} from "react";
+import {CSSProperties} from "react";
 import {SpacingAttributes} from "../attributeRetrievers/getSpacingAttributes";
 import {ColorAttributes} from "../attributeRetrievers/getColorAttributes";
 import {MappedAttributes} from "../attributeRetrievers/getMappedAttributes";

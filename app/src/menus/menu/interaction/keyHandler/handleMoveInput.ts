@@ -1,9 +1,6 @@
 import {IKeyEvent} from "../../../../stacks/keyHandlerStack/_types/IKeyEvent";
 import {IMenu} from "../../_types/IMenu";
 import {isDownEvent} from "../../../../stacks/keyHandlerStack/keyEventHelpers/isDownEvent";
-import {isKeyDown} from "../../../../stacks/keyHandlerStack/keyEventHelpers/isKeyDown";
-import {IMenuItem} from "../../../items/_types/IMenuItem";
-import {executeAction} from "../../../actions/types/execute/executeAction";
 import {moveCursor} from "../moveCursor";
 import {toggleItemSelection} from "../toggleItemSelection";
 

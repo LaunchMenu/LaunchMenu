@@ -34,7 +34,7 @@ export class KeyHandler {
             const key = {
                 id: e.which,
                 name: keyNames[e.which],
-                char: e.char,
+                char: e.key.length == 1 ? e.key : undefined,
             };
             const event: IKeyEvent = {
                 held: Object.values(this.pressedKeys),
