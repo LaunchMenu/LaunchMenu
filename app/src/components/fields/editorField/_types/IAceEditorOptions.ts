@@ -60,7 +60,7 @@ export type IAceEditorOptions = {
     indentedSoftWrap?: boolean;
     foldStyle?: "manual" | "markbegin" | "markbeginend";
     mode?: string;
-} & // Custom options
-{
+} & { // Custom options
     unfocusable?: boolean;
+    followCursor?: boolean;
 };

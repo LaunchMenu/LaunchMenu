@@ -1,7 +1,7 @@
 import {Ace} from "ace-builds";
 import {ITextSelection} from "../../../textFields/_types/ITextSelection";
 import {useRef, useCallback, useEffect, MutableRefObject} from "react";
-import {get1dSelectionRange} from "./rangeConversion";
+import {get1dSelectionRange} from "../../../textFields/utils/rangeConversion";
 
 /**
  * A hook for the selection listener of the ace editor

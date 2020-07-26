@@ -9,13 +9,13 @@ export const defaultTheme = createTheme({
         },
         background: {
             primary: "#FFFFFF",
-            secondary: "#E7E7E7",
-            tertiary: "#CCCCCC",
+            secondary: "#F2F2F2",
+            tertiary: "#E5E5E5",
         },
         font: {
             accent: "#FFFFFF",
             background: "#000000",
         },
     },
-    spacingMultiple: 4,
+    spacingMultiple: 8,
 });

@@ -1,7 +1,7 @@
 import React, {FC, useRef, useEffect, useState, useCallback} from "react";
 import {edit, Ace} from "ace-builds";
 import {IAceEditorProps} from "./_types/IAceEditorProps";
-import {get2dSelectionRange} from "./rangeConversion";
+import {get2dSelectionRange} from "../../../textFields/utils/rangeConversion";
 import {Box} from "../../../styling/box/Box";
 import {useAceSelectionListener} from "./useAceSelectionListener";
 
@@ -83,6 +83,8 @@ export const AceEditor: FC<IAceEditorProps> = ({
                 if (s) {
                     lastSelectionProp.current = s;
                     editor.selection.setRange(s);
+                    if (options?.followCursor)
+                        editor.renderer.scrollCursorIntoView(s.end);
                 }
             }
         },

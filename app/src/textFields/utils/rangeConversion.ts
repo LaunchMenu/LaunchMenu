@@ -1,12 +1,15 @@
 import {Ace, Range} from "ace-builds";
-import {ITextSelection} from "../../../textFields/_types/ITextSelection";
+import {ITextSelection} from "../_types/ITextSelection";
 
 /**
  * Splits the text into its lines
  * @param text The text to split
+ * @param includeEndings Whether to include line endings in the lines
  * @returns The split text
  */
-export function getTextLines(text: string): string[] {
+export function getTextLines(text: string, includeEndings: boolean = true): string[] {
+    if (!includeEndings) return text.split(/\r?\n/);
+
     const results = [] as string[];
     const tokens = text.split(/(\r?\n)/);
     for (let i = 0; i < tokens.length; i += 2)
@@ -24,10 +27,9 @@ export function get2dIndex(text: string, index: number): {row: number; column: n
     const lines = getTextLines(text);
     let row = 0;
     let length;
-    while ((length = lines[row].length) <= index) {
+    while ((length = lines[row].length) <= index && row < lines.length - 1) {
         index -= length;
         row++;
-        if (row >= lines.length - 1) break;
     }
     return {row, column: index};
 }
@@ -52,8 +54,9 @@ export function get2dSelectionRange(text: string, selection: ITextSelection): Ac
  */
 export function get1dIndex(text: string, index: {row: number; column: number}): number {
     const lines = getTextLines(text);
+    const endinglessLines = getTextLines(text, false);
     let row = index.row;
-    let out = Math.min(Math.max(0, lines[row]?.length - 1 || 0), index.column);
+    let out = Math.min(Math.max(0, endinglessLines[row]?.length || 0), index.column);
     while (row > 0) out += lines[--row]?.length || 0;
     return out;
 }

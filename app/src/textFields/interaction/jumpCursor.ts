@@ -1,9 +1,5 @@
 import {ITextField} from "../_types/ITextField";
-import {
-    get2dIndex,
-    getTextLines,
-    get1dIndex,
-} from "../../components/fields/editorField/rangeConversion";
+import {get2dIndex, getTextLines, get1dIndex} from "../utils/rangeConversion";
 
 /**
  * Jumps the cursor to the top, bottom, start of line or end of line
@@ -20,7 +16,7 @@ export function jumpCursor(
     const text = textField.get();
 
     // Get a point representation of the index
-    const lines = getTextLines(text);
+    const lines = getTextLines(text, false);
     let endPoint = get2dIndex(text, selection.end);
 
     // Move the end point

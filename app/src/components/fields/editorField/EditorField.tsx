@@ -16,22 +16,26 @@ export const EditorField: FC<IEditorFieldProps> = ({
     ...rest
 }) => {
     const [h] = useDataHook();
-    console.log("Rerender");
     const value = field.get(h);
     const selection = field.getSelection(h);
+    const setSelection = useCallback(selection => field.setSelection(selection), [field]);
     return (
         <AceEditor
             options={{
                 readOnly: true,
                 unfocusable: true,
+                maxLines: Infinity,
+                fontSize: 30,
+                followCursor: true,
+                showGutter: false,
+                highlightActiveLine: false,
+                showPrintMargin: false,
                 ...options,
             }}
             value={value}
             css={mergeStyles({".ace_hidden-cursors .ace_cursor": {opacity: 1}}, css)}
             ref={ref}
-            onSelectionChange={useCallback(selection => field.setSelection(selection), [
-                field,
-            ])}
+            onSelectionChange={setSelection}
             selection={selection}
             {...rest}
         />

@@ -1,8 +1,5 @@
 import {ITextField} from "../_types/ITextField";
-import {
-    get2dIndex,
-    get1dIndex,
-} from "../../components/fields/editorField/rangeConversion";
+import {get2dIndex, get1dIndex} from "../utils/rangeConversion";
 
 /**
  * Moves the cursor vertically (up or down, positive is down)
