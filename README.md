@@ -28,15 +28,9 @@ Currently we are working on the Core Framework of LaunchMenu which you can read 
 The information within this readme regarding the framework is outdated. We will try to update this file with appropriate information in the near future.
 
 ### RoadMap
-
-* Framework
-    * UI Customisability 
-    * Create the ability to make workspaces for LaunchMenu.
-    * Create demo/test applet (E.G. note maker).
-    * Common UI controls.
 * Start LaunchMenu
     * Build main UI.
-    * Query system.
+    * Build some simple applets to test functionality with.
     * FileSearch applet.
     * Release Version 1.0.0
     * ???
