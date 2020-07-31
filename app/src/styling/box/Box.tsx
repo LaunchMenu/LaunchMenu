@@ -38,7 +38,13 @@ export const Box: FC<IBoxProps> = props => {
                     className={
                         (Object.keys(cssProps).length ? css(cssProps) + " " : "") +
                         (domAttributes.className ? domAttributes.className + " " : "") +
-                        (props.css ? css(props.css) : "")
+                        (props.css
+                            ? css(
+                                  props.css instanceof Function
+                                      ? (props as any).css(theme)
+                                      : props.css
+                              )
+                            : "")
                     }
                 />
             )}

@@ -20,6 +20,7 @@ const rules = [
         },
     },
 ];
+
 module.exports = env => {
     const mode = env == "prod" ? "production" : "development";
     return [

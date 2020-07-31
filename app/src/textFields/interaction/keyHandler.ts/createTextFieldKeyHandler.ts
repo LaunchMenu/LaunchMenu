@@ -35,5 +35,7 @@ export function createTextFieldKeyHandler(
             onExit();
             return true;
         }
+
+        // TODO: support ctrl+a selection
     };
 }

@@ -15,10 +15,9 @@ export const TextFieldView: FC<ITextFieldViewProps> = ({icon, textField, ...rest
     const theme = useTheme();
 
     return (
-        <Box elevation="small" display="flex" alignItems="stretch" {...rest}>
+        <Box display="flex" alignItems="stretch" backgroundColor="bgPrimary" {...rest}>
             {icon && (
                 <Box
-                    elevation="medium"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
@@ -27,15 +26,21 @@ export const TextFieldView: FC<ITextFieldViewProps> = ({icon, textField, ...rest
                     zIndex={1}>
                     {isValidElement(icon) ? (
                         icon
-                    ) : icon ? (
+                    ) : (
                         <Icon
                             {...icon}
                             styles={mergeStyles(
-                                {root: {fontSize: 45, padding: theme.spacing(1)}},
+                                {
+                                    root: {
+                                        fontSize: 23,
+                                        padding: theme.spacing(1),
+                                        color: "#424242",
+                                    },
+                                },
                                 icon.styles
                             )}
                         />
-                    ) : undefined}
+                    )}
                 </Box>
             )}
             <Box
@@ -43,7 +48,7 @@ export const TextFieldView: FC<ITextFieldViewProps> = ({icon, textField, ...rest
                 alignItems="center"
                 flexGrow={1}
                 height={iconSize}
-                paddingX={1}>
+                paddingRight={1}>
                 <EditorField field={textField} flexGrow={1} />
             </Box>
         </Box>

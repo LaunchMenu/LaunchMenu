@@ -1,7 +1,7 @@
 import {IStyleFunction, ITextFieldStyleProps, ITextFieldStyles} from "@fluentui/react";
 import {TDeepPartial} from "../_types/TDeepPartial";
 import {ExtendedObject} from "./ExtendedObject";
-import {Interpolation} from "@emotion/core";
+import {ICssProp} from "../styling/box/_types/ICssProp";
 
 /**
  * Merges the css styles for a box element
@@ -10,9 +10,9 @@ import {Interpolation} from "@emotion/core";
  * @returns The combined styles
  */
 export function mergeStyles(
-    stylesA: Interpolation | undefined,
-    stylesB: Interpolation | undefined
-): Interpolation | undefined;
+    stylesA: ICssProp | undefined,
+    stylesB: ICssProp | undefined
+): ICssProp | undefined;
 
 /**
  * Merges the styles for a fluent-ui element
@@ -29,14 +29,14 @@ export function mergeStyles<GProps, GStyles>(
     stylesA:
         | IStyleFunction<GProps, GStyles>
         | TDeepPartial<GStyles>
-        | Interpolation
+        | ICssProp
         | undefined,
     stylesB:
         | IStyleFunction<GProps, GStyles>
         | TDeepPartial<GStyles>
-        | Interpolation
+        | ICssProp
         | undefined
-): IStyleFunction<GProps, GStyles> | TDeepPartial<GStyles> | Interpolation | undefined {
+): IStyleFunction<GProps, GStyles> | TDeepPartial<GStyles> | ICssProp | undefined {
     if (!stylesA) return stylesB;
     if (!stylesB) return stylesA;
     const merger = styles => {

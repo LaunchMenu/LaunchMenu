@@ -1,6 +1,5 @@
 import React, {FC} from "react";
 import {Box} from "../styling/box/Box";
-import {Tooltip} from "@fluentui/react";
 
 /**
  * Truncates text when it overflow the boundaries

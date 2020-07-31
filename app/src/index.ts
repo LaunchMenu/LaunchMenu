@@ -9,6 +9,7 @@ function createWindow() {
         width: 700,
         height: 450,
         frame: false,
+        transparent: true,
         webPreferences: {
             nodeIntegration: true,
         },
