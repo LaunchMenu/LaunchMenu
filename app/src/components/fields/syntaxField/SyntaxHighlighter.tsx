@@ -6,36 +6,36 @@ import {Box} from "../../../styling/box/Box";
 import {mergeStyles} from "../../../utils/mergeStyles";
 import {SyntaxHighlighterNodes} from "./SyntaxHighlighterNodes";
 import {SyntaxHighlighterSelection} from "./SyntaxHighlighterSelection";
+import {IHighlightNode} from "../../../textFields/syntax/_types/IHighlightNode";
 
 /**
  * A simple component to render syntax highlighted using a passed highlighter
  */
 export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
-    value,
-    highlighter,
     selection,
     onSelectionChange,
     theme,
-    setErrors,
     onMouseDown,
     onMouseUp,
     onMouseMove,
     ...rest
 }) => {
-    // TODO: option to disable error highlighting
-    // TODO: fix selection issue with padding and such
-
     // Obtain the highlight nodes
-    const [nodes] = useMemo(() => {
-        // Highlight the text including error tags
-        const {nodes, errors} = highlighter.highlight(value);
-        if (setErrors) setErrors(errors);
-        const errorHighlighted = highlightTagErrors(nodes, errors);
-        console.log(errors);
+    let nodes: IHighlightNode[];
+    if ("value" in rest) {
+        nodes = useMemo(() => {
+            // Highlight the text including error tags
+            const {nodes, errors} = rest.highlighter.highlight(rest.value);
+            if (rest.setErrors) rest.setErrors(errors);
+            const errorHighlighted =
+                rest.highlightErrors == false ? nodes : highlightTagErrors(nodes, errors);
 
-        // Return all nodes
-        return [errorHighlighted];
-    }, [value]);
+            // Return all nodes
+            return errorHighlighted;
+        }, [rest.value]);
+    } else {
+        nodes = rest.nodes;
+    }
 
     // Obtain syntax styling
     const syntaxStyling = useMemo(
@@ -63,8 +63,9 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
 
     const selectionRef = useRef(selection);
     selectionRef.current = selection;
-    const onSelect = useCallback(
+    const mouseDownHandler = useCallback(
         (e, i: number) => {
+            onMouseDown?.(e, i);
             const index = Math.round(i);
             if (
                 selectionRef.current?.start != index ||
@@ -72,10 +73,11 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
             )
                 onSelectionChange?.({start: Math.round(i), end: Math.round(i)});
         },
-        [onSelectionChange]
+        [onSelectionChange, onMouseDown]
     );
-    const onExpandSelection = useCallback(
+    const mouseMoveHandler = useCallback(
         (e, i: number) => {
+            onMouseMove?.(e, i);
             const index = Math.round(i);
             if (dragging.current && selectionRef.current?.end != index)
                 onSelectionChange?.({
@@ -87,6 +89,14 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
     );
 
     // Determine whether or not to render a wrapper component at all
+    const nodesEl = (
+        <SyntaxHighlighterNodes
+            nodes={nodes}
+            onMouseDown={(onSelectionChange || onMouseDown) && mouseDownHandler}
+            onMouseMove={(onSelectionChange || onMouseMove) && mouseMoveHandler}
+            onMouseUp={onMouseUp}
+        />
+    );
     return (
         <Box
             position="relative"
@@ -94,13 +104,12 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
             {...rest}
             onMouseDown={onSelectionChange && onDragStart}
             onMouseUp={onSelectionChange && onDragEnd.current}>
-            <SyntaxHighlighterNodes
-                nodes={nodes}
-                onMouseDown={onSelectionChange && onSelect}
-                onMouseMove={onSelectionChange && onExpandSelection}
-            />
-            {selection && (
-                <SyntaxHighlighterSelection nodes={nodes} selection={selection} />
+            {selection ? (
+                <SyntaxHighlighterSelection selection={selection}>
+                    {nodesEl}
+                </SyntaxHighlighterSelection>
+            ) : (
+                nodesEl
             )}
         </Box>
     );

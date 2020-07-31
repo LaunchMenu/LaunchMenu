@@ -4,6 +4,7 @@ import {
     ISyntaxHighlighterNodesListenerProps,
 } from "./_types/ISyntaxHighlighterNodesProps";
 import {IHighlightNode} from "../../../textFields/syntax/_types/IHighlightNode";
+import {getFrameSize} from "./getFrameSize";
 
 /**
  * Determines how to the right in the div on which th event occurred the mouse is as a fraction
@@ -53,15 +54,8 @@ const getFramePosFrac = (event: React.MouseEvent<HTMLSpanElement, MouseEvent>) =
     const rect = target.getBoundingClientRect();
     const dx = xPos - rect.x;
 
-    const style = window.getComputedStyle(target);
-    const left =
-        parseFloat(style.marginLeft) +
-        parseFloat(style.borderLeftWidth) +
-        parseFloat(style.paddingLeft);
-    const right =
-        parseFloat(style.marginRight) +
-        parseFloat(style.borderRightWidth) +
-        parseFloat(style.paddingRight);
+    const {left, right} = getFrameSize(target);
+
     if (dx < left && left != 0) return (0.5 * dx) / left;
     if (rect.width - dx < right && right != 0)
         return 1 - (0.5 * (rect.width - dx)) / right;

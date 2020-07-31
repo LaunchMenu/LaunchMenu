@@ -18,7 +18,7 @@ inputStack.push(createTextFieldKeyHandler(textField));
 
 export const SyntaxFieldTest: FC = () => {
     const theme = useTheme();
-    const [selection, setSelection] = useState({start: 4, end: 7});
+    const [selection, setSelection] = useState({start: 7, end: 13});
     return (
         <FillBox background="bgPrimary">
             <TextFieldView
