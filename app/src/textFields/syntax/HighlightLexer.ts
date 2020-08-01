@@ -130,6 +130,13 @@ export class HighlightLexer extends Lexer implements IHighlighter {
                     node,
                 ];
         });
+        if (prevIndex != syntax.length)
+            nodes.push({
+                start: prevIndex,
+                end: syntax.length,
+                text: syntax.substring(prevIndex),
+                tags: [],
+            });
 
         // Return the result
         return {nodes, errors};
@@ -145,7 +152,6 @@ export class HighlightLexer extends Lexer implements IHighlighter {
         syntax: string,
         {message, offset, length}: ILexingError
     ): IHighlightError {
-        console.log(syntax, message, offset, length);
         return {
             message,
             type: "UnexpectedToken",

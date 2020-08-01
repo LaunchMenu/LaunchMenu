@@ -9,7 +9,8 @@ import {IHighlightParserConfig} from "./_types/IHighlightParserConfig";
 
 export * from "chevrotain";
 
-export class HighlightParser<T> extends EmbeddedActionsParser implements IHighlighter {
+export abstract class HighlightParser<T> extends EmbeddedActionsParser
+    implements IHighlighter {
     protected lexer: HighlightLexer;
     protected config: IHighlightParserConfig | undefined;
 
@@ -24,6 +25,7 @@ export class HighlightParser<T> extends EmbeddedActionsParser implements IHighli
     ) {
         super(vocabulary, config);
         this.lexer = new HighlightLexer(vocabulary, config);
+        this.config = config;
     }
 
     /**

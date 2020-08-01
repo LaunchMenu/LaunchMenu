@@ -21,6 +21,7 @@ import {FillBox} from "../components/FillBox";
 import {useTheme} from "../styling/theming/ThemeContext";
 import {SlideOpenTransition} from "../components/stacks/transitions/open/SlideOpenTransition";
 import {Transition} from "../components/stacks/transitions/Transition";
+import {parser} from "../textFields/syntax/test";
 
 const inputStack = new KeyHandlerStack(new KeyHandler(window));
 const textField = new TextField("I like trains.");
@@ -29,6 +30,16 @@ inputStack.push(createTextFieldKeyHandler(textField));
 export const InputFieldTest: FC = () => {
     const theme = useTheme();
     const [someShit, setSomeShit] = useState(0);
+
+    const [h] = useDataHook();
+    const value = textField.get(h);
+    const [result, setResult] = useState(0 as string[] | number);
+    useEffect(() => {
+        const {result, errors} = parser.execute(value);
+        if (result) setResult(result);
+        else setResult(errors?.map(({message}) => message) || [""]);
+    }, [value]);
+
     return (
         <Box
             overflow="hidden"
@@ -49,8 +60,9 @@ export const InputFieldTest: FC = () => {
 
                     border: "1px solid #eee",
                 }}
+                highlighter={parser}
                 icon={{iconName: "Search"}}
-                textField={textField}
+                field={textField}
                 zIndex={1}
             />
             <Box flexGrow={1} display="flex">
@@ -85,6 +97,13 @@ export const InputFieldTest: FC = () => {
                     position="relative"
                     css={{WebkitAppRegion: "drag"}}>
                     <FillBox opacity={1} backgroundCustom="#fafafa" zIndex={-1} />
+                    {result instanceof Array
+                        ? result.map((m, i) => (
+                              <Box key={i} colorCustom="red">
+                                  {m}
+                              </Box>
+                          ))
+                        : result}
                 </Box>
             </Box>
         </Box>

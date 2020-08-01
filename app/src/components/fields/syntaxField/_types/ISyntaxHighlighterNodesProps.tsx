@@ -32,6 +32,5 @@ export type ISyntaxHighlighterNodesListenerProps = {
 
 export type ISyntaxHighlighterNodesProps = ISyntaxHighlighterNodesListenerProps & {
     nodes: IHighlightNode[];
-
     children?: never;
 };

@@ -32,7 +32,7 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
 
             // Return all nodes
             return errorHighlighted;
-        }, [rest.value]);
+        }, [rest.value, rest.highlightErrors]);
     } else {
         nodes = rest.nodes;
     }
@@ -50,7 +50,6 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
     if (syntaxStyling) rest.css = mergeStyles(syntaxStyling, rest.css);
 
     // Selection listeners
-    // TODO:: forward mouse events with index
     const dragging = useRef(false);
     const onDragEnd = useRef(() => {
         dragging.current = false;
@@ -70,8 +69,10 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
             if (
                 selectionRef.current?.start != index ||
                 selectionRef.current?.end != index
-            )
-                onSelectionChange?.({start: Math.round(i), end: Math.round(i)});
+            ) {
+                selectionRef.current = {start: Math.round(i), end: Math.round(i)};
+                onSelectionChange?.(selectionRef.current);
+            }
         },
         [onSelectionChange, onMouseDown]
     );
@@ -79,13 +80,15 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
         (e, i: number) => {
             onMouseMove?.(e, i);
             const index = Math.round(i);
-            if (dragging.current && selectionRef.current?.end != index)
-                onSelectionChange?.({
-                    start: selection?.start ?? Math.round(i),
+            if (dragging.current && selectionRef.current?.end != index) {
+                selectionRef.current = {
+                    start: selectionRef.current?.start ?? Math.round(i),
                     end: Math.round(i),
-                });
+                };
+                onSelectionChange?.(selectionRef.current);
+            }
         },
-        [onSelectionChange, selection?.start]
+        [onSelectionChange]
     );
 
     // Determine whether or not to render a wrapper component at all
@@ -100,6 +103,7 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
     return (
         <Box
             position="relative"
+            whiteSpace="pre"
             noSelect
             {...rest}
             onMouseDown={onSelectionChange && onDragStart}

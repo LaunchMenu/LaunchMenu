@@ -4,14 +4,22 @@ import {ITextFieldViewProps} from "./_types/ITextFieldViewProps";
 import {Icon} from "@fluentui/react";
 import {mergeStyles} from "../../utils/mergeStyles";
 import {useTheme} from "../../styling/theming/ThemeContext";
-import {EditorField} from "./editorField/EditorField";
+import {SyntaxField} from "./syntaxField/SyntaxField";
+import {textLexer} from "../../textFields/syntax/TextLexer";
 
 const iconSize = 60;
 
 /**
  * A standard customizable view for text fields
  */
-export const TextFieldView: FC<ITextFieldViewProps> = ({icon, textField, ...rest}) => {
+export const TextFieldView: FC<ITextFieldViewProps> = ({
+    icon,
+    field,
+    highlighter = textLexer,
+    setErrors,
+    highlightErrors,
+    ...rest
+}) => {
     const theme = useTheme();
 
     return (
@@ -34,7 +42,6 @@ export const TextFieldView: FC<ITextFieldViewProps> = ({icon, textField, ...rest
                                     root: {
                                         fontSize: 23,
                                         padding: theme.spacing(1),
-                                        color: "#424242",
                                     },
                                 },
                                 icon.styles
@@ -47,9 +54,17 @@ export const TextFieldView: FC<ITextFieldViewProps> = ({icon, textField, ...rest
                 display="flex"
                 alignItems="center"
                 flexGrow={1}
+                css={{
+                    fontSize: 25,
+                }}
                 height={iconSize}
                 paddingRight={1}>
-                <EditorField field={textField} flexGrow={1} />
+                <SyntaxField
+                    field={field}
+                    highlighter={highlighter}
+                    setErrors={setErrors}
+                    highlightErrors={highlightErrors}
+                />
             </Box>
         </Box>
     );

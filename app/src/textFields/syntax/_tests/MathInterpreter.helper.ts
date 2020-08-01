@@ -1,9 +1,8 @@
-import {createHighlightTokens} from "./utils/createHighightTokens";
-import {HighlightLexer} from "./HighlightLexer";
-import {HighlightParser, Lexer} from "./HighlightParser";
-import {tags} from "./utils/standardTags";
+import {createHighlightTokens} from "../utils/createHighightTokens";
+import {HighlightParser, Lexer} from "../HighlightParser";
+import {tags} from "../utils/standardTags";
 
-const {tokens, tokenList} = createHighlightTokens({
+export const {tokens, tokenList} = createHighlightTokens({
     lBracket: {pattern: /\(/, tags: [tags.bracket, tags.left]},
     rBracket: {pattern: /\)/, tags: [tags.bracket, tags.right]},
     add: {pattern: /\+/, tags: [tags.operator]},
@@ -18,9 +17,7 @@ const {tokens, tokenList} = createHighlightTokens({
     },
 });
 
-let lexer = new HighlightLexer(tokenList);
-
-class MathParser extends HighlightParser<number> {
+export class MathParser extends HighlightParser<number> {
     constructor() {
         super(tokenList);
         this.performSelfAnalysis();
@@ -69,4 +66,3 @@ class MathParser extends HighlightParser<number> {
         ])
     );
 }
-export const parser = new MathParser();

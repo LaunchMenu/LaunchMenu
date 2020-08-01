@@ -99,3 +99,15 @@ export type ICssAlignSelf =
 export type ICssVisibility = "visible" | "hidden" | "collapse" | "initial" | "inherit";
 
 export type ICssPointerEvents = "auto" | "none" | "inherit" | "initial" | "unset";
+
+export type ICssWhiteSpace =
+    | "break-space"
+    | "none"
+    | "normal"
+    | "nowrap"
+    | "pre"
+    | "pre-inline"
+    | "pre-wrap"
+    | "inherit"
+    | "initial"
+    | "unset";

@@ -12,10 +12,11 @@ import {getFrameSize} from "./getFrameSize";
  */
 export function measureText(element: Element, end: number): number {
     const children = element.children;
-    const {left} = getFrameSize(element);
+    const {left, right} = getFrameSize(element);
 
-    if ((element.textContent?.length || 0) <= end) {
-        return element.getBoundingClientRect().width;
+    const contentLength = element.textContent?.length || 0;
+    if (contentLength <= end) {
+        return element.getBoundingClientRect().width - (contentLength == end ? right : 0);
     } else {
         let out = left;
         for (let child of children) {

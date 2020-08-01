@@ -10,7 +10,6 @@ export type ISyntaxHighlighterProps = (
     | {
           /** The textual value to highlight */
           value: string;
-
           /** The highlighter to perform the highlight with */
           highlighter: IHighlighter;
           /** Whether or not to highlight errors */

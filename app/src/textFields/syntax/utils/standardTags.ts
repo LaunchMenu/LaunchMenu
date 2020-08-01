@@ -15,6 +15,7 @@ const tagsList = [
     "whiteSpace",
     "error",
     "empty",
+    "text",
 ] as const;
 
 /**

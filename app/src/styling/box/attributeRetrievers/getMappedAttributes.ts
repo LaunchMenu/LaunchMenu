@@ -13,6 +13,7 @@ import {
     ICssBorderStyle,
     ICssVisibility,
     ICssPointerEvents,
+    ICssWhiteSpace,
 } from "./_types/ICssTypes";
 
 /**
@@ -53,6 +54,7 @@ export const mappedAttributes = {
     cursor: true,
     opacity: true,
     pointerEvents: true,
+    whiteSpace: true,
     noSelect: (out: IAnyProps, value: boolean) => {
         if (value) out.userSelect = "none";
     },
@@ -89,6 +91,7 @@ export type MappedAttributes = {
     alignSelf?: ICssAlignSelf;
     visibility?: ICssVisibility;
     pointerEvents?: ICssPointerEvents;
+    whiteSpace?: ICssWhiteSpace;
     zIndex?: number;
     order?: number;
     flexGrow?: number;

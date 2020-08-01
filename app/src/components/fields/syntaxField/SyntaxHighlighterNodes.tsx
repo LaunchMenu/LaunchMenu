@@ -33,6 +33,7 @@ export const SyntaxHighlighterChar: FC<
     const mouseUp = useMemo(() => getEventHandler(onMouseUp), [onMouseUp]);
     const mouseMove = useMemo(() => getEventHandler(onMouseMove), [onMouseMove]);
 
+    if (char == "\n") char = "↵";
     return (
         <span
             onMouseDown={onMouseDown && mouseDown}
@@ -104,35 +105,11 @@ export const SyntaxHighlighterNodes: FC<ISyntaxHighlighterNodesProps> = ({
     nodes,
     ...listeners
 }) => {
-    // const {onMouseDown, onMouseUp, onMouseMove} = listeners;
-    // const hasListeners = onMouseDown || onMouseUp || onMouseMove;
     return (
         <>
             {nodes.map((node, i) => (
                 <SyntaxHighlighterNode key={i} node={node} {...listeners} />
             ))}
-            {/* {
-                const {text, start, tags} = node;
-                const getPos = (e: React.MouseEvent<HTMLSpanElement>) =>
-                    start + text.length * getPosFrac(e, true);
-                const tokenContents = hasListeners ? (
-                    <SyntaxHighlighterSplitNode node={node} {...listeners} />
-                ) : (
-                    text
-                );
-
-                return (
-                    <SyntaxHighlighterNode key={i} node={node} {...listeners} />
-                    <span
-                        className={tags.join(" ") + (text == "" ? " empty" : "")}
-                        onMouseDown={onMouseDown && (e => onMouseDown?.(e, getPos(e)))}
-                        onMouseUp={onMouseUp && (e => onMouseUp?.(e, getPos(e)))}
-                        onMouseMove={onMouseMove && (e => onMouseMove?.(e, getPos(e)))}
-                        key={i}>
-                        {tokenContents}
-                    </span>
-                );
-            })} */}
         </>
     );
 };
