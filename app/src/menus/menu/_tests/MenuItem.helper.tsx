@@ -15,7 +15,7 @@ export function createMenuItem(
         view: () => <div>hoi</div>,
         actionBindings: [
             ...(category ? [getCategoryAction.createBinding(category)] : []),
-            ...(noSelect ? [] : [executeAction.createBinding(() => {})]),
+            ...(noSelect ? [] : [executeAction.createBinding({execute: () => {}})]),
         ],
     };
 }
@@ -36,7 +36,7 @@ export function createSearchableMenuItem({
         view: () => <div>hoi</div>,
         actionBindings: [
             ...(category ? [getCategoryAction.createBinding(category)] : []),
-            ...(noSelect ? [] : [executeAction.createBinding(() => {})]),
+            ...(noSelect ? [] : [executeAction.createBinding({execute: () => {}})]),
             ...[
                 searchAction.createBinding({
                     search: async ({search}, cb) => {
