@@ -1,3 +1,5 @@
+import {TDeepMerge} from "./_types/TDeepMerge";
+
 /**
  * Some object related utils
  */
@@ -291,5 +293,27 @@ export class ExtendedObject {
                 func(key, values, p, path);
             }
         }
+    }
+
+    /**
+     * Merges two objects together
+     * @param a The first object
+     * @param b The second object (which takes precedence)
+     * @returns The merged objects
+     */
+    public static deepMerge<A, B>(a: A, b: B): TDeepMerge<A, B> {
+        if (a instanceof Object && b instanceof Object) {
+            const obj = {};
+            Object.keys(a).forEach(key => {
+                if (!b[key]) obj[key] = a[key];
+            });
+            Object.keys(b).forEach(key => {
+                if (!a[key]) obj[key] = b[key];
+            });
+            Object.keys(a).forEach(key => {
+                if (a[key] && b[key]) obj[key] = this.deepMerge(a[key], b[key]);
+            });
+            return obj as any;
+        } else return b as any;
     }
 }

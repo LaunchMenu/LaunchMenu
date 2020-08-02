@@ -6,8 +6,10 @@ const mode = process.env.NODE_ENV;
 function createWindow() {
     // Create the browser window.
     let win = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 700,
+        height: 450,
+        frame: false,
+        transparent: true,
         webPreferences: {
             nodeIntegration: true,
         },

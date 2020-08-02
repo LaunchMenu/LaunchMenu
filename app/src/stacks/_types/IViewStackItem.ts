@@ -1,11 +1,12 @@
 import {FC} from "react";
+import {IViewStackItemProps} from "./IViewStackItemProps";
 
 /**
  * An item that can be added to view stacks
  */
 export type IViewStackItem =
-    | {view: FC<{onTop: boolean; index: number}> | JSX.Element; transparent: boolean}
-    | FC<{onTop: boolean; index: number}>
+    | {view: FC<IViewStackItemProps> | JSX.Element; transparent: boolean}
+    | FC<IViewStackItemProps>
     | JSX.Element;
 
 /**

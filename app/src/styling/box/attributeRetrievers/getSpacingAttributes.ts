@@ -139,9 +139,10 @@ export type SpacingAttributes = {
  * @returns The css props
  */
 export function getSpacingAttributes(props: IAnyProps, theme: ITheme): IAnyProps {
-    return getAttributes(
-        props,
-        spacingAttributes,
-        (value: any) => theme.spacing(value) || value
-    );
+    return {
+        ...getAttributes(props, spacingAttributesTheme, (value: any) =>
+            theme.spacing(value)
+        ),
+        ...getAttributes(props, spacingAttributesCustom, (value: any) => value),
+    };
 }

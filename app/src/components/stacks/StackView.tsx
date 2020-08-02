@@ -1,4 +1,4 @@
-import React, {FC, useRef, createElement, useState} from "react";
+import React, {FC, useRef, createElement, useState, cloneElement} from "react";
 import {IStackViewProps} from "./_types/IStackViewProps";
 import {useDataHook} from "model-react";
 import {findStackChanges} from "../../stacks/findStackChanges";
@@ -146,25 +146,30 @@ export const StackView: FC<IStackViewProps> = ({
     // Render the children
     return (
         <>
-            {childrenRef.current.map(({key, id, element}, index) => (
-                <Transition
-                    key={key}
-                    hidden={index < firstOpaqueIndex}
-                    onClose={() => onClose(key)}
-                    onChange={() => onChange(key)}
-                    onOpen={() => onOpen(key)}
-                    ChangeTransitionComp={ChangeTransitionComp}
-                    CloseTransitionComp={CloseTransitionComp}
-                    OpenTransitionComp={OpenTransitionComp}>
-                    {element instanceof Function
-                        ? createElement(element, {
-                              key: id,
-                              onTop: index == childrenRef.current.length,
-                              index,
-                          })
-                        : element}
-                </Transition>
-            ))}
+            {childrenRef.current.map(({key, id, element}, index) => {
+                const props = {
+                    key: id,
+                    onTop: index == childrenRef.current.length,
+                    index,
+                };
+                return (
+                    <Transition
+                        key={key}
+                        hidden={index < firstOpaqueIndex}
+                        onClose={() => onClose(key)}
+                        onChange={() => onChange(key)}
+                        onOpen={() => onOpen(key)}
+                        ChangeTransitionComp={ChangeTransitionComp}
+                        CloseTransitionComp={CloseTransitionComp}
+                        OpenTransitionComp={OpenTransitionComp}>
+                        {element instanceof Function
+                            ? createElement(element, props)
+                            : element
+                            ? cloneElement(element, props)
+                            : element}
+                    </Transition>
+                );
+            })}
         </>
     );
 };

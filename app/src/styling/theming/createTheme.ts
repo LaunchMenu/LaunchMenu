@@ -1,15 +1,21 @@
 import {IThemeInput} from "./_types/IThemeInput";
 import {ITheme} from "./_types/ITheme";
 import Color from "color";
+import {IHighlightThemeInput} from "./highlighting/_types/IHighlightThemeInput";
+import {IHighlightTheme} from "./highlighting/_types/IHighlightTheme";
+import {createHighlightTheme} from "./highlighting/createHighlightTheme";
 
 /**
  * Creates a new theme from the given input
  * @param themeInput The theme input data
- * @param light Whether to create a light theme
+ * @param highlightTheme The highlighting styling
  * @returns The theme
  */
-export function createTheme(themeInput: IThemeInput): ITheme {
-    return {
+export function createTheme(
+    themeInput: IThemeInput,
+    highlightTheme: IHighlightThemeInput | IHighlightTheme
+): ITheme {
+    const theme = {
         ...themeInput,
         colors: {
             primary: themeInput.colors.accent.primary,
@@ -98,5 +104,10 @@ export function createTheme(themeInput: IThemeInput): ITheme {
                 black: new Color(themeInput.colors.background.tertiary).darken(0.8).hex(),
             },
         },
+    };
+
+    return {
+        ...theme,
+        highlighting: createHighlightTheme(highlightTheme, theme),
     };
 }

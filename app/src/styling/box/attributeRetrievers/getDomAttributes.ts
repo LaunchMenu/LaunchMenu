@@ -16,7 +16,19 @@ export const domAttributes = {
         if (out["className"]) out["className"] += " " + value;
         else out["className"] = value;
     },
-    elRef: "ref",
+    elRef: (out: IAnyProps, value: Ref<any> | Ref<any>[]) => {
+        // If the ref is an array, combine them into 1 setter function
+        if (value instanceof Array) {
+            const values = value;
+            value = (ref: any) =>
+                values.forEach(value => {
+                    if (value instanceof Function) value(ref);
+                    else (value as any).current = ref;
+                });
+        }
+
+        out["ref"] = value;
+    },
     style: true,
     draggable: true,
     title: true,
@@ -32,7 +44,7 @@ export type DomAttributes = {
     style?: CSSProperties;
     draggable?: boolean;
     title?: string;
-    elRef?: Ref<any>;
+    elRef?: Ref<any> | Ref<any>[];
 } & DOMAttributes<Element>; // Standard event listeners
 
 /**

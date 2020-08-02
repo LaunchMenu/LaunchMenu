@@ -75,7 +75,12 @@ export type ICssJustifyContent =
     | "space-between"
     | "space-around"
     | "space-evenly";
-export type ICssAlignItems = "stretch" | "flex-start" | "flex-end" | "center" | "baselin";
+export type ICssAlignItems =
+    | "stretch"
+    | "flex-start"
+    | "flex-end"
+    | "center"
+    | "baseline";
 export type ICssAlignContent =
     | "flex-start"
     | "flex-end"
@@ -90,3 +95,21 @@ export type ICssAlignSelf =
     | "center"
     | "baseline"
     | "stretch";
+
+export type ICssVisibility = "visible" | "hidden" | "collapse" | "initial" | "inherit";
+
+export type ICssPointerEvents = "auto" | "none" | "inherit" | "initial" | "unset";
+
+export type ICssWhiteSpace =
+    | "break-space"
+    | "none"
+    | "normal"
+    | "nowrap"
+    | "pre"
+    | "pre-inline"
+    | "pre-wrap"
+    | "inherit"
+    | "initial"
+    | "unset";
+
+export type ICssFloat = "left" | "right" | "none" | "inherit";
