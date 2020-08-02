@@ -12,9 +12,7 @@ import {ICssProp} from "./ICssProp";
 export type IBoxProps = {
     children?: any;
     as?: React.ComponentClass | React.FunctionComponent | string;
-    className?: string;
     css?: ICssProp;
-    style?: CSSProperties;
 } & SpacingAttributes &
     ColorAttributes &
     MappedAttributes &

@@ -30,6 +30,11 @@ export type ISyntaxHighlighterProps = (
     /** A listener for mouse input selection changes */
     onSelectionChange?: (selection: ITextSelection) => void;
 
+    /** Starts scrolling if the cursor goes outside of the box minus this padding */
+    scrollCursorPadding?: number;
+    /** Gets the pixel locations for the selection */
+    getPixelSelection?: (pixelSelection?: {start: number; end?: number}) => void;
+
     /** Element may not have children */
     children?: never;
 } & ISyntaxHighlighterNodesListenerProps &

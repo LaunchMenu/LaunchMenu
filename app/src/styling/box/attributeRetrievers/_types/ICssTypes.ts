@@ -111,3 +111,5 @@ export type ICssWhiteSpace =
     | "inherit"
     | "initial"
     | "unset";
+
+export type ICssFloat = "left" | "right" | "none" | "inherit";

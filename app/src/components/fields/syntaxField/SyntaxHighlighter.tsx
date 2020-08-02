@@ -7,6 +7,10 @@ import {mergeStyles} from "../../../utils/mergeStyles";
 import {SyntaxHighlighterNodes} from "./SyntaxHighlighterNodes";
 import {SyntaxHighlighterSelection} from "./SyntaxHighlighterSelection";
 import {IHighlightNode} from "../../../textFields/syntax/_types/IHighlightNode";
+import {useHorizontalScroll} from "../../../utils/hooks/useHorizontalScroll";
+import {useSmoothScroll} from "../../../utils/hooks/useSmoothScroll";
+import {useCursorScroll} from "./useCursorScroll";
+import {FillBox} from "../../FillBox";
 
 /**
  * A simple component to render syntax highlighted using a passed highlighter
@@ -18,6 +22,8 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
     onMouseDown,
     onMouseUp,
     onMouseMove,
+    scrollCursorPadding = 30,
+    getPixelSelection,
     ...rest
 }) => {
     // Obtain the highlight nodes
@@ -55,24 +61,45 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
         dragging.current = false;
         document.removeEventListener("mouseup", onDragEnd.current);
     });
-    const onDragStart = useCallback((e: React.PointerEvent) => {
-        dragging.current = true;
-        document.addEventListener("mouseup", onDragEnd.current);
-    }, []);
+    const caughtLineClick = useRef(false);
+    const onDragStart = useCallback(
+        (e: React.PointerEvent) => {
+            dragging.current = true;
+            document.addEventListener("mouseup", onDragEnd.current);
+
+            // Select the last index if clicking in the div but not on a character
+            if (!caughtLineClick.current) {
+                const index = nodes.reduce((cur, node) => Math.max(node.end, cur), 0);
+                selectionRef.current = {
+                    start:
+                        (e.shiftKey ? selectionRef.current?.start : undefined) ?? index,
+                    end: index,
+                };
+                onSelectionChange?.(selectionRef.current);
+            }
+            caughtLineClick.current = false;
+        },
+        [nodes]
+    );
 
     const selectionRef = useRef(selection);
     selectionRef.current = selection;
     const mouseDownHandler = useCallback(
-        (e, i: number) => {
+        (e: React.MouseEvent<HTMLSpanElement>, i: number) => {
             onMouseDown?.(e, i);
             const index = Math.round(i);
             if (
                 selectionRef.current?.start != index ||
                 selectionRef.current?.end != index
             ) {
-                selectionRef.current = {start: Math.round(i), end: Math.round(i)};
+                selectionRef.current = {
+                    start:
+                        (e.shiftKey ? selectionRef.current?.start : undefined) ?? index,
+                    end: index,
+                };
                 onSelectionChange?.(selectionRef.current);
             }
+            caughtLineClick.current = true;
         },
         [onSelectionChange, onMouseDown]
     );
@@ -82,13 +109,20 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
             const index = Math.round(i);
             if (dragging.current && selectionRef.current?.end != index) {
                 selectionRef.current = {
-                    start: selectionRef.current?.start ?? Math.round(i),
-                    end: Math.round(i),
+                    start: selectionRef.current?.start ?? index,
+                    end: index,
                 };
                 onSelectionChange?.(selectionRef.current);
             }
         },
         [onSelectionChange]
+    );
+
+    // Scroll manager
+    const horizontalScrollRef = useHorizontalScroll();
+    const [cursorScrollRef, onPixelSelectionChange] = useCursorScroll(
+        scrollCursorPadding,
+        getPixelSelection
     );
 
     // Determine whether or not to render a wrapper component at all
@@ -103,13 +137,17 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
     return (
         <Box
             position="relative"
+            overflowX="auto"
             whiteSpace="pre"
             noSelect
+            elRef={[horizontalScrollRef, ...cursorScrollRef]}
             {...rest}
             onMouseDown={onSelectionChange && onDragStart}
             onMouseUp={onSelectionChange && onDragEnd.current}>
             {selection ? (
-                <SyntaxHighlighterSelection selection={selection}>
+                <SyntaxHighlighterSelection
+                    selection={selection}
+                    getPixelSelection={onPixelSelectionChange}>
                     {nodesEl}
                 </SyntaxHighlighterSelection>
             ) : (

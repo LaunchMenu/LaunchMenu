@@ -5,12 +5,16 @@ import {useTheme} from "../../../styling/theming/ThemeContext";
 import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {ITextSelection} from "../../../textFields/_types/ITextSelection";
 import {useUpdateEffect} from "../../../utils/hooks/useUpdateEffect";
+import {Box} from "../../../styling/box/Box";
+import {mergeStyles} from "../../../utils/mergeStyles";
+import {useHorizontalScroll} from "../../../utils/hooks/useHorizontalScroll";
 
 export const SyntaxField: FC<ISyntaxFieldProps> = ({
     field,
     highlighter,
     setErrors,
     highlightErrors = 1000,
+    ...rest
 }) => {
     const {highlighting} = useTheme();
 
@@ -43,6 +47,8 @@ export const SyntaxField: FC<ISyntaxFieldProps> = ({
             value={value}
             selection={selection}
             onSelectionChange={setSelection}
+            {...rest}
+            css={mergeStyles({"::-webkit-scrollbar": {display: "none"}}, rest.css)}
         />
     );
 };

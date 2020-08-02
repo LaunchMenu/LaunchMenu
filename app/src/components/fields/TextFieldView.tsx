@@ -54,16 +54,18 @@ export const TextFieldView: FC<ITextFieldViewProps> = ({
                 display="flex"
                 alignItems="center"
                 flexGrow={1}
+                overflow="auto"
                 css={{
                     fontSize: 25,
                 }}
-                height={iconSize}
-                paddingRight={1}>
+                height={iconSize}>
                 <SyntaxField
+                    width="100%"
                     field={field}
                     highlighter={highlighter}
                     setErrors={setErrors}
                     highlightErrors={highlightErrors}
+                    paddingRight={1}
                 />
             </Box>
         </Box>

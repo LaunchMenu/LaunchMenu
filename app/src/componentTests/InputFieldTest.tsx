@@ -21,10 +21,11 @@ import {FillBox} from "../components/FillBox";
 import {useTheme} from "../styling/theming/ThemeContext";
 import {SlideOpenTransition} from "../components/stacks/transitions/open/SlideOpenTransition";
 import {Transition} from "../components/stacks/transitions/Transition";
-import {parser} from "../textFields/syntax/test";
+import {MathParser} from "../textFields/syntax/_tests/MathInterpreter.helper";
 
+const parser = new MathParser();
 const inputStack = new KeyHandlerStack(new KeyHandler(window));
-const textField = new TextField("I like trains.");
+const textField = new TextField("4* (4/3)");
 inputStack.push(createTextFieldKeyHandler(textField));
 
 export const InputFieldTest: FC = () => {

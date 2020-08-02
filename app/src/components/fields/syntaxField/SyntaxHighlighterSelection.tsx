@@ -36,6 +36,7 @@ export const SyntaxHighlighterSelection: FC<ISyntaxHighlighterSelectionProps> = 
     selection,
     getPixelSelection,
     children,
+    ...rest
 }) => {
     const [syntaxEl, setSyntaxEl] = useState(null as null | Element);
 
@@ -74,7 +75,7 @@ export const SyntaxHighlighterSelection: FC<ISyntaxHighlighterSelectionProps> = 
     );
     return (
         <>
-            <Box className="syntax" display="inline-block" elRef={setSyntaxEl}>
+            <Box className="syntax" display="inline-block" {...rest} elRef={setSyntaxEl}>
                 {children}
             </Box>
             <FillBox pointerEvents="none" className="selectionHandler">

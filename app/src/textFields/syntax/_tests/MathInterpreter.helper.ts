@@ -43,7 +43,7 @@ export class MathParser extends HighlightParser<number> {
                 {ALT: () => this.CONSUME(tokens.div)},
             ]);
             const value = this.SUBRULE2(this.factor);
-            result = tokenType == tokens.mul ? result * value : result + value;
+            result = tokenType == tokens.mul ? result * value : result / value;
         });
         return result;
     });

@@ -20,4 +20,9 @@ export function handleCursorJumpInput(
         jumpCursor(textField, {dx: -1}, event.shift);
         return true;
     }
+    if (event.down && event.ctrl && event.key.name == "a") {
+        jumpCursor(textField, {dx: -1});
+        jumpCursor(textField, {dx: 1}, true);
+        return true;
+    }
 }
