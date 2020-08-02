@@ -7,15 +7,24 @@ import {quickSort} from "./quickSort";
 export class SortedList<T> {
     protected list = new Field([] as T[]);
     protected condition: (a: T, b: T) => boolean;
+    protected onAdd?: (item: T) => void;
+    protected onRemove?: (item: T) => void;
 
     /**
      * Creates a new sorted list that sorts according to given condition
      * @param condition The sorting condition
      * @param items The initial items to add
      */
-    public constructor(condition: (a: T, b: T) => boolean, items?: T[]) {
-        this.condition = condition;
-        if (items) this.add(items);
+    public constructor(data: {
+        condition: (a: T, b: T) => boolean;
+        onAdd?: (item: T) => void;
+        onRemove?: (item: T) => void;
+        items?: T[];
+    }) {
+        this.condition = data.condition;
+        this.onAdd = data.onAdd;
+        this.onRemove = data.onRemove;
+        if (data.items) this.add(data.items);
     }
 
     // Getters
@@ -85,59 +94,39 @@ export class SortedList<T> {
         const curItems = this.list.get(null);
         const lastItem = curItems[curItems.length - 1];
         let out: T[];
-        if (items instanceof Array) {
-            // Ignore any items that aren't in the range
-            if (maxItems && lastItem && curItems.length === maxItems) {
-                items = items.filter(item => !this.condition(lastItem, item));
-                if (items.length == 0) return;
-            }
 
-            // Perform a simple sort on the batch of items, and perform a merge of the lists
-            quickSort(items, this.condition);
+        if (!(items instanceof Array)) items = [items];
 
-            let n = 0;
-            let m = 0;
-            const maxOutLength = curItems.length + items.length;
-            out = new Array(maxItems ? Math.min(maxItems, maxOutLength) : maxOutLength);
-            for (var i = 0; i < out.length; i++) {
-                if (
-                    n != items.length &&
-                    (m == curItems.length || !this.condition(curItems[m], items[n]))
-                ) {
-                    out[i] = items[n++];
-                } else {
-                    out[i] = curItems[m++];
-                }
-            }
-        } else {
-            // If the item is not within the range, bail
+        // Ignore any items that aren't in the range
+        if (maxItems && lastItem && curItems.length === maxItems) {
+            items = items.filter(item => !this.condition(lastItem, item));
+            if (items.length == 0) return;
+        }
+
+        // Perform a simple sort on the batch of items, and perform a merge of the lists
+        if (items.length > 1) quickSort(items, this.condition);
+
+        let n = 0;
+        let m = 0;
+        const maxOutLength = curItems.length + items.length;
+        out = new Array(maxItems ? Math.min(maxItems, maxOutLength) : maxOutLength);
+        for (let i = 0; i < out.length; i++) {
             if (
-                maxItems &&
-                lastItem &&
-                curItems.length === maxItems &&
-                lastItem &&
-                this.condition(lastItem, items)
-            )
-                return;
-
-            // Perform inserting sort iteration
-            const maxOutLength = curItems.length + 1;
-            out = new Array(maxItems ? Math.min(maxItems, maxOutLength) : maxOutLength);
-            let n = 0;
-            let found = false;
-            for (var i = 0; i < out.length; i++) {
-                if (
-                    !found &&
-                    (n >= curItems.length || !this.condition(curItems[n], items))
-                ) {
-                    found = true;
-                    out[i] = items;
-                } else {
-                    out[i] = curItems[n++];
-                }
+                n != items.length &&
+                (m == curItems.length || !this.condition(curItems[m], items[n]))
+            ) {
+                out[i] = items[n++];
+            } else {
+                out[i] = curItems[m++];
             }
         }
+
+        // Update the item list
         this.list.set(out);
+
+        // Call add and remove listeners on items
+        if (this.onRemove) for (; m < curItems.length; m++) this.onRemove(curItems[m]);
+        if (this.onAdd) for (let i = 0; i < n; i++) this.onAdd(items[i]);
     }
 
     /**
@@ -161,31 +150,36 @@ export class SortedList<T> {
         const curItems = this.list.get(null);
         const lastItem = curItems[curItems.length - 1];
         let out: T[] = new Array();
+
+        if (!(items instanceof Array)) items = [items];
+
+        // Ignore any items that aren't in the range
+        if (!lastItem) return;
+        items = items.filter(item => !this.condition(lastItem, item));
+        if (items.length == 0) return;
+
+        // Sort the array, and perform a kind of 'merge filter'
+        if (items.length > 1) quickSort(items, this.condition);
+
+        // FIlter the items
+        let removed = [] as T[];
         let n = 0;
+        let m = 0;
+        for (var i = 0; i < curItems.length; i++)
+            if (items[m] == undefined || !equals(items[m], curItems[i]))
+                out[n++] = curItems[i];
+            else {
+                removed.push(curItems[i]);
+                m++;
+            }
 
-        if (items instanceof Array) {
-            // Ignore any items that aren't in the range
-            if (!lastItem) return;
-            items = items.filter(item => !this.condition(lastItem, item));
-            if (items.length == 0) return;
-
-            // Sort the array, and perform a kind of 'merge filter'
-            quickSort(items, this.condition);
-            let m = 0;
-            for (var i = 0; i < curItems.length; i++)
-                if (!items[m] || !equals(items[m], curItems[i])) out[n++] = curItems[i];
-                else m++;
-        } else {
-            // If the item is not within the range, bail
-            if (!lastItem || this.condition(lastItem, items)) return;
-
-            // Filter out this 1 item but copy the rest
-            for (var i = 0; i < curItems.length; i++)
-                if (!equals(items, curItems[i])) out[n++] = curItems[i];
-        }
-
+        // Update the list
         out.length = n;
         this.list.set(out);
+
+        // Call the listeners
+        if (this.onRemove) removed.forEach(item => this.onRemove?.(item));
+
         return out.length < curItems.length;
     }
 
@@ -202,20 +196,29 @@ export class SortedList<T> {
     public removeIndex(indices: number[] | number) {
         const curItems = this.list.get(null);
         let out: T[] = new Array(curItems.length);
+
+        if (!(indices instanceof Array)) indices = [indices];
+
+        // Sort the array, and perform a kind of 'merge filter'
+        if (indices.length > 1) quickSort(indices);
+
+        // Filter the items
+        let removed = [] as T[];
         let n = 0;
+        let m = 0;
+        for (var i = 0; i < out.length; i++)
+            if (indices[m] != i) out[n++] = curItems[i];
+            else {
+                removed.push(curItems[i]);
+                m++;
+            }
 
-        if (indices instanceof Array) {
-            quickSort(indices);
-            let m = 0;
-            for (var i = 0; i < out.length; i++)
-                if (indices[m] != i) out[n++] = curItems[i];
-                else m++;
-        } else {
-            for (var i = 0; i < out.length; i++) if (indices != i) out[n++] = curItems[i];
-        }
-
+        // Update the list
         out.length = n;
         this.list.set(out);
+
+        // Call the listeners
+        if (this.onRemove) removed.forEach(item => this.onRemove?.(item));
     }
 
     /**
@@ -225,9 +228,22 @@ export class SortedList<T> {
      */
     public filter(include: (item: T) => boolean): boolean {
         const curItems = this.list.get(null);
-        const out = curItems.filter(include);
+
+        // Filter the items
+        let removed = [] as T[];
+        const out = curItems.filter(item => {
+            const keep = include(item);
+            if (!keep) removed.push(item);
+            return keep;
+        });
+
+        // Update the list
         if (out.length >= curItems.length) return false;
         this.list.set(out);
+
+        // Call the listeners
+        if (this.onRemove) removed.forEach(item => this.onRemove?.(item));
+
         return true;
     }
 

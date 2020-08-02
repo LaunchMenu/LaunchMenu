@@ -1,12 +1,13 @@
 import {Action} from "../../Action";
+import {ICursorSelectable} from "./_types/ICursorSelectable";
+import {IMenu} from "../../../menu/_types/IMenu";
 
 /**
- * An action that's use as an event listener for when an item becomes the cursor
+ * An action that's used as an event listener for when an item becomes the cursor
  */
-export const onCursorAction = new Action((listeners: ((isCursor: boolean) => void)[]) => {
+export const onCursorAction = new Action((listeners: ICursorSelectable[]) => {
     return {
-        onCursor: (isCursor: boolean) => {
-            listeners.forEach(listener => listener(isCursor));
-        },
-    };
+        onCursor: (isCursor, menu) =>
+            listeners.forEach(selectable => selectable.onCursor(isCursor, menu)),
+    } as ICursorSelectable;
 });

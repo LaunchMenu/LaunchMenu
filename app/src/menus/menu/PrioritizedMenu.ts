@@ -12,6 +12,8 @@ import {isItemSelectable} from "../items/isItemSelectable";
 import {IGenerator} from "../../utils/generator/_types/IGenerator";
 import {GeneratorStreamExtractor} from "../../utils/generator/GeneratorStreamExtractor";
 import {sortPrioritizedCategories} from "./SortPrioritizedCategories";
+import {IMenu} from "./_types/IMenu";
+import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 
 type CategoryData<T> = {
     items: SortedList<IPrioritizedMenuItem<T>>;
@@ -23,8 +25,12 @@ type CategoryData<T> = {
     };
 };
 
-const createSortedList = <T>(): SortedList<IPrioritizedMenuItem<T>> =>
-    new SortedList((a, b) => a.priority >= b.priority);
+const createSortedList = <T>(menu: IMenu): SortedList<IPrioritizedMenuItem<T>> =>
+    new SortedList({
+        condition: (a, b) => a.priority >= b.priority,
+        onAdd: ({item}) => onMenuChangeAction.get([item]).onMenuChange(menu, true),
+        onRemove: ({item}) => onMenuChangeAction.get([item]).onMenuChange(menu, false),
+    });
 
 /**
  * A menu class to control menu items and their state
@@ -40,7 +46,7 @@ export class PrioritizedMenu<T = void> {
     // Tracking menu items
     protected categories = [
         {
-            items: createSortedList(),
+            items: createSortedList(this),
             category: undefined,
         },
     ] as CategoryData<T>[];
@@ -76,7 +82,7 @@ export class PrioritizedMenu<T = void> {
         if (categoryIndex == -1) {
             this.categories.push({
                 category,
-                items: createSortedList(),
+                items: createSortedList(this),
                 batch: {
                     remove: [],
                     add: [item],
@@ -140,7 +146,7 @@ export class PrioritizedMenu<T = void> {
         if (categoryIndex == -1) {
             this.categories.push({
                 category,
-                items: createSortedList(),
+                items: createSortedList(this),
                 batch: {
                     add: [],
                     remove: [item],
@@ -200,7 +206,7 @@ export class PrioritizedMenu<T = void> {
         this.categories = this.categories.filter(categoryData => {
             if (categoryData.batch) {
                 // Reset the category if specified
-                if (categoryData.batch.clear) categoryData.items = createSortedList();
+                if (categoryData.batch.clear) categoryData.items = createSortedList(this);
 
                 // Filters out old items
                 const keys = {};
@@ -275,12 +281,12 @@ export class PrioritizedMenu<T = void> {
             if (selected) {
                 if (!selectedItems.includes(item)) {
                     this.selected.set([...selectedItems, item]);
-                    onSelectAction.get([item]).onSelect(true);
+                    onSelectAction.get([item]).onSelect(true, this);
                 }
             } else {
                 if (selectedItems.includes(item)) {
                     this.selected.set(selectedItems.filter(i => i != item));
-                    onSelectAction.get([item]).onSelect(false);
+                    onSelectAction.get([item]).onSelect(false, this);
                 }
             }
         }
@@ -294,11 +300,11 @@ export class PrioritizedMenu<T = void> {
         this.flushBatch();
         if ((!item || this.items.get(null).includes(item)) && !this.destroyed.get(null)) {
             const currentCursor = this.cursor.get(null);
-            if (currentCursor) onCursorAction.get([currentCursor]).onCursor(false);
+            if (currentCursor) onCursorAction.get([currentCursor]).onCursor(false, this);
 
             this.cursor.set(item);
 
-            if (item) onCursorAction.get([item]).onCursor(true);
+            if (item) onCursorAction.get([item]).onCursor(true, this);
         }
     }
 
@@ -309,9 +315,9 @@ export class PrioritizedMenu<T = void> {
         if (this.destroyed.get(null) == true) return;
         this.destroyed.set(true);
         this.generators.forEach(generator => generator.stop());
-        onSelectAction.get(this.selected.get(null)).onSelect(false);
+        onSelectAction.get(this.selected.get(null)).onSelect(false, this);
         const cursor = this.cursor.get(null);
-        if (cursor) onCursorAction.get([cursor]).onCursor(false);
+        if (cursor) onCursorAction.get([cursor]).onCursor(false, this);
     }
 
     // Item retrieval

@@ -7,6 +7,7 @@ import {getMenuCategory} from "../actions/types/category/getCategoryAction";
 import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
 import {isItemSelectable} from "../items/isItemSelectable";
+import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 
 /**
  * A menu class to control menu items and their state,
@@ -42,11 +43,8 @@ export class Menu {
         categoryConfig?: IMenuCategoryConfig
     ) {
         let config: IMenuCategoryConfig | undefined;
-        if (items instanceof Array) {
-            config = categoryConfig;
-        } else {
-            config = items;
-        }
+        if (items instanceof Array) config = categoryConfig;
+        else config = items;
 
         // Create the category config
         this.categoryConfig = {
@@ -68,8 +66,11 @@ export class Menu {
      * @param index The index to add the item at within its category (defaults to the last index; Infinity)
      */
     public addItem(item: IMenuItem, index: number = Infinity): void {
-        this.addItemWithoutUpdate(item, index);
+        const added = this.addItemWithoutUpdate(item, index);
         this.updateItemsList();
+
+        // Call the menu change listener
+        if (added) onMenuChangeAction.get([item]).onMenuChange(this, true);
     }
 
     /**
@@ -77,17 +78,20 @@ export class Menu {
      * @param items The generator to get items from
      */
     public addItems(items: IMenuItem[]): void {
-        items.forEach(item => this.addItemWithoutUpdate(item));
-
+        const addedItems = items.filter(item => this.addItemWithoutUpdate(item));
         this.updateItemsList();
+
+        // Call the menu change listener
+        onMenuChangeAction.get(addedItems).onMenuChange(this, true);
     }
 
     /**
      * Adds an item to the menu without updating the item list
      * @param item The item to add
      * @param index The index to add the item at within its category (defaults to the last index; Infinity)
+     * @returns Added whether the item was added
      */
-    protected addItemWithoutUpdate(item: IMenuItem, index: number = Infinity): void {
+    protected addItemWithoutUpdate(item: IMenuItem, index: number = Infinity): boolean {
         const category = this.categoryConfig.getCategory(item);
         const categoryIndex = this.categories.findIndex(({category: c}) => c == category);
 
@@ -96,9 +100,10 @@ export class Menu {
             this.categories.push({category, items: [item]});
         } else {
             const {items} = this.categories[categoryIndex];
-            if (items.length >= this.categoryConfig.maxCategoryItemCount) return;
+            if (items.length >= this.categoryConfig.maxCategoryItemCount) return false;
             items.splice(index, 0, item);
         }
+        return true;
     }
 
     /**
@@ -116,7 +121,7 @@ export class Menu {
      * @returns Whether any item was in the menu (and now removed)
      */
     public removeItems(items: IMenuItem[]): boolean {
-        let altered = false;
+        let removed = [] as IMenuItem[];
         const selectedItems = this.selected.get(null);
 
         items.forEach(item => {
@@ -132,8 +137,7 @@ export class Menu {
                 if (index != -1) {
                     items.splice(index, 1);
                     if (items.length == 0) this.categories.splice(categoryIndex, 1);
-
-                    altered = true;
+                    removed.push(item);
 
                     // Make sure the item isn't the selected and or cursor item
                     if (selectedItems.includes(item)) this.setSelected(item, false);
@@ -141,8 +145,11 @@ export class Menu {
             }
         });
 
-        if (altered) {
+        if (removed.length > 0) {
             this.updateItemsList();
+
+            // Call the menu change listener
+            onMenuChangeAction.get(items).onMenuChange(this, false);
             return true;
         }
         return false;
@@ -185,12 +192,12 @@ export class Menu {
             if (selected) {
                 if (!selectedItems.includes(item)) {
                     this.selected.set([...selectedItems, item]);
-                    onSelectAction.get([item]).onSelect(true);
+                    onSelectAction.get([item]).onSelect(true, this);
                 }
             } else {
                 if (selectedItems.includes(item)) {
                     this.selected.set(selectedItems.filter(i => i != item));
-                    onSelectAction.get([item]).onSelect(false);
+                    onSelectAction.get([item]).onSelect(false, this);
                 }
             }
         }
@@ -203,11 +210,11 @@ export class Menu {
     public setCursor(item: IMenuItem | null): void {
         if ((!item || this.items.get(null).includes(item)) && !this.destroyed.get(null)) {
             const currentCursor = this.cursor.get(null);
-            if (currentCursor) onCursorAction.get([currentCursor]).onCursor(false);
+            if (currentCursor) onCursorAction.get([currentCursor]).onCursor(false, this);
 
             this.cursor.set(item);
 
-            if (item) onCursorAction.get([item]).onCursor(true);
+            if (item) onCursorAction.get([item]).onCursor(true, this);
         }
     }
 
@@ -217,9 +224,9 @@ export class Menu {
     public destroy() {
         if (this.destroyed.get(null) == true) return;
         this.destroyed.set(true);
-        onSelectAction.get(this.selected.get(null)).onSelect(false);
+        onSelectAction.get(this.selected.get(null)).onSelect(false, this);
         const cursor = this.cursor.get(null);
-        if (cursor) onCursorAction.get([cursor]).onCursor(false);
+        if (cursor) onCursorAction.get([cursor]).onCursor(false, this);
     }
 
     // Item retrieval
