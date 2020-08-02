@@ -12,6 +12,7 @@ import {MenuItemLayout} from "../../components/items/MenuItemLayout";
 import {MenuItemIcon} from "../../components/items/MenuItemIcon";
 import {createSimpleSearchBinding} from "../actions/types/search/simpleSearch/simpleSearchHandler";
 import {SimpleSearchHighlight} from "../../components/items/SimpleSearchHighlight";
+import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 
 /**
  * Creates a new standard menu item
@@ -26,6 +27,7 @@ export function createStandardMenuItem({
     onExecute,
     onSelect,
     onCursor,
+    onMenuChange,
     category,
     actionBindings = [],
 }: IStandardMenuItemData): IMenuItem {
@@ -33,9 +35,10 @@ export function createStandardMenuItem({
         createSimpleSearchBinding({name, description, tags}),
         ...actionBindings,
     ];
-    if (onExecute) bindings.push(executeAction.createBinding(onExecute));
-    if (onSelect) bindings.push(onSelectAction.createBinding(onSelect));
-    if (onCursor) bindings.push(onCursorAction.createBinding(onCursor));
+    if (onExecute) bindings.push(executeAction.createBinding({execute: onExecute}));
+    if (onSelect) bindings.push(onSelectAction.createBinding({onSelect}));
+    if (onCursor) bindings.push(onCursorAction.createBinding({onCursor}));
+    if (onMenuChange) bindings.push(onMenuChangeAction.createBinding({onMenuChange}));
     if (category) bindings.push(getCategoryAction.createBinding(category));
 
     return {

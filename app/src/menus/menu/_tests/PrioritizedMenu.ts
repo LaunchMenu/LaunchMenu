@@ -7,6 +7,7 @@ import {createMenuItem} from "./MenuItem.helper";
 import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
+import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangeAction";
 
 const createMenu = (items?: IPrioritizedMenuItem[]) => {
     const menu = new PrioritizedMenu({
@@ -132,6 +133,20 @@ describe("PrioritizedMenu", () => {
                     items[2].item,
                 ]);
             });
+        });
+        it("Calls onMenuChange actions", async () => {
+            const item = createPrioritizedMenuItem({priority: 1});
+            const onMenuChange = jest.fn();
+            item.item.actionBindings.push(
+                onMenuChangeAction.createBinding({
+                    onMenuChange,
+                })
+            );
+            const menu = createMenu();
+            menu.addItem(item);
+            await wait(20);
+            expect(onMenuChange.mock.calls.length).toBe(1);
+            expect(onMenuChange.mock.calls[0]).toEqual([menu, true]);
         });
     });
     describe("PrioritizedMenu.addItems", () => {
@@ -261,6 +276,24 @@ describe("PrioritizedMenu", () => {
                 items[4].item,
             ]);
         });
+        it("Calls onMenuChange actions", async () => {
+            const item = createPrioritizedMenuItem({priority: 1, generateID: true});
+            const onMenuChange = jest.fn();
+            item.item.actionBindings.push(
+                onMenuChangeAction.createBinding({
+                    onMenuChange,
+                })
+            );
+            const menu = createMenu();
+            menu.addItem(item);
+            await wait(20);
+            expect(onMenuChange.mock.calls.length).toBe(1);
+            expect(onMenuChange.mock.calls[0]).toEqual([menu, true]);
+            menu.removeItem(item);
+            await wait(20);
+            expect(onMenuChange.mock.calls.length).toBe(2);
+            expect(onMenuChange.mock.calls[1]).toEqual([menu, false]);
+        });
     });
     describe("PrioritizedMenu.flushBatch", () => {
         it("Synchronously flushes item addition changes", () => {
@@ -382,9 +415,12 @@ describe("PrioritizedMenu", () => {
             let selectCount = 0;
             let deselectCount = 0;
             item.item.actionBindings.push(
-                onSelectAction.createBinding(selected => {
-                    if (selected) selectCount++;
-                    else deselectCount++;
+                onSelectAction.createBinding({
+                    onSelect: (selected, m) => {
+                        if (selected) selectCount++;
+                        else deselectCount++;
+                        expect(m).toEqual(menu);
+                    },
                 })
             );
             const menu = createMenu([...items, item]);
@@ -440,9 +476,12 @@ describe("PrioritizedMenu", () => {
             let selectCount = 0;
             let deselectCount = 0;
             item.item.actionBindings.push(
-                onCursorAction.createBinding(selected => {
-                    if (selected) selectCount++;
-                    else deselectCount++;
+                onCursorAction.createBinding({
+                    onCursor: (selected, m) => {
+                        if (selected) selectCount++;
+                        else deselectCount++;
+                        expect(m).toEqual(menu);
+                    },
                 })
             );
             const menu = createMenu([...items, item]);
@@ -523,8 +562,11 @@ describe("PrioritizedMenu", () => {
             const item = createPrioritizedMenuItem({});
             let deselectCount = 0;
             item.item.actionBindings.push(
-                onSelectAction.createBinding(selected => {
-                    if (!selected) deselectCount++;
+                onSelectAction.createBinding({
+                    onSelect: (selected, m) => {
+                        if (!selected) deselectCount++;
+                        expect(m).toEqual(menu);
+                    },
                 })
             );
             menu.addItem(item);
@@ -540,8 +582,11 @@ describe("PrioritizedMenu", () => {
             const item = createPrioritizedMenuItem({});
             let deselectCount = 0;
             item.item.actionBindings.push(
-                onCursorAction.createBinding(selected => {
-                    if (!selected) deselectCount++;
+                onCursorAction.createBinding({
+                    onCursor: (selected, m) => {
+                        if (!selected) deselectCount++;
+                        expect(m).toEqual(menu);
+                    },
                 })
             );
             menu.addItem(item);
@@ -567,8 +612,11 @@ describe("PrioritizedMenu", () => {
             const item = createPrioritizedMenuItem({});
             let selectCount = 0;
             item.item.actionBindings.push(
-                onCursorAction.createBinding(selected => {
-                    if (selected) selectCount++;
+                onCursorAction.createBinding({
+                    onCursor: (selected, m) => {
+                        if (selected) selectCount++;
+                        expect(m).toEqual(menu);
+                    },
                 })
             );
             menu.addItem(item);
@@ -583,8 +631,11 @@ describe("PrioritizedMenu", () => {
             const item = createPrioritizedMenuItem({});
             let selectCount = 0;
             item.item.actionBindings.push(
-                onSelectAction.createBinding(selected => {
-                    if (selected) selectCount++;
+                onSelectAction.createBinding({
+                    onSelect: (selected, m) => {
+                        if (selected) selectCount++;
+                        expect(m).toEqual(menu);
+                    },
                 })
             );
             menu.addItem(item);
@@ -735,16 +786,19 @@ describe("PrioritizedMenu", () => {
 
     describe("categoryConfig", () => {
         describe("categoryConfig.maxCategoryItemCount", () => {
+            const items = [
+                createPrioritizedMenuItem({priority: 2}),
+                createPrioritizedMenuItem({priority: 1}),
+                createPrioritizedMenuItem({priority: 3}),
+            ];
+            let menu: PrioritizedMenu;
+            beforeEach(() => {
+                menu = new PrioritizedMenu({maxCategoryItemCount: 2});
+            });
             it("Allows the number of items for each category to be limited", () => {
-                const menu = new PrioritizedMenu({maxCategoryItemCount: 2});
-                const items = [
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
-                ];
                 items.forEach(item => menu.addItem(item));
                 menu.flushBatch();
-                expect(menu.getItems()).toEqual(items.slice(0, 2).map(({item}) => item));
+                expect(menu.getItems()).toEqual([items[2].item, items[0].item]);
             });
             it("Considers separate categories", () => {
                 const someCategory: ICategory = {
@@ -753,11 +807,7 @@ describe("PrioritizedMenu", () => {
                     item: createMenuItem(),
                 };
                 const menu = new PrioritizedMenu({maxCategoryItemCount: 2});
-                const items = [
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
-                ];
+
                 const items2 = [
                     createPrioritizedMenuItem({category: someCategory}),
                     createPrioritizedMenuItem({category: someCategory}),
@@ -767,10 +817,52 @@ describe("PrioritizedMenu", () => {
                 items2.forEach(item => menu.addItem(item));
                 menu.flushBatch();
                 expect(menu.getItems()).toEqual([
-                    ...items.slice(0, 2).map(({item}) => item),
+                    items[2].item,
+                    items[0].item,
                     someCategory.item,
                     ...items2.slice(0, 2).map(({item}) => item),
                 ]);
+            });
+            describe("OnMenuChange", () => {
+                it("Doesn't call onMenuChange to inform about addition if the item wasn't added", () => {
+                    items.forEach(item => menu.addItem(item));
+                    const item = createPrioritizedMenuItem({
+                        priority: 1,
+                        generateID: true,
+                    });
+                    const onMenuChange = jest.fn();
+                    item.item.actionBindings.push(
+                        onMenuChangeAction.createBinding({
+                            onMenuChange,
+                        })
+                    );
+                    menu.addItem(item);
+                    menu.flushBatch();
+                    expect(onMenuChange.mock.calls.length).toBe(0);
+                });
+                it("Does call onMenuChange to inform about removal if an item got pushed off the list", () => {
+                    const item = createPrioritizedMenuItem({
+                        priority: 1,
+                        generateID: true,
+                    });
+                    const onMenuChange = jest.fn();
+                    item.item.actionBindings.push(
+                        onMenuChangeAction.createBinding({
+                            onMenuChange,
+                        })
+                    );
+                    menu.addItem(item);
+                    menu.flushBatch();
+
+                    // Add higher priority items
+                    items.forEach(item => menu.addItem(item));
+                    menu.addItem(item);
+                    menu.flushBatch();
+
+                    expect(onMenuChange.mock.calls.length).toBe(2);
+                    expect(onMenuChange.mock.calls[0]).toEqual([menu, true]);
+                    expect(onMenuChange.mock.calls[1]).toEqual([menu, false]);
+                });
             });
         });
 

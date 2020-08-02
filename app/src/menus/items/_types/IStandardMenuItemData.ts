@@ -1,6 +1,7 @@
 import {ReactNode} from "react";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
+import {IMenu} from "../../menu/_types/IMenu";
 
 /**
  * A type for the data passed to a standard menu item
@@ -26,6 +27,9 @@ export type IStandardMenuItemData = {
 
     /** A listener to execute side effects when the item becomes the cursor */
     onCursor?: (isCursor: boolean) => void;
+
+    /** A listener to track what menus an item is added to */
+    onMenuChange?: (menu: IMenu, added: boolean) => void;
 
     /** The category to put the item under in the menu */
     category?: ICategory;
