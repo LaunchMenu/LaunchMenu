@@ -29,7 +29,10 @@ export class SimpleSearchMatcher {
             console.log(m);
             this.regex = new RegExp(m[1]);
         } else {
-            this.words = search.split(" ").map(word => word.toLowerCase());
+            this.words = search
+                .split(" ")
+                .map(word => word.toLowerCase())
+                .filter(Boolean);
         }
     }
 
@@ -51,10 +54,11 @@ export class SimpleSearchMatcher {
 
         if (this.words) {
             text = text.toLowerCase();
-            return this.words.reduce(
+            const result = this.words.reduce(
                 (cur, word) => cur + (text.includes(word) ? word.length : 0),
                 0
             );
+            return result;
         }
 
         return 0;
@@ -98,7 +102,7 @@ export class SimpleSearchMatcher {
      * @returns An element with the specified sections highlighted
      */
     protected highlightSections(text: string, sections: [number, number][]): JSX.Element {
-        sections.sort(([a], [b]) => a - b);
+        sections.sort(([, a], [, b]) => a - b);
 
         let parts = [] as (JSX.Element | string)[];
         let prevEndIndex = 0;

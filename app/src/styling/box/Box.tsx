@@ -24,7 +24,8 @@ export const Box: FC<IBoxProps> = props => {
     const cssProps = {...spacings, ...colors, ...general, ...elevation};
 
     // Extract dom attributes to apply
-    const domAttributes = getDomAttributes(props);
+    const {onTop, index, ...domProps} = props as any; // Remove onTop and index since these may be passed by the view stack
+    const domAttributes = getDomAttributes(domProps);
 
     // Extract the component
     const Comp = props.as || ("div" as any);

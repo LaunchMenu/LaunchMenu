@@ -1,14 +1,15 @@
 import {Field, IDataHook} from "model-react";
 import {ITextSelection} from "./_types/ITextSelection";
+import {ITextField} from "./_types/ITextField";
 
 /**
  * A mutable field to contain a text input as well as the selected range
  */
-export class TextField extends Field<string> {
+export class TextField extends Field<string> implements ITextField {
     protected selection = new Field({start: 0, end: 0});
 
     /**
-     * Creates a new TextField that can select
+     * Creates a new TextField that stores text and selection data
      * @param text The initial text to store
      * @param selection The selected text
      */

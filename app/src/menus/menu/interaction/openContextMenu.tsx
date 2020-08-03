@@ -1,4 +1,3 @@
-import React from "react";
 import {IMenu} from "../_types/IMenu";
 import {getContextMenu} from "../../utils/getContextMenu";
 import {IViewStack} from "../../../stacks/_types/IViewStack";
