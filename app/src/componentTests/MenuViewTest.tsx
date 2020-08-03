@@ -52,7 +52,8 @@ const alertHandlerAction = alertAction.createHandler((data: {message: string}[])
 });
 
 // Create stacks and some menu
-const viewStack = new ViewStack();
+const menuViewStack = new ViewStack();
+const fieldViewStack = new ViewStack();
 const inputStack = new KeyHandlerStack(new KeyHandler(window));
 const menu = new Menu([
     createStandardMenuItem({
@@ -83,32 +84,22 @@ const menu = new Menu([
     createStandardMenuItem({name: "Wow", onExecute: () => console.log("Wow")}),
 ]);
 const context = new IOContext({
-    panes: {menu: viewStack, content: viewStack, field: viewStack},
+    panes: {menu: menuViewStack, content: menuViewStack, field: fieldViewStack},
     keyHandler: inputStack,
 });
-context.openUI({menu, menuHandler: createMenuKeyHandler(menu, context)});
-
-const searchMenu = new SearchMenu();
-searchMenu.setSearchItems(menu.getItems());
 context.openUI({
-    menu: searchMenu,
-    menuHandler: createMenuKeyHandler(searchMenu, context),
+    menu,
+    menuHandler: createMenuKeyHandler(menu, context),
 });
 
 export const MenuViewTest: FC = () => {
-    const [search, setSearch] = useState("");
-    const performSearch = useCallback((search: string) => {
-        setSearch(search);
-        searchMenu.setSearch(search);
-    }, []);
     return (
         <Box display="flex" flexDirection="column" height="100%">
-            <TextField
-                value={search}
-                onChange={(e, v) => v != undefined && performSearch(v)}
-            />
+            <Box position="relative" height={80}>
+                <StackView items={fieldViewStack} />
+            </Box>
             <Box position="relative" flexGrow={1}>
-                <StackView items={viewStack} />
+                <StackView items={menuViewStack} />
             </Box>
         </Box>
     );

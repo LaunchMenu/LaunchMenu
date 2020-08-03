@@ -1,5 +1,4 @@
 import React, {FC, useEffect, useRef} from "react";
-import {IMenu} from "../../menus/menu/_types/IMenu";
 import {useDataHook} from "model-react";
 import {FillBox} from "../FillBox";
 import {useSmoothScroll} from "../../utils/hooks/useSmoothScroll";

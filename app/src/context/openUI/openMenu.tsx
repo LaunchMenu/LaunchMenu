@@ -8,6 +8,9 @@ import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventLi
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {containsKeyHandlerStack} from "../partialContextChecks/containsKeyHandlerStack";
 import {withPopError} from "../withPopError";
+import {openTextField} from "./openTextField";
+import {SearchField} from "../../textFields/SearchField";
+import {containsFieldStack} from "../partialContextChecks/containsFieldStack";
 
 /**
  * Opens the given content within the given ui context
@@ -25,7 +28,7 @@ export function openMenu<D extends IOpenableMenu>(
     if (content.menu && containsMenuStack(context)) {
         const {menu} = content;
 
-        // Handle opening of only a menu view
+        // Handle opening if only a menu view
         if (isView(menu)) {
             context.panes.menu.push(menu);
             closers.unshift(() => withPopError(context.panes.menu.pop(menu), "menu"));
@@ -51,7 +54,29 @@ export function openMenu<D extends IOpenableMenu>(
                 withPopError(context.keyHandler.pop(keyHandler), "key handler")
             );
 
-            // TODO: add code for creating search fields
+            // Destroy the menu on close if specified
+            if (!("destroyOnClose" in content) || content.destroyOnClose)
+                closers.unshift(() => menu.destroy());
+
+            // If no field is present, and search is true or not specified, create a search field
+            if (
+                !("field" in content) &&
+                (!("searchable" in content) || content.searchable)
+            ) {
+                if (containsFieldStack(context)) {
+                    closers.unshift(
+                        ...openTextField(context, {
+                            field: new SearchField({menu, context}),
+                            highlighter:
+                                "highlighter" in content
+                                    ? content.highlighter
+                                    : undefined,
+                            icon: {iconName: "Search"},
+                            destroyOnClose: true, // Caller has no reference to this field so can't manually destroy it
+                        })
+                    );
+                }
+            }
         }
     }
 

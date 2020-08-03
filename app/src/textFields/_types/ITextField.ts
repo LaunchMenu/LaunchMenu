@@ -30,4 +30,9 @@ export type ITextField = {
      * @returns The selected range
      */
     getSelection(hook?: IDataHook): ITextSelection;
+
+    /**
+     * Properly disposes the text field
+     */
+    readonly destroy?: () => void;
 };

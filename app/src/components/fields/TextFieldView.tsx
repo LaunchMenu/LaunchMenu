@@ -21,7 +21,6 @@ export const TextFieldView: FC<ITextFieldViewProps> = ({
     ...rest
 }) => {
     const theme = useTheme();
-
     return (
         <Box display="flex" alignItems="stretch" backgroundColor="bgPrimary" {...rest}>
             {icon && (
@@ -30,8 +29,7 @@ export const TextFieldView: FC<ITextFieldViewProps> = ({
                     alignItems="center"
                     justifyContent="center"
                     width={iconSize}
-                    height={iconSize}
-                    zIndex={1}>
+                    height={iconSize}>
                     {isValidElement(icon) ? (
                         icon
                     ) : (

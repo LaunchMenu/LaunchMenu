@@ -7,6 +7,7 @@ import {handleDeselectInput} from "./handleDeselectInput";
 import {handleContextInput} from "./handleContextInput";
 import {IKeyHandlerStack} from "../../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {IViewStack} from "../../../../stacks/_types/IViewStack";
+import {IPartialIOContext} from "../../../../context/_types/IIOContext";
 
 /**
  * Creates a standard menu key handler
@@ -17,7 +18,10 @@ import {IViewStack} from "../../../../stacks/_types/IViewStack";
  */
 export function createMenuKeyHandler(
     menu: IMenu,
-    ioContext: {panes: {menu: IViewStack}; keyHandler: IKeyHandlerStack},
+    ioContext: {
+        panes: {menu: IViewStack};
+        keyHandler: IKeyHandlerStack;
+    } & IPartialIOContext,
     onExit?: () => void
 ): IKeyEventListener {
     return e => {
