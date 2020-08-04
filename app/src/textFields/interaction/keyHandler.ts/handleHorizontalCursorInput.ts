@@ -1,6 +1,6 @@
-import {IKeyEvent} from "../../../stacks/keyHandlerStack/_types/IKeyEvent";
 import {ITextField} from "../../_types/ITextField";
 import {moveCursorHorizontal} from "../moveCursorHorizontal";
+import {KeyEvent} from "../../../stacks/keyHandlerStack/KeyEvent";
 
 /**
  * Handles horizontal cursor input
@@ -9,14 +9,14 @@ import {moveCursorHorizontal} from "../moveCursorHorizontal";
  * @returns Whether the event was caught
  */
 export function handleHorizontalCursorInput(
-    event: IKeyEvent,
+    event: KeyEvent,
     textField: ITextField
 ): void | boolean {
-    if (event.down && event.key.name == "leftarrow") {
+    if (event.is("left", ["down", "repeat"])) {
         moveCursorHorizontal(textField, -1, event.shift);
         return true;
     }
-    if (event.down && event.key.name == "rightarrow") {
+    if (event.is("right", ["down", "repeat"])) {
         moveCursorHorizontal(textField, 1, event.shift);
         return true;
     }

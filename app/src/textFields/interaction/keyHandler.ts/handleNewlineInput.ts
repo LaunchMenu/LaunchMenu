@@ -1,6 +1,6 @@
-import {IKeyEvent} from "../../../stacks/keyHandlerStack/_types/IKeyEvent";
 import {ITextField} from "../../_types/ITextField";
 import {insertText} from "../insertText";
+import {KeyEvent} from "../../../stacks/keyHandlerStack/KeyEvent";
 
 /**
  * Handles new line inputs
@@ -9,10 +9,10 @@ import {insertText} from "../insertText";
  * @returns Whether the event was caught
  */
 export function handleNewlineInput(
-    event: IKeyEvent,
+    event: KeyEvent,
     textField: ITextField
 ): void | boolean {
-    if (event.down && event.key.name == "enter") {
+    if (event.is("enter", ["repeat", "down"])) {
         insertText(textField, "\n");
         return true;
     }

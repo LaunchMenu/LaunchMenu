@@ -1,6 +1,5 @@
 import {ITextField} from "../../_types/ITextField";
 import {IKeyEventListener} from "../../../stacks/keyHandlerStack/_types/IKeyEventListener";
-import {isDownEvent} from "../../../stacks/keyHandlerStack/keyEventHelpers/isDownEvent";
 import {handleHorizontalCursorInput} from "./handleHorizontalCursorInput";
 import {handleVerticalCursorInput} from "./handleVerticalCursorInput";
 import {handleCharacterInput} from "./handleCharacterInput";
@@ -31,7 +30,7 @@ export function createTextFieldKeyHandler(
             if (handleVerticalCursorInput(e, textField)) return true;
             if (handleNewlineInput(e, textField)) return true;
         }
-        if (onExit && isDownEvent(e, "esc")) {
+        if (onExit && e.is("esc")) {
             onExit();
             return true;
         }

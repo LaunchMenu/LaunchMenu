@@ -1,8 +1,8 @@
 import {IKeyEventListener} from "./_types/IKeyEventListener";
-import {IKeyEvent} from "./_types/IKeyEvent";
 import {IKeyHandlerTarget} from "./_types/IKeyHandlerTarget";
 import {IKey} from "./_types/IKey";
-import {keyNames} from "./keyNames";
+import {KeyEvent} from "./KeyEvent";
+import {keyboardLayout} from "./keyboardLayouts/qwerty";
 
 /**
  * A key handler class
@@ -12,8 +12,7 @@ export class KeyHandler {
 
     protected pressedKeys = {} as {[key: number]: IKey};
 
-    protected keyUpListener: (event: KeyboardEvent) => void;
-    protected keyDownListener: (event: KeyboardEvent) => void;
+    protected keyListener: (event: KeyboardEvent) => void;
     protected target: IKeyHandlerTarget;
 
     /**
@@ -29,45 +28,43 @@ export class KeyHandler {
      * Sets up the listeners for the target
      */
     protected setupListeners(): void {
-        const createEvent = (e: KeyboardEvent, down: boolean) => {
-            const repeat = down && !!this.pressedKeys[e.which];
-            const key = {
-                id: e.which,
-                name: keyNames[e.which],
-                char: e.key.length == 1 ? e.key : undefined,
-            };
-            const event: IKeyEvent = {
-                held: Object.values(this.pressedKeys),
-                ctrl: e.ctrlKey,
-                shift: e.shiftKey,
-                alt: e.altKey,
-                repeat,
-                down,
-                key,
-                original: e,
-            };
-            return {key, event};
+        this.keyListener = (e: KeyboardEvent) => {
+            const event = KeyHandler.getKeyEvent(e);
+            if (event) this.emit(event);
         };
-        this.keyDownListener = e => {
-            const {key, event} = createEvent(e, true);
-            this.pressedKeys[e.which] = key;
-            this.callListeners(event);
-        };
-        this.keyUpListener = e => {
-            delete this.pressedKeys[e.which];
-            const {event} = createEvent(e, false);
-            this.callListeners(event);
-        };
-        this.target.addEventListener("keydown", this.keyDownListener);
-        this.target.addEventListener("keyup", this.keyUpListener);
+        this.target.addEventListener("keydown", this.keyListener);
+        this.target.addEventListener("keyup", this.keyListener);
+    }
+
+    /**
+     * Emits a given keyboard event
+     * @param event
+     */
+    public emit(
+        event: KeyEvent,
+        {
+            store = true,
+            insertHeldKeys = true,
+        }: {
+            /** Whether to use the event to alter the held keys */
+            store?: boolean;
+            /** Whether to add the held keys to the event */
+            insertHeldKeys?: boolean;
+        } = {}
+    ): void {
+        if (event.type == "up" && store) delete this.pressedKeys[event.key.id];
+        if (insertHeldKeys) event.setHeldKeys(Object.values(this.pressedKeys));
+        if (event.type != "up" && store) this.pressedKeys[event.key.id] = event.key;
+
+        this.callListeners(event);
     }
 
     /**
      * Removes the handlers from the target
      */
     public destroy(): void {
-        this.target.removeEventListener("keydown", this.keyDownListener);
-        this.target.removeEventListener("keyup", this.keyUpListener);
+        this.target.removeEventListener("keydown", this.keyListener);
+        this.target.removeEventListener("keyup", this.keyListener);
     }
 
     /**
@@ -91,7 +88,7 @@ export class KeyHandler {
     /**
      * Calls all the listeners with the loaded data
      */
-    protected callListeners(event: IKeyEvent): void {
+    protected callListeners(event: KeyEvent): void {
         this.listeners.forEach(listener => {
             if (listener(event)) {
                 event.original?.stopImmediatePropagation();
@@ -123,5 +120,28 @@ export class KeyHandler {
             return true;
         }
         return false;
+    }
+
+    // Static helper methods
+    /**
+     * Retrieves the input data for a 'synthetic' key event
+     * @param event The original event
+     * @param shift Whether shift was pressed
+     * @returns The input for the event
+     */
+    public static getKeyEvent(event: KeyboardEvent): KeyEvent | null {
+        const layout = keyboardLayout; //TODO: Get the layout to use dynamically from settings
+        const key =
+            layout.keys[event.which] || layout.keys[event.which + "-" + event.location];
+        if (!key) return null;
+        return new KeyEvent({
+            key: {
+                id: key.id,
+                name: key.name,
+                char: event.shiftKey ? key.shiftChar : key.char ?? event.char,
+            },
+            type: event.type == "keydown" ? "down" : "up",
+            original: event,
+        });
     }
 }

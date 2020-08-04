@@ -1,6 +1,6 @@
-import {IKeyEvent} from "../../../stacks/keyHandlerStack/_types/IKeyEvent";
 import {ITextField} from "../../_types/ITextField";
 import {moveCursorVertical} from "../moveCursorVertical";
+import {KeyEvent} from "../../../stacks/keyHandlerStack/KeyEvent";
 
 /**
  * Handles vertical cursor input
@@ -9,14 +9,14 @@ import {moveCursorVertical} from "../moveCursorVertical";
  * @returns Whether the event was caught
  */
 export function handleVerticalCursorInput(
-    event: IKeyEvent,
+    event: KeyEvent,
     textField: ITextField
 ): void | boolean {
-    if (event.down && event.key.name == "uparrow") {
+    if (event.is("up", ["down", "repeat"])) {
         moveCursorVertical(textField, -1, event.shift);
         return true;
     }
-    if (event.down && event.key.name == "downarrow") {
+    if (event.is("down", ["down", "repeat"])) {
         moveCursorVertical(textField, 1, event.shift);
         return true;
     }

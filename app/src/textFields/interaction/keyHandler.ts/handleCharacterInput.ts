@@ -1,6 +1,6 @@
-import {IKeyEvent} from "../../../stacks/keyHandlerStack/_types/IKeyEvent";
 import {ITextField} from "../../_types/ITextField";
 import {insertText} from "../insertText";
+import {KeyEvent} from "../../../stacks/keyHandlerStack/KeyEvent";
 
 /**
  * Handles typing of characters
@@ -9,10 +9,15 @@ import {insertText} from "../insertText";
  * @returns Whether the event was caught
  */
 export function handleCharacterInput(
-    event: IKeyEvent,
+    event: KeyEvent,
     textField: ITextField
 ): void | boolean {
-    if (event.down && event.key.char && !event.ctrl && !event.alt) {
+    if (
+        (event.type == "down" || event.type == "repeat") &&
+        event.key.char &&
+        !event.ctrl &&
+        !event.alt
+    ) {
         insertText(textField, event.key.char);
         return true;
     }

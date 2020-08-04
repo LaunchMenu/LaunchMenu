@@ -10,7 +10,7 @@ export const KeyHandlerTest: FC = () => {
             console.log(e);
         });
         stack.push(e => {
-            if (e.down && (e.key.id == 13 || e.key.name == "esc")) {
+            if (e.is("esc")) {
                 console.log("Enter");
                 return true;
             }
@@ -18,7 +18,7 @@ export const KeyHandlerTest: FC = () => {
         stack.push(
             new KeyHandlerStack([
                 e => {
-                    if (e.down && e.key.name == "esc") {
+                    if (e.is("esc")) {
                         console.log("Escaped");
                         return true;
                     }

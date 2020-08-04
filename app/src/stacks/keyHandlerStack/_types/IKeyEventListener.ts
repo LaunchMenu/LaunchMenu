@@ -1,4 +1,5 @@
-import {IKeyEvent} from "./IKeyEvent";
+import {KeyEvent} from "../KeyEvent";
+
 /**
  * A listener for key events
  */
@@ -8,4 +9,4 @@ export type IKeyEventListener =
      * @param event The event that was fired
      * @returns Whether the event was caught
      */
-    (event: IKeyEvent) => boolean | void;
+    (event: KeyEvent) => boolean | void;

@@ -2,7 +2,6 @@ import {IKeyEventListener} from "../../../../stacks/keyHandlerStack/_types/IKeyE
 import {IMenu} from "../../_types/IMenu";
 import {handleExecuteInput} from "./handleExecuteInput";
 import {handleMoveInput} from "./handleMoveInput";
-import {isDownEvent} from "../../../../stacks/keyHandlerStack/keyEventHelpers/isDownEvent";
 import {handleDeselectInput} from "./handleDeselectInput";
 import {handleContextInput} from "./handleContextInput";
 import {IKeyHandlerStack} from "../../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
@@ -30,7 +29,7 @@ export function createMenuKeyHandler(
         if (handleDeselectInput(e, menu)) return true;
         if (handleDeselectInput(e, menu)) return true;
         if (handleContextInput(e, menu, ioContext)) return true;
-        if (onExit && isDownEvent(e, "esc")) {
+        if (onExit && e.is("esc")) {
             onExit();
             return true;
         }
