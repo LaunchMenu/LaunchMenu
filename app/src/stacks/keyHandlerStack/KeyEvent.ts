@@ -59,7 +59,7 @@ export class KeyEvent {
     }
 
     /**
-     * Checkers whether this event fits a given description.
+     * Checkers whether this event is equal to the given description
      * @param keys The keys to check for
      * @param type The event type to check for, defaults to "down"
      */
@@ -71,18 +71,56 @@ export class KeyEvent {
         if (type instanceof Array ? !type.includes(this.type) : type != this.type)
             return false;
 
-        // Make sure the triggered event is in the collection
+        // Make sure nothing more than the specified keys was pressed
         if (!(keys instanceof Array)) keys = [keys];
-        const includes = keys.find(key => this.key.id == key || this.key.name == key);
-        if (!includes) return false;
+        if (keys.length != this.held.length + (this.type == "repeat" ? 0 : 1))
+            return false;
 
-        // Make sure all keys are covered
+        return this.includes(keys);
+    }
+
+    /**
+     * Checkers whether this event includes the pressed sequence (more keys may be held)
+     * @param keys The keys to check for
+     * @param type The event type to check for, defaults to "down"
+     */
+    public matches(
+        keys: IKeyMatcher | IKeyMatcher[],
+        type: IKeyEventType | IKeyEventType[] = "down"
+    ): boolean {
+        // Check whether the event type corresponds
+        if (type instanceof Array ? !type.includes(this.type) : type != this.type)
+            return false;
+
+        // Make sure nothing more than the specified keys was pressed
+        if (!(keys instanceof Array)) keys = [keys];
+        const sequenceIncludesEvent = keys.find(
+            key => this.key.id == key || this.key.name == key
+        );
+        if (!sequenceIncludesEvent) return false;
+
+        return this.includes(keys);
+    }
+
+    /**
+     * Determines whether the held keys include all the specified key(s)
+     * @param keys The key(s) to check
+     * @returns Whether it is included
+     */
+    public includes(keys: IKeyMatcher | IKeyMatcher[]): boolean {
+        if (!(keys instanceof Array)) keys = [keys];
+
         const all = [...this.held, this.key];
         const unmatched = keys.filter(
             key => !all.find(held => held.id == key || held.name == key)
         );
-        if (unmatched.length > 0) return false;
+        return unmatched.length == 0;
+    }
 
-        return true;
+    /**
+     * Checks whether any of the modifier keys were held
+     */
+    public hasModifiers(): boolean {
+        return this.alt || this.ctrl || this.meta || this.shift;
     }
 }

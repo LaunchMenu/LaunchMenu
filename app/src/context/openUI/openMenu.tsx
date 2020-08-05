@@ -43,7 +43,7 @@ export function openMenu<D extends IOpenableMenu>(
             let keyHandler: IKeyEventListener;
             if ("menuHandler" in content && content.menuHandler)
                 keyHandler = content.menuHandler;
-            else keyHandler = createMenuKeyHandler(menu, context, close);
+            else keyHandler = createMenuKeyHandler(menu, context, {onExit: close});
 
             // Handle opening of menu components
             context.panes.menu.push(view);

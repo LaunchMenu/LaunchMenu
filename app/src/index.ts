@@ -14,6 +14,7 @@ function createWindow() {
             nodeIntegration: true,
         },
     });
+    win.on("blur", () => win.webContents.send("blur"));
 
     // and load the index.html of the app.
     if (mode == "development") {

@@ -3,6 +3,7 @@ import {IKeyHandlerTarget} from "./_types/IKeyHandlerTarget";
 import {IKey} from "./_types/IKey";
 import {KeyEvent} from "./KeyEvent";
 import {keyboardLayout} from "./keyboardLayouts/qwerty";
+import {ipcRenderer} from "electron";
 
 /**
  * A key handler class
@@ -13,27 +14,35 @@ export class KeyHandler {
     protected pressedKeys = {} as {[key: number]: IKey};
 
     protected keyListener: (event: KeyboardEvent) => void;
+    protected blurListener: () => void;
     protected target: IKeyHandlerTarget;
 
     /**
      * Creates a new key handler for the specified target
      * @param target The target to add the listeners to
+     * @param resetOnBlur Whether to reset the pressed keys if the window loses focus
      */
-    public constructor(target: IKeyHandlerTarget) {
+    public constructor(target: IKeyHandlerTarget, resetOnBlur: boolean = true) {
         this.target = target;
-        this.setupListeners();
+        this.setupListeners(resetOnBlur);
     }
 
     /**
      * Sets up the listeners for the target
+     * @param resetOnBlur Whether to reset the pressed keys if the window loses focus
      */
-    protected setupListeners(): void {
+    protected setupListeners(resetOnBlur: boolean): void {
         this.keyListener = (e: KeyboardEvent) => {
             const event = KeyHandler.getKeyEvent(e);
             if (event) this.emit(event);
         };
         this.target.addEventListener("keydown", this.keyListener);
         this.target.addEventListener("keyup", this.keyListener);
+
+        this.blurListener = () => {
+            this.pressedKeys = {};
+        };
+        if (resetOnBlur) ipcRenderer.on("blur", this.blurListener);
     }
 
     /**
@@ -65,6 +74,7 @@ export class KeyHandler {
     public destroy(): void {
         this.target.removeEventListener("keydown", this.keyListener);
         this.target.removeEventListener("keyup", this.keyListener);
+        ipcRenderer.off("blur", this.blurListener);
     }
 
     /**

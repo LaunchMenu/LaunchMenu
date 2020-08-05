@@ -1,16 +1,15 @@
-import {Menu} from "../menu/Menu";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {IAction} from "../actions/_types/IAction";
 import {getContextCategory} from "../categories/createContextCategory";
 import {getCategoryAction} from "../actions/types/category/getCategoryAction";
 
 /**
- * Retrieves the context menu for a given list of items
- * @param items The items to get the menu for
+ * Retrieves the context items for a context menu for a given item selection
+ * @param items The item selection to get the menu for
  * @param close A function that can be used to close the menu that will be created
- * @returns The menu
+ * @returns The items
  */
-export function getContextMenu(items: IMenuItem[], close: () => void): Menu {
+export function getContextMenuItems(items: IMenuItem[], close: () => void): IMenuItem[] {
     const count = items.length;
     const foundActions = [] as {
         action: IAction<any, any>;
@@ -83,6 +82,6 @@ export function getContextMenu(items: IMenuItem[], close: () => void): Menu {
         ({items: actionItems, childHitCount}) => actionItems.length > childHitCount
     );
 
-    // Go through all actions and collect them in a menu
-    return new Menu(filteredActions.map(({actionItem}) => actionItem));
+    // Map the data to the items
+    return filteredActions.map(({actionItem}) => actionItem);
 }

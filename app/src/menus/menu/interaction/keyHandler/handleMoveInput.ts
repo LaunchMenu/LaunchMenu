@@ -10,8 +10,8 @@ import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
  * @returns Whether the event was caught
  */
 export function handleMoveInput(event: KeyEvent, menu: IMenu): void | boolean {
-    const down = event.is("down"); // TODO: create system for custom rate repeat
-    const up = event.is("up");
+    const down = event.matches("down"); // TODO: create system for custom rate repeat
+    const up = event.matches("up");
     if (down || up) {
         const toggleSelection = event.shift;
         const newCursor = moveCursor(menu, up);

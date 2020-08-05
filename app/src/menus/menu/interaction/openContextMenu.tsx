@@ -1,8 +1,9 @@
 import {IMenu} from "../_types/IMenu";
-import {getContextMenu} from "../../utils/getContextMenu";
+import {getContextMenuItems} from "../../utils/getContextMenu";
 import {IViewStack} from "../../../stacks/_types/IViewStack";
 import {IKeyHandlerStack} from "../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {openUI} from "../../../context/openUI/openUI";
+import {Menu} from "../Menu";
 
 /**
  * Opens a context menu for the selection of the given menu
@@ -14,6 +15,7 @@ export function openContextMenu(
     ioContext: {panes: {menu: IViewStack}; keyHandler: IKeyHandlerStack}
 ): void {
     let close = () => {}; // placeholder
-    const contextMenu = getContextMenu(menu.getAllSelected(), () => close());
-    if (contextMenu.getItems().length > 0) close = openUI(ioContext, {menu: contextMenu});
+    const contextMenuItems = getContextMenuItems(menu.getAllSelected(), () => close());
+    if (contextMenuItems.length > 0)
+        close = openUI(ioContext, {menu: new Menu(contextMenuItems)});
 }
