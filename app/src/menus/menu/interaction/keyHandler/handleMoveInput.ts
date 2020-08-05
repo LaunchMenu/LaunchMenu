@@ -1,8 +1,7 @@
-import {IKeyEvent} from "../../../../stacks/keyHandlerStack/_types/IKeyEvent";
 import {IMenu} from "../../_types/IMenu";
-import {isDownEvent} from "../../../../stacks/keyHandlerStack/keyEventHelpers/isDownEvent";
 import {moveCursor} from "../moveCursor";
 import {toggleItemSelection} from "../toggleItemSelection";
+import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 
 /**
  * Handles selection movement input events
@@ -10,9 +9,9 @@ import {toggleItemSelection} from "../toggleItemSelection";
  * @param menu The menu to perform the event for
  * @returns Whether the event was caught
  */
-export function handleMoveInput(event: IKeyEvent, menu: IMenu): void | boolean {
-    const down = isDownEvent(event, "downarrow");
-    const up = isDownEvent(event, "uparrow");
+export function handleMoveInput(event: KeyEvent, menu: IMenu): void | boolean {
+    const down = event.matches("down"); // TODO: create system for custom rate repeat
+    const up = event.matches("up");
     if (down || up) {
         const toggleSelection = event.shift;
         const newCursor = moveCursor(menu, up);
@@ -21,7 +20,7 @@ export function handleMoveInput(event: IKeyEvent, menu: IMenu): void | boolean {
         if (newCursor && toggleSelection) toggleItemSelection(menu, newCursor);
         return true;
     }
-    if (isDownEvent(event, "shift")) {
+    if (event.is("shift")) {
         const cursor = menu.getCursor();
         if (cursor) {
             toggleItemSelection(menu, cursor);

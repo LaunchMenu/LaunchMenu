@@ -1,6 +1,5 @@
-import {IKeyEvent} from "../../../../stacks/keyHandlerStack/_types/IKeyEvent";
 import {IMenu} from "../../_types/IMenu";
-import {isDownEvent} from "../../../../stacks/keyHandlerStack/keyEventHelpers/isDownEvent";
+import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 
 /**
  * Handles deselect input events, deselecting the whole selection
@@ -8,8 +7,8 @@ import {isDownEvent} from "../../../../stacks/keyHandlerStack/keyEventHelpers/is
  * @param menu The menu to perform the event for
  * @returns Whether the event was caught
  */
-export function handleDeselectInput(event: IKeyEvent, menu: IMenu): void | boolean {
-    if (isDownEvent(event, "esc")) {
+export function handleDeselectInput(event: KeyEvent, menu: IMenu): void | boolean {
+    if (event.is("esc")) {
         const selection = menu.getSelected();
         if (selection.length > 0) {
             selection.forEach(item => menu.setSelected(item, false));

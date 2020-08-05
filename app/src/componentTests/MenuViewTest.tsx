@@ -11,6 +11,7 @@ import {IOContext} from "../context/IOContext";
 import {TextField} from "@fluentui/react";
 import {Box} from "../styling/box/Box";
 import {SearchMenu} from "../menus/menu/SearchMenu";
+import {keyHandlerAction} from "../menus/actions/types/keyHandler/keyHandlerAction";
 
 // Create some context action
 const alertAction = new Action(
@@ -39,13 +40,22 @@ const alertHandlerAction = alertAction.createHandler((data: {message: string}[])
         execute,
         getMenuItem: (closeMenu: () => void) =>
             createStandardMenuItem({
-                name: "Sub Alert",
+                name: "Sub Alert (ctrl+q)",
                 onExecute: () => {
                     execute();
                     closeMenu();
                 },
                 actionBindings: [
                     alertHandlerAction.createBinding({message: "Meta alert! " + text}),
+                    keyHandlerAction.createBinding({
+                        onKey: e => {
+                            if (e.is(["ctrl", "q"])) {
+                                execute();
+                                closeMenu();
+                                return true;
+                            }
+                        },
+                    }),
                 ],
             }),
     };
@@ -69,12 +79,34 @@ const menu = new Menu([
     createStandardMenuItem({
         name: "Woof (alert)",
         onExecute: () => console.log("Woof"),
-        actionBindings: [alertAction.createBinding({message: "Woof"})],
+        actionBindings: [
+            alertAction.createBinding({message: "Woof"}),
+            keyHandlerAction.createBinding({
+                onKey: e => {
+                    if (e.is(["ctrl", "p"])) {
+                        console.log("p pressed mofo1");
+                        return {
+                            stopPropagation: true,
+                        };
+                    }
+                },
+            }),
+        ],
     }),
     createStandardMenuItem({
         name: "Oranges (sub alert)",
         onExecute: () => console.log("Oranges"),
-        actionBindings: [alertHandlerAction.createBinding({message: "Oranges"})],
+        actionBindings: [
+            alertHandlerAction.createBinding({message: "Oranges"}),
+            keyHandlerAction.createBinding({
+                onKey: e => {
+                    if (e.is(["ctrl", "p"])) {
+                        console.log("p pressed mofo2");
+                        return true;
+                    }
+                },
+            }),
+        ],
     }),
     createStandardMenuItem({
         name: "Poof (sub alert)",
@@ -89,8 +121,12 @@ const context = new IOContext({
 });
 context.openUI({
     menu,
-    menuHandler: createMenuKeyHandler(menu, context),
+    // menuHandler: createMenuKeyHandler(menu, context),
 });
+
+(window as any).alertAction = alertAction;
+(window as any).alertHandlerAction = alertHandlerAction;
+(window as any).createStandardMenuItem = createStandardMenuItem;
 
 export const MenuViewTest: FC = () => {
     return (

@@ -43,7 +43,7 @@ export function openMenu<D extends IOpenableMenu>(
             let keyHandler: IKeyEventListener;
             if ("menuHandler" in content && content.menuHandler)
                 keyHandler = content.menuHandler;
-            else keyHandler = createMenuKeyHandler(menu, context, close);
+            else keyHandler = createMenuKeyHandler(menu, context, {onExit: close});
 
             // Handle opening of menu components
             context.panes.menu.push(view);
@@ -55,8 +55,12 @@ export function openMenu<D extends IOpenableMenu>(
             );
 
             // Destroy the menu on close if specified
-            if (!("destroyOnClose" in content) || content.destroyOnClose)
+            if (!("destroyOnClose" in content) || content.destroyOnClose) {
                 closers.unshift(() => menu.destroy());
+                const kh = keyHandler;
+                if (!(kh instanceof Function) && kh.destroy)
+                    closers.unshift(() => kh.destroy?.());
+            }
 
             // If no field is present, and search is true or not specified, create a search field
             if (

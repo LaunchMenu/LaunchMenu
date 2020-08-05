@@ -516,6 +516,10 @@ describe("Menu", () => {
             expect(menu.getCursor()).toEqual(item);
             menu.removeItem(item);
             expect(menu.getCursor()).not.toEqual(item);
+            expect(menu.getCursor()).not.toEqual(null);
+
+            menu.removeItems(items);
+            expect(menu.getCursor()).toEqual(null);
         });
     });
     describe("Menu.getAllSelected", () => {

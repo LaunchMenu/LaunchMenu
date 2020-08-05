@@ -1,11 +1,11 @@
 export type IKeyHandlerTarget = {
-    addEventListener: (
+    addEventListener(
         type: "keydown" | "keyup",
         listener: (event: KeyboardEvent) => void
-    ) => void;
+    ): void;
 
-    removeEventListener: (
+    removeEventListener(
         type: "keydown" | "keyup",
         listener: (event: KeyboardEvent) => void
-    ) => void;
+    ): void;
 };

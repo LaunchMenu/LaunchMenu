@@ -457,9 +457,9 @@ describe("PrioritizedMenu", () => {
             item: createMenuItem(),
         };
         const items = [
-            createPrioritizedMenuItem({noSelect: true}),
-            createPrioritizedMenuItem({}),
-            createPrioritizedMenuItem({category: someCategory}),
+            createPrioritizedMenuItem({noSelect: true, generateID: true}),
+            createPrioritizedMenuItem({generateID: true}),
+            createPrioritizedMenuItem({category: someCategory, generateID: true}),
         ];
         it("Has the correct initial cursor", () => {
             expect(createMenu().getCursor()).toEqual(null);
@@ -508,6 +508,12 @@ describe("PrioritizedMenu", () => {
             menu.removeItem(item);
             menu.flushBatch();
             expect(menu.getCursor()).not.toEqual(item.item);
+            expect(menu.getCursor()).not.toEqual(null);
+
+            items.forEach(item => menu.removeItem(item));
+            menu.flushBatch();
+            expect(menu.getItems().length).toBe(0);
+            expect(menu.getCursor()).toEqual(null);
         });
     });
     describe("PrioritizedMenu.getAllSelected", () => {

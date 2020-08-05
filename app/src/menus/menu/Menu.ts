@@ -173,12 +173,14 @@ export class Menu {
 
         // Sets the current cursor if there isn't any yet
         const cursor = this.cursor.get(null);
-        if (cursor == null || !items.includes(cursor))
+        updateCursor: if (cursor == null || !items.includes(cursor)) {
             for (let i = 0; i < items.length; i++)
                 if (isItemSelectable(items[i])) {
-                    this.setCursor(items[i] || null);
-                    break;
+                    this.setCursor(items[i]);
+                    break updateCursor;
                 }
+            this.setCursor(null);
+        }
     }
 
     /**

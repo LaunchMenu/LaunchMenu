@@ -1,8 +1,8 @@
 import {Stack} from "../Stack";
 import {IKeyEventListener} from "./_types/IKeyEventListener";
-import {IKeyEvent} from "./_types/IKeyEvent";
 import {KeyHandler} from "./KeyHandler";
 import {IKeyHandlerStack} from "./_types/IKeyHandlerStack";
+import {KeyEvent} from "./KeyEvent";
 
 /**
  * A stack to handle keyboard inputs
@@ -29,11 +29,12 @@ export class KeyHandlerStack extends Stack<IKeyEventListener>
      * @param event The event to emit
      * @returns Whether the event was caught
      */
-    public emit(event: IKeyEvent): boolean {
+    public async emit(event: KeyEvent): Promise<boolean> {
         const handlers = this.get();
         for (let i = handlers.length - 1; i >= 0; i--) {
             const handler = handlers[i];
-            if (handler(event)) return true;
+            if (await (handler instanceof Function ? handler : handler.emit)(event))
+                return true;
         }
         return false;
     }

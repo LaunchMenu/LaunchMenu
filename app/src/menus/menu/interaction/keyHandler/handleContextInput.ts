@@ -1,9 +1,8 @@
-import {IKeyEvent} from "../../../../stacks/keyHandlerStack/_types/IKeyEvent";
 import {IMenu} from "../../_types/IMenu";
-import {isDownEvent} from "../../../../stacks/keyHandlerStack/keyEventHelpers/isDownEvent";
 import {openContextMenu} from "../openContextMenu";
 import {IKeyHandlerStack} from "../../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {IViewStack} from "../../../../stacks/_types/IViewStack";
+import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 
 /**
  * Handles context menu opening input events
@@ -13,11 +12,11 @@ import {IViewStack} from "../../../../stacks/_types/IViewStack";
  * @returns Whether the event was caught
  */
 export function handleContextInput(
-    event: IKeyEvent,
+    event: KeyEvent,
     menu: IMenu,
     ioContext: {panes: {menu: IViewStack}; keyHandler: IKeyHandlerStack}
 ): void | boolean {
-    if (isDownEvent(event, "tab")) {
+    if (event.is("tab")) {
         openContextMenu(menu, ioContext);
         return true;
     }

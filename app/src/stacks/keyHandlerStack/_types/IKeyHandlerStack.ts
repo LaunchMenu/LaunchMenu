@@ -1,6 +1,6 @@
 import {IStack} from "../../_types/IStack";
 import {IKeyEventListener} from "./IKeyEventListener";
-import {IKeyEvent} from "./IKeyEvent";
+import {KeyEvent} from "../KeyEvent";
 
 /**
  * The stack to manage key handlers
@@ -11,5 +11,5 @@ export type IKeyHandlerStack = IStack<IKeyEventListener> & {
      * @param event The event to emit
      * @returns Whether the event was caught
      */
-    emit(event: IKeyEvent): boolean;
+    emit(event: KeyEvent): Promise<boolean>;
 };

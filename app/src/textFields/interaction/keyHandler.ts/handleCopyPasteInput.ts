@@ -1,8 +1,8 @@
-import {IKeyEvent} from "../../../stacks/keyHandlerStack/_types/IKeyEvent";
 import {ITextField} from "../../_types/ITextField";
 import {pasteText} from "../pasteText";
 import {copyText} from "../copyText";
 import {insertText} from "../insertText";
+import {KeyEvent} from "../../../stacks/keyHandlerStack/KeyEvent";
 
 /**
  * Handles copying and pasting of text
@@ -11,19 +11,19 @@ import {insertText} from "../insertText";
  * @returns Whether the event was caught
  */
 export function handleCopyPasteInput(
-    event: IKeyEvent,
+    event: KeyEvent,
     textField: ITextField
 ): void | boolean {
-    if (event.down && event.ctrl && event.key.name == "c") {
+    if (event.is(["ctrl", "c"])) {
         copyText(textField);
         return true;
     }
-    if (event.down && event.ctrl && event.key.name == "x") {
+    if (event.is(["ctrl", "x"])) {
         copyText(textField);
         insertText(textField, "");
         return true;
     }
-    if (event.down && event.ctrl && event.key.name == "v") {
+    if (event.is(["ctrl", "v"])) {
         pasteText(textField);
         return true;
     }
