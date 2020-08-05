@@ -14,23 +14,24 @@ export function openKeyHandler<D extends IOpenableKeyHandler>(
     content: D & IOpenableKeyHandler
 ): (() => void)[] {
     const closers = [] as (() => void)[];
-    const keyHandler = content.keyHandler;
+    let keyHandler = content.keyHandler;
     if (keyHandler && containsKeyHandlerStack(context)) {
-        if (keyHandler instanceof Array) {
-            // Open each of the handlers in the array
-            keyHandler.forEach(handler => {
-                context.keyHandler.push(handler);
-                closers.unshift(() =>
-                    withPopError(context.keyHandler.pop(handler), "key handler")
-                );
-            });
-        } else {
-            // Open the handler
-            context.keyHandler.push(keyHandler);
+        if (!(keyHandler instanceof Array)) keyHandler = [keyHandler];
+
+        // Open each of the handlers in the array
+        keyHandler.forEach(handler => {
+            context.keyHandler.push(handler);
             closers.unshift(() =>
-                withPopError(context.keyHandler.pop(keyHandler), "key handler")
+                withPopError(context.keyHandler.pop(handler), "key handler")
             );
-        }
+        });
+
+        // Destroy the handlers on close if requested
+        if (content.destroyOnClose != false)
+            keyHandler.forEach(handler => {
+                if (!(handler instanceof Function) && handler.destroy)
+                    closers.unshift(() => handler.destroy?.());
+            });
     }
 
     return closers;

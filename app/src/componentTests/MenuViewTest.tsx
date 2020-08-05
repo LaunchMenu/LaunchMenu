@@ -121,7 +121,7 @@ const context = new IOContext({
 });
 context.openUI({
     menu,
-    menuHandler: createMenuKeyHandler(menu, context),
+    // menuHandler: createMenuKeyHandler(menu, context),
 });
 
 (window as any).alertAction = alertAction;

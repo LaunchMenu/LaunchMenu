@@ -1,4 +1,7 @@
-import {IKeyEventListener} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {
+    IKeyEventListener,
+    IKeyEventListenerObject,
+} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {IMenu} from "../../_types/IMenu";
 import {handleExecuteInput} from "./handleExecuteInput";
 import {handleMoveInput} from "./handleMoveInput";
@@ -9,6 +12,7 @@ import {IViewStack} from "../../../../stacks/_types/IViewStack";
 import {IPartialIOContext} from "../../../../context/_types/IIOContext";
 import {setupItemKeyListenerHandler} from "./setupItemKeyListenerHandler";
 import {setupContextMenuHandler} from "./setupContextMenuHandler";
+import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 
 /**
  * Creates a standard menu key handler
@@ -37,27 +41,32 @@ export function createMenuKeyHandler(
     } = {}
 ): IKeyEventListener {
     // Setup the item key handler
-    let handleItemKeyListeners: IKeyEventListener | undefined;
-    if (useItemKeyHandlers) {
-        const handler = setupItemKeyListenerHandler(menu);
-        handleItemKeyListeners = handler.emit;
-    }
+    let handleItemKeyListeners = useItemKeyHandlers
+        ? setupItemKeyListenerHandler(menu)
+        : undefined;
 
     // Setup the context key handler
     const contextHandler = setupContextMenuHandler(menu, ioContext, {
         useContextItemKeyHandlers,
     });
 
-    return e => {
-        if (handleItemKeyListeners?.(e)) return true;
-        if (contextHandler.emit(e)) return true;
-        if (handleExecuteInput(e, menu)) return true;
-        if (handleMoveInput(e, menu)) return true;
-        if (handleDeselectInput(e, menu)) return true;
-        if (handleDeselectInput(e, menu)) return true;
-        if (onExit && e.is("esc")) {
-            onExit();
-            return true;
-        }
-    };
+    // Return the listener
+    return {
+        async emit(e: KeyEvent): Promise<boolean | void> {
+            if (await handleItemKeyListeners?.emit(e)) return true;
+            if (await contextHandler.emit(e)) return true;
+            if (handleExecuteInput(e, menu)) return true;
+            if (handleMoveInput(e, menu)) return true;
+            if (handleDeselectInput(e, menu)) return true;
+            if (handleDeselectInput(e, menu)) return true;
+            if (onExit && e.is("esc")) {
+                onExit();
+                return true;
+            }
+        },
+        destroy() {
+            handleItemKeyListeners?.destroy();
+            contextHandler.destroy();
+        },
+    } as IKeyEventListenerObject;
 }

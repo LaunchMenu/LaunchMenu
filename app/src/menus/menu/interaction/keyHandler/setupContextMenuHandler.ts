@@ -1,6 +1,6 @@
 import {IMenu} from "../../_types/IMenu";
 import {Observer} from "../../../../utils/modelReact/Observer";
-import {IKeyEventListener} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {IKeyEventListenerFunction} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {IMenuItem} from "../../../items/_types/IMenuItem";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
@@ -27,11 +27,11 @@ export function setupContextMenuHandler(
         /** Whether to forward key events to context menu items (can be costly for large selections or context menus), defaults to true */
         useContextItemKeyHandlers?: boolean;
         /** A function returning whether the given event is a menu open event */
-        isOpenMenuButton?: IKeyEventListener;
+        isOpenMenuButton?: IKeyEventListenerFunction;
     } = {}
 ) {
     let contextData: {
-        emitter: {emit: IKeyEventListener};
+        emitter: {emit: IKeyEventListenerFunction};
         items: IMenuItem[];
         close?: () => void;
     } | null = null;
@@ -47,7 +47,7 @@ export function setupContextMenuHandler(
          * @param e The event to emit
          * @returns Whether the event was caught
          */
-        emit(e: KeyEvent) {
+        async emit(e: KeyEvent): Promise<boolean | void> {
             // Bail out if there is no reason to compute the context data
             const isMenuOpenEvent = isOpenMenuButton(e);
             if (!isMenuOpenEvent && !useContextItemKeyHandlers) return;
@@ -62,7 +62,7 @@ export function setupContextMenuHandler(
             }
 
             // Forward events to
-            if (useContextItemKeyHandlers && contextData.emitter.emit(e)) return;
+            if (useContextItemKeyHandlers && (await contextData.emitter.emit(e))) return;
 
             // Open the menu if requested
             if (isMenuOpenEvent) {

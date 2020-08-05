@@ -12,11 +12,11 @@ export const keyHandlerAction = new Action((listeners: IItemKeyHandler[]) => {
          * @param event The event to emit
          * @returns Whether the event was caught
          */
-        emit(event: KeyEvent): boolean {
+        async emit(event: KeyEvent): Promise<boolean> {
             let caught = false;
             for (let {onKey} of listeners) {
                 // Forward the event
-                const res = onKey(event);
+                const res = await onKey(event);
 
                 // Handle catch data
                 if (res instanceof Object) {

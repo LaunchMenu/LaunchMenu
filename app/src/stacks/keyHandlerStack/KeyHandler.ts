@@ -40,6 +40,10 @@ export class KeyHandler {
         this.target.addEventListener("keyup", this.keyListener);
 
         this.blurListener = () => {
+            // Release all keys on blur
+            Object.values(this.pressedKeys).forEach(key => {
+                this.emit(new KeyEvent({key, type: "up"}));
+            });
             this.pressedKeys = {};
         };
         if (resetOnBlur) ipcRenderer.on("blur", this.blurListener);
@@ -99,8 +103,9 @@ export class KeyHandler {
      * Calls all the listeners with the loaded data
      */
     protected callListeners(event: KeyEvent): void {
-        this.listeners.forEach(listener => {
-            if (listener(event)) {
+        this.listeners.forEach(async listener => {
+            if (!(listener instanceof Function)) listener = listener.emit;
+            if (await listener(event)) {
                 event.original?.stopImmediatePropagation();
                 event.original?.stopPropagation();
                 event.original?.preventDefault();

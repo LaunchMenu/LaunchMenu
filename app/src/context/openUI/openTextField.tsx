@@ -65,8 +65,12 @@ export function openTextField<D extends IOpenableField>(
             );
 
             // Destroy the menu on close if specified
-            if (!("destroyOnClose" in content) || content.destroyOnClose)
+            if (!("destroyOnClose" in content) || content.destroyOnClose) {
                 closers.unshift(() => field.destroy?.());
+                const kh = keyHandler;
+                if (!(kh instanceof Function) && kh.destroy)
+                    closers.unshift(() => kh.destroy?.());
+            }
         }
     }
 

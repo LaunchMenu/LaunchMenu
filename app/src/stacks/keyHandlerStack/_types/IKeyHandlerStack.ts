@@ -11,5 +11,5 @@ export type IKeyHandlerStack = IStack<IKeyEventListener> & {
      * @param event The event to emit
      * @returns Whether the event was caught
      */
-    emit(event: KeyEvent): boolean;
+    emit(event: KeyEvent): Promise<boolean>;
 };

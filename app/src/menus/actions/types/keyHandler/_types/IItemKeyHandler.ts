@@ -1,5 +1,16 @@
 import {KeyEvent} from "../../../../../stacks/keyHandlerStack/KeyEvent";
 
+export type ISyncItemKeyHandlerResponse =
+    | undefined
+    /** The value for stop propagation, stopImmediatePropagation defaults to false */
+    | boolean
+    | {
+          /** Stops propagation to handlers with lower priority (down the handler stack) */
+          stopPropagation?: boolean;
+          /** Stops propagation to handlers with the same priority (other item handlers) */
+          stopImmediatePropagation?: boolean;
+      };
+
 /**
  * Key handlers for individual items
  */
@@ -11,14 +22,5 @@ export type IItemKeyHandler = {
      */
     onKey(
         event: KeyEvent
-    ):
-        | undefined
-        /** The value for stop propagation, stopImmediatePropagation defaults to false */
-        | boolean
-        | {
-              /** Stops propagation to handlers with lower priority (down the handler stack) */
-              stopPropagation?: boolean;
-              /** Stops propagation to handlers with the same priority (other item handlers) */
-              stopImmediatePropagation?: boolean;
-          };
+    ): ISyncItemKeyHandlerResponse | Promise<ISyncItemKeyHandlerResponse>;
 };
