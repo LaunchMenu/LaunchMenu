@@ -1,31 +1,21 @@
 import React, {FC} from "react";
-import {getSpacingAttributes} from "./attributeRetrievers/getSpacingAttributes";
-import {getColorAttributes} from "./attributeRetrievers/getColorAttributes";
-import {getMappedAttributes} from "./attributeRetrievers/getMappedAttributes";
 import {ClassNames} from "@emotion/core";
-import {getDomAttributes} from "./attributeRetrievers/getDomAttributes";
 import {IBoxProps} from "./_types/IBoxProps";
 import {useTheme} from "../theming/ThemeContext";
-import {getElevationAttribute} from "./attributeRetrievers/getElevation";
+import {mapCssProps} from "./propRetrievers/mapCssProps";
+import {mapDomProps} from "./propRetrievers/mapDomProps";
 
 /**
  * A standard box element, which takes attributes/properties and translates them to css
- * @param props
+ * @param props The properties of the box
  */
 export const Box: FC<IBoxProps> = props => {
     // The LaunchMenu theme to use
     const theme = useTheme();
 
-    // Extract the spacings, colors and general attributes
-    const spacings = getSpacingAttributes(props, theme);
-    const colors = getColorAttributes(props, theme);
-    const general = getMappedAttributes(props);
-    const elevation = getElevationAttribute(props, theme);
-    const cssProps = {...spacings, ...colors, ...general, ...elevation};
-
-    // Extract dom attributes to apply
-    const {onTop, index, ...domProps} = props as any; // Remove onTop and index since these may be passed by the view stack
-    const domAttributes = getDomAttributes(domProps);
+    // Extract the css and dom props
+    const cssProps = mapCssProps(props, theme);
+    const domProps = mapDomProps(props, theme);
 
     // Extract the component
     const Comp = props.as || ("div" as any);
@@ -35,17 +25,10 @@ export const Box: FC<IBoxProps> = props => {
         <ClassNames>
             {({css, cx}) => (
                 <Comp
-                    {...domAttributes}
+                    {...domProps}
                     className={
                         (Object.keys(cssProps).length ? css(cssProps) + " " : "") +
-                        (domAttributes.className ? domAttributes.className + " " : "") +
-                        (props.css
-                            ? css(
-                                  props.css instanceof Function
-                                      ? (props as any).css(theme)
-                                      : props.css
-                              )
-                            : "")
+                        (domProps.className ? domProps.className + " " : "")
                     }
                 />
             )}

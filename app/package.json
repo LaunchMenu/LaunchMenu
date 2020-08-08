@@ -45,7 +45,6 @@
     },
     "dependencies": {
         "@emotion/core": "^10.0.28",
-        "@fluentui/react": "^7.121.4",
         "@material-ui/icons": "^4.9.1",
         "@uifabric/icons": "^7.3.55",
         "ace-builds": "^1.4.12",
@@ -56,6 +55,7 @@
         "model-react": "^3.0.2",
         "react": "^16.13.0",
         "react-dom": "^16.13.0",
+        "react-icons": "^3.10.0",
         "regexp-match-indices": "^1.0.2",
         "uuid": "^8.2.0"
     },

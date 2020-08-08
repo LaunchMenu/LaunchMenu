@@ -9,13 +9,13 @@ export const defaultHighlightTheme: IHighlightThemeInput = theme => ({
         {
             scope: [tags.number],
             settings: {
-                color: theme.colors.primary,
+                color: theme.color.primary,
             },
         },
         {
             scope: [tags.operator],
             settings: {
-                color: theme.colors.tertiary,
+                color: theme.color.tertiary,
             },
         },
         {

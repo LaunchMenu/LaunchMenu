@@ -18,7 +18,7 @@ config.set("themePath", "/ace-builds/src-noconflict");
  */
 export const AceEditor: FC<IAceEditorProps> = ({
     options,
-    ref,
+    aceRef: ref,
     value,
     onChange,
     selection,

@@ -13,7 +13,7 @@ export const MenuItemFrame: FC<{
     item?: IMenuItem;
     onExecute?: () => void;
 }> = ({isCursor, isSelected, menu, item, onExecute, children}) => (
-    <Box background={isSelected ? "secondary" : "bgPrimary"} paddingLeft={1}>
+    <Box background={isSelected ? "secondary" : "bgPrimary"} paddingLeft="medium">
         <Box
             cursor="pointer"
             onClick={

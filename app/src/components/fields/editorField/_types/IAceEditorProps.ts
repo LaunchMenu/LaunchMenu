@@ -7,7 +7,7 @@ import {ITextSelection} from "../../../../textFields/_types/ITextSelection";
 export type IAceEditorProps = {
     options?: IAceEditorOptions;
 
-    ref?: ((editor: Ace.Editor) => void) | MutableRefObject<Ace.Editor>;
+    aceRef?: ((editor: Ace.Editor) => void) | MutableRefObject<Ace.Editor>;
 
     value?: string;
     onChange?: (value: string, delta: Ace.Delta) => void;

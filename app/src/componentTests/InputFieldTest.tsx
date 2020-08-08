@@ -1,16 +1,5 @@
-import React, {
-    FC,
-    useState,
-    useRef,
-    useCallback,
-    KeyboardEvent,
-    ChangeEvent,
-    useEffect,
-} from "react";
-import {ExtendedObject} from "../utils/ExtendedObject";
-import {AceEditor} from "../components/fields/editorField/AceEditor";
+import React, {FC, useState, useEffect} from "react";
 import {TextField} from "../textFields/TextField";
-import {EditorField} from "../components/fields/editorField/EditorField";
 import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
 import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
 import {createTextFieldKeyHandler} from "../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
@@ -19,7 +8,6 @@ import {TextFieldView} from "../components/fields/TextFieldView";
 import {Box} from "../styling/box/Box";
 import {FillBox} from "../components/FillBox";
 import {useTheme} from "../styling/theming/ThemeContext";
-import {SlideOpenTransition} from "../components/stacks/transitions/open/SlideOpenTransition";
 import {Transition} from "../components/stacks/transitions/Transition";
 import {MathParser} from "../textFields/syntax/_tests/MathInterpreter.helper";
 
@@ -45,13 +33,13 @@ export const InputFieldTest: FC = () => {
         <Box
             overflow="hidden"
             position="relative"
-            height={`calc(100% - ${2 * theme.spacing(2)}px)`}
+            height={`calc(100% - ${2 * theme.spacing["medium"]}px)`}
             display="flex"
-            borderRadius={1 / 2}
+            borderRadius="large"
             flexDirection="column"
-            margin={2}
+            margin="medium"
             elevation="medium">
-            <FillBox opacity={1} backgroundCustom="#fafafa" zIndex={-1} />
+            <FillBox opacity={1} css={{background: "#fafafa"}} zIndex={-1} />
             <TextFieldView
                 css={{
                     boxShadow: "0 0 36px rgba(0, 0, 0, 0.1)",
@@ -62,7 +50,7 @@ export const InputFieldTest: FC = () => {
                     border: "1px solid #eee",
                 }}
                 highlighter={parser}
-                icon={{iconName: "Search"}}
+                icon="search"
                 field={textField}
                 zIndex={1}
             />
@@ -80,13 +68,9 @@ export const InputFieldTest: FC = () => {
                     }}
                     flexGrow={3}
                     position="relative">
-                    <FillBox opacity={1} backgroundCustom="#eeeeee" zIndex={-1}>
+                    <FillBox opacity={1} css={{background: "#eeeeee"}} zIndex={-1}>
                         <Transition>
-                            <Box
-                                backgroundCustom={"orange"}
-                                margin={1}
-                                padding={1}
-                                key={someShit}>
+                            <Box margin="medium" padding="medium" key={someShit}>
                                 I am a cool boi
                             </Box>
                         </Transition>
@@ -94,13 +78,13 @@ export const InputFieldTest: FC = () => {
                 </Box>
                 <Box
                     flexGrow={5}
-                    padding={2}
+                    padding="medium"
                     position="relative"
                     css={{WebkitAppRegion: "drag"}}>
-                    <FillBox opacity={1} backgroundCustom="#fafafa" zIndex={-1} />
+                    <FillBox opacity={1} css={{background: "#fafafa"}} zIndex={-1} />
                     {result instanceof Array
                         ? result.map((m, i) => (
-                              <Box key={i} colorCustom="red">
+                              <Box key={i} css={{color: "red"}}>
                                   {m}
                               </Box>
                           ))

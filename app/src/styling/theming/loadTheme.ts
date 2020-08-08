@@ -1,6 +1,4 @@
-import {loadTheme as fluentLoadTheme, initializeIcons} from "@fluentui/react";
 import {ITheme} from "./_types/ITheme";
-import {convertThemeToFluentTheme} from "./themeToFluentTheme";
 import {defaultTheme} from "./defaultTheme";
 import {Field, IDataHook} from "model-react";
 
@@ -20,8 +18,5 @@ export function getTheme(hook?: IDataHook): ITheme {
  * @param theme The LaunchMenu theme to use
  */
 export function loadTheme(theme: ITheme): void {
-    const fluentTheme = convertThemeToFluentTheme(theme);
-    fluentLoadTheme(fluentTheme);
-    initializeIcons();
     selectedTheme.set(theme);
 }

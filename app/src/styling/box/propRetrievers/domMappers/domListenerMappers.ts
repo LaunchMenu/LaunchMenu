@@ -1,0 +1,213 @@
+import {
+    ClipboardEventHandler,
+    CompositionEventHandler,
+    FocusEventHandler,
+    FormEventHandler,
+    ReactEventHandler,
+    KeyboardEventHandler,
+    MouseEventHandler,
+    DragEventHandler,
+    TouchEventHandler,
+    PointerEventHandler,
+    UIEventHandler,
+    WheelEventHandler,
+    AnimationEventHandler,
+    TransitionEventHandler,
+} from "react";
+
+type el = Element;
+
+/**
+ * All the standard html listeners
+ */
+export const domListenerMappers = {
+    // Clipboard Events
+    onCopy: (l: ClipboardEventHandler<el>) => l,
+    onCopyCapture: (l: ClipboardEventHandler<el>) => l,
+    onCut: (l: ClipboardEventHandler<el>) => l,
+    onCutCapture: (l: ClipboardEventHandler<el>) => l,
+    onPaste: (l: ClipboardEventHandler<el>) => l,
+    onPasteCapture: (l: ClipboardEventHandler<el>) => l,
+
+    // Composition Events
+    onCompositionEnd: (l: CompositionEventHandler<el>) => l,
+    onCompositionEndCapture: (l: CompositionEventHandler<el>) => l,
+    onCompositionStart: (l: CompositionEventHandler<el>) => l,
+    onCompositionStartCapture: (l: CompositionEventHandler<el>) => l,
+    onCompositionUpdate: (l: CompositionEventHandler<el>) => l,
+    onCompositionUpdateCapture: (l: CompositionEventHandler<el>) => l,
+
+    // Focus Events
+    onFocus: (l: FocusEventHandler<el>) => l,
+    onFocusCapture: (l: FocusEventHandler<el>) => l,
+    onBlur: (l: FocusEventHandler<el>) => l,
+    onBlurCapture: (l: FocusEventHandler<el>) => l,
+
+    // Form Events
+    onChange: (l: FormEventHandler<el>) => l,
+    onChangeCapture: (l: FormEventHandler<el>) => l,
+    onBeforeInput: (l: FormEventHandler<el>) => l,
+    onBeforeInputCapture: (l: FormEventHandler<el>) => l,
+    onInput: (l: FormEventHandler<el>) => l,
+    onInputCapture: (l: FormEventHandler<el>) => l,
+    onReset: (l: FormEventHandler<el>) => l,
+    onResetCapture: (l: FormEventHandler<el>) => l,
+    onSubmit: (l: FormEventHandler<el>) => l,
+    onSubmitCapture: (l: FormEventHandler<el>) => l,
+    onInvalid: (l: FormEventHandler<el>) => l,
+    onInvalidCapture: (l: FormEventHandler<el>) => l,
+
+    // Image Events
+    onLoad: (l: ReactEventHandler<el>) => l,
+    onLoadCapture: (l: ReactEventHandler<el>) => l,
+    onError: (l: ReactEventHandler<el>) => l, // also a Media Event
+    onErrorCapture: (l: ReactEventHandler<el>) => l, // also a Media Event
+
+    // Keyboard Events
+    onKeyDown: (l: KeyboardEventHandler<el>) => l,
+    onKeyDownCapture: (l: KeyboardEventHandler<el>) => l,
+    onKeyPress: (l: KeyboardEventHandler<el>) => l,
+    onKeyPressCapture: (l: KeyboardEventHandler<el>) => l,
+    onKeyUp: (l: KeyboardEventHandler<el>) => l,
+    onKeyUpCapture: (l: KeyboardEventHandler<el>) => l,
+
+    // Media Events
+    onAbort: (l: ReactEventHandler<el>) => l,
+    onAbortCapture: (l: ReactEventHandler<el>) => l,
+    onCanPlay: (l: ReactEventHandler<el>) => l,
+    onCanPlayCapture: (l: ReactEventHandler<el>) => l,
+    onCanPlayThrough: (l: ReactEventHandler<el>) => l,
+    onCanPlayThroughCapture: (l: ReactEventHandler<el>) => l,
+    onDurationChange: (l: ReactEventHandler<el>) => l,
+    onDurationChangeCapture: (l: ReactEventHandler<el>) => l,
+    onEmptied: (l: ReactEventHandler<el>) => l,
+    onEmptiedCapture: (l: ReactEventHandler<el>) => l,
+    onEncrypted: (l: ReactEventHandler<el>) => l,
+    onEncryptedCapture: (l: ReactEventHandler<el>) => l,
+    onEnded: (l: ReactEventHandler<el>) => l,
+    onEndedCapture: (l: ReactEventHandler<el>) => l,
+    onLoadedData: (l: ReactEventHandler<el>) => l,
+    onLoadedDataCapture: (l: ReactEventHandler<el>) => l,
+    onLoadedMetadata: (l: ReactEventHandler<el>) => l,
+    onLoadedMetadataCapture: (l: ReactEventHandler<el>) => l,
+    onLoadStart: (l: ReactEventHandler<el>) => l,
+    onLoadStartCapture: (l: ReactEventHandler<el>) => l,
+    onPause: (l: ReactEventHandler<el>) => l,
+    onPauseCapture: (l: ReactEventHandler<el>) => l,
+    onPlay: (l: ReactEventHandler<el>) => l,
+    onPlayCapture: (l: ReactEventHandler<el>) => l,
+    onPlaying: (l: ReactEventHandler<el>) => l,
+    onPlayingCapture: (l: ReactEventHandler<el>) => l,
+    onProgress: (l: ReactEventHandler<el>) => l,
+    onProgressCapture: (l: ReactEventHandler<el>) => l,
+    onRateChange: (l: ReactEventHandler<el>) => l,
+    onRateChangeCapture: (l: ReactEventHandler<el>) => l,
+    onSeeked: (l: ReactEventHandler<el>) => l,
+    onSeekedCapture: (l: ReactEventHandler<el>) => l,
+    onSeeking: (l: ReactEventHandler<el>) => l,
+    onSeekingCapture: (l: ReactEventHandler<el>) => l,
+    onStalled: (l: ReactEventHandler<el>) => l,
+    onStalledCapture: (l: ReactEventHandler<el>) => l,
+    onSuspend: (l: ReactEventHandler<el>) => l,
+    onSuspendCapture: (l: ReactEventHandler<el>) => l,
+    onTimeUpdate: (l: ReactEventHandler<el>) => l,
+    onTimeUpdateCapture: (l: ReactEventHandler<el>) => l,
+    onVolumeChange: (l: ReactEventHandler<el>) => l,
+    onVolumeChangeCapture: (l: ReactEventHandler<el>) => l,
+    onWaiting: (l: ReactEventHandler<el>) => l,
+    onWaitingCapture: (l: ReactEventHandler<el>) => l,
+
+    // MouseEvents
+    onAuxClick: (l: MouseEventHandler<el>) => l,
+    onAuxClickCapture: (l: MouseEventHandler<el>) => l,
+    onClick: (l: MouseEventHandler<el>) => l,
+    onClickCapture: (l: MouseEventHandler<el>) => l,
+    onContextMenu: (l: MouseEventHandler<el>) => l,
+    onContextMenuCapture: (l: MouseEventHandler<el>) => l,
+    onDoubleClick: (l: MouseEventHandler<el>) => l,
+    onDoubleClickCapture: (l: MouseEventHandler<el>) => l,
+    onDrag: (l: DragEventHandler<el>) => l,
+    onDragCapture: (l: DragEventHandler<el>) => l,
+    onDragEnd: (l: DragEventHandler<el>) => l,
+    onDragEndCapture: (l: DragEventHandler<el>) => l,
+    onDragEnter: (l: DragEventHandler<el>) => l,
+    onDragEnterCapture: (l: DragEventHandler<el>) => l,
+    onDragExit: (l: DragEventHandler<el>) => l,
+    onDragExitCapture: (l: DragEventHandler<el>) => l,
+    onDragLeave: (l: DragEventHandler<el>) => l,
+    onDragLeaveCapture: (l: DragEventHandler<el>) => l,
+    onDragOver: (l: DragEventHandler<el>) => l,
+    onDragOverCapture: (l: DragEventHandler<el>) => l,
+    onDragStart: (l: DragEventHandler<el>) => l,
+    onDragStartCapture: (l: DragEventHandler<el>) => l,
+    onDrop: (l: DragEventHandler<el>) => l,
+    onDropCapture: (l: DragEventHandler<el>) => l,
+    onMouseDown: (l: MouseEventHandler<el>) => l,
+    onMouseDownCapture: (l: MouseEventHandler<el>) => l,
+    onMouseEnter: (l: MouseEventHandler<el>) => l,
+    onMouseLeave: (l: MouseEventHandler<el>) => l,
+    onMouseMove: (l: MouseEventHandler<el>) => l,
+    onMouseMoveCapture: (l: MouseEventHandler<el>) => l,
+    onMouseOut: (l: MouseEventHandler<el>) => l,
+    onMouseOutCapture: (l: MouseEventHandler<el>) => l,
+    onMouseOver: (l: MouseEventHandler<el>) => l,
+    onMouseOverCapture: (l: MouseEventHandler<el>) => l,
+    onMouseUp: (l: MouseEventHandler<el>) => l,
+    onMouseUpCapture: (l: MouseEventHandler<el>) => l,
+
+    // Selection Events
+    onSelect: (l: ReactEventHandler<el>) => l,
+    onSelectCapture: (l: ReactEventHandler<el>) => l,
+
+    // Touch Events
+    onTouchCancel: (l: TouchEventHandler<el>) => l,
+    onTouchCancelCapture: (l: TouchEventHandler<el>) => l,
+    onTouchEnd: (l: TouchEventHandler<el>) => l,
+    onTouchEndCapture: (l: TouchEventHandler<el>) => l,
+    onTouchMove: (l: TouchEventHandler<el>) => l,
+    onTouchMoveCapture: (l: TouchEventHandler<el>) => l,
+    onTouchStart: (l: TouchEventHandler<el>) => l,
+    onTouchStartCapture: (l: TouchEventHandler<el>) => l,
+
+    // Pointer Events
+    onPointerDown: (l: PointerEventHandler<el>) => l,
+    onPointerDownCapture: (l: PointerEventHandler<el>) => l,
+    onPointerMove: (l: PointerEventHandler<el>) => l,
+    onPointerMoveCapture: (l: PointerEventHandler<el>) => l,
+    onPointerUp: (l: PointerEventHandler<el>) => l,
+    onPointerUpCapture: (l: PointerEventHandler<el>) => l,
+    onPointerCancel: (l: PointerEventHandler<el>) => l,
+    onPointerCancelCapture: (l: PointerEventHandler<el>) => l,
+    onPointerEnter: (l: PointerEventHandler<el>) => l,
+    onPointerEnterCapture: (l: PointerEventHandler<el>) => l,
+    onPointerLeave: (l: PointerEventHandler<el>) => l,
+    onPointerLeaveCapture: (l: PointerEventHandler<el>) => l,
+    onPointerOver: (l: PointerEventHandler<el>) => l,
+    onPointerOverCapture: (l: PointerEventHandler<el>) => l,
+    onPointerOut: (l: PointerEventHandler<el>) => l,
+    onPointerOutCapture: (l: PointerEventHandler<el>) => l,
+    onGotPointerCapture: (l: PointerEventHandler<el>) => l,
+    onGotPointerCaptureCapture: (l: PointerEventHandler<el>) => l,
+    onLostPointerCapture: (l: PointerEventHandler<el>) => l,
+    onLostPointerCaptureCapture: (l: PointerEventHandler<el>) => l,
+
+    // UI Events
+    onScroll: (l: UIEventHandler<el>) => l,
+    onScrollCapture: (l: UIEventHandler<el>) => l,
+
+    // Wheel Events
+    onWheel: (l: WheelEventHandler<el>) => l,
+    onWheelCapture: (l: WheelEventHandler<el>) => l,
+
+    // Animation Events
+    onAnimationStart: (l: AnimationEventHandler<el>) => l,
+    onAnimationStartCapture: (l: AnimationEventHandler<el>) => l,
+    onAnimationEnd: (l: AnimationEventHandler<el>) => l,
+    onAnimationEndCapture: (l: AnimationEventHandler<el>) => l,
+    onAnimationIteration: (l: AnimationEventHandler<el>) => l,
+    onAnimationIterationCapture: (l: AnimationEventHandler<el>) => l,
+
+    // Transition Events
+    onTransitionEnd: (l: TransitionEventHandler<el>) => l,
+    onTransitionEndCapture: (l: TransitionEventHandler<el>) => l,
+};

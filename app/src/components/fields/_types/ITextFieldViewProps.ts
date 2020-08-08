@@ -1,9 +1,9 @@
 import {IBoxProps} from "../../../styling/box/_types/IBoxProps";
-import {IIconProps} from "@fluentui/react";
 import {ReactElement} from "react";
 import {ITextField} from "../../../textFields/_types/ITextField";
 import {IHighlighter} from "../../../textFields/syntax/_types/IHighlighter";
 import {IHighlightError} from "../../../textFields/syntax/_types/IHighlightError";
+import {IThemeIcon} from "../../../styling/theming/_types/IBaseTheme";
 
 export type ITextFieldViewProps = {
     /** The text field to visualize */
@@ -15,5 +15,5 @@ export type ITextFieldViewProps = {
     /** Whether to highlight errors, or the duration to not highlight errors for after typing*/
     highlightErrors?: number | boolean;
     /** The icon to show at the start of the field */
-    icon?: IIconProps | ReactElement;
+    icon?: IThemeIcon | ReactElement;
 } & IBoxProps;

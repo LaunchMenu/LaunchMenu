@@ -13,7 +13,7 @@ const rules = [
         exclude: /node_modules/,
     },
     {
-        test: /(\.png|\.jpg|\.html)$/,
+        test: /(\.png|\.jpg|\.html|\.ttf)$/,
         loader: "file-loader",
         options: {
             name: "[path][name].[ext]",

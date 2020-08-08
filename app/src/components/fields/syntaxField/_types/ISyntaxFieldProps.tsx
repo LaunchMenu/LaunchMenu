@@ -12,4 +12,6 @@ export type ISyntaxFieldProps = {
     setErrors?: (errors: IHighlightError[]) => void;
     /** Whether to highlight errors, or the duration to not highlight errors for after typing*/
     highlightErrors?: number | boolean;
+    /** Syntax fields don't have children */
+    children?: never;
 } & IBoxProps;

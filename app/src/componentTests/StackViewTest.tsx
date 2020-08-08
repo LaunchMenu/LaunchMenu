@@ -5,7 +5,6 @@ import {StackView} from "../components/stacks/StackView";
 import {Box} from "../styling/box/Box";
 import {v4 as uuid} from "uuid";
 import {FillBox} from "../components/FillBox";
-import {PrimaryButton} from "@fluentui/react";
 import {ViewStack} from "../stacks/ViewStack";
 
 const urls = [
@@ -63,12 +62,12 @@ export const StackViewTest: FC = () => {
                 onMouseDown={e => e.preventDefault()}>
                 <StackView items={stack} />
             </Box>
-            <PrimaryButton onClick={add}>add</PrimaryButton>
-            <PrimaryButton onClick={remove}>remove</PrimaryButton>
-            <PrimaryButton onClick={change}>change</PrimaryButton>
-            <PrimaryButton onClick={addM}>add middle</PrimaryButton>
-            <PrimaryButton onClick={removeM}>remove middle</PrimaryButton>
-            <PrimaryButton onClick={changeM}>change middle</PrimaryButton>
+            <button onClick={add}>add</button>
+            <button onClick={remove}>remove</button>
+            <button onClick={change}>change</button>
+            <button onClick={addM}>add middle</button>
+            <button onClick={removeM}>remove middle</button>
+            <button onClick={changeM}>change middle</button>
         </Box>
     );
 };

@@ -17,11 +17,11 @@ export function createHighlightTheme(
     return {
         ...highlightTheme,
         selection: highlightTheme.selection || {
-            background: baseTheme.colors.primary,
+            background: baseTheme.color.primary,
             opacity: 0.4,
         },
         cursor: highlightTheme.cursor || {
-            background: baseTheme.colors.fontBgPrimary,
+            background: baseTheme.color.fontBgPrimary,
             width: 2,
         },
     };

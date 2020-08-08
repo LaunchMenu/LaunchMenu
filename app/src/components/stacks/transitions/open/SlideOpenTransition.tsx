@@ -1,6 +1,7 @@
 import React, {useEffect, useState, FC, useCallback, useRef} from "react";
 import {Box} from "../../../../styling/box/Box";
 import {ISlideOpenTransitionProps} from "./_types/ISlideOpenTransition";
+import {FillBox} from "../../../FillBox";
 
 /**
  * A simple sliding transition
@@ -39,14 +40,7 @@ export const SlideOpenTransition: FC<ISlideOpenTransitionProps> = ({
     } as const)[direction];
 
     return (
-        <Box
-            display="flex"
-            overflow="hidden"
-            position="absolute"
-            left={0}
-            right={0}
-            top={0}
-            bottom={0}>
+        <FillBox display="flex" overflow="hidden">
             <Box
                 display="flex"
                 elRef={transitionEl}
@@ -70,6 +64,6 @@ export const SlideOpenTransition: FC<ISlideOpenTransitionProps> = ({
                     {children}
                 </Box>
             </Box>
-        </Box>
+        </FillBox>
     );
 };
