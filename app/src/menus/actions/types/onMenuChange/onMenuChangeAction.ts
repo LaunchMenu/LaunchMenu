@@ -9,4 +9,4 @@ export const onMenuChangeAction = new Action((listeners: IMenuChangeable[]) => {
         onMenuChange: (menu, added) =>
             listeners.forEach(menuChangeable => menuChangeable.onMenuChange(menu, added)),
     } as IMenuChangeable;
-});
+}, []);

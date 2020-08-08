@@ -9,4 +9,4 @@ export const onSelectAction = new Action((listeners: ISelectable[]) => {
         onSelect: (selected, menu) =>
             listeners.forEach(selectable => selectable.onSelect(selected, menu)),
     } as ISelectable;
-});
+}, []);

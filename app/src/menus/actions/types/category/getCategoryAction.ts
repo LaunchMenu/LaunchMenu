@@ -20,7 +20,8 @@ export const getCategoryAction = new Action(
 
         // Return all the grouped categories
         return categoriesData;
-    }
+    },
+    []
 );
 
 /**

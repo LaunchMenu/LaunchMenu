@@ -9,4 +9,4 @@ export const onCursorAction = new Action((listeners: ICursorSelectable[]) => {
         onCursor: (isCursor, menu) =>
             listeners.forEach(selectable => selectable.onCursor(isCursor, menu)),
     } as ICursorSelectable;
-});
+}, []);

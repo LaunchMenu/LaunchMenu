@@ -31,7 +31,7 @@ export class Action<I, O> implements IAction<I, O> {
     /**
      * Creates a new action
      * @param core The action handler core
-     * @param defaultTags The default tags for bindings
+     * @param defaultTags The default tags for bindings, defaults to ["context"] (making it a context menu action)
      */
     public constructor(core: IActionCore<I, O>, defaultTags?: any[]);
     public constructor(
@@ -42,6 +42,7 @@ export class Action<I, O> implements IAction<I, O> {
         this.core = core;
         this.defaultTags = defaultTags || [];
         if (parent) this.ancestors = [...parent.ancestors, parent];
+        else if (!defaultTags) this.defaultTags.push("context");
     }
 
     /**

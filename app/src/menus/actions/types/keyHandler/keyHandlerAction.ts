@@ -33,4 +33,4 @@ export const keyHandlerAction = new Action((listeners: IItemKeyHandler[]) => {
             return caught;
         },
     };
-});
+}, []);

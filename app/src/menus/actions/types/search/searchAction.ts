@@ -12,4 +12,4 @@ export const searchAction = new Action((searchers: ISearchable[]) => {
             }
         },
     } as ISearchable;
-});
+}, []);
