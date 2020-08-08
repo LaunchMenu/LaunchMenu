@@ -83,19 +83,19 @@ export const SyntaxHighlighterSelection: FC<ISyntaxHighlighterSelectionProps> = 
                     <Box
                         className="cursor"
                         position="absolute"
-                        top={0}
-                        bottom={0}
-                        leftCustom={cursorPos}
+                        top="none"
+                        bottom="none"
+                        css={{left: cursorPos}}
                     />
                 )}
                 {selectionPixelRange && selectionPixelRange.end != undefined && (
                     <Box
                         className="selection"
                         position="absolute"
-                        top={0}
-                        bottom={0}
-                        leftCustom={selectionLeft}
+                        top="none"
+                        bottom="none"
                         width={selectionRight - selectionLeft}
+                        css={{left: selectionLeft}}
                     />
                 )}
             </FillBox>

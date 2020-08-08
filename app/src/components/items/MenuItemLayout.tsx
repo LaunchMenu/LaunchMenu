@@ -8,7 +8,7 @@ export const MenuItemLayout: FC<{icon?: ReactNode; content: ReactNode}> = ({
     icon,
     content,
 }) => (
-    <Box display="flex" padding={1}>
+    <Box display="flex" padding="medium">
         {icon && <Box width={50}>{icon}</Box>}
         <Box flexGrow={1}>{content}</Box>
     </Box>

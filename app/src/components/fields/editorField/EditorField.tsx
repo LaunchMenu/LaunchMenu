@@ -33,7 +33,7 @@ export const EditorField: FC<IEditorFieldProps> = ({
             }}
             value={value}
             css={mergeStyles({".ace_hidden-cursors .ace_cursor": {opacity: 1}}, css)}
-            ref={ref}
+            aceRef={ref}
             onSelectionChange={setSelection}
             selection={selection}
             {...rest}

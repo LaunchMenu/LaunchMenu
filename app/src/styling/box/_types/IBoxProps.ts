@@ -1,20 +1,10 @@
-import {CSSProperties} from "react";
-import {SpacingAttributes} from "../attributeRetrievers/getSpacingAttributes";
-import {ColorAttributes} from "../attributeRetrievers/getColorAttributes";
-import {MappedAttributes} from "../attributeRetrievers/getMappedAttributes";
-import {DomAttributes} from "../attributeRetrievers/getDomAttributes";
-import {ElevationAttributes} from "../attributeRetrievers/getElevation";
-import {ICssProp} from "./ICssProp";
+import {ICssProps} from "../propRetrievers/mapCssProps";
+import {IDomProps} from "../propRetrievers/mapDomProps";
 
 /**
  * The properties that can be applied to style a box
  */
 export type IBoxProps = {
-    children?: any;
     as?: React.ComponentClass | React.FunctionComponent | string;
-    css?: ICssProp;
-} & SpacingAttributes &
-    ColorAttributes &
-    MappedAttributes &
-    DomAttributes &
-    ElevationAttributes;
+} & Partial<ICssProps> &
+    Partial<IDomProps>;

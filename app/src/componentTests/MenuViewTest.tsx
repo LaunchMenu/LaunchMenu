@@ -8,7 +8,6 @@ import {StackView} from "../components/stacks/StackView";
 import {Action} from "../menus/actions/Action";
 import {createMenuKeyHandler} from "../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {IOContext} from "../context/IOContext";
-import {TextField} from "@fluentui/react";
 import {Box} from "../styling/box/Box";
 import {SearchMenu} from "../menus/menu/SearchMenu";
 import {keyHandlerAction} from "../menus/actions/types/keyHandler/keyHandlerAction";

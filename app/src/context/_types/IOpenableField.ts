@@ -1,9 +1,9 @@
 import {IViewStackItem} from "../../stacks/_types/IViewStackItem";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {ITextField} from "../../textFields/_types/ITextField";
-import {IIconProps} from "@fluentui/react";
 import {ReactElement} from "react";
 import {IHighlighter} from "../../textFields/syntax/_types/IHighlighter";
+import {IThemeIcon} from "../../styling/theming/_types/IBaseTheme";
 
 /**
  * Field data that can be opened
@@ -23,7 +23,7 @@ export type IOpenableField =
           /** The syntax highlighter to use for the text field, will be ignored if a view is provided */
           highlighter?: IHighlighter;
           /** The icon to show with the text field, will be ignored if a view is provided */
-          icon?: IIconProps | ReactElement;
+          icon?: IThemeIcon | ReactElement;
           /** Whether or not to destroy the field when removed from the stack, defaults to true */
           destroyOnClose?: boolean;
       };

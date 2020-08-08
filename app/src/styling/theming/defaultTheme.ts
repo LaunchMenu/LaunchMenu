@@ -19,7 +19,6 @@ export const defaultTheme = createTheme(
                 background: "#000000",
             },
         },
-        spacingMultiple: 8,
     },
     defaultHighlightTheme
 );

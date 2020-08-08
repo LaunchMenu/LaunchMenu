@@ -1,11 +1,10 @@
 import React, {FC, isValidElement} from "react";
 import {Box} from "../../styling/box/Box";
 import {ITextFieldViewProps} from "./_types/ITextFieldViewProps";
-import {Icon} from "@fluentui/react";
-import {mergeStyles} from "../../utils/mergeStyles";
 import {useTheme} from "../../styling/theming/ThemeContext";
 import {SyntaxField} from "./syntaxField/SyntaxField";
 import {textLexer} from "../../textFields/syntax/TextLexer";
+import {ThemeIcon} from "../ThemeIcon";
 
 const iconSize = 60;
 
@@ -33,18 +32,9 @@ export const TextFieldView: FC<ITextFieldViewProps> = ({
                     {isValidElement(icon) ? (
                         icon
                     ) : (
-                        <Icon
-                            {...icon}
-                            styles={mergeStyles(
-                                {
-                                    root: {
-                                        fontSize: 23,
-                                        padding: theme.spacing(1),
-                                    },
-                                },
-                                icon.styles
-                            )}
-                        />
+                        <Box padding="medium" font="textField">
+                            <ThemeIcon icon={icon} />
+                        </Box>
                     )}
                 </Box>
             )}
@@ -63,7 +53,7 @@ export const TextFieldView: FC<ITextFieldViewProps> = ({
                     highlighter={highlighter}
                     setErrors={setErrors}
                     highlightErrors={highlightErrors}
-                    paddingRight={1}
+                    paddingRight="medium"
                 />
             </Box>
         </Box>

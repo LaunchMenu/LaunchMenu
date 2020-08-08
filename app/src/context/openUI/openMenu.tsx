@@ -75,7 +75,7 @@ export function openMenu<D extends IOpenableMenu>(
                                 "highlighter" in content
                                     ? content.highlighter
                                     : undefined,
-                            icon: {iconName: "Search"},
+                            icon: "search",
                             destroyOnClose: true, // Caller has no reference to this field so can't manually destroy it
                         })
                     );
