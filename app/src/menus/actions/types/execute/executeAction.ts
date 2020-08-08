@@ -8,4 +8,4 @@ export const executeAction = new Action((executors: IExecutable[]) => {
     return {
         execute: () => executors.forEach(executable => executable.execute()),
     } as IExecutable;
-});
+}, []);

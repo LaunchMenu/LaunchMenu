@@ -1,4 +1,4 @@
-import React, {FC, useState, useCallback} from "react";
+import React, {FC} from "react";
 import {Menu} from "../menus/menu/Menu";
 import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
 import {createStandardMenuItem} from "../menus/items/createStandardMenuItem";
@@ -6,59 +6,33 @@ import {ViewStack} from "../stacks/ViewStack";
 import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
 import {StackView} from "../components/stacks/StackView";
 import {Action} from "../menus/actions/Action";
-import {createMenuKeyHandler} from "../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {IOContext} from "../context/IOContext";
 import {Box} from "../styling/box/Box";
-import {SearchMenu} from "../menus/menu/SearchMenu";
 import {keyHandlerAction} from "../menus/actions/types/keyHandler/keyHandlerAction";
+import {createContextAction} from "../menus/actions/contextAction/createContextAction";
 
 // Create some context action
 const alertAction = new Action(
-    (data: {message: string}[]) => {
-        const text = data.map(({message}) => message).join(",");
-        const execute = () => alert(text);
-        return {
-            execute,
-            getMenuItem: (closeMenu: () => void) =>
-                createStandardMenuItem({
-                    name: "Alert All",
-                    onExecute: () => {
-                        execute();
-                        closeMenu();
-                    },
-                }),
-        };
-    },
-    ["context"]
+    createContextAction(
+        (data: {message: string}[]) => {
+            const text = data.map(({message}) => message).join(",");
+            return {execute: () => alert(text)};
+        },
+        {name: "Alert all"}
+    )
 );
-const alertHandlerAction = alertAction.createHandler((data: {message: string}[]) => {
-    const text = "(" + data.map(({message}) => message).join(",") + ")";
-    const execute = () => alert(text);
-    return {
-        message: text,
-        execute,
-        getMenuItem: (closeMenu: () => void) =>
-            createStandardMenuItem({
-                name: "Sub Alert (ctrl+q)",
-                onExecute: () => {
-                    execute();
-                    closeMenu();
-                },
-                actionBindings: [
-                    alertHandlerAction.createBinding({message: "Meta alert! " + text}),
-                    keyHandlerAction.createBinding({
-                        onKey: e => {
-                            if (e.is(["ctrl", "q"])) {
-                                execute();
-                                closeMenu();
-                                return true;
-                            }
-                        },
-                    }),
-                ],
-            }),
-    };
-});
+const alertHandlerAction = alertAction.createHandler(
+    createContextAction(
+        (data: {message: string}[]) => {
+            const text = "(" + data.map(({message}) => message).join(",") + ")";
+            return {
+                message: text,
+                execute: () => alert(text),
+            };
+        },
+        {name: "Sub Alert", shortcut: ["ctrl", "q"]}
+    )
+);
 
 // Create stacks and some menu
 const menuViewStack = new ViewStack();
