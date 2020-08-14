@@ -96,6 +96,7 @@ describe("Observer", () => {
             expect(listener.mock.calls[0]).toEqual([
                 1,
                 {isLoading: false, exceptions: []},
+                0,
             ]);
 
             field.set(5);
@@ -104,6 +105,7 @@ describe("Observer", () => {
             expect(listener.mock.calls[1]).toEqual([
                 5,
                 {isLoading: false, exceptions: []},
+                1,
             ]);
         });
         it("Considers the debounce constructor variable", async () => {
@@ -119,6 +121,7 @@ describe("Observer", () => {
             expect(listener1.mock.calls[0]).toEqual([
                 2,
                 {isLoading: false, exceptions: []},
+                0,
             ]);
             field.set(3);
             await wait(5);
@@ -128,10 +131,12 @@ describe("Observer", () => {
             expect(listener1.mock.calls[1]).toEqual([
                 3,
                 {isLoading: false, exceptions: []},
+                2,
             ]);
             expect(listener1.mock.calls[2]).toEqual([
                 4,
                 {isLoading: false, exceptions: []},
+                3,
             ]);
 
             // -1ms debounce (synchronous)
@@ -145,10 +150,12 @@ describe("Observer", () => {
             expect(listener2.mock.calls[0]).toEqual([
                 1,
                 {isLoading: false, exceptions: []},
+                4,
             ]);
             expect(listener2.mock.calls[1]).toEqual([
                 2,
                 {isLoading: false, exceptions: []},
+                1,
             ]);
 
             // Default debounce, 10ms
@@ -162,6 +169,7 @@ describe("Observer", () => {
             expect(listener3.mock.calls[0]).toEqual([
                 2,
                 {isLoading: false, exceptions: []},
+                2,
             ]);
             field.set(3);
             await wait(5);
@@ -171,6 +179,7 @@ describe("Observer", () => {
             expect(listener3.mock.calls[1]).toEqual([
                 4,
                 {isLoading: false, exceptions: []},
+                2,
             ]);
         });
         it("Considers the refresh data variable", async () => {
@@ -186,12 +195,14 @@ describe("Observer", () => {
             expect(listener1.mock.calls[0]).toEqual([
                 0,
                 {isLoading: true, exceptions: []},
+                0,
             ]);
             await wait(20);
             expect(listener1.mock.calls.length).toEqual(2);
             expect(listener1.mock.calls[1]).toEqual([
                 2,
                 {isLoading: false, exceptions: []},
+                0,
             ]);
 
             // Don't load data sources if specified
@@ -218,12 +229,14 @@ describe("Observer", () => {
             expect(listener1.mock.calls[0]).toEqual([
                 0,
                 {isLoading: true, exceptions: []},
+                0,
             ]);
             await wait(20);
             expect(listener1.mock.calls.length).toEqual(2);
             expect(listener1.mock.calls[1]).toEqual([
                 2,
                 {isLoading: false, exceptions: []},
+                0,
             ]);
             loader1.markDirty();
             await wait(5);
@@ -231,12 +244,14 @@ describe("Observer", () => {
             expect(listener1.mock.calls[2]).toEqual([
                 2,
                 {isLoading: true, exceptions: []},
+                2,
             ]);
             await wait(20);
             expect(listener1.mock.calls.length).toEqual(4);
             expect(listener1.mock.calls[3]).toEqual([
                 2,
                 {isLoading: false, exceptions: []},
+                2,
             ]);
 
             // Correctly specifies the exceptions
@@ -252,12 +267,39 @@ describe("Observer", () => {
             expect(listener2.mock.calls[0]).toEqual([
                 0,
                 {isLoading: true, exceptions: []},
+                0,
             ]);
             await wait(20);
             expect(listener2.mock.calls.length).toEqual(2);
             expect(listener2.mock.calls[1]).toEqual([
                 0,
                 {isLoading: false, exceptions: ["shit"]},
+                0,
+            ]);
+        });
+        it("Includes the previous value", async () => {
+            const field = new Field(0);
+            const listener = jest.fn();
+            new Observer(field).listen(listener);
+            await wait(5);
+            expect(listener.mock.calls.length).toBe(0);
+
+            field.set(1);
+            await wait(5);
+            expect(listener.mock.calls.length).toBe(1);
+            expect(listener.mock.calls[0]).toEqual([
+                1,
+                {isLoading: false, exceptions: []},
+                0,
+            ]);
+
+            field.set(5);
+            await wait(5);
+            expect(listener.mock.calls.length).toBe(2);
+            expect(listener.mock.calls[1]).toEqual([
+                5,
+                {isLoading: false, exceptions: []},
+                1,
             ]);
         });
     });

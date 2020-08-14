@@ -8,5 +8,5 @@ export type ICommandMetadata = {
     name: string;
 
     /** The view that can be shown in a menu */
-    menuItem: IMenuItem;
+    menuItem?: IMenuItem;
 };

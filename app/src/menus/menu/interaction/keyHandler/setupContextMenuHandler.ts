@@ -61,14 +61,16 @@ export function setupContextMenuHandler(
                 contextData = {items, emitter};
             }
 
-            // Forward events to
-            if (useContextItemKeyHandlers && (await contextData.emitter.emit(e))) return;
+            // Forward events to context items
+            if (useContextItemKeyHandlers && (await contextData.emitter.emit(e)))
+                return true;
 
             // Open the menu if requested
             if (isMenuOpenEvent) {
-                contextData.close = openUI(ioContext, {
-                    menu: new Menu(contextData.items),
-                });
+                if (contextData.items.length > 0)
+                    contextData.close = openUI(ioContext, {
+                        menu: new Menu(contextData.items),
+                    });
                 return true;
             }
         },

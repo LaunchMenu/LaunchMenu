@@ -1,2 +1,8 @@
 /** The state of the command */
-export type ICommandState = "executing" | "reverting" | "executed" | "ready";
+export type ICommandState =
+    | "ready"
+    | "preparingForExecution"
+    | "executing"
+    | "executed"
+    | "preparingForRevert"
+    | "reverting";

@@ -76,24 +76,26 @@ export class Semaphore {
 
     /**
      * Dispatches an update in order to continue with the next consumer if present
+     * @param delta THe delta in available resources
      */
-    private _dispatch(): void {
+    protected _dispatch(delta: number = 0): void {
         const nextConsumer = this.queue.shift();
 
-        if (!nextConsumer) return;
+        if (!nextConsumer) {
+            if (delta != 0) this.value.set(this.value.get(null) + delta);
+            return;
+        }
 
         let released = false;
         this.currentReleaser = () => {
             if (released) return;
 
             released = true;
-            this.value.set(this.value.get(null) + 1);
-
-            this._dispatch();
+            this._dispatch(1);
         };
 
         const value = this.value.get(null);
-        this.value.set(value - 1);
+        this.value.set(value - 1 + delta);
         nextConsumer([value, this.currentReleaser]);
     }
 }

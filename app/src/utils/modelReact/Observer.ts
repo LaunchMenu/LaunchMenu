@@ -18,7 +18,10 @@ export class Observer<T> {
     protected hookListenerRemovers: (() => void)[] = [];
     protected value: T;
     protected exceptions: any[] = [];
-    protected isLoading: boolean = false;
+    protected isLoading = false;
+
+    protected initialized = false;
+    protected previousValue: T;
 
     /**
      * Creates a new observer
@@ -64,6 +67,12 @@ export class Observer<T> {
                 this.exceptions.push(exception);
             },
         });
+
+        if (!this.initialized) {
+            this.previousValue = this.value;
+            this.initialized = true;
+        }
+
         this.isDirty = false;
     }
 
@@ -91,14 +100,20 @@ export class Observer<T> {
     protected callListeners(): void {
         if (this.debounce == -1) {
             const meta = {isLoading: this.isLoading, exceptions: this.exceptions};
-            this.listeners.forEach(listener => listener(this.value, meta));
+            this.listeners.forEach(listener =>
+                listener(this.value, meta, this.previousValue)
+            );
+            this.previousValue = this.value;
         }
         // If the call should be debounced, only add a timer if none is present already
         else if (!this.callListenersTimeout) {
             this.callListenersTimeout = setTimeout(() => {
                 this.callListenersTimeout = undefined;
                 const meta = {isLoading: this.isLoading, exceptions: this.exceptions};
-                this.listeners.forEach(listener => listener(this.value, meta));
+                this.listeners.forEach(listener =>
+                    listener(this.value, meta, this.previousValue)
+                );
+                this.previousValue = this.value;
             }, this.debounce);
         }
     }
@@ -116,10 +131,14 @@ export class Observer<T> {
 
         if (this.isDirty) this.getData();
         if (initCall) {
-            listener(this.value, {
-                isLoading: this.isLoading,
-                exceptions: this.exceptions,
-            });
+            listener(
+                this.value,
+                {
+                    isLoading: this.isLoading,
+                    exceptions: this.exceptions,
+                },
+                this.previousValue
+            );
         }
         return this;
     }

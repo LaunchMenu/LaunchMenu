@@ -10,11 +10,6 @@ export type ICommandsList = {
     future: ICommand[];
 
     /**
-     * The command that's currently executing or reverting
-     */
-    current?: ICommand;
-
-    /**
      * The commands that have been executed and can be undone
      */
     past: ICommand[];
