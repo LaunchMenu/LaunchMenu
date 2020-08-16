@@ -26,7 +26,7 @@ export function mapProps<
             const value = mapper[propName](props[propName], context);
 
             // IF the value is an object 'expand' it into the result
-            if (value instanceof Object) {
+            if (value instanceof Object && !(value instanceof Function)) {
                 Object.keys(value).forEach(resPropName => {
                     output[resPropName] = value[resPropName];
                 });

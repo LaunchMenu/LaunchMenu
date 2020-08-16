@@ -1,7 +1,10 @@
 import {IViewStack} from "../../stacks/_types/IViewStack";
 import {IKeyHandlerStack} from "../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
-import {TDeepPartial} from "../../_types/TDeepPartial";
+import {IUndoRedoFacility} from "../../undoRedo/_types/IUndoRedoFacility";
 
+/**
+ * A context to get general IO utilities from
+ */
 export type IIOContext = {
     panes: {
         field: IViewStack;
@@ -9,8 +12,15 @@ export type IIOContext = {
         content: IViewStack;
     };
     keyHandler: IKeyHandlerStack;
+    undoRedo: IUndoRedoFacility;
     // TODO: add common/global settings
-    // TODO: add undo/redo facility
 };
 
-export type IPartialIOContext = TDeepPartial<IIOContext>;
+/**
+ * A context to get general IO utilities from, if available
+ */
+export type IPartialIOContext = {
+    panes?: Partial<IIOContext["panes"]>;
+    keyHandler?: IKeyHandlerStack;
+    undoRedo?: IUndoRedoFacility;
+};

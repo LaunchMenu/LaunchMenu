@@ -10,6 +10,33 @@ import {IOContext} from "../context/IOContext";
 import {Box} from "../styling/box/Box";
 import {keyHandlerAction} from "../menus/actions/types/keyHandler/keyHandlerAction";
 import {createContextAction} from "../menus/actions/contextAction/createContextAction";
+import {UndoRedoFacility} from "../undoRedo/UndoRedoFacility";
+import {Field, Loader} from "model-react";
+import {Command} from "../undoRedo/Command";
+import {createMenuKeyHandler} from "../menus/menu/interaction/keyHandler/createMenuKeyHandler";
+import {wait} from "../_tests/wait.helper";
+
+const someField = new Field("oranges");
+class SetFieldCmd extends Command {
+    protected prev: string | undefined;
+    protected text: string;
+    protected field: Field<string>;
+
+    public metadata = {name: "set field"};
+    public constructor(field: Field<string>, text: string) {
+        super();
+        this.field = field;
+        this.text = text;
+    }
+    protected async onExecute() {
+        this.prev = this.field.get(null);
+        await wait(1000);
+        this.field.set(this.text);
+    }
+    protected async onRevert() {
+        if (this.prev != undefined) this.field.set(this.prev);
+    }
+}
 
 // Create some context action
 const alertAction = new Action(
@@ -40,18 +67,18 @@ const fieldViewStack = new ViewStack();
 const inputStack = new KeyHandlerStack(new KeyHandler(window));
 const menu = new Menu([
     createStandardMenuItem({
-        name: "bob (alert)",
-        onExecute: () => console.log("bob"),
+        name: "Bob (alert)",
+        onExecute: () => new SetFieldCmd(someField, "Bob"),
         actionBindings: [alertAction.createBinding({message: "Bob"})],
     }),
     createStandardMenuItem({
         name: "Hank (alert)",
-        onExecute: () => console.log("Hank"),
+        onExecute: () => new SetFieldCmd(someField, "Hank"),
         actionBindings: [alertAction.createBinding({message: "Hank"})],
     }),
     createStandardMenuItem({
         name: "Woof (alert)",
-        onExecute: () => console.log("Woof"),
+        onExecute: () => new SetFieldCmd(someField, "Woof"),
         actionBindings: [
             alertAction.createBinding({message: "Woof"}),
             keyHandlerAction.createBinding({
@@ -68,7 +95,7 @@ const menu = new Menu([
     }),
     createStandardMenuItem({
         name: "Oranges (sub alert)",
-        onExecute: () => console.log("Oranges"),
+        onExecute: () => new SetFieldCmd(someField, "Oranges"),
         actionBindings: [
             alertHandlerAction.createBinding({message: "Oranges"}),
             keyHandlerAction.createBinding({
@@ -83,18 +110,52 @@ const menu = new Menu([
     }),
     createStandardMenuItem({
         name: "Poof (sub alert)",
-        onExecute: () => console.log("Poof"),
+        onExecute: () => new SetFieldCmd(someField, "Poof"),
         actionBindings: [alertHandlerAction.createBinding({message: "Poof"})],
     }),
-    createStandardMenuItem({name: "Wow", onExecute: () => console.log("Wow")}),
+    createStandardMenuItem({
+        name: "Wow",
+        onExecute: () => new SetFieldCmd(someField, "Wow"),
+    }),
+    createStandardMenuItem({
+        name: "Undo",
+        onExecute: () => undoRedo.undo(),
+        actionBindings: [
+            keyHandlerAction.createBinding({
+                onKey: e => {
+                    if (e.is(["ctrl", "z"])) {
+                        undoRedo.undo();
+                        return true;
+                    }
+                },
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Redo",
+        onExecute: () => undoRedo.redo(),
+        actionBindings: [
+            keyHandlerAction.createBinding({
+                onKey: e => {
+                    if (e.is(["ctrl", "y"])) {
+                        undoRedo.redo();
+                        return true;
+                    }
+                },
+            }),
+        ],
+    }),
 ]);
+const undoRedo = new UndoRedoFacility();
+
 const context = new IOContext({
     panes: {menu: menuViewStack, content: menuViewStack, field: fieldViewStack},
     keyHandler: inputStack,
+    undoRedo,
 });
 context.openUI({
     menu,
-    // menuHandler: createMenuKeyHandler(menu, context),
+    menuHandler: createMenuKeyHandler(menu, context),
 });
 
 (window as any).alertAction = alertAction;
@@ -104,6 +165,10 @@ context.openUI({
 export const MenuViewTest: FC = () => {
     return (
         <Box display="flex" flexDirection="column" height="100%">
+            <Box height={30}>
+                <Loader>{h => someField.get(h)}</Loader>{" "}
+                <Loader>{h => undoRedo.getState(h)}</Loader>
+            </Box>
             <Box position="relative" height={80}>
                 <StackView items={fieldViewStack} />
             </Box>

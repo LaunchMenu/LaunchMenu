@@ -9,6 +9,7 @@ import {IViewStack} from "../../../../stacks/_types/IViewStack";
 import {IKeyHandlerStack} from "../../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {openUI} from "../../../../context/openUI/openUI";
 import {Menu} from "../../Menu";
+import {IUndoRedoFacility} from "../../../../undoRedo/_types/IUndoRedoFacility";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
@@ -19,7 +20,11 @@ import {Menu} from "../../Menu";
  */
 export function setupContextMenuHandler(
     menu: IMenu,
-    ioContext: {panes: {menu: IViewStack}; keyHandler: IKeyHandlerStack},
+    ioContext: {
+        panes: {menu: IViewStack; field: IViewStack};
+        keyHandler: IKeyHandlerStack;
+        undoRedo: IUndoRedoFacility;
+    },
     {
         useContextItemKeyHandlers = true,
         isOpenMenuButton = e => e.is("tab"),

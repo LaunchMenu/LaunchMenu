@@ -3,6 +3,7 @@ import {openContextMenu} from "../openContextMenu";
 import {IKeyHandlerStack} from "../../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {IViewStack} from "../../../../stacks/_types/IViewStack";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
+import {IUndoRedoFacility} from "../../../../undoRedo/_types/IUndoRedoFacility";
 
 /**
  * Handles context menu opening input events
@@ -14,7 +15,11 @@ import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 export function handleContextInput(
     event: KeyEvent,
     menu: IMenu,
-    ioContext: {panes: {menu: IViewStack}; keyHandler: IKeyHandlerStack}
+    ioContext: {
+        panes: {menu: IViewStack; field: IViewStack};
+        keyHandler: IKeyHandlerStack;
+        undoRedo: IUndoRedoFacility;
+    }
 ): void | boolean {
     if (event.is("tab")) {
         openContextMenu(menu, ioContext);

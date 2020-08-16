@@ -4,6 +4,7 @@ import {IViewStack} from "../../../stacks/_types/IViewStack";
 import {IKeyHandlerStack} from "../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {openUI} from "../../../context/openUI/openUI";
 import {Menu} from "../Menu";
+import {IUndoRedoFacility} from "../../../undoRedo/_types/IUndoRedoFacility";
 
 /**
  * Opens a context menu for the selection of the given menu
@@ -12,7 +13,11 @@ import {Menu} from "../Menu";
  */
 export function openContextMenu(
     menu: IMenu,
-    ioContext: {panes: {menu: IViewStack}; keyHandler: IKeyHandlerStack}
+    ioContext: {
+        panes: {menu: IViewStack; field: IViewStack};
+        keyHandler: IKeyHandlerStack;
+        undoRedo: IUndoRedoFacility;
+    }
 ): void {
     let close = () => {}; // placeholder
     const contextMenuItems = getContextMenuItems(menu.getAllSelected(), () => close());

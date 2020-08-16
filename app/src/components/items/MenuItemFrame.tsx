@@ -23,7 +23,7 @@ export const MenuItemFrame: FC<{
                     else menu.setCursor(item);
                 }, [onExecute, menu, item])
             }
-            onContextMenu={() => console.log("detect")}
+            onContextMenu={() => console.log("detect")} // TODO: open context menu
             background={isCursor ? "primary" : "bgPrimary"}>
             {children}
         </Box>
