@@ -6,6 +6,9 @@ import {ReactNode} from "react";
  * The configuration for context menu actions
  */
 export type IContextActionConfig = {
+    /** Whether to close the menu when the action is executed, defaults to true */
+    closeOnExecute?: boolean;
+
     /** The keyboard shortcut for the action */
     shortcut?: IKeyMatcher[]; // TODO: update type once a keyboard matcher setting type exists
 

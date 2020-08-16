@@ -1,5 +1,5 @@
 import React from "react";
-import {TPartialContextFromContent} from "../_types/TPartialContextFromContent";
+import {TPartialContextFromOpenable} from "../_types/TPartialContextFromContent";
 import {IOpenableMenu} from "../_types/IOpenableMenu";
 import {containsMenuStack} from "../partialContextChecks/containsMenuStack";
 import {isView, IViewStackItem} from "../../stacks/_types/IViewStackItem";
@@ -11,6 +11,7 @@ import {withPopError} from "../withPopError";
 import {openTextField} from "./openTextField";
 import {SearchField} from "../../textFields/SearchField";
 import {containsFieldStack} from "../partialContextChecks/containsFieldStack";
+import {isIOContext} from "../_types/IIOContext";
 
 /**
  * Opens the given content within the given ui context
@@ -20,7 +21,7 @@ import {containsFieldStack} from "../partialContextChecks/containsFieldStack";
  * @returns An array of functions that can be executed in sequence to close the opened ui elements
  */
 export function openMenu<D extends IOpenableMenu>(
-    context: TPartialContextFromContent<D>,
+    context: TPartialContextFromOpenable<D>,
     content: D & IOpenableMenu,
     close?: () => void
 ): (() => void)[] {
@@ -40,25 +41,29 @@ export function openMenu<D extends IOpenableMenu>(
             if ("menuView" in content && content.menuView) view = content.menuView;
             else view = <MenuView menu={menu} />;
 
-            let keyHandler: IKeyEventListener;
+            let keyHandler: IKeyEventListener | undefined;
             if ("menuHandler" in content && content.menuHandler)
                 keyHandler = content.menuHandler;
-            else keyHandler = createMenuKeyHandler(menu, context, {onExit: close});
+            else if (isIOContext(context))
+                keyHandler = createMenuKeyHandler(menu, context, {onExit: close});
 
             // Handle opening of menu components
             context.panes.menu.push(view);
             closers.unshift(() => withPopError(context.panes.menu.pop(view), "menu"));
 
-            context.keyHandler.push(keyHandler);
-            closers.unshift(() =>
-                withPopError(context.keyHandler.pop(keyHandler), "key handler")
-            );
+            if (keyHandler) {
+                const kh = keyHandler;
+                context.keyHandler.push(kh);
+                closers.unshift(() =>
+                    withPopError(context.keyHandler.pop(kh), "key handler")
+                );
+            }
 
             // Destroy the menu on close if specified
             if (!("destroyOnClose" in content) || content.destroyOnClose) {
                 closers.unshift(() => menu.destroy());
                 const kh = keyHandler;
-                if (!(kh instanceof Function) && kh.destroy)
+                if (kh && !(kh instanceof Function) && kh.destroy)
                     closers.unshift(() => kh.destroy?.());
             }
 

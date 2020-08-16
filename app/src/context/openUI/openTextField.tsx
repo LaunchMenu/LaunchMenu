@@ -1,11 +1,7 @@
 import React from "react";
-import {TPartialContextFromContent} from "../_types/TPartialContextFromContent";
-import {IOpenableMenu} from "../_types/IOpenableMenu";
-import {containsMenuStack} from "../partialContextChecks/containsMenuStack";
+import {TPartialContextFromOpenable} from "../_types/TPartialContextFromContent";
 import {isView, IViewStackItem} from "../../stacks/_types/IViewStackItem";
-import {MenuView} from "../../components/menu/MenuView";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
-import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {containsKeyHandlerStack} from "../partialContextChecks/containsKeyHandlerStack";
 import {withPopError} from "../withPopError";
 import {IOpenableField} from "../_types/IOpenableField";
@@ -21,7 +17,7 @@ import {TextFieldView} from "../../components/fields/TextFieldView";
  * @returns An array of functions that can be executed in sequence to close the opened ui elements
  */
 export function openTextField<D extends IOpenableField>(
-    context: TPartialContextFromContent<D>,
+    context: TPartialContextFromOpenable<D>,
     content: D & IOpenableField,
     close?: () => void
 ): (() => void)[] {

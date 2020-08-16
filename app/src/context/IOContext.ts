@@ -6,6 +6,7 @@ import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
 import {withPopError} from "./withPopError";
 import {openUI} from "./openUI/openUI";
 import {IOpenableUI} from "./_types/IOpenableUI";
+import {IUndoRedoFacility} from "../undoRedo/_types/IUndoRedoFacility";
 
 export class IOContext implements IIOContext {
     public panes: {
@@ -14,6 +15,7 @@ export class IOContext implements IIOContext {
         field: IViewStack;
     };
     public keyHandler: IKeyHandlerStack;
+    public undoRedo: IUndoRedoFacility;
 
     protected parentContext?: IIOContext;
 
@@ -42,6 +44,9 @@ export class IOContext implements IIOContext {
             context.panes.content.push(this.panes.content);
             context.panes.field.push(this.panes.field);
             context.keyHandler.push(this.keyHandler);
+
+            // Copy anything that's identical
+            this.undoRedo = context.undoRedo;
         }
     }
 

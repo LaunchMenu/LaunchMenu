@@ -1,5 +1,5 @@
 import {IOpenableKeyHandler} from "../_types/IOpenableKeyHandler";
-import {TPartialContextFromContent} from "../_types/TPartialContextFromContent";
+import {TPartialContextFromOpenable} from "../_types/TPartialContextFromContent";
 import {containsKeyHandlerStack} from "../partialContextChecks/containsKeyHandlerStack";
 import {withPopError} from "../withPopError";
 
@@ -10,7 +10,7 @@ import {withPopError} from "../withPopError";
  * @returns An array of functions that can be executed in sequence to close the opened ui elements
  */
 export function openKeyHandler<D extends IOpenableKeyHandler>(
-    context: TPartialContextFromContent<D>,
+    context: TPartialContextFromOpenable<D>,
     content: D & IOpenableKeyHandler
 ): (() => void)[] {
     const closers = [] as (() => void)[];

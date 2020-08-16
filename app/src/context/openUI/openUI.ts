@@ -1,5 +1,5 @@
 import {IOpenableUI} from "../_types/IOpenableUI";
-import {TPartialContextFromContent} from "../_types/TPartialContextFromContent";
+import {TPartialContextFromOpenable} from "../_types/TPartialContextFromContent";
 import {openMenu} from "./openMenu";
 import {openKeyHandler} from "./openKeyHandler";
 import {openTextField} from "./openTextField";
@@ -12,7 +12,7 @@ import {openTextField} from "./openTextField";
  * @returns A function to close the opened content, returns false if it was already closed
  */
 export function openUI<D extends IOpenableUI>(
-    context: TPartialContextFromContent<D>,
+    context: TPartialContextFromOpenable<D>,
     content: D,
     onClose?: () => void
 ): () => boolean {

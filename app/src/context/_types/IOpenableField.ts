@@ -4,6 +4,9 @@ import {ITextField} from "../../textFields/_types/ITextField";
 import {ReactElement} from "react";
 import {IHighlighter} from "../../textFields/syntax/_types/IHighlighter";
 import {IThemeIcon} from "../../styling/theming/_types/IBaseTheme";
+import {IPartialIOContext} from "./IIOContext";
+import {IViewStack} from "../../stacks/_types/IViewStack";
+import {IKeyHandlerStack} from "../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 
 /**
  * Field data that can be opened
@@ -27,3 +30,15 @@ export type IOpenableField =
           /** Whether or not to destroy the field when removed from the stack, defaults to true */
           destroyOnClose?: boolean;
       };
+
+/**
+ * Retrieves the required context data for a openable field
+ */
+export type TPartialContextFromField<IOpenable> =
+    // field -> panes.field
+    (IOpenable extends {field: any} ? {panes: {field: IViewStack}} : unknown) &
+        // field==ITextField || fieldHandler -> keyHandler
+        (IOpenable extends {field: ITextField} | {fieldHandler: any}
+            ? {keyHandler: IKeyHandlerStack}
+            : unknown) &
+        IPartialIOContext;

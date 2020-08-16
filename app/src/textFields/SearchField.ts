@@ -3,18 +3,18 @@ import {ITextSelection} from "./_types/ITextSelection";
 import {SearchMenu} from "../menus/menu/SearchMenu";
 import {IPrioritizedMenuCategoryConfig} from "../menus/menu/_types/IAsyncMenuCategoryConfig";
 import {IQuery} from "../menus/menu/_types/IQuery";
-import {ISearchFieldPartialContext} from "./_types/ISearchFieldPartialContext";
 import {openUI} from "../context/openUI/openUI";
 import {IMenu} from "../menus/menu/_types/IMenu";
 import {IMenuItem} from "../menus/items/_types/IMenuItem";
 import {Observer} from "../utils/modelReact/Observer";
+import {IIOContext} from "../context/_types/IIOContext";
 
 /**
  * A search field that manages the search menu
  */
 export class SearchField extends TextField {
     protected targetMenu: IMenu;
-    protected context: ISearchFieldPartialContext;
+    protected context: IIOContext;
 
     protected targetObserver: Observer<IMenuItem[]>;
 
@@ -29,7 +29,7 @@ export class SearchField extends TextField {
         /** The menu this field should search in */
         menu: IMenu;
         /** The context to open the search menu in */
-        context: ISearchFieldPartialContext;
+        context: IIOContext;
         /** Category configuration for the search results */
         categoryConfig?: IPrioritizedMenuCategoryConfig<IQuery>;
         /** Initial search text */

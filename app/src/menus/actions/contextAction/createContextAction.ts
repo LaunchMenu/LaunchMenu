@@ -1,5 +1,4 @@
 import {IContextActionConfig} from "./_types/IContextActionConfig";
-import {IContextActionCoreInput} from "./_types/IContextActionCoreInput";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IContextActionCore} from "./_types/IContextActionCore";
 import {IContextMenuItemGetter} from "./_types/IContextMenuItemGetter";
@@ -7,6 +6,8 @@ import {createStandardMenuItem} from "../../items/createStandardMenuItem";
 import {keyHandlerAction} from "../types/keyHandler/keyHandlerAction";
 import {TGetActionCoreOutput} from "./_types/TGetActionCoreOutput";
 import {TGetActionCoreInput} from "./_types/TGetActionCoreInput";
+import {IActionCore} from "../_types/IActionCore";
+import {IContextActionResult} from "./_types/IContextActionResult";
 
 /**
  * Creates an action that can be displayed in a menu like the context menu
@@ -14,25 +15,39 @@ import {TGetActionCoreInput} from "./_types/TGetActionCoreInput";
  * @param config The configuration for the menu item
  * @returns A context action core
  */
-export function createContextAction<G extends IContextActionCoreInput<any, any>>(
+export function createContextAction<
+    G extends IActionCore<I, O>,
+    I,
+    O extends IContextActionResult
+>(
     getter: G,
-    {shortcut, actionBindings, name, icon, description, tags}: IContextActionConfig
+    {
+        shortcut,
+        actionBindings,
+        name,
+        icon,
+        description,
+        tags,
+        closeOnExecute,
+    }: IContextActionConfig
 ): IContextActionCore<
     TGetActionCoreInput<G>,
     TGetActionCoreOutput<G> & {getMenuItem: IContextMenuItemGetter}
 > {
-    return (data, items) => {
+    return ((data, items) => {
         const actionGetterResult = getter(data, items);
 
         // Retrieve the original result as well as a menu item getter
         return {
             ...actionGetterResult,
-            getMenuItem: closeMenu => {
+            getMenuItem: ((context, closeMenu) => {
                 //  Create an execute method that closes the menu when called
                 const executeItem = () => {
-                    actionGetterResult.execute();
-                    closeMenu();
+                    const result = actionGetterResult.execute(context, closeMenu);
+                    if (closeOnExecute != false && closeMenu) closeMenu();
+                    return result;
                 };
+
                 // Create shortcut bindings if requested
                 const shortcutBinding =
                     shortcut &&
@@ -58,7 +73,7 @@ export function createContextAction<G extends IContextActionCoreInput<any, any>>
                             : [shortcutBinding]
                         : undefined,
                 }) as IMenuItem;
-            },
+            }) as IContextMenuItemGetter,
         };
-    };
+    }) as any;
 }

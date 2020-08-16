@@ -9,6 +9,8 @@ import {IViewStack} from "../../../../stacks/_types/IViewStack";
 import {IKeyHandlerStack} from "../../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {openUI} from "../../../../context/openUI/openUI";
 import {Menu} from "../../Menu";
+import {IUndoRedoFacility} from "../../../../undoRedo/_types/IUndoRedoFacility";
+import {IIOContext} from "../../../../context/_types/IIOContext";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
@@ -19,7 +21,7 @@ import {Menu} from "../../Menu";
  */
 export function setupContextMenuHandler(
     menu: IMenu,
-    ioContext: {panes: {menu: IViewStack}; keyHandler: IKeyHandlerStack},
+    ioContext: IIOContext,
     {
         useContextItemKeyHandlers = true,
         isOpenMenuButton = e => e.is("tab"),
@@ -54,21 +56,23 @@ export function setupContextMenuHandler(
 
             // Cache the context data for subsequent key presses
             if (!contextData) {
-                const items = getContextMenuItems(menu.getAllSelected(), () =>
+                const items = getContextMenuItems(menu.getAllSelected(), ioContext, () =>
                     contextData?.close?.()
                 );
                 const emitter = keyHandlerAction.get(items);
                 contextData = {items, emitter};
             }
 
-            // Forward events to
-            if (useContextItemKeyHandlers && (await contextData.emitter.emit(e))) return;
+            // Forward events to context items
+            if (useContextItemKeyHandlers && (await contextData.emitter.emit(e)))
+                return true;
 
             // Open the menu if requested
             if (isMenuOpenEvent) {
-                contextData.close = openUI(ioContext, {
-                    menu: new Menu(contextData.items),
-                });
+                if (contextData.items.length > 0)
+                    contextData.close = openUI(ioContext, {
+                        menu: new Menu(contextData.items),
+                    });
                 return true;
             }
         },

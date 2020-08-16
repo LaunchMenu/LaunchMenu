@@ -2,14 +2,25 @@ import {IMenuItem} from "../items/_types/IMenuItem";
 import {IAction} from "../actions/_types/IAction";
 import {getContextCategory} from "../categories/createContextCategory";
 import {getCategoryAction} from "../actions/types/category/getCategoryAction";
+import {IActionBinding} from "../actions/_types/IActionBinding";
+import {IContextMenuItemGetter} from "../actions/contextAction/_types/IContextMenuItemGetter";
+import {IIOContext} from "../../context/_types/IIOContext";
 
 /**
  * Retrieves the context items for a context menu for a given item selection
  * @param items The item selection to get the menu for
+ * @param ioContext The context that context items can use
  * @param close A function that can be used to close the menu that will be created
+ * @param includeAction The function to determine whether or not to include an action in the menu, defaults to actions with the tag "context"
  * @returns The items
  */
-export function getContextMenuItems(items: IMenuItem[], close: () => void): IMenuItem[] {
+export function getContextMenuItems(
+    items: IMenuItem[],
+    ioContext: IIOContext,
+    close: () => void,
+    includeAction: (binding: IActionBinding<any>) => boolean = binding =>
+        binding.tags.includes("context")
+): IMenuItem[] {
     const count = items.length;
     const foundActions = [] as {
         action: IAction<any, any>;
@@ -20,7 +31,7 @@ export function getContextMenuItems(items: IMenuItem[], close: () => void): IMen
     items.forEach(item => {
         item.actionBindings.forEach(binding => {
             // Make sure the item should show in the menu
-            if (!binding.tags.includes("context")) return;
+            if (!includeAction(binding)) return;
 
             // Go through all actions this binding responds to
             let itemAction = binding.action;
@@ -43,24 +54,26 @@ export function getContextMenuItems(items: IMenuItem[], close: () => void): IMen
     });
 
     // Get all the menu items
-    const foundActionsWithData = foundActions
-        .map(foundAction => {
-            const actionItem = foundAction.action
-                .get(foundAction.items)
-                .getMenuItem?.(close) as IMenuItem;
-            if (foundAction.items.length < count)
-                actionItem.actionBindings.push(
-                    getCategoryAction.createBinding(
-                        getContextCategory(foundAction.items.length, count)
-                    )
-                );
-            return {
+    const foundActionsWithData = foundActions.flatMap(foundAction => {
+        const actionItem = (foundAction.action.get(foundAction.items)?.getMenuItem as
+            | IContextMenuItemGetter
+            | undefined)?.(ioContext, close) as IMenuItem | undefined;
+        if (!actionItem) return [];
+
+        if (foundAction.items.length < count)
+            actionItem.actionBindings.push(
+                getCategoryAction.createBinding(
+                    getContextCategory(foundAction.items.length, count)
+                )
+            );
+        return [
+            {
                 ...foundAction,
                 actionItem,
                 childHitCount: 0,
-            };
-        })
-        .filter(({actionItem}) => actionItem);
+            },
+        ];
+    });
 
     // Set the child hit counts
     foundActionsWithData.forEach(({action, items: actionItems}) => {
