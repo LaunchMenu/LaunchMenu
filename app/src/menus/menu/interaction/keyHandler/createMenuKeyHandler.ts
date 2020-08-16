@@ -9,7 +9,7 @@ import {handleDeselectInput} from "./handleDeselectInput";
 import {handleContextInput} from "./handleContextInput";
 import {IKeyHandlerStack} from "../../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {IViewStack} from "../../../../stacks/_types/IViewStack";
-import {IPartialIOContext} from "../../../../context/_types/IIOContext";
+import {IPartialIOContext, IIOContext} from "../../../../context/_types/IIOContext";
 import {setupItemKeyListenerHandler} from "./setupItemKeyListenerHandler";
 import {setupContextMenuHandler} from "./setupContextMenuHandler";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
@@ -24,11 +24,7 @@ import {IUndoRedoFacility} from "../../../../undoRedo/_types/IUndoRedoFacility";
  */
 export function createMenuKeyHandler(
     menu: IMenu,
-    ioContext: {
-        panes: {menu: IViewStack; field: IViewStack};
-        keyHandler: IKeyHandlerStack;
-        undoRedo: IUndoRedoFacility;
-    } & IPartialIOContext,
+    ioContext: IIOContext,
     {
         onExit,
         useItemKeyHandlers = true,

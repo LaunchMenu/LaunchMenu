@@ -15,6 +15,8 @@ import {Field, Loader} from "model-react";
 import {Command} from "../undoRedo/Command";
 import {createMenuKeyHandler} from "../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {wait} from "../_tests/wait.helper";
+import {getContextMenuItems} from "../menus/utils/getContextMenu";
+import {CompoundCommand} from "../undoRedo/commands/CompoundCommand";
 
 const someField = new Field("oranges");
 class SetFieldCmd extends Command {
@@ -48,18 +50,64 @@ const alertAction = new Action(
         {name: "Alert all"}
     )
 );
+const mySubMenu = Symbol("my sub menu");
 const alertHandlerAction = alertAction.createHandler(
     createContextAction(
-        (data: {message: string}[]) => {
+        (data: {message: string}[], items) => {
             const text = "(" + data.map(({message}) => message).join(",") + ")";
             return {
                 message: text,
-                execute: () => alert(text),
+                execute: (context: IOContext, closeParentMenu?: () => void) => {
+                    let closeMenu = () => {};
+                    const closeAll = () => {
+                        closeMenu?.();
+                        closeParentMenu?.();
+                    };
+
+                    const subItems = getContextMenuItems(
+                        items.flat(),
+                        context,
+                        closeAll,
+                        binding => binding.tags.includes(mySubMenu)
+                    );
+
+                    const defaultExecuteItem = createStandardMenuItem({
+                        name: "Sub Alert",
+                        onExecute: () => {
+                            alert(text);
+                            closeAll();
+                        },
+                    });
+
+                    closeMenu = context.openUI({
+                        menu: new Menu([defaultExecuteItem, ...subItems]),
+                    });
+                },
             };
         },
-        {name: "Sub Alert", shortcut: ["ctrl", "q"]}
+        {name: "Sub Alert Menu", shortcut: ["ctrl", "q"], closeOnExecute: false}
     )
 );
+
+// Create some actions for in the submenu
+const addOneToFieldAction = new Action(
+    createContextAction(
+        (data: {field: Field<string>}[]) => {
+            return {
+                execute: () =>
+                    new CompoundCommand(
+                        {name: "Add one to field"},
+                        data.map(
+                            ({field}) => new SetFieldCmd(field, field.get(null) + "1")
+                        )
+                    ),
+            };
+        },
+        {name: "Add one to field"}
+    ),
+    [mySubMenu]
+);
+addOneToFieldAction.get([]).execute();
 
 // Create stacks and some menu
 const menuViewStack = new ViewStack();
@@ -111,7 +159,10 @@ const menu = new Menu([
     createStandardMenuItem({
         name: "Poof (sub alert)",
         onExecute: () => new SetFieldCmd(someField, "Poof"),
-        actionBindings: [alertHandlerAction.createBinding({message: "Poof"})],
+        actionBindings: [
+            alertHandlerAction.createBinding({message: "Poof"}),
+            addOneToFieldAction.createBinding({field: someField}),
+        ],
     }),
     createStandardMenuItem({
         name: "Wow",

@@ -51,15 +51,15 @@ export class Action<I, O> implements IAction<I, O> {
      * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
      * @returns The created action handler
      */
-    public createHandler<T>(
-        handlerCore: IActionCore<T, I>,
+    public createHandler<T, AI extends I>(
+        handlerCore: IActionCore<T, AI>,
         defaultTags: ITagsOverride = tags => tags
-    ): IAction<T, I> {
+    ): IAction<T, AI> {
         return new Action(
             handlerCore,
             defaultTags instanceof Function ? defaultTags(this.defaultTags) : defaultTags,
             this
-        );
+        ) as any;
     }
 
     /**

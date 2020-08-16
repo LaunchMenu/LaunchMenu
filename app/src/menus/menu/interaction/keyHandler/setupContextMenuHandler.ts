@@ -10,6 +10,7 @@ import {IKeyHandlerStack} from "../../../../stacks/keyHandlerStack/_types/IKeyHa
 import {openUI} from "../../../../context/openUI/openUI";
 import {Menu} from "../../Menu";
 import {IUndoRedoFacility} from "../../../../undoRedo/_types/IUndoRedoFacility";
+import {IIOContext} from "../../../../context/_types/IIOContext";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
@@ -20,11 +21,7 @@ import {IUndoRedoFacility} from "../../../../undoRedo/_types/IUndoRedoFacility";
  */
 export function setupContextMenuHandler(
     menu: IMenu,
-    ioContext: {
-        panes: {menu: IViewStack; field: IViewStack};
-        keyHandler: IKeyHandlerStack;
-        undoRedo: IUndoRedoFacility;
-    },
+    ioContext: IIOContext,
     {
         useContextItemKeyHandlers = true,
         isOpenMenuButton = e => e.is("tab"),
@@ -59,7 +56,7 @@ export function setupContextMenuHandler(
 
             // Cache the context data for subsequent key presses
             if (!contextData) {
-                const items = getContextMenuItems(menu.getAllSelected(), () =>
+                const items = getContextMenuItems(menu.getAllSelected(), ioContext, () =>
                     contextData?.close?.()
                 );
                 const emitter = keyHandlerAction.get(items);
