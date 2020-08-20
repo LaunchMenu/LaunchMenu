@@ -149,6 +149,56 @@ describe("PrioritizedMenu", () => {
             expect(onMenuChange.mock.calls[0]).toEqual([menu, true]);
         });
     });
+    describe("Menu.getCategories", () => {
+        const someCategory: ICategory = {
+            name: "Bob",
+            description: "some category for Bob",
+            item: createMenuItem(),
+        };
+        const someCategory2: ICategory = {
+            name: "John",
+            description: "some category for John",
+            item: createMenuItem(),
+        };
+        const items = [
+            createPrioritizedMenuItem({priority: 5}),
+            createPrioritizedMenuItem({priority: 1}),
+            createPrioritizedMenuItem({priority: 3, category: someCategory}),
+            createPrioritizedMenuItem({priority: 5, category: someCategory}),
+            createPrioritizedMenuItem({priority: 6, category: someCategory2}),
+        ];
+        it("Correctly retrieves the categories", async () => {
+            const menu = createMenu();
+            items.forEach(item => menu.addItem(item));
+            await wait(20);
+            expect(menu.getCategories()).toEqual([
+                {category: undefined, items: [items[0].item, items[1].item]},
+                {category: someCategory2, items: [items[4].item]},
+                {category: someCategory, items: [items[3].item, items[2].item]},
+            ]);
+        });
+        it("Can be subscribed to", async () => {
+            const menu = createMenu();
+            items.forEach(item => menu.addItem(item));
+            await wait(20);
+
+            const cb = jest.fn();
+            new Observer(h => menu.getCategories(h)).listen(cb);
+
+            const newItem = createPrioritizedMenuItem({
+                priority: 4,
+                category: someCategory2,
+            });
+            menu.addItem(newItem);
+            await wait(20);
+            expect(cb.mock.calls.length).toBe(1);
+            expect(cb.mock.calls[0][0]).toEqual([
+                {category: undefined, items: [items[0].item, items[1].item]},
+                {category: someCategory2, items: [items[4].item, newItem.item]},
+                {category: someCategory, items: [items[3].item, items[2].item]},
+            ]);
+        });
+    });
     describe("PrioritizedMenu.addItems", () => {
         it("Can add items from generators", async () => {
             const menu = createMenu();

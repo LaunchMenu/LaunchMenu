@@ -3,7 +3,7 @@ import {Box} from "../../styling/box/Box";
 import {ITextFieldViewProps} from "./_types/ITextFieldViewProps";
 import {useTheme} from "../../styling/theming/ThemeContext";
 import {SyntaxField} from "./syntaxField/SyntaxField";
-import {textLexer} from "../../textFields/syntax/TextLexer";
+import {plaintextLexer} from "../../textFields/syntax/plaintextLexer";
 import {ThemeIcon} from "../ThemeIcon";
 
 const iconSize = 60;
@@ -14,7 +14,7 @@ const iconSize = 60;
 export const TextFieldView: FC<ITextFieldViewProps> = ({
     icon,
     field,
-    highlighter = textLexer,
+    highlighter = plaintextLexer,
     setErrors,
     highlightErrors,
     ...rest

@@ -8,6 +8,7 @@ import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
 import {isItemSelectable} from "../items/isItemSelectable";
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
+import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 
 /**
  * A menu class to control menu items and their state,
@@ -18,10 +19,11 @@ export class Menu {
     protected destroyed = new Field(false);
 
     // Tracking menu items
-    protected categories = [{items: [], category: undefined}] as {
+    protected rawCategories = [{items: [], category: undefined}] as {
         items: IMenuItem[];
         category: ICategory | undefined;
     }[];
+    protected categories = new Field([] as IMenuCategoryData[]);
     protected items = new Field([] as IMenuItem[]); // Flat structure containing items (as IMenuItems) and categories headers (as IMenuItems)
     protected cursor = new Field(null as IMenuItem | null);
     protected selected = new Field([] as IMenuItem[]);
@@ -66,7 +68,7 @@ export class Menu {
      * @param index The index to add the item at within its category (defaults to the last index; Infinity)
      */
     public addItem(item: IMenuItem, index: number = Infinity): void {
-        const added = this.addItemWithoutUpdate(item, index);
+        const added = this.addItemWithoutUpdate(item, this.rawCategories, index);
         this.updateItemsList();
 
         // Call the menu change listener
@@ -78,7 +80,9 @@ export class Menu {
      * @param items The generator to get items from
      */
     public addItems(items: IMenuItem[]): void {
-        const addedItems = items.filter(item => this.addItemWithoutUpdate(item));
+        const addedItems = items.filter(item =>
+            this.addItemWithoutUpdate(item, this.rawCategories)
+        );
         this.updateItemsList();
 
         // Call the menu change listener
@@ -88,18 +92,23 @@ export class Menu {
     /**
      * Adds an item to the menu without updating the item list
      * @param item The item to add
+     * @param destination The list to add the item to
      * @param index The index to add the item at within its category (defaults to the last index; Infinity)
      * @returns Added whether the item was added
      */
-    protected addItemWithoutUpdate(item: IMenuItem, index: number = Infinity): boolean {
+    protected addItemWithoutUpdate(
+        item: IMenuItem,
+        destination: IMenuCategoryData[],
+        index: number = Infinity
+    ): boolean {
         const category = this.categoryConfig.getCategory(item);
-        const categoryIndex = this.categories.findIndex(({category: c}) => c == category);
+        const categoryIndex = destination.findIndex(({category: c}) => c == category);
 
         // Add the item to a new or existing category
         if (categoryIndex == -1) {
-            this.categories.push({category, items: [item]});
+            destination.push({category, items: [item]});
         } else {
-            const {items} = this.categories[categoryIndex];
+            const {items} = destination[categoryIndex];
             if (items.length >= this.categoryConfig.maxCategoryItemCount) return false;
             items.splice(index, 0, item);
         }
@@ -126,17 +135,17 @@ export class Menu {
 
         items.forEach(item => {
             const category = this.categoryConfig.getCategory(item);
-            const categoryIndex = this.categories.findIndex(
+            const categoryIndex = this.rawCategories.findIndex(
                 ({category: c}) => c == category
             );
 
             // Add the item to a new or existing category
             if (categoryIndex != -1) {
-                const {items} = this.categories[categoryIndex];
+                const {items} = this.rawCategories[categoryIndex];
                 const index = items.indexOf(item);
                 if (index != -1) {
                     items.splice(index, 1);
-                    if (items.length == 0) this.categories.splice(categoryIndex, 1);
+                    if (items.length == 0) this.rawCategories.splice(categoryIndex, 1);
                     removed.push(item);
 
                     // Make sure the item isn't the selected and or cursor item
@@ -159,19 +168,32 @@ export class Menu {
      * Synchronizes the item list to be up to date with the categories data
      */
     protected updateItemsList(): void {
-        const order = this.categoryConfig.sortCategories(this.categories);
+        const order = this.categoryConfig.sortCategories(this.rawCategories);
 
         // Combine the items and categories into a single list
         const items = [] as IMenuItem[];
+        const categories = [] as IMenuCategoryData[];
         order.forEach(category => {
-            const categoryData = this.categories.find(({category: c}) => c == category);
-            if (categoryData)
+            const categoryData = this.rawCategories.find(
+                ({category: c}) => c == category
+            );
+            if (categoryData) {
+                categories.push({category, items: categoryData.items});
                 if (category) items.push(category.item, ...categoryData.items);
                 else items.push(...categoryData.items);
+            }
         });
+        this.categories.set(categories);
         this.items.set(items);
 
-        // Sets the current cursor if there isn't any yet
+        this.deselectRemovedCursor();
+    }
+
+    /**
+     * Checks whether the cursor item is still present, and deselects it if not
+     */
+    protected deselectRemovedCursor(): void {
+        const items = this.items.get(null);
         const cursor = this.cursor.get(null);
         updateCursor: if (cursor == null || !items.includes(cursor)) {
             for (let i = 0; i < items.length; i++)
@@ -240,6 +262,16 @@ export class Menu {
     public getItems(hook: IDataHook = null): IMenuItem[] {
         if (this.isDestroyed(hook)) return [];
         return this.items.get(hook);
+    }
+
+    /**
+     * Retrieves the item categories of the menu
+     * @param hook The hook to subscribe to changes
+     * @returns The categories and their items
+     */
+    public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
+        if (this.isDestroyed(hook)) return [];
+        return this.categories.get(hook);
     }
 
     /**

@@ -130,7 +130,7 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
             data.generator?.stop();
 
             // Remove all the items from this item
-            this.categories.forEach(({items}) => {
+            this.categoriesRaw.forEach(({items}) => {
                 (items.get() as (IPrioritizedMenuItem<IQuery> & {
                     source?: IMenuItem;
                 })[]).forEach(data => {

@@ -1,6 +1,8 @@
 import {IDataHook} from "model-react";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IQuery} from "./IQuery";
+import {ICategory} from "../../actions/types/category/_types/ICategory";
+import {IMenuCategoryData} from "./IMenuCategoryData";
 
 /**
  * An interface for common menu interactions
@@ -30,6 +32,13 @@ export type IMenu = {
      * @returns All items including category items in the correct sequence
      */
     getItems(hook?: IDataHook): IMenuItem[];
+
+    /**
+     * Retrieves all categories of the menu
+     * @param hook The hook to subscribe to changes
+     * @returns All categories and the items that belong to those categories, in the correct sequence
+     */
+    getCategories(hook?: IDataHook): IMenuCategoryData[];
 
     /**
      * Retrieves the currently selected items of the menu

@@ -4,6 +4,8 @@ import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangeAction";
+import {Observer} from "../../../utils/modelReact/Observer";
+import {wait} from "../../../_tests/wait.helper";
 
 describe("Menu", () => {
     describe("new Menu", () => {
@@ -129,6 +131,57 @@ describe("Menu", () => {
             const menu2 = new Menu([...items, item2]);
             expect(onMenuChange2.mock.calls.length).toBe(1);
             expect(onMenuChange2.mock.calls[0]).toEqual([menu2, true]);
+        });
+    });
+
+    describe("Menu.getCategories", () => {
+        const someCategory: ICategory = {
+            name: "Bob",
+            description: "some category for Bob",
+            item: createMenuItem(),
+        };
+        const someCategory2: ICategory = {
+            name: "John",
+            description: "some category for John",
+            item: createMenuItem(),
+        };
+        const items = [
+            createMenuItem(),
+            createMenuItem(),
+            createMenuItem(someCategory),
+            createMenuItem(someCategory2),
+        ];
+        it("Correctly retrieves the categories", () => {
+            const menu = new Menu();
+            menu.addItem(items[0]);
+            menu.addItem(items[1]);
+            menu.addItem(items[2]);
+            menu.addItem(items[3]);
+            expect(menu.getCategories()).toEqual([
+                {category: undefined, items: [items[0], items[1]]},
+                {category: someCategory, items: [items[2]]},
+                {category: someCategory2, items: [items[3]]},
+            ]);
+        });
+        it("Can be subscribed to", async () => {
+            const menu = new Menu();
+            menu.addItem(items[0]);
+            menu.addItem(items[1]);
+            menu.addItem(items[2]);
+            menu.addItem(items[3]);
+
+            const cb = jest.fn();
+            new Observer(h => menu.getCategories(h)).listen(cb);
+
+            const newItem = createMenuItem(someCategory2);
+            menu.addItem(newItem);
+            await wait(0);
+            expect(cb.mock.calls.length).toBe(1);
+            expect(cb.mock.calls[0][0]).toEqual([
+                {category: undefined, items: [items[0], items[1]]},
+                {category: someCategory, items: [items[2]]},
+                {category: someCategory2, items: [items[3], newItem]},
+            ]);
         });
     });
 

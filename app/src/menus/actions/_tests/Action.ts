@@ -40,40 +40,7 @@ describe("Action", () => {
             const binding = action.createBinding(2);
             expect(binding.action).toEqual(action);
             expect(binding.data).toEqual(2);
-            expect(binding.tags).toEqual([]);
-
-            const binding2 = action.createBinding(12, ["hoi", "hi"]);
-            expect(binding2.action).toEqual(action);
-            expect(binding2.data).toEqual(12);
-            expect(binding2.tags).toEqual(["hoi", "hi"]);
-        });
-        it("Inherits bindings from the action", () => {
-            const action = new Action(
-                (input: number[]) => {
-                    return 3;
-                },
-                ["potatoes"]
-            );
-            const binding = action.createBinding(2);
-            expect(binding.tags).toEqual(["potatoes"]);
-
-            const binding2 = action.createBinding(2, ["oranges"]);
-            expect(binding2.tags).toEqual(["oranges"]);
-
-            const binding3 = action.createBinding(2, tags => [...tags, "oranges"]);
-            expect(binding3.tags).toEqual(["potatoes", "oranges"]);
-        });
-    });
-    describe("Action.createBinding", () => {
-        // Notice that these action cores are only for testing and don't make any sense
-        it("Creates a binding to this action", () => {
-            const action = new Action((input: number[]) => {
-                return 3;
-            });
-            const binding = action.createBinding(2);
-            expect(binding.action).toEqual(action);
-            expect(binding.data).toEqual(2);
-            expect(binding.tags).toEqual([]);
+            expect(binding.tags).toEqual(["context"]);
 
             const binding2 = action.createBinding(12, ["hoi", "hi"]);
             expect(binding2.action).toEqual(action);

@@ -14,6 +14,7 @@ import {GeneratorStreamExtractor} from "../../utils/generator/GeneratorStreamExt
 import {sortPrioritizedCategories} from "./SortPrioritizedCategories";
 import {IMenu} from "./_types/IMenu";
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
+import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 
 type CategoryData<T> = {
     items: SortedList<IPrioritizedMenuItem<T>>;
@@ -44,12 +45,13 @@ export class PrioritizedMenu<T = void> {
     protected generators: GeneratorStreamExtractor<IPrioritizedMenuItem<T>>[] = [];
 
     // Tracking menu items
-    protected categories = [
+    protected categoriesRaw = [
         {
             items: createSortedList(this),
             category: undefined,
         },
     ] as CategoryData<T>[];
+    protected categories = new Field([] as IMenuCategoryData[]);
     protected items = new Field([] as IMenuItem[]); // Flat structure containing items (as IMenuItems) and categories headers (as IMenuItems)
     protected cursor = new Field(null as IMenuItem | null);
     protected selected = new Field([] as IMenuItem[]);
@@ -76,11 +78,13 @@ export class PrioritizedMenu<T = void> {
     public addItem(item: IPrioritizedMenuItem<T>): void {
         if (item.priority == 0) return;
         const category = this.categoryConfig.getCategory(item);
-        const categoryIndex = this.categories.findIndex(({category: c}) => c == category);
+        const categoryIndex = this.categoriesRaw.findIndex(
+            ({category: c}) => c == category
+        );
 
         // Add the item to a new or existing category
         if (categoryIndex == -1) {
-            this.categories.push({
+            this.categoriesRaw.push({
                 category,
                 items: createSortedList(this),
                 batch: {
@@ -89,7 +93,7 @@ export class PrioritizedMenu<T = void> {
                 },
             });
         } else {
-            const categoryData = this.categories[categoryIndex];
+            const categoryData = this.categoriesRaw[categoryIndex];
             if (!categoryData.batch) categoryData.batch = {add: [], remove: []};
 
             // If the batch contains an outdated version, remove it
@@ -140,11 +144,13 @@ export class PrioritizedMenu<T = void> {
      */
     public removeItem(item: IPrioritizedMenuItem<T> & {id: string | number}): void {
         const category = this.categoryConfig.getCategory(item);
-        const categoryIndex = this.categories.findIndex(({category: c}) => c == category);
+        const categoryIndex = this.categoriesRaw.findIndex(
+            ({category: c}) => c == category
+        );
 
         // Add the item to a new or existing category
         if (categoryIndex == -1) {
-            this.categories.push({
+            this.categoriesRaw.push({
                 category,
                 items: createSortedList(this),
                 batch: {
@@ -153,7 +159,7 @@ export class PrioritizedMenu<T = void> {
                 },
             });
         } else {
-            const categoryData = this.categories[categoryIndex];
+            const categoryData = this.categoriesRaw[categoryIndex];
             if (!categoryData.batch) categoryData.batch = {add: [], remove: []};
             categoryData.batch.remove.push(item);
         }
@@ -168,7 +174,7 @@ export class PrioritizedMenu<T = void> {
      * @returns A promise that resolves once updated
      */
     public async updateContents(data: T): Promise<void> {
-        const promises = this.categories.map(async categoryData => {
+        const promises = this.categoriesRaw.map(async categoryData => {
             const items = categoryData.items.get();
             const newItems = [] as IPrioritizedMenuItem<T>[];
             for (let i = 0; i < items.length; i++) {
@@ -203,7 +209,7 @@ export class PrioritizedMenu<T = void> {
         if (!this.batchTimeout) return;
         clearTimeout(this.batchTimeout);
         this.batchTimeout = undefined;
-        this.categories = this.categories.filter(categoryData => {
+        this.categoriesRaw = this.categoriesRaw.filter(categoryData => {
             if (categoryData.batch) {
                 // Reset the category if specified
                 if (categoryData.batch.clear) categoryData.items = createSortedList(this);
@@ -233,17 +239,23 @@ export class PrioritizedMenu<T = void> {
      * Synchronizes the item list to be up to date with the categories data
      */
     protected updateItemsList(): void {
-        const order = this.categoryConfig.sortCategories(this.categories);
+        const order = this.categoryConfig.sortCategories(this.categoriesRaw);
 
         // Combine the items and categories into a single list
         const items = [] as IMenuItem[];
+        const categories = [] as IMenuCategoryData[];
         order.forEach(category => {
-            const categoryData = this.categories.find(({category: c}) => c == category);
+            const categoryData = this.categoriesRaw.find(
+                ({category: c}) => c == category
+            );
             const categoryItems = categoryData?.items.get().map(({item}) => item);
-            if (categoryItems)
+            if (categoryItems) {
+                categories.push({category, items: categoryItems});
                 if (category) items.push(category.item, ...categoryItems);
                 else items.push(...categoryItems);
+            }
         });
+        this.categories.set(categories);
         this.items.set(items);
         this.deselectRemovedItems();
     }
@@ -333,6 +345,18 @@ export class PrioritizedMenu<T = void> {
         if (this.generators.length > 0 && hook && "markIsLoading" in hook)
             hook.markIsLoading?.();
         return this.items.get(hook);
+    }
+
+    /**
+     * Retrieves the item categories of the menu
+     * @param hook The hook to subscribe to changes
+     * @returns The categories and their items
+     */
+    public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
+        if (this.isDestroyed(hook)) return [];
+        if (this.generators.length > 0 && hook && "markIsLoading" in hook)
+            hook.markIsLoading?.();
+        return this.categories.get(hook);
     }
 
     /**
