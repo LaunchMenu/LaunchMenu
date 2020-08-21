@@ -2,6 +2,7 @@ import {ITagsOverride} from "./ITagsOverride";
 import {IActionCore} from "./IActionCore";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IActionBinding} from "./IActionBinding";
+import {IActionMultiResult} from "./IActionMultiResult";
 
 export type IAction<I, O> = {
     /**
@@ -15,10 +16,10 @@ export type IAction<I, O> = {
      * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
      * @returns The created action handler
      */
-    createHandler<T>(
-        handlerCore: IActionCore<T, I>,
+    createHandler<T, O extends AI | IActionMultiResult<AI>, AI extends I>(
+        handlerCore: IActionCore<T, O>,
         defaultTags?: ITagsOverride
-    ): IAction<T, I>;
+    ): IAction<T, O>;
 
     /**
      * Creates a binding for this action
