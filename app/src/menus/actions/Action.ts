@@ -3,7 +3,16 @@ import {IActionCore} from "./_types/IActionCore";
 import {ITagsOverride} from "./_types/ITagsOverride";
 import {IActionBinding} from "./_types/IActionBinding";
 import {IMenuItem} from "../items/_types/IMenuItem";
+import {IActionParent} from "./_types/IActionParent";
+import {IActionMultiResult} from "./_types/IActionMultiResult";
 
+/** A symbol that can act as a key in a core return object to pass multiple results */
+export const results = Symbol("Multiple results");
+
+/** A symbol that can act as a key in a core return object to specify where the results came from */
+export const sources = Symbol("Multiple result sources");
+
+/** The action data type used by the action getter */
 export type IActionData = {action: IAction<any, any>; data: any[]; items: IMenuItem[][]};
 
 /**
@@ -25,7 +34,7 @@ export class Action<I, O> implements IAction<I, O> {
     public constructor(
         core: IActionCore<I, O>,
         defaultTags: any[],
-        parent: IAction<O, any>
+        parent: IActionParent<O>
     );
 
     /**
@@ -37,7 +46,7 @@ export class Action<I, O> implements IAction<I, O> {
     public constructor(
         core: IActionCore<I, O>,
         defaultTags?: any[],
-        parent?: IAction<O, any>
+        parent?: IActionParent<O>
     ) {
         this.core = core;
         this.defaultTags = defaultTags || [];
@@ -51,14 +60,14 @@ export class Action<I, O> implements IAction<I, O> {
      * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
      * @returns The created action handler
      */
-    public createHandler<T, AI extends I>(
-        handlerCore: IActionCore<T, AI>,
+    public createHandler<T, P extends I | IActionMultiResult<AI>, AI extends I>(
+        handlerCore: IActionCore<T, P>,
         defaultTags: ITagsOverride = tags => tags
-    ): IAction<T, AI> {
+    ): IAction<T, P> {
         return new Action(
             handlerCore,
             defaultTags instanceof Function ? defaultTags(this.defaultTags) : defaultTags,
-            this
+            this as any
         ) as any;
     }
 
@@ -122,6 +131,61 @@ export class Action<I, O> implements IAction<I, O> {
     }
 
     /**
+     * Handlers the result of applying an action
+     * @param actionsData The action data to store the results in
+     * @param action The action that was executed
+     * @param output The output of the execution
+     * @param sourceItems The source items that were executed
+     */
+    protected addActionResult(
+        actionsData: IActionData[],
+        action: IAction<any, any>,
+        output: any,
+        sourceItems: IMenuItem[][]
+    ): void {
+        // Handle multiple results being returned
+        if (typeof output == "object" && results in output) {
+            const outputs = output[results] as any[];
+            let items = output[sources] as IMenuItem[][];
+            if (!items) {
+                if (outputs.length == sourceItems.length) {
+                    items = sourceItems;
+                } else if (outputs.length == 1) {
+                    items = [sourceItems.flat()];
+                } else {
+                    throw Error(
+                        action.toString() +
+                            " returned multiple results that don't one to one map to their sources. Therefore sources mapping should've been included: {[sources]: MenuItem[][]}"
+                    );
+                }
+            }
+            if (items.length != outputs.length) {
+                throw Error(
+                    action.toString() + " did not return the correct number of sources"
+                );
+            }
+            outputs.forEach((output, i) => {
+                this.addActionInput(
+                    actionsData,
+                    action.ancestors[action.ancestors.length - 1],
+                    output,
+                    items[i]
+                );
+            });
+        }
+        // Handle one result being returned
+        else {
+            const items = sourceItems.flat();
+            this.addActionInput(
+                actionsData,
+                action.ancestors[action.ancestors.length - 1],
+                output,
+                items
+            );
+        }
+    }
+
+    /**
      * Retrieves the action data for a set of items, in order to be executed
      * @param items The items to get the data for
      * @returns The action execution functions
@@ -171,16 +235,7 @@ export class Action<I, O> implements IAction<I, O> {
                         actionsData.splice(i, 1);
 
                         const output = action.get(data, sourceItems);
-                        const items = sourceItems.reduce(
-                            (allItems, items) => allItems.concat(items),
-                            [] as IMenuItem[]
-                        );
-                        this.addActionInput(
-                            actionsData,
-                            action.ancestors[d - 1],
-                            output,
-                            items
-                        );
+                        this.addActionResult(actionsData, action, output, sourceItems);
                     }
                 }
             }

@@ -1,4 +1,5 @@
 import {IMenuItem} from "../../items/_types/IMenuItem";
+import {results} from "../Action";
 
 /**
  * The core transformer of an action
