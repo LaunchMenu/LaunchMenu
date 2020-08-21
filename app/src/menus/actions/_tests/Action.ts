@@ -1,4 +1,4 @@
-import {Action} from "../Action";
+import {Action, results, sources} from "../Action";
 import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
 import {IMenuItem} from "../../items/_types/IMenuItem";
@@ -172,51 +172,125 @@ describe("Action", () => {
                     ])
                 ).toBe(12);
             });
-            it("Properly works for sub handlers", () => {
-                const stringLengthHandler = action.createHandler((inputs: string[]) => {
-                    return inputs.reduce((cur, text) => cur + text.length, 0) + 1;
-                });
-                const boolStringLengthSubHandler = stringLengthHandler.createHandler(
-                    (inputs: boolean[]) => {
-                        return inputs.reduce((cur, bool) => cur + bool, "yes"); // casts boolean to "true" or "false" and adds all values to one string, starting with "yes"
-                    }
-                );
-                expect(
-                    action.get([
-                        createItem(stringLengthHandler.createBinding("yes")),
-                        createItem(action.createBinding(2)),
-                        createItem(boolStringLengthSubHandler.createBinding(false)),
-                        createItem(action.createBinding(4)),
-                        createItem(stringLengthHandler.createBinding("no")),
-                        createItem(boolStringLengthSubHandler.createBinding(true)),
-                        createItem(),
-                    ])
-                ).toBe(24);
+            describe("Properly works for sub handlers", () => {
+                it("Correctly works for handlers returning 1 result", () => {
+                    const stringLengthHandler = action.createHandler(
+                        (inputs: string[]) => {
+                            return inputs.reduce((cur, text) => cur + text.length, 0) + 1;
+                        }
+                    );
+                    const boolStringLengthSubHandler = stringLengthHandler.createHandler(
+                        (inputs: boolean[]) => {
+                            return inputs.reduce((cur, bool) => cur + bool, "yes"); // casts boolean to "true" or "false" and adds all values to one string, starting with "yes"
+                        }
+                    );
+                    expect(
+                        action.get([
+                            createItem(stringLengthHandler.createBinding("yes")),
+                            createItem(action.createBinding(2)),
+                            createItem(boolStringLengthSubHandler.createBinding(false)),
+                            createItem(action.createBinding(4)),
+                            createItem(stringLengthHandler.createBinding("no")),
+                            createItem(boolStringLengthSubHandler.createBinding(true)),
+                            createItem(),
+                        ])
+                    ).toBe(24);
 
-                // Even more extensive/elaborate test
-                const mulHandler = action.createHandler((inputs: number[]) =>
-                    inputs.reduce((cur, data) => cur * data, 1)
-                );
-                const mul2SubHandler = mulHandler.createHandler((inputs: number[]) =>
-                    inputs.reduce((cur, data) => cur + 2 * data, 0)
-                );
-                const mul3SubHandler = mulHandler.createHandler((inputs: number[]) =>
-                    inputs.reduce((cur, data) => cur + 3 * data, 0)
-                );
-                expect(
-                    action.get([
-                        createItem(stringLengthHandler.createBinding("yes")),
+                    // Even more extensive/elaborate test
+                    const mulHandler = action.createHandler((inputs: number[]) =>
+                        inputs.reduce((cur, data) => cur * data, 1)
+                    );
+                    const mul2SubHandler = mulHandler.createHandler((inputs: number[]) =>
+                        inputs.reduce((cur, data) => cur + 2 * data, 0)
+                    );
+                    const mul3SubHandler = mulHandler.createHandler((inputs: number[]) =>
+                        inputs.reduce((cur, data) => cur + 3 * data, 0)
+                    );
+                    expect(
+                        action.get([
+                            createItem(stringLengthHandler.createBinding("yes")),
+                            createItem(action.createBinding(2)),
+                            createItem(boolStringLengthSubHandler.createBinding(false)),
+                            createItem(action.createBinding(4)),
+                            createItem(stringLengthHandler.createBinding("no")),
+                            createItem(boolStringLengthSubHandler.createBinding(true)),
+                            createItem(),
+                            // (2 * 2) * (3 * 5)
+                            createItem(mul2SubHandler.createBinding(2)),
+                            createItem(mul3SubHandler.createBinding(5)),
+                        ])
+                    ).toBe(84);
+                });
+                describe("Correctly works for handlers returning results symbol", () => {
+                    const createItems = (handler: IAction<string, any>) => [
+                        createItem(handler.createBinding("yes")),
                         createItem(action.createBinding(2)),
-                        createItem(boolStringLengthSubHandler.createBinding(false)),
-                        createItem(action.createBinding(4)),
-                        createItem(stringLengthHandler.createBinding("no")),
-                        createItem(boolStringLengthSubHandler.createBinding(true)),
+                        createItem(handler.createBinding("oranges")),
+                        createItem(handler.createBinding("yes")),
                         createItem(),
-                        // (2 * 2) * (3 * 5)
-                        createItem(mul2SubHandler.createBinding(2)),
-                        createItem(mul3SubHandler.createBinding(5)),
-                    ])
-                ).toBe(84);
+                    ];
+                    it("Works without sources if purely mapping", () => {
+                        const stringLengthHandler = action.createHandler(
+                            (inputs: string[]) => ({
+                                [results]: inputs.map(text => text.length + 1),
+                            })
+                        );
+                        expect(action.get(createItems(stringLengthHandler))).toBe(18);
+                    });
+                    it("Works without sources if returning 1 value", () => {
+                        const stringLengthHandler = action.createHandler(
+                            (inputs: string[]) => ({
+                                [results]: [
+                                    inputs.reduce((cur, text) => cur + text.length, 0) +
+                                        1,
+                                ],
+                            })
+                        );
+                        expect(action.get(createItems(stringLengthHandler))).toBe(16);
+                    });
+                    it("Errors without sources if returning a random number of results", () => {
+                        const stringLengthHandler = action.createHandler(
+                            (inputs: string[]) => ({
+                                [results]: [
+                                    inputs.reduce((cur, text) => cur + text.length, 0) +
+                                        1,
+                                    inputs.reduce((cur, text) => cur + text.length, 0),
+                                ],
+                            })
+                        );
+                        expect(() =>
+                            action.get(createItems(stringLengthHandler))
+                        ).toThrow();
+                    });
+                    it("Can return an arbitrary number of results if the correct number of sources is provided", () => {
+                        const stringLengthHandler = action.createHandler(
+                            (inputs: string[], items) => ({
+                                [results]: [
+                                    inputs.reduce((cur, text) => cur + text.length, 0) +
+                                        1,
+                                    inputs.reduce((cur, text) => cur + text.length, 0),
+                                ],
+                                [sources]: [items.flat(), items.flat()],
+                            })
+                        );
+                        expect(action.get(createItems(stringLengthHandler))).toBe(29);
+                    });
+                    it("Errors if the wrong number of sources is provided", () => {
+                        const stringLengthHandler = action.createHandler(
+                            (inputs: string[], items) => ({
+                                [results]: [
+                                    inputs.reduce((cur, text) => cur + text.length, 0) +
+                                        1,
+                                    inputs.reduce((cur, text) => cur + text.length, 0),
+                                ],
+                                [sources]: items,
+                            })
+                        );
+                        expect(() =>
+                            action.get(createItems(stringLengthHandler))
+                        ).toThrow();
+                    });
+                });
             });
         });
         it("Correctly works for handlers directly", () => {
