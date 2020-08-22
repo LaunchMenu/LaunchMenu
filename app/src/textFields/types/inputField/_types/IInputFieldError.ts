@@ -1,4 +1,4 @@
-import {IMenuItem} from "../../menus/items/_types/IMenuItem";
+import {IViewStackItem} from "../../../../stacks/_types/IViewStackItem";
 
 /**
  * An error for input fields that can be displayed in the menu
@@ -10,6 +10,6 @@ export type IInputFieldError = {
           message: string;
       }
     | {
-          menuItem: IMenuItem;
+          view: IViewStackItem;
       }
 );

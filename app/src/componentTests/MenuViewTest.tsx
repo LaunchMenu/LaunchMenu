@@ -2,7 +2,7 @@ import React, {FC} from "react";
 import {Menu} from "../menus/menu/Menu";
 import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
 import {createStandardMenuItem} from "../menus/items/createStandardMenuItem";
-import {ViewStack} from "../stacks/ViewStack";
+import {ViewStack} from "../stacks/viewStack/ViewStack";
 import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
 import {StackView} from "../components/stacks/StackView";
 import {Action} from "../menus/actions/Action";
@@ -17,8 +17,10 @@ import {createMenuKeyHandler} from "../menus/menu/interaction/keyHandler/createM
 import {wait} from "../_tests/wait.helper";
 import {getContextMenuItems} from "../menus/utils/getContextMenu";
 import {CompoundCommand} from "../undoRedo/commands/CompoundCommand";
+import {inputFieldExecuteHandler} from "../textFields/types/inputField/InputFieldExecuteHandler";
 
 const someField = new Field("oranges");
+const someField2 = new Field("potatoes");
 class SetFieldCmd extends Command {
     protected prev: string | undefined;
     protected text: string;
@@ -112,8 +114,18 @@ addOneToFieldAction.get([]).execute();
 // Create stacks and some menu
 const menuViewStack = new ViewStack();
 const fieldViewStack = new ViewStack();
+const contentViewStack = new ViewStack();
 const inputStack = new KeyHandlerStack(new KeyHandler(window));
-const menu = new Menu([
+const undoRedo = new UndoRedoFacility();
+const context = new IOContext({
+    panes: {menu: menuViewStack, content: contentViewStack, field: fieldViewStack},
+    keyHandler: inputStack,
+    undoRedo,
+});
+context.panes.content.push(<Box>I am a cool box yo</Box>);
+
+const menu = new Menu();
+menu.addItems([
     createStandardMenuItem({
         name: "Bob (alert)",
         onExecute: () => new SetFieldCmd(someField, "Bob"),
@@ -158,7 +170,7 @@ const menu = new Menu([
     }),
     createStandardMenuItem({
         name: "Poof (sub alert)",
-        onExecute: () => new SetFieldCmd(someField, "Poof"),
+        onExecute: () => new SetFieldCmd(someField2, "Poof"),
         actionBindings: [
             alertHandlerAction.createBinding({message: "Poof"}),
             addOneToFieldAction.createBinding({field: someField}),
@@ -166,7 +178,37 @@ const menu = new Menu([
     }),
     createStandardMenuItem({
         name: "Wow",
-        onExecute: () => new SetFieldCmd(someField, "Wow"),
+        onExecute: () => new SetFieldCmd(someField2, "Wow"),
+    }),
+    createStandardMenuItem({
+        name: "Edit field",
+        actionBindings: [
+            inputFieldExecuteHandler.createBinding({
+                field: someField,
+                context,
+                undoable: true,
+                config: {
+                    checkValidity: text => {
+                        if (text[0] == "a")
+                            return {
+                                message: "Input may not start with A",
+                                ranges: [{start: 0, end: 1}],
+                            };
+                    },
+                },
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Edit field 2",
+        actionBindings: [
+            inputFieldExecuteHandler.createBinding({
+                field: someField2,
+                context,
+                undoable: true,
+                config: {},
+            }),
+        ],
     }),
     createStandardMenuItem({
         name: "Undo",
@@ -197,13 +239,6 @@ const menu = new Menu([
         ],
     }),
 ]);
-const undoRedo = new UndoRedoFacility();
-
-const context = new IOContext({
-    panes: {menu: menuViewStack, content: menuViewStack, field: fieldViewStack},
-    keyHandler: inputStack,
-    undoRedo,
-});
 context.openUI({
     menu,
     menuHandler: createMenuKeyHandler(menu, context),
@@ -212,19 +247,26 @@ context.openUI({
 (window as any).alertAction = alertAction;
 (window as any).alertHandlerAction = alertHandlerAction;
 (window as any).createStandardMenuItem = createStandardMenuItem;
+console.log(contentViewStack);
 
 export const MenuViewTest: FC = () => {
     return (
         <Box display="flex" flexDirection="column" height="100%">
             <Box height={30}>
                 <Loader>{h => someField.get(h)}</Loader>{" "}
+                <Loader>{h => someField2.get(h)}</Loader>{" "}
                 <Loader>{h => undoRedo.getState(h)}</Loader>
             </Box>
             <Box position="relative" height={80}>
-                <StackView items={fieldViewStack} />
+                <StackView stack={fieldViewStack} />
             </Box>
-            <Box position="relative" flexGrow={1}>
-                <StackView items={menuViewStack} />
+            <Box flexGrow={1} display="flex">
+                <Box position="relative" width={200}>
+                    <StackView stack={menuViewStack} />
+                </Box>
+                <Box position="relative" flexGrow={1}>
+                    <StackView stack={contentViewStack} />
+                </Box>
             </Box>
         </Box>
     );

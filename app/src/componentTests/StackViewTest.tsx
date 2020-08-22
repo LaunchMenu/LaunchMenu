@@ -5,7 +5,7 @@ import {StackView} from "../components/stacks/StackView";
 import {Box} from "../styling/box/Box";
 import {v4 as uuid} from "uuid";
 import {FillBox} from "../components/FillBox";
-import {ViewStack} from "../stacks/ViewStack";
+import {ViewStack} from "../stacks/viewStack/ViewStack";
 
 const urls = [
     "https://images.unsplash.com/photo-1542261777448-23d2a287091c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1000&q=80",
@@ -60,7 +60,7 @@ export const StackViewTest: FC = () => {
                 height={300}
                 position={"relative"}
                 onMouseDown={e => e.preventDefault()}>
-                <StackView items={stack} />
+                <StackView stack={stack} />
             </Box>
             <button onClick={add}>add</button>
             <button onClick={remove}>remove</button>

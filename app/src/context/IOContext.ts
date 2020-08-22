@@ -1,9 +1,9 @@
 import {IIOContext} from "./_types/IIOContext";
 import {IViewStack} from "../stacks/_types/IViewStack";
 import {IKeyHandlerStack} from "../stacks/keyHandlerStack/_types/IKeyHandlerStack";
-import {ViewStack} from "../stacks/ViewStack";
+import {ViewStack} from "../stacks/viewStack/ViewStack";
 import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
-import {withPopError} from "./withPopError";
+import {withRemoveError} from "./withPopError";
 import {openUI} from "./openUI/openUI";
 import {IOpenableUI} from "./_types/IOpenableUI";
 import {IUndoRedoFacility} from "../undoRedo/_types/IUndoRedoFacility";
@@ -58,10 +58,11 @@ export class IOContext implements IIOContext {
         if (pc) {
             // Create popping functions for all stacks
             const pops = [
-                () => withPopError(pc.panes.menu.pop(this.panes.menu), "menu"),
-                () => withPopError(pc.panes.content.pop(this.panes.content), "content"),
-                () => withPopError(pc.panes.field.pop(this.panes.field), "field"),
-                () => withPopError(pc.keyHandler.pop(this.keyHandler), "key handler"),
+                () => withRemoveError(pc.panes.menu.pop(this.panes.menu), "menu"),
+                () =>
+                    withRemoveError(pc.panes.content.pop(this.panes.content), "content"),
+                () => withRemoveError(pc.panes.field.pop(this.panes.field), "field"),
+                () => withRemoveError(pc.keyHandler.pop(this.keyHandler), "key handler"),
             ];
 
             // Execute all popping functions and return the first error if any

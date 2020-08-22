@@ -43,7 +43,7 @@ export function createStandardMenuItem({
 
     return {
         view: memo(({highlight, ...props}) => (
-            <MenuItemFrame {...props} onExecute={onExecute}>
+            <MenuItemFrame {...props}>
                 <MenuItemLayout
                     icon={
                         icon &&

@@ -27,7 +27,7 @@ export type IAction<I, O> = {
      * @param tags The tags for the binding, inherited from the action if left out
      * @returns The binding
      */
-    createBinding(data: I, tags?: ITagsOverride): IActionBinding<I>;
+    createBinding<P extends I>(data: P, tags?: ITagsOverride): IActionBinding<P>;
 
     /**
      * Checks whether the item contains a direct or indirect binding for this action

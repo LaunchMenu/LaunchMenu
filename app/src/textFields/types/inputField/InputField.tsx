@@ -1,42 +1,37 @@
-import {TextField} from "./TextField";
+import React from "react";
+import {TextField} from "../../TextField";
 import {Field, IDataHook} from "model-react";
 import {IInputFieldConfig} from "./_types/IInputFieldConfig";
-import {IIOContext} from "../context/_types/IIOContext";
-import {IMenu} from "../menus/menu/_types/IMenu";
-import {AlteredMenu} from "../menus/menu/AlteredMenu";
+import {IIOContext} from "../../../context/_types/IIOContext";
 import {IInputFieldError} from "./_types/IInputFieldError";
-import {IMenuItem} from "../menus/items/_types/IMenuItem";
-import {createStandardMenuItem} from "../menus/items/createStandardMenuItem";
-import {openUI} from "../context/openUI/openUI";
-import {IHighlighter} from "./syntax/_types/IHighlighter";
-import {plaintextLexer} from "./syntax/plaintextLexer";
+import {openUI} from "../../../context/openUI/openUI";
+import {IHighlighter} from "../../syntax/_types/IHighlighter";
+import {plaintextLexer} from "../../syntax/plaintextLexer";
+import {IField} from "../../../_types/IField";
+import {ContentErrorMessage} from "../../../components/content/ContentErrorMessage";
+import {IViewStackItem} from "../../../stacks/_types/IViewStackItem";
 
 /**
  * A text field that displays error messages if the user input doesn't match a specified constraint
  */
 export class InputField<T> extends TextField {
-    protected target: Field<T>;
+    protected target: IField<T>;
     protected context: IIOContext | undefined;
-    protected menu: IMenu | undefined;
     protected config: IInputFieldConfig<T>;
 
     protected error = new Field(null as null | IInputFieldError);
-    protected errorItem?: IMenuItem;
-    protected errorMenu?: AlteredMenu;
-    protected closeErrorMenu?: () => void;
+    protected closeError?: () => void;
 
     /**
      * Creates a new input field
      * @param field The field to target
-     * @param context The context to open the menu with error in
-     * @param menu The menu to augment with the error message
+     * @param context The context to open the content with error in
      * @param config The configuration for the field
      */
     public constructor(
-        field: Field<T>,
+        field: IField<T>,
         context: IIOContext,
-        menu: IMenu,
-        config: IInputFieldConfig<T> & {checkValidity: any}
+        config: IInputFieldConfig<T> & {checkValidity: Function}
     );
 
     /**
@@ -45,29 +40,26 @@ export class InputField<T> extends TextField {
      * @param config The configuration for the field
      */
     public constructor(
-        field: Field<T>,
+        field: IField<T>,
         config: IInputFieldConfig<T> & {checkValidity?: undefined}
     );
     public constructor(
-        field: Field<T>,
+        field: IField<T>,
         context?: IIOContext | IInputFieldConfig<T>,
-        menu?: IMenu,
         config?: IInputFieldConfig<T>
     ) {
         super();
         this.target = field;
 
-        if (menu) {
+        if (config) {
             this.context = context as any;
-            this.menu = menu;
             this.config = (config || {liveUpdate: true}) as any;
-            this.setupMenu();
         } else {
             this.config = (context || {liveUpdate: true}) as any;
         }
 
         const value = this.target.get(null);
-        this.set(this.config.toString?.(value) ?? ((value as any) as string));
+        this.set(this.config.serialize?.(value) ?? ((value as any) as string));
     }
 
     /**
@@ -76,7 +68,7 @@ export class InputField<T> extends TextField {
      */
     public set(value: string): void {
         super.set(value);
-        if (this.config.liveUpdate) this.updateTarget();
+        if (this.config.liveUpdate) this.updateField();
 
         this.showError(this.config.checkValidity?.(value) || null);
     }
@@ -89,32 +81,20 @@ export class InputField<T> extends TextField {
         if (this.error.get(null) == error) return;
 
         this.error.set(error);
-        if (this.errorMenu) {
-            if (this.errorItem) this.errorMenu.removeItem(this.errorItem);
 
+        this.closeError?.();
+        if (error && this.context) {
             if (error) {
-                if ("menuItem" in error) this.errorItem = error.menuItem;
+                let errorView: IViewStackItem;
+                if ("view" in error) errorView = error.view;
                 else
-                    this.errorItem = createStandardMenuItem({
-                        name: "error",
-                        description: error.message,
-                    }); // TODO: make nice error message UI
+                    errorView = {
+                        view: <ContentErrorMessage>{error.message}</ContentErrorMessage>,
+                        transparent: true,
+                    };
 
-                this.errorMenu.insertItem(this.errorItem);
+                this.closeError = openUI(this.context, {content: errorView});
             }
-        }
-    }
-
-    /**
-     * Creates the menu to show any possible error messages in
-     */
-    protected setupMenu() {
-        if (this.menu && this.context) {
-            this.errorMenu = new AlteredMenu(this.menu);
-
-            if (this.config.openMenu)
-                this.closeErrorMenu = this.config.openMenu(this.errorMenu, this.context);
-            else this.closeErrorMenu = openUI(this.context, {menu: this.errorMenu});
         }
     }
 
@@ -122,13 +102,13 @@ export class InputField<T> extends TextField {
      * Commits the current text value to the target field, if the input value is valid
      * @returns Whether the input was valid
      */
-    public updateTarget(): boolean {
+    public updateField(): boolean {
         // Check whether the input is valid, and return if it isn't
         const inp = this.get();
         if (this.config.checkValidity?.(inp)) return false;
 
         // Update the value
-        let value = this.config.fromString ? this.config.fromString(inp) : inp;
+        let value = this.config.deserialize ? this.config.deserialize(inp) : inp;
         this.target.set(value as T);
         return true;
     }
@@ -137,7 +117,7 @@ export class InputField<T> extends TextField {
      * Disposes all hooks and persistent data of this input field
      */
     public destroy(): void {
-        this.closeErrorMenu?.();
+        this.closeError?.();
     }
 
     /**
@@ -147,6 +127,16 @@ export class InputField<T> extends TextField {
      */
     public getError(hook: IDataHook = null): IInputFieldError | null {
         return this.error.get(hook);
+    }
+
+    /**
+     * Retrieves the resulting value if valid, or an error otherwise
+     */
+    public getValue(): T | IInputFieldError {
+        const inp = this.get();
+        const error = this.config.checkValidity?.(inp);
+        if (error) return error;
+        else return (this.config.deserialize ? this.config.deserialize(inp) : inp) as T;
     }
 
     /**

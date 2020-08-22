@@ -1,13 +1,13 @@
-import {TextField} from "./TextField";
-import {ITextSelection} from "./_types/ITextSelection";
-import {SearchMenu} from "../menus/menu/SearchMenu";
-import {IPrioritizedMenuCategoryConfig} from "../menus/menu/_types/IAsyncMenuCategoryConfig";
-import {IQuery} from "../menus/menu/_types/IQuery";
-import {openUI} from "../context/openUI/openUI";
-import {IMenu} from "../menus/menu/_types/IMenu";
-import {IMenuItem} from "../menus/items/_types/IMenuItem";
-import {Observer} from "../utils/modelReact/Observer";
-import {IIOContext} from "../context/_types/IIOContext";
+import {TextField} from "../TextField";
+import {ITextSelection} from "../_types/ITextSelection";
+import {SearchMenu} from "../../menus/menu/SearchMenu";
+import {IPrioritizedMenuCategoryConfig} from "../../menus/menu/_types/IAsyncMenuCategoryConfig";
+import {IQuery} from "../../menus/menu/_types/IQuery";
+import {openUI} from "../../context/openUI/openUI";
+import {IMenu} from "../../menus/menu/_types/IMenu";
+import {IMenuItem} from "../../menus/items/_types/IMenuItem";
+import {Observer} from "../../utils/modelReact/Observer";
+import {IIOContext} from "../../context/_types/IIOContext";
 
 /**
  * A search field that manages the search menu

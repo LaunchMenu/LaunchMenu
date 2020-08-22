@@ -83,6 +83,7 @@ export const names = {
     backslash: "backslash",
     bracketRight: "bracketRight",
     quote: "quote",
+    space: "space",
 };
 
 /** A valid key names */

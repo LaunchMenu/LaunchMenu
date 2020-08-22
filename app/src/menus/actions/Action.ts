@@ -77,7 +77,10 @@ export class Action<I, O> implements IAction<I, O> {
      * @param tags The tags for the binding, inherited from the action if left out
      * @returns The binding
      */
-    public createBinding(data: I, tags: ITagsOverride = tags => tags): IActionBinding<I> {
+    public createBinding<P extends I>(
+        data: P,
+        tags: ITagsOverride = tags => tags
+    ): IActionBinding<P> {
         return {
             action: this,
             data,

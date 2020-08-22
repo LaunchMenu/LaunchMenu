@@ -88,6 +88,7 @@ export const ids = {
     backslash: "backslash",
     bracketRight: "bracketRight",
     quote: "quote",
+    space: "space",
 };
 
 /** A valid key id */
