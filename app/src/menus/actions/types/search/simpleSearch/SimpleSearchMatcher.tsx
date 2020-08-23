@@ -42,6 +42,9 @@ export class SimpleSearchMatcher {
      * @returns A number representing how well the text matches (higher = better)
      */
     public match(text: string): number {
+        // If the search is empty, return everything with priority 1
+        if (this.search.length == 0) return 1;
+
         if (this.regex) {
             const match = this.regex.exec(text);
             if (!match) return 0;

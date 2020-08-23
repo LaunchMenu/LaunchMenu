@@ -1,6 +1,4 @@
 import {IInputFieldError} from "./IInputFieldError";
-import {IMenu} from "../../../../menus/menu/_types/IMenu";
-import {IIOContext} from "../../../../context/_types/IIOContext";
 
 /**
  * A config object for input fields
@@ -18,7 +16,7 @@ export type IInputFieldConfig<T> = {
     ? unknown
     : {
           /** The function to transform the field value into a string */
-          toString: (v: T) => string;
+          serialize: unknown;
           /** The function to transform the input string to a valid field value (if the input is valid) */
-          fromString: (v: string) => T;
+          deserialize: unknown;
       });

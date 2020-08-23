@@ -35,4 +35,9 @@ export type ITextField = {
      * Properly disposes the text field
      */
     readonly destroy?: () => void;
+
+    /**
+     * Initializes the text field potentially opening any UI
+     */
+    readonly init?: () => void;
 };

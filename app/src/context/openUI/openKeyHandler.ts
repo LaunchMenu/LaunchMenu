@@ -1,5 +1,5 @@
 import {IOpenableKeyHandler} from "../_types/IOpenableKeyHandler";
-import {withRemoveError} from "../withPopError";
+import {withRemoveError} from "../withRemoveError";
 import {IIOContext} from "../_types/IIOContext";
 
 /**
@@ -19,6 +19,7 @@ export function openKeyHandler(
 
         // Open each of the handlers in the array
         keyHandler.forEach(handler => {
+            if (typeof handler == "object") handler.init?.();
             context.keyHandler.push(handler);
             closers.unshift(() =>
                 withRemoveError(context.keyHandler.remove(handler), "key handler")

@@ -18,9 +18,11 @@ import {wait} from "../_tests/wait.helper";
 import {getContextMenuItems} from "../menus/utils/getContextMenu";
 import {CompoundCommand} from "../undoRedo/commands/CompoundCommand";
 import {inputFieldExecuteHandler} from "../textFields/types/inputField/InputFieldExecuteHandler";
+import {SetFieldCommand} from "../undoRedo/commands/SetFieldCommand";
+import {selectFieldExecuteHandler} from "../textFields/types/dropdownField/selectFieldExecuteHandler";
 
 const someField = new Field("oranges");
-const someField2 = new Field("potatoes");
+const someField2 = new Field("shit");
 class SetFieldCmd extends Command {
     protected prev: string | undefined;
     protected text: string;
@@ -170,7 +172,7 @@ menu.addItems([
     }),
     createStandardMenuItem({
         name: "Poof (sub alert)",
-        onExecute: () => new SetFieldCmd(someField2, "Poof"),
+        onExecute: () => new SetFieldCommand(someField2, "poop"),
         actionBindings: [
             alertHandlerAction.createBinding({message: "Poof"}),
             addOneToFieldAction.createBinding({field: someField}),
@@ -178,7 +180,7 @@ menu.addItems([
     }),
     createStandardMenuItem({
         name: "Wow",
-        onExecute: () => new SetFieldCmd(someField2, "Wow"),
+        onExecute: () => new SetFieldCommand(someField2, "shit"),
     }),
     createStandardMenuItem({
         name: "Edit field",
@@ -202,11 +204,30 @@ menu.addItems([
     createStandardMenuItem({
         name: "Edit field 2",
         actionBindings: [
-            inputFieldExecuteHandler.createBinding({
+            selectFieldExecuteHandler.createBinding({
                 field: someField2,
                 context,
                 undoable: true,
-                config: {},
+                config: {
+                    options: [
+                        {
+                            view: createStandardMenuItem({name: "shit"}),
+                            value: "shit",
+                        },
+                        {
+                            view: createStandardMenuItem({name: "poop"}),
+                            value: "poop",
+                        },
+                    ],
+                    allowCustomInput: true,
+                    checkValidity: text => {
+                        if (text.length > 4)
+                            return {
+                                message: "Only strings of at most length 4 are accepted",
+                                ranges: [{start: 4, end: text.length}],
+                            };
+                    },
+                },
             }),
         ],
     }),
@@ -254,7 +275,7 @@ export const MenuViewTest: FC = () => {
         <Box display="flex" flexDirection="column" height="100%">
             <Box height={30}>
                 <Loader>{h => someField.get(h)}</Loader>{" "}
-                <Loader>{h => someField2.get(h)}</Loader>{" "}
+                <Loader>{h => someField2.get(h).toString()}</Loader>{" "}
                 <Loader>{h => undoRedo.getState(h)}</Loader>
             </Box>
             <Box position="relative" height={80}>

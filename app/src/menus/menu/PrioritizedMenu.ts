@@ -293,7 +293,7 @@ export class PrioritizedMenu<T = void> {
         if (this.items.get(null).includes(item) && !this.destroyed.get(null)) {
             const selectedItems = this.selected.get(null);
             if (selected) {
-                if (!selectedItems.includes(item)) {
+                if (!selectedItems.includes(item) && isItemSelectable(item)) {
                     this.selected.set([...selectedItems, item]);
                     onSelectAction.get([item]).onSelect(true, this);
                 }
@@ -312,7 +312,10 @@ export class PrioritizedMenu<T = void> {
      */
     public setCursor(item: IMenuItem | null): void {
         this.flushBatch();
-        if ((!item || this.items.get(null).includes(item)) && !this.destroyed.get(null)) {
+        if (
+            (!item || (this.items.get(null).includes(item) && isItemSelectable(item))) &&
+            !this.destroyed.get(null)
+        ) {
             const currentCursor = this.cursor.get(null);
             if (currentCursor) onCursorAction.get([currentCursor]).onCursor(false, this);
 

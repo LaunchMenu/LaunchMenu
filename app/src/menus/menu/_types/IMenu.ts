@@ -22,11 +22,6 @@ export type IMenu = {
     setCursor(item: IMenuItem): void;
 
     /**
-     * Destroys the menu, making sure that all items become unselected
-     */
-    destroy(): void;
-
-    /**
      * Retrieves all items in the menu
      * @param hook The hook to subscribe to changes
      * @returns All items including category items in the correct sequence
@@ -67,4 +62,14 @@ export type IMenu = {
      * @returns The highlight data
      */
     getHighlight?: (hook?: IDataHook) => IQuery | null;
+
+    /**
+     * Initializes the text field potentially opening any UI
+     */
+    readonly init?: () => void;
+
+    /**
+     * Destroys the menu, making sure that all items become unselected
+     */
+    readonly destroy?: () => void;
 };

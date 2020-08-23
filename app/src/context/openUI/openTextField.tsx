@@ -1,7 +1,7 @@
 import React from "react";
 import {isView, IViewStackItem} from "../../stacks/_types/IViewStackItem";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
-import {withRemoveError} from "../withPopError";
+import {withRemoveError} from "../withRemoveError";
 import {IOpenableField} from "../_types/IOpenableField";
 import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
 import {TextFieldView} from "../../components/fields/TextFieldView";
@@ -34,6 +34,8 @@ export function openTextField(
         }
         // Handle opening, and possibly creating, of field view and key handlers
         else {
+            field.init?.();
+
             // Handle creating of field components
             let view: IViewStackItem;
             if ("fieldView" in content && content.fieldView)

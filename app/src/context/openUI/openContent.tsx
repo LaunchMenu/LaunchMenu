@@ -1,6 +1,6 @@
 import React from "react";
 import {isView} from "../../stacks/_types/IViewStackItem";
-import {withRemoveError} from "../withPopError";
+import {withRemoveError} from "../withRemoveError";
 import {IIOContext} from "../_types/IIOContext";
 import {IOpenableContent} from "../_types/IOpenableContent";
 import {getViewWithContext} from "./getViewWithContext";
@@ -24,9 +24,9 @@ export function openContent(
         // Handle opening if only a content view
         if (isView(content)) {
             const wrappedContent = getViewWithContext(content, context);
-            context.panes.content.remove(wrappedContent);
+            context.panes.content.push(wrappedContent);
             closers.unshift(() =>
-                withRemoveError(context.panes.content.pop(wrappedContent), "content")
+                withRemoveError(context.panes.content.remove(wrappedContent), "content")
             );
         }
         // Handle opening, and possibly creating, of content view and key handlers

@@ -24,7 +24,7 @@ export class InputField<T> extends TextField {
 
     /**
      * Creates a new input field
-     * @param field The field to target
+     * @param field The data field to target
      * @param context The context to open the content with error in
      * @param config The configuration for the field
      */
@@ -58,6 +58,13 @@ export class InputField<T> extends TextField {
             this.config = (context || {liveUpdate: true}) as any;
         }
 
+        this.setInitialValue();
+    }
+
+    /**
+     * Sets the initial value of the field
+     */
+    protected setInitialValue(): void {
         const value = this.target.get(null);
         this.set(this.config.serialize?.(value) ?? ((value as any) as string));
     }
@@ -70,32 +77,7 @@ export class InputField<T> extends TextField {
         super.set(value);
         if (this.config.liveUpdate) this.updateField();
 
-        this.showError(this.config.checkValidity?.(value) || null);
-    }
-
-    /**
-     * Shows the error in a menu
-     * @param error The error to display
-     */
-    protected showError(error: IInputFieldError | null): void {
-        if (this.error.get(null) == error) return;
-
-        this.error.set(error);
-
-        this.closeError?.();
-        if (error && this.context) {
-            if (error) {
-                let errorView: IViewStackItem;
-                if ("view" in error) errorView = error.view;
-                else
-                    errorView = {
-                        view: <ContentErrorMessage>{error.message}</ContentErrorMessage>,
-                        transparent: true,
-                    };
-
-                this.closeError = openUI(this.context, {content: errorView});
-            }
-        }
+        this.updateError();
     }
 
     /**
@@ -105,12 +87,45 @@ export class InputField<T> extends TextField {
     public updateField(): boolean {
         // Check whether the input is valid, and return if it isn't
         const inp = this.get();
-        if (this.config.checkValidity?.(inp)) return false;
+        if (this.checkError(inp)) return false;
 
         // Update the value
         let value = this.config.deserialize ? this.config.deserialize(inp) : inp;
         this.target.set(value as T);
         return true;
+    }
+
+    // Error handling
+    /**
+     * Retrieves the error message for the current input if any
+     * @param text The text to retrieve the error for
+     * @returns The error
+     */
+    protected checkError(text?: string): IInputFieldError | null {
+        return this.config.checkValidity?.(text ?? this.get()) || null;
+    }
+
+    /**
+     * Updates the error and shows the UI
+     * @returns The new error if any
+     */
+    protected updateError(): IInputFieldError | null {
+        const error = this.checkError();
+        this.error.set(error);
+
+        this.closeError?.();
+        if (error && this.context) {
+            let errorView: IViewStackItem;
+            if ("view" in error) errorView = error.view;
+            else
+                errorView = {
+                    view: <ContentErrorMessage>{error.message}</ContentErrorMessage>,
+                    transparent: true,
+                };
+
+            this.closeError = openUI(this.context, {content: errorView});
+        }
+        return error;
     }
 
     /**
@@ -120,6 +135,7 @@ export class InputField<T> extends TextField {
         this.closeError?.();
     }
 
+    // Getters
     /**
      * Retrieves the input error if any
      * @param hook The hook to subscribe to changes
@@ -139,6 +155,7 @@ export class InputField<T> extends TextField {
         else return (this.config.deserialize ? this.config.deserialize(inp) : inp) as T;
     }
 
+    // Utils
     /**
      * Augments a given highlighter with the input error range
      * @param highlighter The highlighter to extend, or the plain text highlighter if left out
@@ -148,9 +165,10 @@ export class InputField<T> extends TextField {
         highlighter: IHighlighter = plaintextLexer
     ): IHighlighter {
         return {
-            highlight: syntax => {
+            highlight: (syntax, h) => {
                 const {nodes, errors} = highlighter.highlight(syntax);
-                const fieldError = this.config.checkValidity?.(syntax);
+                const fieldError = this.checkError(syntax);
+                this.addListener(h); // Such that we can force updates, even if the text hasn't changed
                 return {
                     nodes,
                     errors: fieldError?.ranges

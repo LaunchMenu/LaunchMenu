@@ -1,11 +1,7 @@
 import {sequentialExecuteHandler} from "../../../menus/actions/types/execute/sequentialExecuteHandler";
 import {results} from "../../../menus/actions/Action";
-import {IInputFieldExecuteData} from "./_types/IInputFieldExecuteData";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {openUI} from "../../../context/openUI/openUI";
-import {InputField} from "./InputField";
-import {mergeKeyListeners} from "../../../stacks/keyHandlerStack/mergeKeyListeners";
-import {createTextFieldKeyHandler} from "../../interaction/keyHandler.ts/createTextFieldKeyHandler";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {IActionBinding} from "../../../menus/actions/_types/IActionBinding";
 import {ITagsOverride} from "../../../menus/actions/_types/ITagsOverride";
@@ -13,60 +9,56 @@ import {IExecutable} from "../../../menus/actions/types/execute/_types/IExecutab
 import {IAction} from "../../../menus/actions/_types/IAction";
 import {IActionMultiResult} from "../../../menus/actions/_types/IActionMultiResult";
 import {TReplace} from "../../../_types/TReplace";
+import {ISelectFieldExecuteData} from "./_types/ISelectFieldExecuteData";
+import {SelectField} from "./SelectField";
 
 /**
  * A handler to let users alter a field
  */
-export const inputFieldExecuteHandler = sequentialExecuteHandler.createHandler(
-    (data: IInputFieldExecuteData<unknown>[]) => ({
+export const selectFieldExecuteHandler = sequentialExecuteHandler.createHandler(
+    (data: ISelectFieldExecuteData<unknown>[]) => ({
         [results]: data.map(
             ({field: fieldGetter, config, highlighter, context, undoable}) => ({
                 execute: () =>
                     new Promise<ICommand | void>(res => {
-                        // Retrieve the input field
+                        let closeUI = () => {};
+                        let changed: boolean = false;
+                        let value;
+
+                        // Create the dropdown field
                         const field =
                             fieldGetter instanceof Function ? fieldGetter() : fieldGetter;
-                        let inputField = new InputField(field, context, config as any);
+                        let dropdownField = new SelectField(
+                            field,
+                            context,
+                            config as any,
+                            (v, c) => {
+                                changed = c;
+                                value = v;
+                                closeUI();
+                            }
+                        );
 
                         // Create UI on close handler
-                        let saved = false;
                         const onClose = () => {
-                            if (saved) {
+                            if (changed) {
                                 if (undoable) {
-                                    if (!inputField.getError()) {
-                                        res(
-                                            new SetFieldCommand(
-                                                field,
-                                                inputField.getValue()
-                                            )
-                                        );
+                                    if (!dropdownField.getError()) {
+                                        res(new SetFieldCommand(field, value));
                                         return;
                                     }
-                                } else inputField.updateField();
+                                } else field.set(value);
                             }
                             res();
                         };
 
                         // Open the field
-                        const closeUI = openUI(
+                        closeUI = openUI(
                             context,
                             {
-                                field: inputField,
+                                field: dropdownField,
                                 // TODO: add field with input styling
-                                fieldHandler: mergeKeyListeners(
-                                    createTextFieldKeyHandler(inputField, false, () =>
-                                        closeUI?.()
-                                    ),
-                                    key => {
-                                        // Commit changes on enter
-                                        if (key.is("enter")) {
-                                            saved = true;
-                                            closeUI();
-                                            return true;
-                                        }
-                                    }
-                                ),
-                                highlighter: inputField.getHighlighterWithError(
+                                highlighter: dropdownField.getHighlighterWithError(
                                     highlighter
                                 ),
                             },
@@ -78,7 +70,7 @@ export const inputFieldExecuteHandler = sequentialExecuteHandler.createHandler(
     })
 ) as TReplace<
     // Cast to get improved error checking with template parameter
-    IAction<IInputFieldExecuteData<unknown>, IActionMultiResult<IExecutable>>,
+    IAction<ISelectFieldExecuteData<unknown>, IActionMultiResult<IExecutable>>,
     {
         /**
          * Creates a binding for this action handler
@@ -87,8 +79,8 @@ export const inputFieldExecuteHandler = sequentialExecuteHandler.createHandler(
          * @returns The action binding
          */
         createBinding<T>(
-            data: IInputFieldExecuteData<T>,
+            data: ISelectFieldExecuteData<T>,
             tags?: ITagsOverride
-        ): IActionBinding<IInputFieldExecuteData<T>>;
+        ): IActionBinding<ISelectFieldExecuteData<T>>;
     }
 >;

@@ -232,11 +232,9 @@ export class Action<I, O> implements IAction<I, O> {
 
             // Reduce all actions to the output data
             for (let d = greatestDepth; d > depth; d--) {
-                for (let i = actionsData.length - 1; i >= 0; i--) {
+                for (let i = 0; i < actionsData.length; i++) {
                     const {action, data, items: sourceItems} = actionsData[i];
                     if (action.ancestors.length == d) {
-                        actionsData.splice(i, 1);
-
                         const output = action.get(data, sourceItems);
                         this.addActionResult(actionsData, action, output, sourceItems);
                     }
@@ -244,8 +242,11 @@ export class Action<I, O> implements IAction<I, O> {
             }
 
             // Retrieve the input data for this action
-            items = (actionsData[0]?.data || []) as I[];
-            sourceItems = actionsData[0]?.items || [];
+            const action = actionsData.find(
+                ({action: {ancestors}}) => ancestors.length == depth
+            );
+            items = (action?.data || []) as I[];
+            sourceItems = action?.items || [];
         }
 
         // Retrieve the result of this action core

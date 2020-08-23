@@ -4,7 +4,7 @@ import {isView, IViewStackItem} from "../../stacks/_types/IViewStackItem";
 import {MenuView} from "../../components/menu/MenuView";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
-import {withRemoveError} from "../withPopError";
+import {withRemoveError} from "../withRemoveError";
 import {openTextField} from "./openTextField";
 import {SearchField} from "../../textFields/types/SearchField";
 import {isIOContext, IIOContext} from "../_types/IIOContext";
@@ -36,6 +36,8 @@ export function openMenu(
         }
         // Handle opening, and possibly creating, of menu view and key handlers
         else {
+            menu.init?.();
+
             // Handle creating of menu components
             let view: IViewStackItem;
             if ("menuView" in content && content.menuView)
@@ -64,7 +66,7 @@ export function openMenu(
 
             // Destroy the menu on close if specified
             if (!("destroyOnClose" in content) || content.destroyOnClose) {
-                closers.unshift(() => menu.destroy());
+                closers.unshift(() => menu.destroy?.());
                 const kh = keyHandler;
                 if (kh && !(kh instanceof Function) && kh.destroy)
                     closers.unshift(() => kh.destroy?.());

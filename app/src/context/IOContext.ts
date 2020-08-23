@@ -3,7 +3,7 @@ import {IViewStack} from "../stacks/_types/IViewStack";
 import {IKeyHandlerStack} from "../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {ViewStack} from "../stacks/viewStack/ViewStack";
 import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
-import {withRemoveError} from "./withPopError";
+import {withRemoveError} from "./withRemoveError";
 import {openUI} from "./openUI/openUI";
 import {IOpenableUI} from "./_types/IOpenableUI";
 import {IUndoRedoFacility} from "../undoRedo/_types/IUndoRedoFacility";
