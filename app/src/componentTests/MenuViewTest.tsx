@@ -19,10 +19,17 @@ import {getContextMenuItems} from "../menus/utils/getContextMenu";
 import {CompoundCommand} from "../undoRedo/commands/CompoundCommand";
 import {inputFieldExecuteHandler} from "../textFields/types/inputField/InputFieldExecuteHandler";
 import {SetFieldCommand} from "../undoRedo/commands/SetFieldCommand";
-import {selectFieldExecuteHandler} from "../textFields/types/dropdownField/selectFieldExecuteHandler";
+import {selectFieldExecuteHandler} from "../textFields/types/selectField/selectFieldExecuteHandler";
+import {KeyPattern} from "../settings/inputs/keyPattern/KeyPattern";
+import {updateKeyPatternOptionExecuteHandler} from "../settings/inputs/keyPattern/keyPatternOptionMenuItem/actionHandlers/updateKeyPatternOptionExecuteHandler";
+import {advancedKeyInputEditAction} from "../settings/inputs/keyPattern/advancedKeyInputEditAction";
+import {keyInputExecuteHandler} from "../settings/inputs/keyPattern/keyInputExecuteHandler";
+import {MultiSelectField} from "../textFields/types/multiselectField/MultiSelectField";
+import {multiSelectFieldExecuteHandler} from "../textFields/types/multiselectField/multiSelectFieldExecuteHandler";
 
 const someField = new Field("oranges");
 const someField2 = new Field("shit");
+const someField3 = new Field([45]);
 class SetFieldCmd extends Command {
     protected prev: string | undefined;
     protected text: string;
@@ -43,6 +50,7 @@ class SetFieldCmd extends Command {
         if (this.prev != undefined) this.field.set(this.prev);
     }
 }
+const somePatternField = new Field(new KeyPattern([{type: "down", pattern: "ctrl+b"}]));
 
 // Create some context action
 const alertAction = new Action(
@@ -129,6 +137,29 @@ context.panes.content.push(<Box>I am a cool box yo</Box>);
 const menu = new Menu();
 menu.addItems([
     createStandardMenuItem({
+        name: h => `Key Pattern ${somePatternField.get(h || null)}`,
+        actionBindings: [
+            keyInputExecuteHandler.createBinding({
+                field: somePatternField,
+                context,
+                undoable: true,
+            }),
+            advancedKeyInputEditAction.createBinding({
+                field: somePatternField,
+                context,
+                undoable: true,
+            }),
+            keyHandlerAction.createBinding({
+                onKey: e => {
+                    if (somePatternField.get(null).matches(e)) {
+                        console.log("Event Matched yo");
+                        return true;
+                    }
+                },
+            }),
+        ],
+    }),
+    createStandardMenuItem({
         name: "Bob (alert)",
         onExecute: () => new SetFieldCmd(someField, "Bob"),
         actionBindings: [alertAction.createBinding({message: "Bob"})],
@@ -209,16 +240,8 @@ menu.addItems([
                 context,
                 undoable: true,
                 config: {
-                    options: [
-                        {
-                            view: createStandardMenuItem({name: "shit"}),
-                            value: "shit",
-                        },
-                        {
-                            view: createStandardMenuItem({name: "poop"}),
-                            value: "poop",
-                        },
-                    ],
+                    options: ["shit", "poop"],
+                    createOptionView: v => createStandardMenuItem({name: v}),
                     allowCustomInput: true,
                     checkValidity: text => {
                         if (text.length > 4)
@@ -227,6 +250,44 @@ menu.addItems([
                                 ranges: [{start: 4, end: text.length}],
                             };
                     },
+                },
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Edit field 3",
+        actionBindings: [
+            multiSelectFieldExecuteHandler.createBinding({
+                field: someField3,
+                context,
+                undoable: true,
+                config: {
+                    options: [25, 50],
+                    allowCustomInput: true,
+                    checkValidity: text => {
+                        if (!/^\d+$/.exec(text)) {
+                            const pattern = /[^\d]+/g;
+                            let m: RegExpMatchArray | null;
+                            const ranges = [] as {start: number; end: number}[];
+                            while ((m = pattern.exec(text))) {
+                                if (m.index != undefined)
+                                    ranges.push({
+                                        start: m.index,
+                                        end: m.index + m[0].length,
+                                    });
+                            }
+                            return {
+                                message: "Value must be an integer",
+                                ranges,
+                            };
+                        }
+                    },
+                    createOptionView: (value, isSelected) =>
+                        createStandardMenuItem({
+                            name: h => (isSelected(h) ? "(x) " : "") + value,
+                        }),
+                    serialize: v => v.toString(),
+                    deserialize: v => Number(v),
                 },
             }),
         ],
@@ -282,7 +343,7 @@ export const MenuViewTest: FC = () => {
                 <StackView stack={fieldViewStack} />
             </Box>
             <Box flexGrow={1} display="flex">
-                <Box position="relative" width={200}>
+                <Box position="relative" width={300}>
                     <StackView stack={menuViewStack} />
                 </Box>
                 <Box position="relative" flexGrow={1}>

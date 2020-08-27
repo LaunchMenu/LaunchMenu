@@ -12,7 +12,6 @@ import {isItemSelectable} from "../items/isItemSelectable";
 import {IGenerator} from "../../utils/generator/_types/IGenerator";
 import {GeneratorStreamExtractor} from "../../utils/generator/GeneratorStreamExtractor";
 import {sortPrioritizedCategories} from "./SortPrioritizedCategories";
-import {IMenu} from "./_types/IMenu";
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 
@@ -26,11 +25,14 @@ type CategoryData<T> = {
     };
 };
 
-const createSortedList = <T>(menu: IMenu): SortedList<IPrioritizedMenuItem<T>> =>
+const createSortedList = <T>(changeList: {
+    added: IMenuItem[];
+    removed: IMenuItem[];
+}): SortedList<IPrioritizedMenuItem<T>> =>
     new SortedList({
         condition: (a, b) => a.priority >= b.priority,
-        onAdd: ({item}) => onMenuChangeAction.get([item]).onMenuChange(menu, true),
-        onRemove: ({item}) => onMenuChangeAction.get([item]).onMenuChange(menu, false),
+        onAdd: ({item}) => changeList.added.push(item),
+        onRemove: ({item}) => changeList.removed.push(item),
     });
 
 /**
@@ -43,11 +45,12 @@ export class PrioritizedMenu<T = void> {
     // Batching tracking
     protected batchTimeout: NodeJS.Timeout | undefined;
     protected generators: GeneratorStreamExtractor<IPrioritizedMenuItem<T>>[] = [];
+    protected menuChangeEvents = {added: [] as IMenuItem[], removed: [] as IMenuItem[]};
 
     // Tracking menu items
     protected categoriesRaw = [
         {
-            items: createSortedList(this),
+            items: createSortedList(this.menuChangeEvents),
             category: undefined,
         },
     ] as CategoryData<T>[];
@@ -86,7 +89,7 @@ export class PrioritizedMenu<T = void> {
         if (categoryIndex == -1) {
             this.categoriesRaw.push({
                 category,
-                items: createSortedList(this),
+                items: createSortedList(this.menuChangeEvents),
                 batch: {
                     remove: [],
                     add: [item],
@@ -152,7 +155,7 @@ export class PrioritizedMenu<T = void> {
         if (categoryIndex == -1) {
             this.categoriesRaw.push({
                 category,
-                items: createSortedList(this),
+                items: createSortedList(this.menuChangeEvents),
                 batch: {
                     add: [],
                     remove: [item],
@@ -212,7 +215,8 @@ export class PrioritizedMenu<T = void> {
         this.categoriesRaw = this.categoriesRaw.filter(categoryData => {
             if (categoryData.batch) {
                 // Reset the category if specified
-                if (categoryData.batch.clear) categoryData.items = createSortedList(this);
+                if (categoryData.batch.clear)
+                    categoryData.items = createSortedList(this.menuChangeEvents);
 
                 // Filters out old items
                 const keys = {};
@@ -258,6 +262,12 @@ export class PrioritizedMenu<T = void> {
         this.categories.set(categories);
         this.items.set(items);
         this.deselectRemovedItems();
+
+        // Fire the menu change events
+        onMenuChangeAction.get(this.menuChangeEvents.added).onMenuChange(this, true);
+        this.menuChangeEvents.added = [];
+        onMenuChangeAction.get(this.menuChangeEvents.removed).onMenuChange(this, false);
+        this.menuChangeEvents.removed = [];
     }
 
     /**

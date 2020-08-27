@@ -3,6 +3,7 @@ import {IActionCore} from "./IActionCore";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IActionBinding} from "./IActionBinding";
 import {IActionMultiResult} from "./IActionMultiResult";
+import {IMenuItemActionBindings} from "./IMenuItemActionBindings";
 
 export type IAction<I, O> = {
     /**
@@ -27,21 +28,21 @@ export type IAction<I, O> = {
      * @param tags The tags for the binding, inherited from the action if left out
      * @returns The binding
      */
-    createBinding<P extends I>(data: P, tags?: ITagsOverride): IActionBinding<P>;
+    createBinding(data: I, tags?: ITagsOverride): IActionBinding<I>;
 
     /**
      * Checks whether the item contains a direct or indirect binding for this action
      * @param item The item to check
      * @returns Whether it contains a binding
      */
-    canBeAppliedTo(item: IMenuItem): boolean;
+    canBeAppliedTo(item: IMenuItem | IActionBinding<any>[]): boolean;
 
     /**
      * Retrieves the action data for a set of items, in order to be executed
      * @param items The items to get the data for
      * @returns The action execution functions
      */
-    get(items: IMenuItem[]): O;
+    get(items: (IMenuItem | IMenuItemActionBindings)[]): O;
 
     /**
      * Retrieves the action data for the given input data

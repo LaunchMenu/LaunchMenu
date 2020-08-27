@@ -1,14 +1,14 @@
-import {Field} from "model-react";
 import {IInputFieldConfig} from "./IInputFieldConfig";
 import {IHighlighter} from "../../../syntax/_types/IHighlighter";
 import {IIOContext} from "../../../../context/_types/IIOContext";
+import {IField} from "../../../../_types/IField";
 
 /**
  * The data for a field setter
  */
 export type IInputFieldExecuteData<T> = {
     /** The field to be altered */
-    field: Field<T> | (() => Field<T>);
+    field: IField<T>;
     /** The context to show the field in */
     context: IIOContext;
     /** The highlighter to highlight the text with */

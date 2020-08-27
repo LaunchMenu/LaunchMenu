@@ -34,8 +34,6 @@ export function openTextField(
         }
         // Handle opening, and possibly creating, of field view and key handlers
         else {
-            field.init?.();
-
             // Handle creating of field components
             let view: IViewStackItem;
             if ("fieldView" in content && content.fieldView)
@@ -76,6 +74,9 @@ export function openTextField(
                 if (!(kh instanceof Function) && kh.destroy)
                     closers.unshift(() => kh.destroy?.());
             }
+
+            // Initialize the field if required
+            field.init?.();
         }
     }
 

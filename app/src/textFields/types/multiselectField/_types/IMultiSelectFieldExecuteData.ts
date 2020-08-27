@@ -1,20 +1,20 @@
-import {Field} from "model-react";
-import {ISelectFieldConfig} from "./ISelectFieldConfig";
 import {IHighlighter} from "../../../syntax/_types/IHighlighter";
 import {IIOContext} from "../../../../context/_types/IIOContext";
+import {IField} from "../../../../_types/IField";
+import {IMultiSelectFieldConfig} from "./IMultiselectFieldConfig";
 
 /**
- * The data for a select field setter
+ * The data for a multi select field setter
  */
-export type ISelectFieldExecuteData<T> = {
+export type IMultiSelectFieldExecuteData<T> = {
     /** The field to be altered */
-    field: Field<T> | (() => Field<T>);
+    field: IField<T[]>;
     /** The context to show the field in */
     context: IIOContext;
     /** The highlighter to highlight the text with */
     highlighter?: IHighlighter;
     /** The input field configuration */
-    config: ISelectFieldConfig<T>;
+    config: IMultiSelectFieldConfig<T>;
 } & (
     | {
           /** Whether the change action is undoable */

@@ -1,0 +1,5 @@
+-   Have main execute alter overwrite the current pattern if only 1 exists, otherwise open advanced editor
+-   Have context menu with 'open advanced editor'
+    -   Advanced editor add pattern and show current inputs list under category
+        -   Make current input execute overwrite said input
+        -   Create context menu with execute to overwrite current value and delete button to remove it

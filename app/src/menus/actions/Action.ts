@@ -5,6 +5,7 @@ import {IActionBinding} from "./_types/IActionBinding";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {IActionParent} from "./_types/IActionParent";
 import {IActionMultiResult} from "./_types/IActionMultiResult";
+import {IMenuItemActionBindings} from "./_types/IMenuItemActionBindings";
 
 /** A symbol that can act as a key in a core return object to pass multiple results */
 export const results = Symbol("Multiple results");
@@ -77,10 +78,7 @@ export class Action<I, O> implements IAction<I, O> {
      * @param tags The tags for the binding, inherited from the action if left out
      * @returns The binding
      */
-    public createBinding<P extends I>(
-        data: P,
-        tags: ITagsOverride = tags => tags
-    ): IActionBinding<P> {
+    public createBinding(data: I, tags: ITagsOverride = tags => tags): IActionBinding<I> {
         return {
             action: this,
             data,
@@ -93,8 +91,8 @@ export class Action<I, O> implements IAction<I, O> {
      * @param item The item to check
      * @returns Whether it contains a binding
      */
-    public canBeAppliedTo(item: IMenuItem): boolean {
-        return !!item.actionBindings.find(
+    public canBeAppliedTo(item: IMenuItem | IActionBinding<any>[]): boolean {
+        return !!(item instanceof Array ? item : item.actionBindings).find(
             ({action}) =>
                 action == this || action.ancestors[this.ancestors.length] == this
         );
@@ -105,8 +103,10 @@ export class Action<I, O> implements IAction<I, O> {
      * @param array The array to check
      * @returns Whether the given array is an items array
      */
-    protected isItemArray(array: any[]): array is IMenuItem[] {
-        return array[0] && array[0] instanceof Object && "view" in array[0];
+    protected isItemArray(
+        array: any[]
+    ): array is (IMenuItem | IMenuItemActionBindings)[] {
+        return array[0] && array[0] instanceof Object && "actionBindings" in array[0];
     }
 
     /**
@@ -193,7 +193,7 @@ export class Action<I, O> implements IAction<I, O> {
      * @param items The items to get the data for
      * @returns The action execution functions
      */
-    public get(items: IMenuItem[]): O;
+    public get(items: (IMenuItem | IMenuItemActionBindings)[]): O;
 
     /**
      * Retrieves the action data for the given input data
@@ -202,7 +202,10 @@ export class Action<I, O> implements IAction<I, O> {
      * @returns The action execution functions or other data
      */
     public get(data: I[], items: IMenuItem[][]): O;
-    public get(items: IMenuItem[] | I[], sourceItems?: IMenuItem[][]): O {
+    public get(
+        items: (IMenuItem | IMenuItemActionBindings)[] | I[],
+        sourceItems?: IMenuItem[][]
+    ): O {
         // Obtain the input data from all the items
         if (this.isItemArray(items)) {
             const depth = this.ancestors.length;
@@ -213,7 +216,7 @@ export class Action<I, O> implements IAction<I, O> {
                 item.actionBindings.forEach(binding => {
                     if (binding.action.ancestors[depth] == this || binding.action == this)
                         this.addActionInput(actionsData, binding.action, binding.data, [
-                            item,
+                            "item" in item ? item.item : item,
                         ]);
                 });
             });

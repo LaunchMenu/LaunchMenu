@@ -1,5 +1,5 @@
 import {Command} from "../Command";
-import {Field} from "model-react";
+import {IField} from "../../_types/IField";
 
 /**
  * A command to change field values
@@ -7,7 +7,7 @@ import {Field} from "model-react";
 export class SetFieldCommand<T> extends Command {
     protected prev: T;
     protected newValue: T;
-    protected field: Field<T>;
+    protected field: IField<T>;
 
     /** @override */
     public metadata = {name: "Set field"};
@@ -17,7 +17,7 @@ export class SetFieldCommand<T> extends Command {
      * @param field The field to be changed
      * @param value The value to change the field to
      */
-    public constructor(field: Field<T>, value: T);
+    public constructor(field: IField<T>, value: T);
 
     /**
      * Creates a new set field command
@@ -25,8 +25,8 @@ export class SetFieldCommand<T> extends Command {
      * @param field The field to be changed
      * @param value The value to change the field to
      */
-    public constructor(name: string, field: Field<T>, value: T);
-    public constructor(name: Field<T> | string, field: Field<T> | T, value?: T) {
+    public constructor(name: string, field: IField<T>, value: T);
+    public constructor(name: IField<T> | string, field: IField<T> | T, value?: T) {
         super();
         if (typeof name == "string") {
             this.metadata.name = name;

@@ -6,6 +6,8 @@ import {IPrioritizedMenuCategoryConfig} from "../../../../menus/menu/_types/IAsy
 export type ISelectFieldConfig<T> = {
     /** The options for the dropdown */
     options: ISelectOption<T>[];
+    /** A method to retrieve the UI for a custom option */
+    createOptionView: (value: T, isDisabled: boolean) => IMenuItem;
     /** Whether to allow custom user inputs */
     allowCustomInput?: boolean;
     /** Whether to only update on any valid input, or only when the input field (defaults to true)*/

@@ -295,25 +295,87 @@ export class ExtendedObject {
         }
     }
 
+    // Modification methods
     /**
      * Merges two objects together
-     * @param a The first object
-     * @param b The second object (which takes precedence)
+     * @param obj1 The first object
+     * @param obj2 The second object (which takes precedence)
      * @returns The merged objects
      */
-    public static deepMerge<A, B>(a: A, b: B): TDeepMerge<A, B> {
-        if (a instanceof Object && b instanceof Object) {
+    public static deepMerge<A, B>(obj1: A, obj2: B): TDeepMerge<A, B> {
+        if (obj1 instanceof Object && obj2 instanceof Object) {
             const obj = {};
-            Object.keys(a).forEach(key => {
-                if (!b[key]) obj[key] = a[key];
+            Object.keys(obj1).forEach(key => {
+                if (!obj2[key]) obj[key] = obj1[key];
             });
-            Object.keys(b).forEach(key => {
-                if (!a[key]) obj[key] = b[key];
+            Object.keys(obj2).forEach(key => {
+                if (!obj1[key]) obj[key] = obj2[key];
             });
-            Object.keys(a).forEach(key => {
-                if (a[key] && b[key]) obj[key] = this.deepMerge(a[key], b[key]);
+            Object.keys(obj1).forEach(key => {
+                if (obj1[key] && obj2[key])
+                    obj[key] = this.deepMerge(obj1[key], obj2[key]);
             });
             return obj as any;
-        } else return b as any;
+        } else return obj2 as any;
+    }
+
+    // Comparison methods
+    /**
+     * Checks if the contents of object 1 and 2 are equal
+     * @param obj1 The first object
+     * @param obj2 The second object
+     * @param includeObjects Whether object difference should be taken into account
+     * @returns Whether or not the contents of the two objects are equivalent
+     */
+    public static equals(
+        obj1: object,
+        obj2: object,
+        includeObjects: boolean = true
+    ): boolean {
+        // Check if there are the same number of values present
+        const obj1Keys = Object.keys(obj1);
+        const obj2Keys = Object.keys(obj2);
+        if (obj1Keys.length != obj2Keys.length) return false;
+
+        // Check if all values are equivalent
+        for (let i = 0; i < obj1Keys.length; i++) {
+            const key = obj1Keys[i];
+
+            // Values may only differ if they are objects
+            if (
+                (typeof obj1[key] != "object" || includeObjects) &&
+                obj1[key] !== obj2[key]
+            )
+                return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if the contents of object 1 and 2 are equal, including subobjects
+     * @param obj1 The first object
+     * @param obj2 The second object
+     * @returns Whether or not the contents of the two objects are equivalent
+     */
+    public static deepEquals(obj1: object, obj2: object): boolean {
+        // Check if there are the same number of values present
+        const obj1Keys = Object.keys(obj1);
+        const obj2Keys = Object.keys(obj2);
+        if (obj1Keys.length != obj2Keys.length) return false;
+
+        // Check if all values are equivalent
+        for (let i = 0; i < obj1Keys.length; i++) {
+            const key = obj1Keys[i];
+            if (this.isPlainObject(obj1[key]) && this.isPlainObject(obj2[key])) {
+                // Recurse if object
+                if (!this.deepEquals(obj1[key], obj2[key])) return false;
+            } else {
+                // Check shallow equivalence otherwise
+                if (obj1[key] !== obj2[key]) return false;
+            }
+        }
+
+        return true;
     }
 }

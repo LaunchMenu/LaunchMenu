@@ -13,6 +13,15 @@ import {v4 as uuid} from "uuid";
 import {ISelectOption} from "./_types/ISelectOption";
 import {executeAction} from "../../../menus/actions/types/execute/executeAction";
 import {Observer} from "../../../utils/modelReact/Observer";
+import {onMenuChangeAction} from "../../../menus/actions/types/onMenuChange/onMenuChangeAction";
+import {ISelectOptionData} from "./_types/ISelectOptionData";
+
+export function isSelectObject(option: ISelectOption<any>): option is object {
+    return typeof option == "object" && "value" in option;
+}
+export function getSelectOptionValue<T>(option: ISelectOption<T>): T {
+    return isSelectObject(option) ? option.value : option;
+}
 
 /**
  * A text field that can be used to select one of multiple options, or even a custom input
@@ -23,7 +32,7 @@ export class SelectField<T> extends InputField<T> {
     protected menuCursorObserver?: Observer<IMenuItem | null>;
 
     protected customItem?: IMenuItem;
-    protected options: ISelectOption<T>[];
+    protected options: ISelectOptionData<T>[];
 
     protected dConfig: ISelectFieldConfig<T>;
     protected onSelect: (value: T | null, changed: boolean) => void;
@@ -57,7 +66,7 @@ export class SelectField<T> extends InputField<T> {
     // Life cycle
     /** @override */
     public init(): void {
-        if (this.context)
+        if (this.context && !this.closeMenu)
             this.closeMenu = openUI(this.context, {menu: this.menu, searchable: false});
     }
 
@@ -78,7 +87,7 @@ export class SelectField<T> extends InputField<T> {
 
         // Retrieve and store the options
         this.options = this.dConfig.options.map(option => ({
-            ...option,
+            ...(isSelectObject(option) ? option : {value: option, disabled: false}),
             view: this.getOptionItem(option),
         }));
         const optionItems = this.options.map(option => option.view);
@@ -88,15 +97,12 @@ export class SelectField<T> extends InputField<T> {
         this.menu.setSearch("");
         this.menu.setSearchItems(items);
 
-        // If live update is enabled, update the value when the cursor changes
-        if (this.config.liveUpdate)
-            this.menuCursorObserver = new Observer(h => this.menu.getCursor(h)).listen(
-                () => {
-                    this.updateField();
-                    this.updateError();
-                    this.callListeners(); // Force update a new render
-                }
-            );
+        this.menuCursorObserver = new Observer(h => this.menu.getCursor(h)).listen(() => {
+            // If live update is enabled, update the value when the cursor changes
+            if (this.config.liveUpdate) this.updateField();
+            this.updateError();
+            this.callListeners(); // Force update a new render
+        });
     }
 
     /**
@@ -105,20 +111,36 @@ export class SelectField<T> extends InputField<T> {
      * @returns The menu item for the given option
      */
     protected getOptionItem(option: ISelectOption<T>): IMenuItem {
-        const item = option.view;
-        return {
+        const {value, disabled = false} = isSelectObject(option)
+            ? option
+            : {value: option, disabled: false};
+        const item = this.dConfig.createOptionView(value, disabled);
+        const finalItem = {
             view: item.view,
             actionBindings: [
                 ...item.actionBindings,
-                ...(option.disabled
+                ...(disabled
                     ? []
                     : [
                           executeAction.createBinding({
-                              execute: () => this.onSelect(option.value, true),
+                              execute: () => this.onSelect(value, true),
+                          }),
+                          // Select this item when added to menu
+                          onMenuChangeAction.createBinding({
+                              onMenuChange: (menu, added) => {
+                                  const v = this.target.get(null);
+                                  if (
+                                      menu == this.menu &&
+                                      added &&
+                                      (this.dConfig.equals?.(v, value) ?? v == value)
+                                  )
+                                      menu.setCursor(finalItem);
+                              },
                           }),
                       ]),
             ],
         };
+        return finalItem;
     }
 
     /** @override */

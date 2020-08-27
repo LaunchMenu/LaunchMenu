@@ -36,8 +36,6 @@ export function openMenu(
         }
         // Handle opening, and possibly creating, of menu view and key handlers
         else {
-            menu.init?.();
-
             // Handle creating of menu components
             let view: IViewStackItem;
             if ("menuView" in content && content.menuView)
@@ -87,6 +85,9 @@ export function openMenu(
                     })
                 );
             }
+
+            // Initialize the menu if required
+            menu.init?.();
         }
     }
 

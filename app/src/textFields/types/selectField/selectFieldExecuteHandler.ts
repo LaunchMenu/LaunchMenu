@@ -11,6 +11,7 @@ import {IActionMultiResult} from "../../../menus/actions/_types/IActionMultiResu
 import {TReplace} from "../../../_types/TReplace";
 import {ISelectFieldExecuteData} from "./_types/ISelectFieldExecuteData";
 import {SelectField} from "./SelectField";
+import {IActionCore} from "../../../menus/actions/_types/IActionCore";
 
 /**
  * A handler to let users alter a field
@@ -72,6 +73,28 @@ export const selectFieldExecuteHandler = sequentialExecuteHandler.createHandler(
     // Cast to get improved error checking with template parameter
     IAction<ISelectFieldExecuteData<unknown>, IActionMultiResult<IExecutable>>,
     {
+        /**
+         * Creates a new handler for this action, specifying how this action can be executed
+         * @param handlerCore The function describing the execution process
+         * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
+         * @returns The created action handler
+         */
+        createHandler<T, K>(
+            handlerCore: IActionCore<T, ISelectFieldExecuteData<K>>,
+            defaultTags?: ITagsOverride
+        ): IAction<T, ISelectFieldExecuteData<K>>;
+
+        /**
+         * Creates a new handler for this action, specifying how this action can be executed
+         * @param handlerCore The function describing the execution process
+         * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
+         * @returns The created action handler
+         */
+        createHandler<T, K>(
+            handlerCore: IActionCore<T, IActionMultiResult<ISelectFieldExecuteData<K>>>,
+            defaultTags?: ITagsOverride
+        ): IAction<T, IActionMultiResult<ISelectFieldExecuteData<K>>>;
+
         /**
          * Creates a binding for this action handler
          * @param data The field configuration data
