@@ -1,4 +1,4 @@
-import React from "react";
+import React, {cloneElement} from "react";
 import {isView, IViewStackItem} from "../../stacks/_types/IViewStackItem";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {withRemoveError} from "../withRemoveError";
@@ -7,6 +7,7 @@ import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler
 import {TextFieldView} from "../../components/fields/TextFieldView";
 import {IIOContext} from "../_types/IIOContext";
 import {getViewWithContext} from "./getViewWithContext";
+import {getViewWithHighlighter} from "./getViewWithHighlighter";
 
 /**
  * Opens the given content within the given ui context
@@ -38,17 +39,25 @@ export function openTextField(
             let view: IViewStackItem;
             if ("fieldView" in content && content.fieldView)
                 view = getViewWithContext(content.fieldView, context);
-            else
-                view = getViewWithContext(
-                    <TextFieldView
-                        field={field}
-                        icon={"icon" in content ? content.icon : undefined}
-                        highlighter={
-                            "highlighter" in content ? content.highlighter : undefined
-                        }
-                    />,
-                    context
-                );
+            else {
+                let rawView: IViewStackItem;
+                if (field.view)
+                    rawView =
+                        "highlighter" in content && content.highlighter
+                            ? getViewWithHighlighter(field.view, content.highlighter)
+                            : field.view;
+                else
+                    rawView = (
+                        <TextFieldView
+                            field={field}
+                            icon={"icon" in content ? content.icon : undefined}
+                            highlighter={
+                                "highlighter" in content ? content.highlighter : undefined
+                            }
+                        />
+                    );
+                view = getViewWithContext(rawView, context);
+            }
 
             let keyHandler: IKeyEventListener;
             if ("fieldHandler" in content && content.fieldHandler)

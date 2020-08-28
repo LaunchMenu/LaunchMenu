@@ -146,12 +146,10 @@ menu.addItems([
         actionBindings: [
             keyInputExecuteHandler.createBinding({
                 field: somePatternField,
-                context,
                 undoable: true,
             }),
             advancedKeyInputEditAction.createBinding({
                 field: somePatternField,
-                context,
                 undoable: true,
             }),
             keyHandlerAction.createBinding({
@@ -224,7 +222,6 @@ menu.addItems([
         actionBindings: [
             inputFieldExecuteHandler.createBinding({
                 field: someField,
-                context,
                 undoable: true,
                 config: {
                     checkValidity: text => {
@@ -243,7 +240,6 @@ menu.addItems([
         actionBindings: [
             selectFieldExecuteHandler.createBinding({
                 field: someField2,
-                context,
                 undoable: true,
                 config: {
                     options: ["shit", "poop"],
@@ -265,7 +261,6 @@ menu.addItems([
         actionBindings: [
             multiSelectFieldExecuteHandler.createBinding({
                 field: someField3,
-                context,
                 undoable: true,
                 config: {
                     options: [25, 50],
@@ -302,7 +297,6 @@ menu.addItems([
         name: "Edit field 4",
         actionBindings: [
             numberInputExecuteHandler.createBinding({
-                context,
                 field: someField4,
                 min: 3,
                 max: 9,
@@ -315,7 +309,6 @@ menu.addItems([
         name: "Edit field 4 select",
         actionBindings: [
             numberInputSelectExecuteHandler.createBinding({
-                context,
                 field: someField4,
                 options: [3, 4, 5],
                 allowCustomInput: true,

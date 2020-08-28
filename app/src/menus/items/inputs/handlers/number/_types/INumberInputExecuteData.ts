@@ -8,8 +8,6 @@ import {IIOContext} from "../../../../../../context/_types/IIOContext";
 export type INumberInputExecuteData = {
     /** The field to store the boolean in */
     field: IField<number>;
-    /** The context to show the field in */
-    context: IIOContext;
     /** Whether the field should update while editing */
     liveUpdate?: boolean;
 } & INumberConstraints &

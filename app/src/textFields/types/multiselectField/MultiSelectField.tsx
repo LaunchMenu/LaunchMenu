@@ -25,6 +25,7 @@ import {onMenuChangeAction} from "../../../menus/actions/types/onMenuChange/onMe
 import {IMultiSelectOptionData} from "./_types/IMultiSelectOptionData";
 import {keyHandlerAction} from "../../../menus/actions/types/keyHandler/keyHandlerAction";
 import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
+import {TextFieldView} from "../../../components/fields/TextFieldView";
 
 function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -84,6 +85,15 @@ export class MultiSelectField<T> extends TextField {
 
         this.setupMenu();
     }
+
+    /** The default view for a select field */
+    public view = (
+        <TextFieldView
+            field={this}
+            icon={"search"}
+            highlighter={this.getHighlighterWithError(plaintextLexer)}
+        />
+    );
 
     // Life cycle
     /** @override */

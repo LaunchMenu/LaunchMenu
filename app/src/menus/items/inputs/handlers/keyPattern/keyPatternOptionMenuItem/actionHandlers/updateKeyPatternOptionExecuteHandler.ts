@@ -15,14 +15,8 @@ import {SetFieldCommand} from "../../../../../../../undoRedo/commands/SetFieldCo
 export const updateKeyPatternOptionExecuteHandler = sequentialExecuteHandler.createHandler(
     (data: IUpdateKeyPatternOptionExecuteData[]) => ({
         [results]: data.map(
-            ({
-                context,
-                option,
-                patternField,
-                undoable,
-                insertIfDeleted: insertIfDelete,
-            }) => ({
-                execute: () =>
+            ({option, patternField, undoable, insertIfDeleted: insertIfDelete}) => ({
+                execute: context =>
                     new Promise<ICommand | void>(res => {
                         const textField = new TextField();
                         const close = openUI(context, {

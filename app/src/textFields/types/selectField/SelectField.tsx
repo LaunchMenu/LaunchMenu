@@ -1,3 +1,4 @@
+import React from "react";
 import {InputField} from "../inputField/InputField";
 import {IField} from "../../../_types/IField";
 import {IIOContext} from "../../../context/_types/IIOContext";
@@ -16,6 +17,8 @@ import {Observer} from "../../../utils/modelReact/Observer";
 import {onMenuChangeAction} from "../../../menus/actions/types/onMenuChange/onMenuChangeAction";
 import {ISelectOptionData} from "./_types/ISelectOptionData";
 import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
+import {TextFieldView} from "../../../components/fields/TextFieldView";
+import {plaintextLexer} from "../../syntax/plaintextLexer";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -60,6 +63,15 @@ export class SelectField<T> extends InputField<T> {
             );
         this.setupMenu();
     }
+
+    /** The default view for a select field */
+    public view = (
+        <TextFieldView
+            field={this}
+            icon={"search"}
+            highlighter={this.getHighlighterWithError(plaintextLexer)}
+        />
+    );
 
     /** @override */
     protected setInitialValue(): void {}

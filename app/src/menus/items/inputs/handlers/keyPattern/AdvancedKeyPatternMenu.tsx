@@ -49,7 +49,7 @@ export class AdvancedKeyPatternMenu extends Menu {
      * Opens the summary of the key pattern
      */
     protected openContent(): void {
-        this.closeContent = openUI(this.config.context, {
+        this.closeContent = openUI(this.context, {
             content: <AdvancedKeyPatternContent pattern={h => this.field.get(h)} />,
         });
     }
@@ -65,7 +65,6 @@ export class AdvancedKeyPatternMenu extends Menu {
                     updateKeyPatternOptionExecuteHandler.createBinding({
                         patternField: this.field,
                         option: {type: "down", pattern: []},
-                        context: this.config.context,
                         insertIfDeleted: true,
                     }),
                     getCategoryAction.createBinding(controlsCategory),
@@ -90,7 +89,6 @@ export class AdvancedKeyPatternMenu extends Menu {
                 createKeyPatternOptionMenuItem({
                     patternField: this.field,
                     option,
-                    context: this.config.context,
                 })
             );
             this.addItems(items);

@@ -11,6 +11,7 @@ import {IField} from "../../../_types/IField";
 import {ContentErrorMessage} from "../../../components/content/ContentErrorMessage";
 import {IViewStackItem} from "../../../stacks/_types/IViewStackItem";
 import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
+import {TextFieldView} from "../../../components/fields/TextFieldView";
 
 /**
  * A text field that displays error messages if the user input doesn't match a specified constraint
@@ -62,6 +63,14 @@ export class InputField<T> extends TextField {
 
         this.setInitialValue();
     }
+
+    /** The default view for an input field */
+    public view = (
+        <TextFieldView
+            field={this}
+            highlighter={this.getHighlighterWithError(plaintextLexer)}
+        />
+    );
 
     /**
      * Sets the initial value of the field

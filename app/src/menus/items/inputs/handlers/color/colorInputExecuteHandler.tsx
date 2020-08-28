@@ -15,9 +15,8 @@ import {openUI} from "../../../../../context/openUI/openUI";
 export const colorInputExecuteHandler = inputFieldExecuteHandler.createHandler(
     (data: IColorInputExecuteData[]) => ({
         [results]: data.map(
-            ({field, context, liveUpdate, undoable}): IInputFieldExecuteData<string> => ({
+            ({field, liveUpdate, undoable}): IInputFieldExecuteData<string> => ({
                 field,
-                context,
                 undoable,
                 config: {
                     liveUpdate: liveUpdate as any,

@@ -14,7 +14,7 @@ import {ISelectFieldExecuteData} from "../../../../../../../textFields/types/sel
 export const updateKeyPatternOptionTypeExecuteHandler = selectFieldExecuteHandler.createHandler(
     (data: IUpdateKeyPatternOptionTypeExecuteData[]) => ({
         [results]: data.map(
-            ({context, option, patternField, liveUpdate, undoable}) =>
+            ({option, patternField, liveUpdate, undoable}) =>
                 ({
                     field: {
                         set: (value: IKeyPatternEventType) => {
@@ -38,7 +38,6 @@ export const updateKeyPatternOptionTypeExecuteHandler = selectFieldExecuteHandle
                             return option.type;
                         },
                     },
-                    context,
                     undoable: undoable as any,
                     config: {
                         liveUpdate,

@@ -17,7 +17,7 @@ import {createMultiSelectMenuItem} from "../../../../../../../textFields/types/m
 export const updateKeyPatternOptionExtrasExecuteHandler = multiSelectFieldExecuteHandler.createHandler(
     (data: IUpdateKeyPatternOptionExtrasExecuteData[]) => ({
         [results]: data.map(
-            ({context, option, patternField, liveUpdate, undoable}) =>
+            ({option, patternField, liveUpdate, undoable}) =>
                 ({
                     field: {
                         set: value => {
@@ -42,7 +42,6 @@ export const updateKeyPatternOptionExtrasExecuteHandler = multiSelectFieldExecut
                             return option.allowExtra || [];
                         },
                     },
-                    context,
                     undoable: undoable as any,
                     config: {
                         liveUpdate,

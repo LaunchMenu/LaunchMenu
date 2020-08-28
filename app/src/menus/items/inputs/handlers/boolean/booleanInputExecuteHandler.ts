@@ -8,9 +8,8 @@ import {selectFieldExecuteHandler} from "../../../../../textFields/types/selectF
  */
 export const booleanInputExecuteHandler = selectFieldExecuteHandler.createHandler(
     (data: IBooleanInputExecuteData[]) => ({
-        [results]: data.map(({field, context, liveUpdate, undoable}) => ({
+        [results]: data.map(({field, liveUpdate, undoable}) => ({
             field,
-            context,
             undoable: undoable as any, // Cast to ignore relation between liveUpdate and undoable
             config: {
                 liveUpdate,

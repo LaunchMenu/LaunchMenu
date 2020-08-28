@@ -6,6 +6,7 @@ import {ICommand} from "../../../../../undoRedo/_types/ICommand";
 import {openUI} from "../../../../../context/openUI/openUI";
 import {CompoundCommand} from "../../../../../undoRedo/commands/CompoundCommand";
 import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand";
+import {IIOContext} from "../../../../../context/_types/IIOContext";
 
 /**
  * An action to let users update key inputs
@@ -13,15 +14,14 @@ import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand"
 export const advancedKeyInputEditAction = new Action(
     createContextAction(
         (data: IAdvancedKeyInputExecuteData[]) => ({
-            execute: async () => {
+            execute: async ({context}: {context: IIOContext}) => {
                 const cmds = [] as ICommand[];
-                for (const {context, field, liveUpdate, undoable} of data) {
+                for (const {field, liveUpdate, undoable} of data) {
                     await new Promise(res => {
                         const close = openUI(
                             context,
                             {
                                 menu: new AdvancedKeyPatternMenu(context, {
-                                    context,
                                     field,
                                     liveUpdate,
                                     onFinish: result => {

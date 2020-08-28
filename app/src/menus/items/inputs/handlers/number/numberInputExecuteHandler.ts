@@ -10,15 +10,8 @@ import {IInputFieldExecuteData} from "../../../../../textFields/types/inputField
 export const numberInputExecuteHandler = inputFieldExecuteHandler.createHandler(
     (data: INumberInputExecuteData[]) => ({
         [results]: data.map(
-            ({
+            ({field, liveUpdate, undoable, ...rest}): IInputFieldExecuteData<number> => ({
                 field,
-                context,
-                liveUpdate,
-                undoable,
-                ...rest
-            }): IInputFieldExecuteData<number> => ({
-                field,
-                context,
                 undoable: undoable as any, // Cast to ignore relation between liveUpdate and undoable
                 config: {
                     liveUpdate,

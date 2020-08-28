@@ -13,7 +13,6 @@ export const numberInputSelectExecuteHandler = selectFieldExecuteHandler.createH
         [results]: data.map(
             ({
                 field,
-                context,
                 liveUpdate,
                 undoable,
                 options,
@@ -21,7 +20,6 @@ export const numberInputSelectExecuteHandler = selectFieldExecuteHandler.createH
                 ...rest
             }): ISelectFieldExecuteData<number> => ({
                 field,
-                context,
                 undoable: undoable as any, // Cast to ignore relation between liveUpdate and undoable
                 config: {
                     options,

@@ -37,7 +37,7 @@ export const keyInputExecuteHandler = sequentialExecuteHandler.createHandler(
                             advancedKeyInputEditAction.createBinding(binding),
                         ],
                     }));
-                    return advancedKeyInputEditAction.get(mappedItems).execute();
+                    return advancedKeyInputEditAction.get(mappedItems).execute(context);
                 }
             },
         })),

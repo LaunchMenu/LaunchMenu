@@ -15,7 +15,6 @@ import {IMenuItem} from "../../../../_types/IMenuItem";
 export function createKeyPatternOptionMenuItem({
     patternField,
     option,
-    context,
 }: IKeyPatternOptionMenuItemData): IMenuItem {
     return createStandardMenuItem({
         name: KeyPattern.toStringPattern(option.pattern),
@@ -23,18 +22,15 @@ export function createKeyPatternOptionMenuItem({
             updateKeyPatternOptionExecuteHandler.createBinding({
                 patternField,
                 option,
-                context,
             }),
             deleteKeyPatternOptionHandler.createBinding({option, patternField}),
             updateKeyPatternOptionTypeAction.createBinding({
                 patternField,
                 option,
-                context,
             }),
             updateKeyPatternOptionExtrasAction.createBinding({
                 patternField,
                 option,
-                context,
             }),
         ],
     });

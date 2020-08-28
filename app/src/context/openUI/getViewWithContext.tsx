@@ -1,4 +1,4 @@
-import React, {cloneElement} from "react";
+import React from "react";
 import {IViewStackItem} from "../../stacks/_types/IViewStackItem";
 import {IIOContext} from "../_types/IIOContext";
 import {IOContextProvider} from "../react/IOContextContext";

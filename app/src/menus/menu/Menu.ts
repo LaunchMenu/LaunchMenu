@@ -152,7 +152,9 @@ export class Menu extends AbstractMenu {
                 const index = items.indexOf(item);
                 if (index != -1) {
                     items.splice(index, 1);
-                    if (items.length == 0) this.rawCategories.splice(categoryIndex, 1);
+                    // Don't remove categories with items or the default category
+                    if (items.length == 0 && category)
+                        this.rawCategories.splice(categoryIndex, 1);
                     removed.push(item);
 
                     // Make sure the item isn't the selected and or cursor item

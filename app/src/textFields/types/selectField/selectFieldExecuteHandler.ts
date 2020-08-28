@@ -23,11 +23,10 @@ export const selectFieldExecuteHandler = sequentialExecuteHandler.createHandler(
                 field: fieldGetter,
                 config,
                 highlighter,
-                context,
                 undoable,
                 openUI: customOpenUI,
             }) => ({
-                execute: () =>
+                execute: context =>
                     new Promise<ICommand | void>(res => {
                         let closeUI = () => {};
                         let changed: boolean = false;
