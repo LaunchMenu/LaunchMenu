@@ -8,5 +8,5 @@ export type IUIModel = {
     /** Method to retrieve how many views are currently opened */
     getViewCount(hook?: IDataHook): number;
     /** A method to completely get rid of the model and any hooks */
-    destroy();
+    destroy(): void;
 };

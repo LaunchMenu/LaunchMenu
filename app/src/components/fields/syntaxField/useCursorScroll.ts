@@ -19,7 +19,8 @@ export function useCursorScroll(
             if (el && pixelSelection) {
                 const {width} = el.getBoundingClientRect();
 
-                const getScrollSpeed = delta => (Math.abs(delta) > 100 ? 300 : 10);
+                const getScrollSpeed = (delta: number) =>
+                    Math.abs(delta) > 100 ? 300 : 10;
                 const scrollLeft = el.scrollLeft;
                 const cursorLeft = pixelSelection.start - scrollCursorPadding;
                 const cursorRight = pixelSelection.start + scrollCursorPadding;

@@ -100,7 +100,7 @@ export class KeyPattern {
             alt: -1,
             altLeft: -1,
             altRight: -1,
-        };
+        } as {[key: string]: number};
         return [...keys].sort((a, b) => {
             const code1 = codes[a] ?? a.charCodeAt(0);
             const code2 = codes[b] ?? b.charCodeAt(0);

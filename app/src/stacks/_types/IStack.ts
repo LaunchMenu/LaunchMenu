@@ -8,7 +8,7 @@ export type IStack<T> = {
      * Adds an item to the top of the stack
      * @param item The item to be added
      */
-    push(...item: (T | IStack<T>)[]);
+    push(...item: (T | IStack<T>)[]): void;
 
     /**
      * Removes an item or substack from the top of the stack

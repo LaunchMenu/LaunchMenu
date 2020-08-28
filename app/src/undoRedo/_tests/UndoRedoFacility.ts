@@ -3,6 +3,7 @@ import {TestCommand} from "./TestCommand.helper";
 import {wait} from "../../_tests/wait.helper";
 import {CompoundCommand} from "../commands/CompoundCommand";
 import {Observer} from "../../utils/modelReact/Observer";
+import {ICommand} from "../_types/ICommand";
 
 describe("UndoRedoFacility", () => {
     describe("new UndoRedoFacility", () => {
@@ -88,7 +89,7 @@ describe("UndoRedoFacility", () => {
                 expect(undoRedo.getCommands().past.length).toBe(1);
 
                 const command2 = new TestCommand();
-                let paramCmd;
+                let paramCmd: ICommand | undefined;
                 undoRedo.execute(command2, prev => {
                     paramCmd = prev;
                     return true;

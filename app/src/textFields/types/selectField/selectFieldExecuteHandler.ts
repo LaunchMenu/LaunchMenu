@@ -25,12 +25,12 @@ export const selectFieldExecuteHandler = sequentialExecuteHandler.createHandler(
                 highlighter,
                 undoable,
                 openUI: customOpenUI,
-            }) => ({
-                execute: context =>
+            }): IExecutable => ({
+                execute: ({context}) =>
                     new Promise<ICommand | void>(res => {
                         let closeUI = () => {};
                         let changed: boolean = false;
-                        let value;
+                        let value: any;
 
                         // Create the dropdown field
                         const field =

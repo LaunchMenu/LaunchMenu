@@ -223,7 +223,7 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
                     categoryData.items = createSortedList(this.menuChangeEvents);
 
                 // Filters out old items
-                const keys = {};
+                const keys = {} as {[key: string]: boolean};
                 categoryData.batch.add.forEach(({id}) => id && (keys[id] = true));
                 categoryData.batch.remove.forEach(({id}) => id && (keys[id] = true));
                 categoryData.items.filter(({id}) => !id || !keys[id]);

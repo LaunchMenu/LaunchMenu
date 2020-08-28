@@ -11,7 +11,7 @@ import {ipcRenderer} from "electron";
 export class KeyHandler {
     protected listeners: IKeyEventListener[] = [];
 
-    protected pressedKeys = {} as {[key: number]: IKey};
+    protected pressedKeys = {} as {[key: string]: IKey};
 
     protected keyListener: (event: KeyboardEvent) => void;
     protected blurListener: () => void;

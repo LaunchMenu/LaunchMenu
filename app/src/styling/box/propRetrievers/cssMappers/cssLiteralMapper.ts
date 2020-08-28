@@ -64,8 +64,8 @@ export const cssLiteralMappers = {
     opacity: (p: number) => p,
     noSelect: (value: boolean) => (value ? {userSelect: "none"} : {}),
     shadowCut: (value: Partial<("left" | "right" | "top" | "bottom")[]>) => {
-        let sides = {left: -100, right: -100, top: -100, bottom: -100};
-        value.forEach(side => (sides[side as any] = 0));
+        const sides = {left: -100, right: -100, top: -100, bottom: -100};
+        value.forEach(side => (sides[side as keyof typeof sides] = 0));
         return {
             clipPath: `inset(${sides.top}px ${sides.right}px ${sides.bottom}px ${sides.left}px)`,
         };

@@ -12,8 +12,8 @@ export function findStackChanges<D extends IIdentifiedItem<any>>(
     newItems: readonly D[]
 ): {added: {index: number; item: D}[]; removed: {index: number; item: D}[]} {
     // Check ids in old and new group
-    const oldIds = {};
-    const newIds = {};
+    const oldIds = {} as {[key: string]: boolean};
+    const newIds = {} as {[key: string]: boolean};
     oldItems.forEach(({id}) => (oldIds[id] = true));
     newItems.forEach(({id}) => (newIds[id] = true));
 

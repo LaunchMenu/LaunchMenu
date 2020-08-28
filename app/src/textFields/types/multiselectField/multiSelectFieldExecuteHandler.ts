@@ -12,6 +12,7 @@ import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {MultiSelectField} from "./MultiSelectField";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {openUI} from "../../../context/openUI/openUI";
+import {createTextFieldKeyHandler} from "../../interaction/keyHandler.ts/createTextFieldKeyHandler";
 
 /**
  * A handler to let users alter a field
@@ -25,12 +26,12 @@ export const multiSelectFieldExecuteHandler = sequentialExecuteHandler.createHan
                 highlighter,
                 undoable,
                 openUI: customOpenUI,
-            }) => ({
-                execute: context =>
+            }): IExecutable => ({
+                execute: ({context}) =>
                     new Promise<ICommand | void>(res => {
                         let closeUI = () => {};
                         let changed: boolean = false;
-                        let value;
+                        let value: any;
 
                         // Create the dropdown field
                         const field =
@@ -62,6 +63,15 @@ export const multiSelectFieldExecuteHandler = sequentialExecuteHandler.createHan
                             context,
                             {
                                 field: dropdownField,
+                                keyHandler: createTextFieldKeyHandler(
+                                    dropdownField,
+                                    false,
+                                    () => {
+                                        if (dropdownField.get().length > 0)
+                                            dropdownField.set("");
+                                        else closeUI();
+                                    }
+                                ),
                                 // TODO: add field with input styling
                                 highlighter: dropdownField.getHighlighterWithError(
                                     highlighter

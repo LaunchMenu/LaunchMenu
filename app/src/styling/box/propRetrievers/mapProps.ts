@@ -18,7 +18,7 @@ export function mapProps<
     props: I,
     mapper: M,
     context: T,
-    output: Object = {}
+    output: {[key: string]: any} = {}
 ): TPropMapperOutputs<M, keyof I & keyof M> {
     Object.keys(props).forEach(propName => {
         // Ignore any props that aren't specified in the mapper

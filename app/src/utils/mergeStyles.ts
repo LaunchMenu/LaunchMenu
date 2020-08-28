@@ -1,5 +1,6 @@
 import {ExtendedObject} from "./ExtendedObject";
 import {ICssProp} from "../styling/box/_types/ICssProp";
+import {ITheme} from "../styling/theming/_types/ITheme";
 
 /**
  * Merges the css styles for a box element
@@ -13,11 +14,11 @@ export function mergeStyles(
 ): ICssProp | undefined {
     if (!stylesA) return stylesB;
     if (!stylesB) return stylesA;
-    const merger = styles => {
+    const merger = (theme: ITheme) => {
         let a = stylesA;
         let b = stylesB;
-        if (a instanceof Function) a = a(styles);
-        if (b instanceof Function) b = b(styles);
+        if (a instanceof Function) a = a(theme);
+        if (b instanceof Function) b = b(theme);
 
         const merged = ExtendedObject.deepMerge(a, b);
         return merged;

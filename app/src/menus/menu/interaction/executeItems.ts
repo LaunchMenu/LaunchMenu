@@ -33,10 +33,10 @@ export async function executeItems(
     if ("getAllSelected" in context) {
         const cmd = await executeAction
             .get(context.getAllSelected())
-            .execute(context.getContext());
+            .execute({context: context.getContext()});
         if (cmd) (items as IUndoRedoFacility).execute(cmd);
     } else {
-        const cmd = await executeAction.get(items as IMenuItem[]).execute(context);
+        const cmd = await executeAction.get(items as IMenuItem[]).execute({context});
         if (cmd) (undoRedo as IUndoRedoFacility).execute(cmd);
     }
 }

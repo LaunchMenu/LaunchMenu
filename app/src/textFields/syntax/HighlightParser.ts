@@ -9,7 +9,8 @@ import {IHighlightParserConfig} from "./_types/IHighlightParserConfig";
 
 export * from "chevrotain";
 
-export abstract class HighlightParser<T> extends EmbeddedActionsParser
+export abstract class HighlightParser<T>
+    extends EmbeddedActionsParser
     implements IHighlighter {
     protected lexer: HighlightLexer;
     protected config: IHighlightParserConfig | undefined;
@@ -94,7 +95,7 @@ export abstract class HighlightParser<T> extends EmbeddedActionsParser
         this.input = tokens;
         const startExpression =
             this.config?.startRule || (this as any).definedRulesNames[0];
-        const result: T | undefined = this[startExpression]();
+        const result: T | undefined = (this as any)[startExpression]();
 
         return {errors: [...lexicalErrors, ...this.errors], result};
     }

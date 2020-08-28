@@ -27,8 +27,8 @@ export const inputFieldExecuteHandler = sequentialExecuteHandler.createHandler(
                 highlighter,
                 undoable,
                 openUI: customOpenUI,
-            }) => ({
-                execute: context =>
+            }): IExecutable => ({
+                execute: ({context}) =>
                     new Promise<ICommand | void>(res => {
                         // Retrieve the input field
                         const field =

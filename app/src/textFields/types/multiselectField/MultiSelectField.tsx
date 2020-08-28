@@ -331,14 +331,6 @@ export class MultiSelectField<T> extends TextField {
                         }
                     },
                 }),
-                keyHandlerAction.createBinding({
-                    onKey: key => {
-                        if (key.is("esc") && this.get().length > 0) {
-                            this.set("");
-                            return true;
-                        }
-                    },
-                }),
             ],
         };
     }

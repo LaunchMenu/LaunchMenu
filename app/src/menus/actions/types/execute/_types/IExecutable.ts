@@ -8,5 +8,8 @@ export type IExecutable = {
     /**
      * Executes the item action, or retrieves the command to execute
      */
-    execute: (context: IIOContext) => Promise<ICommand | void> | ICommand | void;
+    execute: (data: {
+        context: IIOContext;
+        close?: () => void;
+    }) => Promise<ICommand | void> | ICommand | void;
 };

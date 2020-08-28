@@ -8,6 +8,7 @@ import {ICommand} from "../../../../../../../undoRedo/_types/ICommand";
 import {TextField} from "../../../../../../../textFields/TextField";
 import {openUI} from "../../../../../../../context/openUI/openUI";
 import {SetFieldCommand} from "../../../../../../../undoRedo/commands/SetFieldCommand";
+import {IExecutable} from "../../../../../../actions/types/execute/_types/IExecutable";
 
 /**
  * A execute handler that can be used to set the key pattern of a field
@@ -15,8 +16,13 @@ import {SetFieldCommand} from "../../../../../../../undoRedo/commands/SetFieldCo
 export const updateKeyPatternOptionExecuteHandler = sequentialExecuteHandler.createHandler(
     (data: IUpdateKeyPatternOptionExecuteData[]) => ({
         [results]: data.map(
-            ({option, patternField, undoable, insertIfDeleted: insertIfDelete}) => ({
-                execute: context =>
+            ({
+                option,
+                patternField,
+                undoable,
+                insertIfDeleted: insertIfDelete,
+            }): IExecutable => ({
+                execute: ({context}) =>
                     new Promise<ICommand | void>(res => {
                         const textField = new TextField();
                         const close = openUI(context, {

@@ -34,7 +34,7 @@ export function createContextAction<
     TGetActionCoreInput<G>,
     TGetActionCoreOutput<G> & {getMenuItem: IContextMenuItemGetter}
 > {
-    return ((data, items) => {
+    return ((data: TGetActionCoreInput<G>[], items: IMenuItem[][]) => {
         const actionGetterResult = getter(data, items);
 
         // Retrieve the original result as well as a menu item getter

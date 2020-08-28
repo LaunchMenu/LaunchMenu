@@ -26,7 +26,7 @@ export const MenuItemFrame: FC<{
                         if (ioContext) {
                             const cmd = await executeAction
                                 .get([item])
-                                .execute(menu.getContext());
+                                .execute({context: menu.getContext()});
                             if (cmd) ioContext.undoRedo.execute(cmd);
                         }
                     } else if (isItemSelectable(item)) menu.setCursor(item);
