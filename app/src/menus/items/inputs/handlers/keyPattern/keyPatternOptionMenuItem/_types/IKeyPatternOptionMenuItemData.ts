@@ -1,7 +1,7 @@
 import {KeyPattern} from "../../KeyPattern";
-import {IIOContext} from "../../../../../context/_types/IIOContext";
-import {IField} from "../../../../../_types/IField";
 import {IKeyArrayPatternData} from "../../_types/IKeyPatternData";
+import {IField} from "../../../../../../../_types/IField";
+import {IIOContext} from "../../../../../../../context/_types/IIOContext";
 
 /**
  * The input data for a keyPatternMenuItem

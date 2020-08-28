@@ -1,10 +1,15 @@
 import {IDataHook} from "model-react";
 import {ITextSelection} from "./ITextSelection";
+import {IUIModel} from "../../context/_types/IUIModel";
+import {IViewStackItem} from "../../stacks/_types/IViewStackItem";
 
 /**
  * A mutable field to contain a text input as well as the selected range
  */
 export type ITextField = {
+    /** A possible default view for the field */
+    readonly view?: IViewStackItem;
+
     /**
      * Sets the value of the text field
      * @param text The new text
@@ -30,14 +35,4 @@ export type ITextField = {
      * @returns The selected range
      */
     getSelection(hook?: IDataHook): ITextSelection;
-
-    /**
-     * Properly disposes the text field
-     */
-    readonly destroy?: () => void;
-
-    /**
-     * Initializes the text field potentially opening any UI
-     */
-    readonly init?: () => void;
-};
+} & IUIModel;

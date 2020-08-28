@@ -1,6 +1,5 @@
-import {IKeyMatcher} from "../../../../stacks/keyHandlerStack/keyIdentifiers/keys";
-import {IKeyEventType} from "../../../../stacks/keyHandlerStack/_types/IKeyEventType";
 import {IKeyPatternEventType} from "./IKeyPatternEventType";
+import {IKeyMatcher} from "../../../../../../stacks/keyHandlerStack/keyIdentifiers/keys";
 
 /**
  * The data for a particular key pattern to match

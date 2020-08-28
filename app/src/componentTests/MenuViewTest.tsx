@@ -20,15 +20,15 @@ import {CompoundCommand} from "../undoRedo/commands/CompoundCommand";
 import {inputFieldExecuteHandler} from "../textFields/types/inputField/InputFieldExecuteHandler";
 import {SetFieldCommand} from "../undoRedo/commands/SetFieldCommand";
 import {selectFieldExecuteHandler} from "../textFields/types/selectField/selectFieldExecuteHandler";
-import {KeyPattern} from "../settings/inputs/keyPattern/KeyPattern";
-import {updateKeyPatternOptionExecuteHandler} from "../settings/inputs/keyPattern/keyPatternOptionMenuItem/actionHandlers/updateKeyPatternOptionExecuteHandler";
-import {advancedKeyInputEditAction} from "../settings/inputs/keyPattern/advancedKeyInputEditAction";
-import {keyInputExecuteHandler} from "../settings/inputs/keyPattern/keyInputExecuteHandler";
-import {MultiSelectField} from "../textFields/types/multiselectField/MultiSelectField";
 import {multiSelectFieldExecuteHandler} from "../textFields/types/multiselectField/multiSelectFieldExecuteHandler";
-import {numberInputExecuteHandler} from "../settings/inputs/number/numberInputExecuteHandler";
-import {numberInputSelectExecuteHandler} from "../settings/inputs/number/numberInputSelectExecuteHandler";
-import {colorInputExecuteHandler} from "../settings/inputs/color/colorInputExecuteHandler";
+import {KeyPattern} from "../menus/items/inputs/handlers/keyPattern/KeyPattern";
+import {keyInputExecuteHandler} from "../menus/items/inputs/handlers/keyPattern/keyInputExecuteHandler";
+import {advancedKeyInputEditAction} from "../menus/items/inputs/handlers/keyPattern/advancedKeyInputEditAction";
+import {numberInputExecuteHandler} from "../menus/items/inputs/handlers/number/numberInputExecuteHandler";
+import {numberInputSelectExecuteHandler} from "../menus/items/inputs/handlers/number/numberInputSelectExecuteHandler";
+import {colorInputExecuteHandler} from "../menus/items/inputs/handlers/color/colorInputExecuteHandler";
+import {IContextExecuteData} from "../context/_types/IContextExecuteData";
+import {openUI} from "../context/openUI/openUI";
 
 const someField = new Field("oranges");
 const someField2 = new Field("shit");
@@ -74,7 +74,7 @@ const alertHandlerAction = alertAction.createHandler(
             const text = "(" + data.map(({message}) => message).join(",") + ")";
             return {
                 message: text,
-                execute: (context: IOContext, closeParentMenu?: () => void) => {
+                execute: ({context, close: closeParentMenu}: IContextExecuteData) => {
                     let closeMenu = () => {};
                     const closeAll = () => {
                         closeMenu?.();
@@ -96,8 +96,8 @@ const alertHandlerAction = alertAction.createHandler(
                         },
                     });
 
-                    closeMenu = context.openUI({
-                        menu: new Menu([defaultExecuteItem, ...subItems]),
+                    closeMenu = openUI(context, {
+                        menu: new Menu(context, [defaultExecuteItem, ...subItems]),
                     });
                 },
             };
@@ -139,7 +139,7 @@ const context = new IOContext({
 });
 context.panes.content.push(<Box>I am a cool box yo</Box>);
 
-const menu = new Menu();
+const menu = new Menu(context);
 menu.addItems([
     createStandardMenuItem({
         name: h => `Key Pattern ${somePatternField.get(h || null)}`,
@@ -185,6 +185,7 @@ menu.addItems([
                         console.log("p pressed mofo1");
                         return {
                             stopPropagation: true,
+                            stopImmediatePropagation: true,
                         };
                     }
                 },
@@ -363,7 +364,7 @@ menu.addItems([
 ]);
 context.openUI({
     menu,
-    menuHandler: createMenuKeyHandler(menu, context),
+    menuHandler: createMenuKeyHandler(menu),
 });
 
 (window as any).alertAction = alertAction;

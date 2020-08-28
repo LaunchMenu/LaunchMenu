@@ -5,11 +5,8 @@ import {IMenuItem} from "../../../items/_types/IMenuItem";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
 import {getContextMenuItems} from "../../../utils/getContextMenu";
-import {IViewStack} from "../../../../stacks/_types/IViewStack";
-import {IKeyHandlerStack} from "../../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {openUI} from "../../../../context/openUI/openUI";
 import {Menu} from "../../Menu";
-import {IUndoRedoFacility} from "../../../../undoRedo/_types/IUndoRedoFacility";
 import {IIOContext} from "../../../../context/_types/IIOContext";
 
 /**
@@ -71,7 +68,7 @@ export function setupContextMenuHandler(
             if (isMenuOpenEvent) {
                 if (contextData.items.length > 0)
                     contextData.close = openUI(ioContext, {
-                        menu: new Menu(contextData.items),
+                        menu: new Menu(ioContext, contextData.items),
                     });
                 return true;
             }

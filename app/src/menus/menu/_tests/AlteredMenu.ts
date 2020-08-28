@@ -3,6 +3,8 @@ import {Menu} from "../Menu";
 import {AlteredMenu} from "../AlteredMenu";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {wait} from "../../../_tests/wait.helper";
+import {IIOContext} from "../../../context/_types/IIOContext";
+import {UndoRedoFacility} from "../../../undoRedo/UndoRedoFacility";
 
 const someCategory: ICategory = {
     name: "Bob",
@@ -20,7 +22,13 @@ const items = [
     createMenuItem(someCategory),
     createMenuItem(someCategory2),
 ];
-const parentMenu = new Menu(items);
+
+const context: IIOContext = {
+    keyHandler: null as any,
+    panes: {content: null as any, field: null as any, menu: null as any},
+    undoRedo: new UndoRedoFacility(),
+};
+const parentMenu = new Menu(context, items);
 
 describe("AlteredMenu", () => {
     describe("new AlteredMenu", () => {
@@ -248,7 +256,7 @@ describe("AlteredMenu", () => {
     });
     describe("Mirroring", () => {
         it("Correctly reflects changes of the parent menu", async () => {
-            const parentMenu = new Menu(items);
+            const parentMenu = new Menu(context, items);
 
             let someItem = createMenuItem();
             let someItem2 = createMenuItem();

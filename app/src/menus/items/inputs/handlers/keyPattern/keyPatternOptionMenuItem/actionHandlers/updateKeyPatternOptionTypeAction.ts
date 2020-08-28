@@ -1,8 +1,9 @@
-import {Action} from "../../../../../menus/actions/Action";
-import {createContextAction} from "../../../../../menus/actions/contextAction/createContextAction";
-import {executeAction} from "../../../../../menus/actions/types/execute/executeAction";
 import {IUpdateKeyPatternOptionTypeExecuteData} from "../_types/IUpdateKeyPatternOptionTypeExecuteData";
 import {updateKeyPatternOptionTypeExecuteHandler} from "./updateKeyPatternOptionTypeExecuteHandler";
+import {createContextAction} from "../../../../../../actions/contextAction/createContextAction";
+import {Action} from "../../../../../../actions/Action";
+import {executeAction} from "../../../../../../actions/types/execute/executeAction";
+import {IIOContext} from "../../../../../../../context/_types/IIOContext";
 
 /**
  * An action to update the event type of a key pattern option
@@ -10,7 +11,7 @@ import {updateKeyPatternOptionTypeExecuteHandler} from "./updateKeyPatternOption
 export const updateKeyPatternOptionTypeAction = new Action(
     createContextAction(
         (data: IUpdateKeyPatternOptionTypeExecuteData[], items) => ({
-            execute: () => {
+            execute: ({context}: {context: IIOContext}) => {
                 const bindings = data.flatMap((data, i) =>
                     items[i].map(item => ({
                         item,
@@ -19,7 +20,7 @@ export const updateKeyPatternOptionTypeAction = new Action(
                         ],
                     }))
                 );
-                return executeAction.get(bindings).execute();
+                return executeAction.get(bindings).execute(context);
             },
         }),
         {name: "Update event type"}

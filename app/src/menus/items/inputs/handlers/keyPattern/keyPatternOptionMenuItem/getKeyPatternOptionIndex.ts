@@ -1,6 +1,6 @@
 import {IKeyArrayPatternData} from "../_types/IKeyPatternData";
 import {KeyPattern} from "../KeyPattern";
-import {ExtendedObject} from "../../../../utils/ExtendedObject";
+import {ExtendedObject} from "../../../../../../utils/ExtendedObject";
 
 /**
  * Retrieves the option's index within a pattern

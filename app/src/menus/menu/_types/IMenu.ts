@@ -1,13 +1,24 @@
 import {IDataHook} from "model-react";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IQuery} from "./IQuery";
-import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {IMenuCategoryData} from "./IMenuCategoryData";
+import {IUIModel} from "../../../context/_types/IUIModel";
+import {IIOContext} from "../../../context/_types/IIOContext";
+import {IViewStackItem} from "../../../stacks/_types/IViewStackItem";
 
 /**
  * An interface for common menu interactions
  */
 export type IMenu = {
+    /** A possible default view for the menu */
+    readonly view?: IViewStackItem;
+
+    /**
+     * Retrieves the context associated to the menu
+     * @returns The context
+     */
+    getContext(): IIOContext;
+
     /**
      * Selects or deselects the given item
      * @param item The item to select or deselect
@@ -62,14 +73,4 @@ export type IMenu = {
      * @returns The highlight data
      */
     getHighlight?: (hook?: IDataHook) => IQuery | null;
-
-    /**
-     * Initializes the text field potentially opening any UI
-     */
-    readonly init?: () => void;
-
-    /**
-     * Destroys the menu, making sure that all items become unselected
-     */
-    readonly destroy?: () => void;
-};
+} & IUIModel;

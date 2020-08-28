@@ -9,10 +9,10 @@ import {CompoundCommand} from "../../../../undoRedo/commands/CompoundCommand";
 export const sequentialExecuteHandler = executeAction.createHandler(
     (executors: IExecutable[]) => {
         return {
-            execute: async () => {
+            execute: async context => {
                 let commands = [] as ICommand[];
                 for (let executor of executors) {
-                    const res = await executor.execute();
+                    const res = await executor.execute(context);
                     if (res) commands.push(res);
                 }
                 if (commands.length > 0)

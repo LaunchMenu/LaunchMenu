@@ -75,8 +75,9 @@ export function openTextField(
                     closers.unshift(() => kh.destroy?.());
             }
 
-            // Initialize the field if required
-            field.init?.();
+            // Let the field know when it has been opened and closed
+            field.addViewCount();
+            closers.unshift(() => field.removeViewCount());
         }
     }
 

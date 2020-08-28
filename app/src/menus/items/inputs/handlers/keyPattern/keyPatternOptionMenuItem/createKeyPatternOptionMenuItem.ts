@@ -1,11 +1,11 @@
-import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
 import {KeyPattern} from "../KeyPattern";
-import {createStandardMenuItem} from "../../../../menus/items/createStandardMenuItem";
 import {IKeyPatternOptionMenuItemData} from "./_types/IKeyPatternOptionMenuItemData";
 import {updateKeyPatternOptionExecuteHandler} from "./actionHandlers/updateKeyPatternOptionExecuteHandler";
 import {deleteKeyPatternOptionHandler} from "./actionHandlers/deleteKeyPatternOptionHandler";
 import {updateKeyPatternOptionTypeAction} from "./actionHandlers/updateKeyPatternOptionTypeAction";
 import {updateKeyPatternOptionExtrasAction} from "./actionHandlers/updateKeyPatternOptionExtrasAction";
+import {createStandardMenuItem} from "../../../../createStandardMenuItem";
+import {IMenuItem} from "../../../../_types/IMenuItem";
 
 /**
  * Creates an item to be able to alter the pattern at the given index

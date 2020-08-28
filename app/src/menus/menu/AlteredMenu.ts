@@ -7,6 +7,7 @@ import {Observer} from "../../utils/modelReact/Observer";
 import {ICategory} from "../actions/types/category/_types/ICategory";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
+import {IIOContext} from "../../context/_types/IIOContext";
 
 /**
  * A menu class that can be used to copy a menu and add items to it, or remove items from it
@@ -32,7 +33,7 @@ export class AlteredMenu extends Menu {
         changes?: IMenuChanges,
         categoryConfig?: IMenuCategoryConfig
     ) {
-        super(categoryConfig);
+        super(menu.getContext(), categoryConfig);
         this.changes = changes;
         this.parentMenu = menu;
         if (this.changes?.addBefore) this.insertItems(this.changes.addBefore);
@@ -187,8 +188,11 @@ export class AlteredMenu extends Menu {
     /**
      * Destroys the menu, getting rid of any hooks and persistent data
      */
-    public destroy() {
-        this.menuObserver.destroy();
-        super.destroy();
+    public destroy(): boolean {
+        if (super.destroy()) {
+            this.menuObserver.destroy();
+            return true;
+        }
+        return false;
     }
 }

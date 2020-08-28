@@ -15,6 +15,7 @@ import {executeAction} from "../../../menus/actions/types/execute/executeAction"
 import {Observer} from "../../../utils/modelReact/Observer";
 import {onMenuChangeAction} from "../../../menus/actions/types/onMenuChange/onMenuChangeAction";
 import {ISelectOptionData} from "./_types/ISelectOptionData";
+import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -65,16 +66,21 @@ export class SelectField<T> extends InputField<T> {
 
     // Life cycle
     /** @override */
-    public init(): void {
+    public addViewCount(): void {
         if (this.context && !this.closeMenu)
-            this.closeMenu = openUI(this.context, {menu: this.menu, searchable: false});
+            this.closeMenu = openUI(this.context, {
+                menu: this.menu,
+                searchable: false,
+                closable: false,
+            });
+        super.addViewCount();
     }
 
     /** @override */
     public destroy(): void {
+        super.destroy();
         this.menuCursorObserver?.destroy();
         this.closeMenu?.();
-        super.destroy();
     }
 
     // Menu management
@@ -83,7 +89,10 @@ export class SelectField<T> extends InputField<T> {
      */
     protected setupMenu(): void {
         // Create the menu
-        this.menu = new SearchMenu(this.dConfig.categoryConfig);
+        this.menu = new SearchMenu(
+            this.context as IIOContext,
+            this.dConfig.categoryConfig
+        );
 
         // Retrieve and store the options
         this.options = this.dConfig.options.map(option => ({
@@ -101,7 +110,7 @@ export class SelectField<T> extends InputField<T> {
             // If live update is enabled, update the value when the cursor changes
             if (this.config.liveUpdate) this.updateField();
             this.updateError();
-            this.callListeners(); // Force update a new render
+            this.errorListeners.callListeners(); // Force update a new render
         });
     }
 

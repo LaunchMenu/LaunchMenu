@@ -1,5 +1,5 @@
-import {IInputFieldError} from "../../../textFields/types/inputField/_types/IInputFieldError";
 import {INumberConstraints} from "./_types/INumberConstraints";
+import {IInputFieldError} from "../../../../../textFields/types/inputField/_types/IInputFieldError";
 
 /**
  * Checks whether a given text matches the numeric constraints specified

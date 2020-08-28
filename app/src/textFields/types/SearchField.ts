@@ -41,7 +41,7 @@ export class SearchField extends TextField {
         this.context = data.context;
 
         this.targetMenu = data.menu;
-        this.menu = new SearchMenu(data.categoryConfig);
+        this.menu = new SearchMenu(this.context, data.categoryConfig);
 
         this.targetObserver = new Observer(h => this.targetMenu.getItems(h)).listen(
             items => this.menu.setSearchItems(items),

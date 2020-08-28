@@ -1,11 +1,11 @@
 import {IAdvancedKeyInputExecuteData} from "./_types/IAdvancedKeyInputExecuteData";
-import {Action} from "../../../menus/actions/Action";
-import {ICommand} from "../../../undoRedo/_types/ICommand";
-import {createContextAction} from "../../../menus/actions/contextAction/createContextAction";
-import {CompoundCommand} from "../../../undoRedo/commands/CompoundCommand";
-import {openUI} from "../../../context/openUI/openUI";
 import {AdvancedKeyPatternMenu} from "./AdvancedKeyPatternMenu";
-import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
+import {Action} from "../../../../actions/Action";
+import {createContextAction} from "../../../../actions/contextAction/createContextAction";
+import {ICommand} from "../../../../../undoRedo/_types/ICommand";
+import {openUI} from "../../../../../context/openUI/openUI";
+import {CompoundCommand} from "../../../../../undoRedo/commands/CompoundCommand";
+import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand";
 
 /**
  * An action to let users update key inputs
@@ -20,7 +20,7 @@ export const advancedKeyInputEditAction = new Action(
                         const close = openUI(
                             context,
                             {
-                                menu: new AdvancedKeyPatternMenu({
+                                menu: new AdvancedKeyPatternMenu(context, {
                                     context,
                                     field,
                                     liveUpdate,

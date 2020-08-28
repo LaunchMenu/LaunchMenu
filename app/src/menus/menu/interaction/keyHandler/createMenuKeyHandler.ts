@@ -6,30 +6,27 @@ import {IMenu} from "../../_types/IMenu";
 import {handleExecuteInput} from "./handleExecuteInput";
 import {handleMoveInput} from "./handleMoveInput";
 import {handleDeselectInput} from "./handleDeselectInput";
-import {handleContextInput} from "./handleContextInput";
-import {IKeyHandlerStack} from "../../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
-import {IViewStack} from "../../../../stacks/_types/IViewStack";
-import {IPartialIOContext, IIOContext} from "../../../../context/_types/IIOContext";
+import {IIOContext} from "../../../../context/_types/IIOContext";
 import {setupItemKeyListenerHandler} from "./setupItemKeyListenerHandler";
 import {setupContextMenuHandler} from "./setupContextMenuHandler";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
-import {IUndoRedoFacility} from "../../../../undoRedo/_types/IUndoRedoFacility";
 
 /**
  * Creates a standard menu key handler
  * @param menu The menu to create the handler for
- * @param ioContext The IO context to use to open the context menu
  * @param config Any additional optional data for the key handler configuration
  * @returns The key handler that can be added to the input handler stack
  */
 export function createMenuKeyHandler(
     menu: IMenu,
-    ioContext: IIOContext,
     {
+        ioContext = menu.getContext(),
         onExit,
         useItemKeyHandlers = true,
         useContextItemKeyHandlers = true,
     }: {
+        /** The context to open menus and other things in */
+        ioContext?: IIOContext;
         /** The code to execute when trying to exit the menu */
         onExit?: () => void;
         /** Whether to forward events to item key handlers (can be slow for menus with many items), defaults to true*/

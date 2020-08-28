@@ -1,12 +1,9 @@
-import {INumberInputExecuteData} from "./_types/INumberInputExecuteData";
-import {inputFieldExecuteHandler} from "../../../textFields/types/inputField/InputFieldExecuteHandler";
-import {IInputFieldExecuteData} from "../../../textFields/types/inputField/_types/IInputFieldExecuteData";
-import {results} from "../../../menus/actions/Action";
 import {checkTextNumberConstraints} from "./checkTextNumberConstraints";
-import {selectFieldExecuteHandler} from "../../../textFields/types/selectField/selectFieldExecuteHandler";
-import {ISelectFieldExecuteData} from "../../../textFields/types/selectField/_types/ISelectFieldExecuteData";
 import {INumberInputSelectExecuteData} from "./_types/INumberInputSelectExecuteData";
-import {createStandardMenuItem} from "../../../menus/items/createStandardMenuItem";
+import {results} from "../../../../actions/Action";
+import {selectFieldExecuteHandler} from "../../../../../textFields/types/selectField/selectFieldExecuteHandler";
+import {ISelectFieldExecuteData} from "../../../../../textFields/types/selectField/_types/ISelectFieldExecuteData";
+import {createStandardMenuItem} from "../../../createStandardMenuItem";
 
 /**
  * A simple execute handler for updating numeric fields, allowing the choice of multiple options

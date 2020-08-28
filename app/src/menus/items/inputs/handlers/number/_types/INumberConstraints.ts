@@ -1,4 +1,4 @@
-import {IInputFieldError} from "../../../../textFields/types/inputField/_types/IInputFieldError";
+import {IInputFieldError} from "../../../../../../textFields/types/inputField/_types/IInputFieldError";
 
 /**
  * The constraints on a number

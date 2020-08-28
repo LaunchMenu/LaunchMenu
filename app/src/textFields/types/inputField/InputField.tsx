@@ -10,6 +10,7 @@ import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {IField} from "../../../_types/IField";
 import {ContentErrorMessage} from "../../../components/content/ContentErrorMessage";
 import {IViewStackItem} from "../../../stacks/_types/IViewStackItem";
+import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 
 /**
  * A text field that displays error messages if the user input doesn't match a specified constraint
@@ -21,6 +22,7 @@ export class InputField<T> extends TextField {
 
     protected error = new Field(null as null | IInputFieldError);
     protected closeError?: () => void;
+    protected errorListeners = new ManualSourceHelper();
 
     /**
      * Creates a new input field
@@ -128,10 +130,9 @@ export class InputField<T> extends TextField {
         return error;
     }
 
-    /**
-     * Disposes all hooks and persistent data of this input field
-     */
+    /** @override */
     public destroy(): void {
+        super.destroy();
         this.closeError?.();
     }
 
@@ -168,7 +169,7 @@ export class InputField<T> extends TextField {
             highlight: (syntax, h) => {
                 const {nodes, errors} = highlighter.highlight(syntax);
                 const fieldError = this.checkError(syntax);
-                this.addListener(h); // Such that we can force updates, even if the text hasn't changed
+                this.errorListeners.addListener(h); // Such that we can force updates, even if the text hasn't changed
                 return {
                     nodes,
                     errors: fieldError?.ranges
