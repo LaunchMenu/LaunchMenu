@@ -8,9 +8,9 @@ import {ICommand} from "../../../../undoRedo/_types/ICommand";
  */
 export const executeAction = new Action((executors: IExecutable[]) => {
     return {
-        execute: async () => {
+        execute: async context => {
             const results = await Promise.all(
-                executors.map(executable => executable.execute())
+                executors.map(executable => executable.execute(context))
             );
             const commands = results.filter(Boolean) as ICommand[];
             if (commands.length > 0)

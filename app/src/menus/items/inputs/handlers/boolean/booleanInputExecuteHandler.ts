@@ -1,7 +1,7 @@
 import {IBooleanInputExecuteData} from "./_types/IBooleanInputExecuteData";
-import {createStandardMenuItem} from "../../menus/items/createStandardMenuItem";
-import {results} from "../../menus/actions/Action";
-import {selectFieldExecuteHandler} from "../../textFields/types/selectField/selectFieldExecuteHandler";
+import {createStandardMenuItem} from "../../../createStandardMenuItem";
+import {results} from "../../../../actions/Action";
+import {selectFieldExecuteHandler} from "../../../../../textFields/types/selectField/selectFieldExecuteHandler";
 
 /**
  * A simple execute handler for updating boolean fields
