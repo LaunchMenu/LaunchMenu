@@ -26,10 +26,15 @@ import {advancedKeyInputEditAction} from "../settings/inputs/keyPattern/advanced
 import {keyInputExecuteHandler} from "../settings/inputs/keyPattern/keyInputExecuteHandler";
 import {MultiSelectField} from "../textFields/types/multiselectField/MultiSelectField";
 import {multiSelectFieldExecuteHandler} from "../textFields/types/multiselectField/multiSelectFieldExecuteHandler";
+import {numberInputExecuteHandler} from "../settings/inputs/number/numberInputExecuteHandler";
+import {numberInputSelectExecuteHandler} from "../settings/inputs/number/numberInputSelectExecuteHandler";
+import {colorInputExecuteHandler} from "../settings/inputs/color/colorInputExecuteHandler";
 
 const someField = new Field("oranges");
 const someField2 = new Field("shit");
 const someField3 = new Field([45]);
+const someField4 = new Field(45);
+const someField5 = new Field("orange");
 class SetFieldCmd extends Command {
     protected prev: string | undefined;
     protected text: string;
@@ -289,6 +294,41 @@ menu.addItems([
                     serialize: v => v.toString(),
                     deserialize: v => Number(v),
                 },
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Edit field 4",
+        actionBindings: [
+            numberInputExecuteHandler.createBinding({
+                context,
+                field: someField4,
+                min: 3,
+                max: 9,
+                increment: 0.1,
+                baseValue: 0.05,
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Edit field 4 select",
+        actionBindings: [
+            numberInputSelectExecuteHandler.createBinding({
+                context,
+                field: someField4,
+                options: [3, 4, 5],
+                allowCustomInput: true,
+                min: 0,
+                max: 20,
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Edit field 5",
+        actionBindings: [
+            colorInputExecuteHandler.createBinding({
+                context,
+                field: someField5,
             }),
         ],
     }),

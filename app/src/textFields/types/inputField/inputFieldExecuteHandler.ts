@@ -21,7 +21,14 @@ import {IActionCore} from "../../../menus/actions/_types/IActionCore";
 export const inputFieldExecuteHandler = sequentialExecuteHandler.createHandler(
     (data: IInputFieldExecuteData<unknown>[]) => ({
         [results]: data.map(
-            ({field: fieldGetter, config, highlighter, context, undoable}) => ({
+            ({
+                field: fieldGetter,
+                config,
+                highlighter,
+                context,
+                undoable,
+                openUI: customOpenUI,
+            }) => ({
                 execute: () =>
                     new Promise<ICommand | void>(res => {
                         // Retrieve the input field
@@ -49,7 +56,7 @@ export const inputFieldExecuteHandler = sequentialExecuteHandler.createHandler(
                         };
 
                         // Open the field
-                        const closeUI = openUI(
+                        const closeUI = (customOpenUI ?? openUI)(
                             context,
                             {
                                 field: inputField,

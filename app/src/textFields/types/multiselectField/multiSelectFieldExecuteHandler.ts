@@ -19,7 +19,14 @@ import {openUI} from "../../../context/openUI/openUI";
 export const multiSelectFieldExecuteHandler = sequentialExecuteHandler.createHandler(
     (data: IMultiSelectFieldExecuteData<unknown>[]) => ({
         [results]: data.map(
-            ({field: fieldGetter, config, highlighter, context, undoable}) => ({
+            ({
+                field: fieldGetter,
+                config,
+                highlighter,
+                context,
+                undoable,
+                openUI: customOpenUI,
+            }) => ({
                 execute: () =>
                     new Promise<ICommand | void>(res => {
                         let closeUI = () => {};
@@ -52,7 +59,7 @@ export const multiSelectFieldExecuteHandler = sequentialExecuteHandler.createHan
                         };
 
                         // Open the field
-                        closeUI = openUI(
+                        closeUI = (customOpenUI ?? openUI)(
                             context,
                             {
                                 field: dropdownField,

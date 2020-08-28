@@ -2,6 +2,7 @@ import {ISelectFieldConfig} from "./ISelectFieldConfig";
 import {IHighlighter} from "../../../syntax/_types/IHighlighter";
 import {IIOContext} from "../../../../context/_types/IIOContext";
 import {IField} from "../../../../_types/IField";
+import {IOpenableUI} from "../../../../context/_types/IOpenableUI";
 
 /**
  * The data for a select field setter
@@ -15,6 +16,8 @@ export type ISelectFieldExecuteData<T> = {
     highlighter?: IHighlighter;
     /** The input field configuration */
     config: ISelectFieldConfig<T>;
+    /** A function to open the UI for custom view handling */
+    openUI?: (context: IIOContext, ui: IOpenableUI, onClose: () => void) => () => void;
 } & (
     | {
           /** Whether the change action is undoable */
