@@ -1,9 +1,9 @@
-import {sequentialExecuteHandler} from "../../../menus/actions/types/execute/sequentialExecuteHandler";
 import {IAdvancedKeyInputExecuteData} from "./_types/IAdvancedKeyInputExecuteData";
-import {results} from "../../../menus/actions/Action";
 import {updateKeyPatternOptionExecuteHandler} from "./keyPatternOptionMenuItem/actionHandlers/updateKeyPatternOptionExecuteHandler";
-import {executeAction} from "../../../menus/actions/types/execute/executeAction";
 import {advancedKeyInputEditAction} from "./advancedKeyInputEditAction";
+import {sequentialExecuteHandler} from "../../../../actions/types/execute/sequentialExecuteHandler";
+import {results} from "../../../../actions/Action";
+import {executeAction} from "../../../../actions/types/execute/executeAction";
 
 /**
  * The standard key input execute handler, which either opens the advanced editor or allows you to quickly update the pattern if there is only 1
@@ -11,7 +11,7 @@ import {advancedKeyInputEditAction} from "./advancedKeyInputEditAction";
 export const keyInputExecuteHandler = sequentialExecuteHandler.createHandler(
     (data: IAdvancedKeyInputExecuteData[], itemSets) => ({
         [results]: data.map((binding, i) => ({
-            execute: () => {
+            execute: context => {
                 const pattern = binding.field.get(null);
                 const items = itemSets[i];
 
@@ -27,7 +27,7 @@ export const keyInputExecuteHandler = sequentialExecuteHandler.createHandler(
                             }),
                         ],
                     }));
-                    return executeAction.get(mappedItems).execute();
+                    return executeAction.get(mappedItems).execute(context);
                 }
                 // If there are multiple patterns, enter the advanced editor
                 else {
@@ -37,7 +37,7 @@ export const keyInputExecuteHandler = sequentialExecuteHandler.createHandler(
                             advancedKeyInputEditAction.createBinding(binding),
                         ],
                     }));
-                    return advancedKeyInputEditAction.get(mappedItems).execute();
+                    return advancedKeyInputEditAction.get(mappedItems).execute(context);
                 }
             },
         })),

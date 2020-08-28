@@ -18,6 +18,8 @@ export type IOpenableMenu =
           menuView?: IViewStackItem;
           /** The key handler of the menu, will be generated if left out */
           menuHandler?: IKeyEventListener;
+          /** Whether the UI should close on escape */
+          closable?: boolean;
           /** Whether to create a search field for this menu, defaults to true. Only generates search fields if no other field is specified */
           searchable?: boolean;
           /** The syntax highlighter to use for the search field, will be ignored if search is false or a field is provided */

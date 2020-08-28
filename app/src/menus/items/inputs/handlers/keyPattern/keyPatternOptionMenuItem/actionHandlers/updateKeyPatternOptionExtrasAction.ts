@@ -1,8 +1,9 @@
-import {Action} from "../../../../../menus/actions/Action";
-import {createContextAction} from "../../../../../menus/actions/contextAction/createContextAction";
-import {executeAction} from "../../../../../menus/actions/types/execute/executeAction";
 import {IUpdateKeyPatternOptionExtrasExecuteData} from "../_types/IUpdateKeyPatternOptionExtrasExecuteData";
 import {updateKeyPatternOptionExtrasExecuteHandler} from "./updateKeyPatternOptionExtrasExecuteHandler";
+import {Action} from "../../../../../../actions/Action";
+import {createContextAction} from "../../../../../../actions/contextAction/createContextAction";
+import {executeAction} from "../../../../../../actions/types/execute/executeAction";
+import {IIOContext} from "../../../../../../../context/_types/IIOContext";
 
 /**
  * An action to update the extra keys that are allowed of a key pattern option
@@ -10,7 +11,7 @@ import {updateKeyPatternOptionExtrasExecuteHandler} from "./updateKeyPatternOpti
 export const updateKeyPatternOptionExtrasAction = new Action(
     createContextAction(
         (data: IUpdateKeyPatternOptionExtrasExecuteData[], items) => ({
-            execute: () => {
+            execute: ({context}: {context: IIOContext}) => {
                 const bindings = data.flatMap((data, i) =>
                     items[i].map(item => ({
                         item,
@@ -21,7 +22,7 @@ export const updateKeyPatternOptionExtrasAction = new Action(
                         ],
                     }))
                 );
-                return executeAction.get(bindings).execute();
+                return executeAction.get(bindings).execute(context);
             },
         }),
         {name: "Update allowed extra keys"}

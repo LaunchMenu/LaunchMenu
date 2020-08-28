@@ -1,5 +1,4 @@
 import {IMenu} from "../../_types/IMenu";
-import {executeAction} from "../../../actions/types/execute/executeAction";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 import {IUndoRedoFacility} from "../../../../undoRedo/_types/IUndoRedoFacility";
 import {executeItems} from "../executeItems";

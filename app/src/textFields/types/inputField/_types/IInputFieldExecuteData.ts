@@ -10,8 +10,6 @@ import {IOpenableUI} from "../../../../context/_types/IOpenableUI";
 export type IInputFieldExecuteData<T> = {
     /** The field to be altered */
     field: IField<T>;
-    /** The context to show the field in */
-    context: IIOContext;
     /** The highlighter to highlight the text with */
     highlighter?: IHighlighter;
     /** The input field configuration */

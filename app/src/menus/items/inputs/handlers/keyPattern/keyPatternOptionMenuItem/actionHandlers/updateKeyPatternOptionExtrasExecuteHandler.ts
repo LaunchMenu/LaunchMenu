@@ -1,15 +1,15 @@
-import {results} from "../../../../../menus/actions/Action";
 import {getKeyPatternOptionIndex} from "../getKeyPatternOptionIndex";
 import {KeyPattern} from "../../KeyPattern";
 import {IDataHook} from "model-react";
-import {multiSelectFieldExecuteHandler} from "../../../../../textFields/types/multiselectField/multiSelectFieldExecuteHandler";
 import {IUpdateKeyPatternOptionExtrasExecuteData} from "../_types/IUpdateKeyPatternOptionExtrasExecuteData";
-import {createMultiSelectMenuItem} from "../../../../../textFields/types/multiselectField/createMultiselectMenuItem";
-import {IMultiSelectFieldExecuteData} from "../../../../../textFields/types/multiselectField/_types/IMultiSelectFieldExecuteData";
+import {results} from "../../../../../../actions/Action";
+import {multiSelectFieldExecuteHandler} from "../../../../../../../textFields/types/multiselectField/multiSelectFieldExecuteHandler";
+import {IMultiSelectFieldExecuteData} from "../../../../../../../textFields/types/multiselectField/_types/IMultiSelectFieldExecuteData";
 import {
-    keyNames,
     IKeyName,
-} from "../../../../../stacks/keyHandlerStack/keyIdentifiers/names";
+    keyNames,
+} from "../../../../../../../stacks/keyHandlerStack/keyIdentifiers/names";
+import {createMultiSelectMenuItem} from "../../../../../../../textFields/types/multiselectField/createMultiSelectMenuItem";
 
 /**
  * An execute handler that can be used to update the allowed extra keys of a key pattern option
@@ -17,7 +17,7 @@ import {
 export const updateKeyPatternOptionExtrasExecuteHandler = multiSelectFieldExecuteHandler.createHandler(
     (data: IUpdateKeyPatternOptionExtrasExecuteData[]) => ({
         [results]: data.map(
-            ({context, option, patternField, liveUpdate, undoable}) =>
+            ({option, patternField, liveUpdate, undoable}) =>
                 ({
                     field: {
                         set: value => {
@@ -42,7 +42,6 @@ export const updateKeyPatternOptionExtrasExecuteHandler = multiSelectFieldExecut
                             return option.allowExtra || [];
                         },
                     },
-                    context,
                     undoable: undoable as any,
                     config: {
                         liveUpdate,

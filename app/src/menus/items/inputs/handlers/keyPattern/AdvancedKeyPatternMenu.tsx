@@ -1,19 +1,20 @@
 import React from "react";
-import {Menu} from "../../../menus/menu/Menu";
 import {KeyPattern} from "./KeyPattern";
-import {IField} from "../../../_types/IField";
 import {IAdvancedKeyPatternMenuData} from "./_types/IAdvancedKeyPatternMenuData";
 import {Field} from "model-react";
-import {createStandardMenuItem} from "../../../menus/items/createStandardMenuItem";
-import {createFinishMenuItem} from "../../../menus/items/createFinishMenuItem";
-import {Observer} from "../../../utils/modelReact/Observer";
 import {createKeyPatternOptionMenuItem} from "./keyPatternOptionMenuItem/createKeyPatternOptionMenuItem";
-import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
 import {updateKeyPatternOptionExecuteHandler} from "./keyPatternOptionMenuItem/actionHandlers/updateKeyPatternOptionExecuteHandler";
-import {openUI} from "../../../context/openUI/openUI";
 import {AdvancedKeyPatternContent} from "./AdvancedKeyPatternContent";
-import {controlsCategory} from "../../../menus/categories/types/controlsCategory";
-import {getCategoryAction} from "../../../menus/actions/types/category/getCategoryAction";
+import {IField} from "../../../../../_types/IField";
+import {Menu} from "../../../../menu/Menu";
+import {Observer} from "../../../../../utils/modelReact/Observer";
+import {IIOContext} from "../../../../../context/_types/IIOContext";
+import {openUI} from "../../../../../context/openUI/openUI";
+import {createStandardMenuItem} from "../../../createStandardMenuItem";
+import {createFinishMenuItem} from "../../../createFinishMenuItem";
+import {getCategoryAction} from "../../../../actions/types/category/getCategoryAction";
+import {controlsCategory} from "../../../../categories/types/controlsCategory";
+import {IMenuItem} from "../../../_types/IMenuItem";
 
 /**
  * A menu that can update a key pattern
@@ -27,10 +28,11 @@ export class AdvancedKeyPatternMenu extends Menu {
 
     /**
      * Creates a new advanced key pattern edit menu
+     * @param context The context to be used by menu items
      * @param config All data for the menu
      */
-    public constructor(config: IAdvancedKeyPatternMenuData) {
-        super();
+    public constructor(context: IIOContext, config: IAdvancedKeyPatternMenuData) {
+        super(context);
         this.config = config;
 
         if (config.liveUpdate) {
@@ -47,7 +49,7 @@ export class AdvancedKeyPatternMenu extends Menu {
      * Opens the summary of the key pattern
      */
     protected openContent(): void {
-        this.closeContent = openUI(this.config.context, {
+        this.closeContent = openUI(this.context, {
             content: <AdvancedKeyPatternContent pattern={h => this.field.get(h)} />,
         });
     }
@@ -63,7 +65,6 @@ export class AdvancedKeyPatternMenu extends Menu {
                     updateKeyPatternOptionExecuteHandler.createBinding({
                         patternField: this.field,
                         option: {type: "down", pattern: []},
-                        context: this.config.context,
                         insertIfDeleted: true,
                     }),
                     getCategoryAction.createBinding(controlsCategory),
@@ -88,7 +89,6 @@ export class AdvancedKeyPatternMenu extends Menu {
                 createKeyPatternOptionMenuItem({
                     patternField: this.field,
                     option,
-                    context: this.config.context,
                 })
             );
             this.addItems(items);
@@ -103,8 +103,11 @@ export class AdvancedKeyPatternMenu extends Menu {
     }
 
     /** @override */
-    public destroy(): void {
-        super.destroy();
-        this.closeContent();
+    public destroy(): boolean {
+        if (super.destroy()) {
+            this.closeContent();
+            return true;
+        }
+        return false;
     }
 }

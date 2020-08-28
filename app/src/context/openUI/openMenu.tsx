@@ -9,6 +9,7 @@ import {openTextField} from "./openTextField";
 import {SearchField} from "../../textFields/types/SearchField";
 import {isIOContext, IIOContext} from "../_types/IIOContext";
 import {getViewWithContext} from "./getViewWithContext";
+import {IMenu} from "../../menus/menu/_types/IMenu";
 
 /**
  * Opens the given content within the given ui context
@@ -40,13 +41,17 @@ export function openMenu(
             let view: IViewStackItem;
             if ("menuView" in content && content.menuView)
                 view = getViewWithContext(content.menuView, context);
-            else view = getViewWithContext(<MenuView menu={menu} />, context);
+            else
+                view = getViewWithContext(menu.view ?? <MenuView menu={menu} />, context);
 
             let keyHandler: IKeyEventListener | undefined;
             if ("menuHandler" in content && content.menuHandler)
                 keyHandler = content.menuHandler;
             else if (isIOContext(context))
-                keyHandler = createMenuKeyHandler(menu, context, {onExit: close});
+                keyHandler = createMenuKeyHandler(menu, {
+                    onExit:
+                        !("closable" in content) || content.closable ? close : undefined,
+                });
 
             // Handle opening of menu components
             context.panes.menu.push(view);
@@ -86,8 +91,9 @@ export function openMenu(
                 );
             }
 
-            // Initialize the menu if required
-            menu.init?.();
+            // Let the menu know when it has been opened and closed
+            menu.addViewCount();
+            closers.unshift(() => menu.removeViewCount());
         }
     }
 

@@ -1,6 +1,6 @@
 import Color from "color";
 import {Field, IDataHook} from "model-react";
-import {IField} from "../../../_types/IField";
+import {IField} from "../../../../../_types/IField";
 
 /**
  * A color object where each field can be altered and subscribed to

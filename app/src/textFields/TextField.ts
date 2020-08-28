@@ -1,12 +1,14 @@
 import {Field, IDataHook} from "model-react";
 import {ITextSelection} from "./_types/ITextSelection";
 import {ITextField} from "./_types/ITextField";
+import {AbstractUIModel} from "../context/AbstractUIModel";
 
 /**
  * A mutable field to contain a text input as well as the selected range
  */
-export class TextField extends Field<string> implements ITextField {
+export class TextField extends AbstractUIModel implements ITextField {
     protected selection = new Field({start: 0, end: 0});
+    protected text: Field<string>;
 
     /**
      * Creates a new TextField that stores text and selection data
@@ -14,7 +16,8 @@ export class TextField extends Field<string> implements ITextField {
      * @param selection The selected text
      */
     public constructor(text: string = "", selection?: ITextSelection) {
-        super(text);
+        super();
+        this.text = new Field(text);
         if (selection) this.selection.set(selection);
     }
 
@@ -23,7 +26,7 @@ export class TextField extends Field<string> implements ITextField {
      * @param text The new text
      */
     public set(text: string): void {
-        super.set(text);
+        this.text.set(text);
         const selection = this.selection.get(null);
         if (selection.end > text.length || selection.start > text.length)
             this.selection.set({
@@ -38,7 +41,7 @@ export class TextField extends Field<string> implements ITextField {
      * @returns The current text
      */
     public get(hook: IDataHook = null): string {
-        return super.get(hook);
+        return this.text.get(hook);
     }
 
     /**
@@ -46,7 +49,7 @@ export class TextField extends Field<string> implements ITextField {
      * @param selection The new selection
      */
     public setSelection(selection: ITextSelection): void {
-        const text = super.get(null);
+        const text = this.text.get(null);
         const start = Math.max(0, Math.min(selection.start, text.length));
         const end = Math.max(0, Math.min(selection.end, text.length));
 

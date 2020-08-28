@@ -1,7 +1,6 @@
 import {KeyPattern} from "../../KeyPattern";
-import {IIOContext} from "../../../../../context/_types/IIOContext";
-import {IField} from "../../../../../_types/IField";
 import {IKeyArrayPatternData} from "../../_types/IKeyPatternData";
+import {IField} from "../../../../../../../_types/IField";
 
 /**
  * The input data for a keyPatternMenuItem
@@ -11,6 +10,4 @@ export type IKeyPatternOptionMenuItemData = {
     patternField: IField<KeyPattern>;
     /** The option that this item is for */
     option: IKeyArrayPatternData;
-    /** The context to open UI in */
-    context: IIOContext;
 };

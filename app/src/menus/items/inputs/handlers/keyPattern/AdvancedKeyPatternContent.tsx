@@ -1,10 +1,9 @@
 import React from "react";
-import {IDataRetriever} from "model-react";
+import {IDataRetriever, useDataHook} from "model-react";
 import {KeyPattern} from "./KeyPattern";
 import {FC} from "react";
-import {useDataHook} from "../../../utils/modelReact/useDataHook";
-import {Box} from "../../../styling/box/Box";
-import {Truncated} from "../../../components/Truncated";
+import {Box} from "../../../../../styling/box/Box";
+import {Truncated} from "../../../../../components/Truncated";
 
 // TODO: add proper styling
 /**

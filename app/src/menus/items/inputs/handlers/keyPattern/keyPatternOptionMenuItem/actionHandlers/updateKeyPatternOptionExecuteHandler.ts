@@ -1,13 +1,13 @@
-import {sequentialExecuteHandler} from "../../../../../menus/actions/types/execute/sequentialExecuteHandler";
-import {results} from "../../../../../menus/actions/Action";
 import {IUpdateKeyPatternOptionExecuteData} from "../_types/IUpdateKeyPatternOptionExecuteData";
-import {ICommand} from "../../../../../undoRedo/_types/ICommand";
-import {TextField} from "../../../../../textFields/TextField";
 import {createKeyPatternFieldKeyHandler} from "../../createKeyPatternFieldKeyHandler";
-import {openUI} from "../../../../../context/openUI/openUI";
 import {getKeyPatternOptionIndex} from "../getKeyPatternOptionIndex";
 import {KeyPattern} from "../../KeyPattern";
-import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand";
+import {results} from "../../../../../../actions/Action";
+import {sequentialExecuteHandler} from "../../../../../../actions/types/execute/sequentialExecuteHandler";
+import {ICommand} from "../../../../../../../undoRedo/_types/ICommand";
+import {TextField} from "../../../../../../../textFields/TextField";
+import {openUI} from "../../../../../../../context/openUI/openUI";
+import {SetFieldCommand} from "../../../../../../../undoRedo/commands/SetFieldCommand";
 
 /**
  * A execute handler that can be used to set the key pattern of a field
@@ -15,14 +15,8 @@ import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand"
 export const updateKeyPatternOptionExecuteHandler = sequentialExecuteHandler.createHandler(
     (data: IUpdateKeyPatternOptionExecuteData[]) => ({
         [results]: data.map(
-            ({
-                context,
-                option,
-                patternField,
-                undoable,
-                insertIfDeleted: insertIfDelete,
-            }) => ({
-                execute: () =>
+            ({option, patternField, undoable, insertIfDeleted: insertIfDelete}) => ({
+                execute: context =>
                     new Promise<ICommand | void>(res => {
                         const textField = new TextField();
                         const close = openUI(context, {

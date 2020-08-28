@@ -1,12 +1,12 @@
-import {results} from "../../../../../menus/actions/Action";
 import {getKeyPatternOptionIndex} from "../getKeyPatternOptionIndex";
 import {KeyPattern} from "../../KeyPattern";
-import {selectFieldExecuteHandler} from "../../../../../textFields/types/selectField/selectFieldExecuteHandler";
 import {IUpdateKeyPatternOptionTypeExecuteData} from "../_types/IUpdateKeyPatternOptionTypeExecuteData";
 import {IKeyPatternEventType} from "../../_types/IKeyPatternEventType";
 import {IDataHook} from "model-react";
-import {createStandardMenuItem} from "../../../../../menus/items/createStandardMenuItem";
-import {ISelectFieldExecuteData} from "../../../../../textFields/types/selectField/_types/ISelectFieldExecuteData";
+import {selectFieldExecuteHandler} from "../../../../../../../textFields/types/selectField/selectFieldExecuteHandler";
+import {results} from "../../../../../../actions/Action";
+import {createStandardMenuItem} from "../../../../../createStandardMenuItem";
+import {ISelectFieldExecuteData} from "../../../../../../../textFields/types/selectField/_types/ISelectFieldExecuteData";
 
 /**
  * An execute handler that can be used to set the event type of a key pattern option
@@ -14,7 +14,7 @@ import {ISelectFieldExecuteData} from "../../../../../textFields/types/selectFie
 export const updateKeyPatternOptionTypeExecuteHandler = selectFieldExecuteHandler.createHandler(
     (data: IUpdateKeyPatternOptionTypeExecuteData[]) => ({
         [results]: data.map(
-            ({context, option, patternField, liveUpdate, undoable}) =>
+            ({option, patternField, liveUpdate, undoable}) =>
                 ({
                     field: {
                         set: (value: IKeyPatternEventType) => {
@@ -38,7 +38,6 @@ export const updateKeyPatternOptionTypeExecuteHandler = selectFieldExecuteHandle
                             return option.type;
                         },
                     },
-                    context,
                     undoable: undoable as any,
                     config: {
                         liveUpdate,

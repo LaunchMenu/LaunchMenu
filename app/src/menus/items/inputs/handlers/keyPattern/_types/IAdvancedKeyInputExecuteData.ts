@@ -1,6 +1,5 @@
-import {IField} from "../../../../_types/IField";
 import {KeyPattern} from "../KeyPattern";
-import {IIOContext} from "../../../../context/_types/IIOContext";
+import {IField} from "../../../../../../_types/IField";
 
 /**
  * The data that can be applied to the advanced key input executer
@@ -8,8 +7,6 @@ import {IIOContext} from "../../../../context/_types/IIOContext";
 export type IAdvancedKeyInputExecuteData = {
     /** The field to store the pattern in */
     field: IField<KeyPattern>;
-    /** The context to show the field in */
-    context: IIOContext;
     /** Whether the field should update while editing */
     liveUpdate?: boolean;
 } & (

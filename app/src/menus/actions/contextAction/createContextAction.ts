@@ -43,7 +43,10 @@ export function createContextAction<
             getMenuItem: ((context, closeMenu) => {
                 //  Create an execute method that closes the menu when called
                 const executeItem = () => {
-                    const result = actionGetterResult.execute(context, closeMenu);
+                    const result = actionGetterResult.execute({
+                        context,
+                        close: closeMenu,
+                    });
                     if (closeOnExecute != false && closeMenu) closeMenu();
                     return result;
                 };

@@ -1,6 +1,6 @@
-import {IField} from "../../../../../_types/IField";
 import {KeyPattern} from "../../KeyPattern";
 import {IKeyArrayPatternData} from "../../_types/IKeyPatternData";
+import {IField} from "../../../../../../../_types/IField";
 
 export type IDeleteKeyPatternOptionData = {
     /** The pattern to be updated */

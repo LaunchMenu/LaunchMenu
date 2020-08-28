@@ -1,6 +1,6 @@
-import {IKeyEventListener} from "../../../stacks/keyHandlerStack/_types/IKeyEventListener";
-import {ITextField} from "../../../textFields/_types/ITextField";
 import {KeyPattern} from "./KeyPattern";
+import {IKeyEventListener} from "../../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {ITextField} from "../../../../../textFields/_types/ITextField";
 
 /**
  * Creates a text field key handler that captures the keys as a key pattern

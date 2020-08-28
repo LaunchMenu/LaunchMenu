@@ -24,6 +24,8 @@ import {controlsCategory} from "../../../menus/categories/types/controlsCategory
 import {onMenuChangeAction} from "../../../menus/actions/types/onMenuChange/onMenuChangeAction";
 import {IMultiSelectOptionData} from "./_types/IMultiSelectOptionData";
 import {keyHandlerAction} from "../../../menus/actions/types/keyHandler/keyHandlerAction";
+import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
+import {TextFieldView} from "../../../components/fields/TextFieldView";
 
 function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -40,6 +42,7 @@ export class MultiSelectField<T> extends TextField {
 
     protected error = new Field(null as null | IInputFieldError);
     protected closeError?: () => void;
+    protected errorListeners = new ManualSourceHelper();
 
     protected menu: SearchMenu;
     protected closeMenu?: () => void;
@@ -83,17 +86,30 @@ export class MultiSelectField<T> extends TextField {
         this.setupMenu();
     }
 
+    /** The default view for a select field */
+    public view = (
+        <TextFieldView
+            field={this}
+            icon={"search"}
+            highlighter={this.getHighlighterWithError(plaintextLexer)}
+        />
+    );
+
     // Life cycle
     /** @override */
-    public init(): void {
+    public addViewCount(): void {
         if (this.context && !this.closeMenu)
-            this.closeMenu = openUI(this.context, {menu: this.menu, searchable: false});
+            this.closeMenu = openUI(this.context, {
+                menu: this.menu,
+                searchable: false,
+                closable: false,
+            });
+        super.addViewCount();
     }
 
-    /**
-     * Disposes all hooks and persistent data of this input field
-     */
+    /** @override */
     public destroy(): void {
+        super.destroy();
         this.closeError?.();
         this.closeMenu?.();
         this.menuCursorObserver.destroy();
@@ -106,7 +122,7 @@ export class MultiSelectField<T> extends TextField {
      */
     protected setupMenu(): void {
         // Create the menu
-        this.menu = new SearchMenu(this.config.categoryConfig);
+        this.menu = new SearchMenu(this.context, this.config.categoryConfig);
 
         // Retrieve and store the options
         this.options = this.config.options.map(option => ({
@@ -135,7 +151,7 @@ export class MultiSelectField<T> extends TextField {
         // Update the error message and highlighter on cursor change
         this.menuCursorObserver = new Observer(h => this.menu.getCursor(h)).listen(() => {
             this.updateError();
-            this.callListeners(); // Force update a new render
+            this.errorListeners.callListeners(); // Force update a new render
         });
     }
 
@@ -432,7 +448,7 @@ export class MultiSelectField<T> extends TextField {
             highlight: (syntax, h) => {
                 const {nodes, errors} = highlighter.highlight(syntax);
                 const fieldError = this.checkError(syntax);
-                this.addListener(h); // Such that we can force updates, even if the text hasn't changed
+                this.errorListeners.addListener(h); // Such that we can force updates, even if the text hasn't changed
                 return {
                     nodes,
                     errors: fieldError?.ranges

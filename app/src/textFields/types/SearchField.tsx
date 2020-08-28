@@ -1,3 +1,4 @@
+import React from "react";
 import {TextField} from "../TextField";
 import {ITextSelection} from "../_types/ITextSelection";
 import {SearchMenu} from "../../menus/menu/SearchMenu";
@@ -8,6 +9,8 @@ import {IMenu} from "../../menus/menu/_types/IMenu";
 import {IMenuItem} from "../../menus/items/_types/IMenuItem";
 import {Observer} from "../../utils/modelReact/Observer";
 import {IIOContext} from "../../context/_types/IIOContext";
+import {TextFieldView} from "../../components/fields/TextFieldView";
+import {plaintextLexer} from "../syntax/plaintextLexer";
 
 /**
  * A search field that manages the search menu
@@ -41,13 +44,18 @@ export class SearchField extends TextField {
         this.context = data.context;
 
         this.targetMenu = data.menu;
-        this.menu = new SearchMenu(data.categoryConfig);
+        this.menu = new SearchMenu(this.context, data.categoryConfig);
 
         this.targetObserver = new Observer(h => this.targetMenu.getItems(h)).listen(
             items => this.menu.setSearchItems(items),
             true
         );
     }
+
+    /** The default view for a search bar */
+    public view = (
+        <TextFieldView field={this} icon={"search"} highlighter={plaintextLexer} />
+    );
 
     /**
      * Sets the search value

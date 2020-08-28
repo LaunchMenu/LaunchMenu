@@ -1,12 +1,12 @@
 import React from "react";
-import {inputFieldExecuteHandler} from "../../../textFields/types/inputField/InputFieldExecuteHandler";
-import {IInputFieldExecuteData} from "../../../textFields/types/inputField/_types/IInputFieldExecuteData";
-import {results} from "../../../menus/actions/Action";
 import {IColorInputExecuteData} from "./_types/IColorInputExecuteData";
 import Color from "color";
-import {openUI} from "../../../context/openUI/openUI";
-import {TextField} from "../../../textFields/TextField";
-import {ColorTextFieldView} from "../../../components/settings/inputs/ColorTextFieldView";
+import {inputFieldExecuteHandler} from "../../../../../textFields/types/inputField/InputFieldExecuteHandler";
+import {IInputFieldExecuteData} from "../../../../../textFields/types/inputField/_types/IInputFieldExecuteData";
+import {results} from "../../../../actions/Action";
+import {TextField} from "../../../../../textFields/TextField";
+import {ColorTextFieldView} from "../../../../../components/settings/inputs/ColorTextFieldView";
+import {openUI} from "../../../../../context/openUI/openUI";
 
 //TODO: make a more advanced color input editor in accordance to the planning file
 /**
@@ -15,9 +15,8 @@ import {ColorTextFieldView} from "../../../components/settings/inputs/ColorTextF
 export const colorInputExecuteHandler = inputFieldExecuteHandler.createHandler(
     (data: IColorInputExecuteData[]) => ({
         [results]: data.map(
-            ({field, context, liveUpdate, undoable}): IInputFieldExecuteData<string> => ({
+            ({field, liveUpdate, undoable}): IInputFieldExecuteData<string> => ({
                 field,
-                context,
                 undoable,
                 config: {
                     liveUpdate: liveUpdate as any,

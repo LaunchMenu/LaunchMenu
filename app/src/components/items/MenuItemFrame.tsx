@@ -21,10 +21,12 @@ export const MenuItemFrame: FC<{
             <Box
                 cursor="pointer"
                 onClick={useCallback(async () => {
-                    if (!item) return;
-                    if (!menu || menu.getCursor() == item) {
+                    if (!menu || !item) return;
+                    if (menu.getCursor() == item) {
                         if (ioContext) {
-                            const cmd = await executeAction.get([item]).execute();
+                            const cmd = await executeAction
+                                .get([item])
+                                .execute(menu.getContext());
                             if (cmd) ioContext.undoRedo.execute(cmd);
                         }
                     } else if (isItemSelectable(item)) menu.setCursor(item);
