@@ -1,9 +1,9 @@
-import {IActionBinding} from "../../../../../actions/_types/IActionBinding";
+import {IActionBinding} from "../../../../actions/_types/IActionBinding";
 
-/** The input data to create a color menu item */
-export type IColorgMenuItemData = {
+/** The input data to create a boolean menu item */
+export type IBooleanMenuItemData = {
     /** The default value for the field */
-    init: string;
+    init: boolean;
     /** Whether to update the field as you type, defaults to false */
     liveUpdate?: boolean;
     /** Whether the change in value should be undoable, defaults to false, can't be used together with liveUpdate */

@@ -9,9 +9,17 @@ export class KeyPattern {
 
     /**
      * Creates the key pattern that can be tested against
+     * @param pattern The pattern to be tested, in very simplified form, mostly intended for easy testing
+     */
+    public constructor(pattern: string);
+
+    /**
+     * Creates the key pattern that can be tested against
      * @param pattern The pattern to be tested
      */
-    public constructor(patterns: IKeyPatternData[]) {
+    public constructor(patterns: IKeyPatternData[]);
+    public constructor(patterns: string | IKeyPatternData[]) {
+        if (typeof patterns == "string") patterns = [{pattern: patterns, type: "down"}];
         this.patterns = patterns.map(({pattern, type, allowExtra}) => ({
             type,
             allowExtra,

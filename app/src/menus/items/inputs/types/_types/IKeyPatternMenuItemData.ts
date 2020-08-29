@@ -1,5 +1,5 @@
-import {KeyPattern} from "../../../handlers/keyPattern/KeyPattern";
-import {IActionBinding} from "../../../../../actions/_types/IActionBinding";
+import {KeyPattern} from "../../handlers/keyPattern/KeyPattern";
+import {IActionBinding} from "../../../../actions/_types/IActionBinding";
 
 /** The input data to create a pattern menu item */
 export type IKeyPatternMenuItemData = {

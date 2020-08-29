@@ -1,10 +1,10 @@
 import React from "react";
-import {createFieldMenuItem} from "../../createFieldMenuItem";
-import {IFieldMenuItem} from "../../_types/IFieldMenuItem";
+import {createFieldMenuItem} from "../createFieldMenuItem";
+import {IFieldMenuItem} from "../_types/IFieldMenuItem";
 import {Loader} from "model-react";
 import {IKeyPatternMenuItemData} from "./_types/IKeyPatternMenuItemData";
-import {KeyPattern} from "../../handlers/keyPattern/KeyPattern";
-import {keyInputExecuteHandler} from "../../handlers/keyPattern/keyInputExecuteHandler";
+import {KeyPattern} from "../handlers/keyPattern/KeyPattern";
+import {keyInputExecuteHandler} from "../handlers/keyPattern/keyInputExecuteHandler";
 
 /**
  * Creates a new key pattern menu item
@@ -26,7 +26,7 @@ export function createKeyPatternMenuItem({
         init,
         data: field => ({
             name,
-            valueView: <Loader>{h => field.get(h)}</Loader>,
+            valueView: <Loader>{h => field.get(h).toString()}</Loader>,
             tags: ["field", ...tags],
             resetable,
             resetUndoable,

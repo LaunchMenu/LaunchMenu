@@ -137,7 +137,7 @@ export class Action<I, O> implements IAction<I, O> {
 
         // Find the correct index for the data
         const targetItems = actionData.items;
-        const firstIndex = sourceItems[0].inputIndex;
+        const firstIndex = sourceItems[0].inputIndex ?? 0;
         let index = targetItems.length;
         for (let i = 0; i < targetItems.length; i++) {
             if (targetItems[i][0].inputIndex > firstIndex) {
@@ -180,11 +180,10 @@ export class Action<I, O> implements IAction<I, O> {
                     );
                 }
             }
-            if (items.length != outputs.length) {
+            if (items.length != outputs.length)
                 throw Error(
                     action.toString() + " did not return the correct number of sources"
                 );
-            }
             outputs.forEach((output, i) => {
                 this.addActionInput(
                     actionsData,

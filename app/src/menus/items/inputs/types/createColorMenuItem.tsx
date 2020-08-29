@@ -1,16 +1,17 @@
 import React from "react";
-import {createFieldMenuItem} from "../../createFieldMenuItem";
-import {IFieldMenuItem} from "../../_types/IFieldMenuItem";
+import {createFieldMenuItem} from "../createFieldMenuItem";
+import {IFieldMenuItem} from "../_types/IFieldMenuItem";
 import {Loader} from "model-react";
-import {IBooleanMenuItemData} from "./_types/IBooleanMenuItemData";
-import {booleanInputExecuteHandler} from "../../handlers/boolean/booleanInputExecuteHandler";
+import {IColorMenuItemData} from "./_types/IColorMenuItemData";
+import {ColorPreview} from "../../../../components/items/inputs/ColorPreview";
+import {colorInputExecuteHandler} from "../handlers/color/colorInputExecuteHandler";
 
 /**
- * Creates a new boolean menu item
+ * Creates a new color menu item
  * @param data The configuration data of the field
  * @returns The menu item
  */
-export function createBooleanMenuItem({
+export function createColorMenuItem({
     init,
     name,
     liveUpdate,
@@ -20,18 +21,20 @@ export function createBooleanMenuItem({
     resetable,
     resetUndoable = undoable,
     ...rest
-}: IBooleanMenuItemData): IFieldMenuItem<boolean> {
+}: IColorMenuItemData): IFieldMenuItem<string> {
     return createFieldMenuItem({
         init,
         data: field => ({
             name,
-            valueView: <Loader>{h => field.get(h)}</Loader>,
+            valueView: (
+                <Loader>{h => <ColorPreview color={field.get(h)} size={30} />}</Loader>
+            ),
             tags: ["field", ...tags],
             resetable,
             resetUndoable,
             actionBindings: [
                 ...actionBindings,
-                booleanInputExecuteHandler.createBinding({
+                colorInputExecuteHandler.createBinding({
                     field,
                     liveUpdate: liveUpdate as any,
                     undoable,

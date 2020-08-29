@@ -1,5 +1,5 @@
-import {IActionBinding} from "../../../../../actions/_types/IActionBinding";
-import {INumberConstraints} from "../../../handlers/number/_types/INumberConstraints";
+import {IActionBinding} from "../../../../actions/_types/IActionBinding";
+import {INumberConstraints} from "../../handlers/number/_types/INumberConstraints";
 
 /** The input data to create a string menu item */
 export type INumberMenuItemData = {

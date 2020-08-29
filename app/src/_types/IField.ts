@@ -15,5 +15,5 @@ export type IField<T> = {
      * @param hook The hook to subscribe to changes
      * @returns The current field value
      */
-    get(hook: IDataHook): T;
+    get(hook?: IDataHook): T;
 };

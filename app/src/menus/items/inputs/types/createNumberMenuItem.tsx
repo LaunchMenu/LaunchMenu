@@ -1,10 +1,10 @@
 import React from "react";
-import {createFieldMenuItem} from "../../createFieldMenuItem";
-import {IFieldMenuItem} from "../../_types/IFieldMenuItem";
+import {createFieldMenuItem} from "../createFieldMenuItem";
+import {IFieldMenuItem} from "../_types/IFieldMenuItem";
 import {Loader} from "model-react";
 import {INumberMenuItemData} from "./_types/INumberMenuItemData";
-import {numberInputExecuteHandler} from "../../handlers/number/numberInputExecuteHandler";
-import {numberInputSelectExecuteHandler} from "../../handlers/number/numberInputSelectExecuteHandler";
+import {numberInputExecuteHandler} from "../handlers/number/numberInputExecuteHandler";
+import {numberInputSelectExecuteHandler} from "../handlers/number/numberInputSelectExecuteHandler";
 
 /**
  * Creates a new string menu item

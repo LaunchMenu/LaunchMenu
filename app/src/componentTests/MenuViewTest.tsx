@@ -29,9 +29,17 @@ import {numberInputSelectExecuteHandler} from "../menus/items/inputs/handlers/nu
 import {colorInputExecuteHandler} from "../menus/items/inputs/handlers/color/colorInputExecuteHandler";
 import {IContextExecuteData} from "../context/_types/IContextExecuteData";
 import {openUI} from "../context/openUI/openUI";
-import {createStringMenuItem} from "../menus/items/inputs/types/string/createStringMenuItem";
-import {createNumberMenuItem} from "../menus/items/inputs/types/number/createNumberMenuItem";
-import {createColorMenuItem} from "../menus/items/inputs/types/color/createColorMenuItem";
+import {createStringMenuItem} from "../menus/items/inputs/types/createStringMenuItem";
+import {createNumberMenuItem} from "../menus/items/inputs/types/createNumberMenuItem";
+import {createColorMenuItem} from "../menus/items/inputs/types/createColorMenuItem";
+import {createFolderMenuItem} from "../menus/items/createFolderMenuItem";
+import {createSettingsCategory} from "../settings/createSettingsCategory";
+import {createNumberSetting} from "../settings/inputs/createNumberSetting";
+import {createStringSetting} from "../settings/inputs/createStringSetting";
+import {createColorSetting} from "../settings/inputs/createColorSetting";
+import {createBooleanSetting} from "../settings/inputs/createBooleanSetting";
+import {createKeyPatternSetting} from "../settings/inputs/createKeyPatternSetting";
+import {extractSettings} from "../settings/utils/extractSettings";
 
 const someField = new Field("oranges");
 const someField2 = new Field("oof");
@@ -63,6 +71,34 @@ const someField9 = createStringMenuItem({
     undoable: true,
     resetable: true,
 });
+const someFolder = createFolderMenuItem({
+    name: "fields",
+    children: [someField6, someField7, someField8, someField9],
+});
+// Programmatic data access
+someFolder.children[3].get();
+
+const settingsItem = createSettingsCategory({
+    name: "settings",
+    children: {
+        someNumberSetting: createNumberSetting({name: "potatoes", init: 5}),
+        someStringSetting: createStringSetting({name: "oranges", init: "yes"}),
+        someColorSetting: createColorSetting({name: "color", init: "orange"}),
+        someBooleanSetting: createBooleanSetting({name: "yes", init: true}),
+        someSubCategory: createSettingsCategory({
+            name: "keyboard",
+            children: {
+                somePattern: createKeyPatternSetting({
+                    name: "pattern",
+                    init: new KeyPattern("ctrl+m"),
+                }),
+            },
+        }),
+    },
+});
+const settings = extractSettings(settingsItem);
+console.log("pattern", settings.someSubCategory.somePattern.get());
+
 class SetFieldCmd extends Command {
     protected prev: string | undefined;
     protected text: string;
@@ -353,10 +389,8 @@ menu.addItems([
             }),
         ],
     }),
-    someField6,
-    someField7,
-    someField8,
-    someField9,
+    someFolder,
+    settingsItem,
     createStandardMenuItem({
         name: "Undo",
         onExecute: () => undoRedo.undo(),

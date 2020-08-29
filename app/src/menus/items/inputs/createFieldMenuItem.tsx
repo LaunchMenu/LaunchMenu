@@ -71,7 +71,7 @@ export function createFieldMenuItem<T>({
         );
 
     return {
-        get: hook => field.get(hook),
+        get: (hook = null) => field.get(hook),
         set: value => field.set(value),
         view: memo(({highlight, ...props}) => {
             const [h] = useDataHook();
