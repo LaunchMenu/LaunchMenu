@@ -3,7 +3,6 @@ import {createStandardMenuItem} from "../../../createStandardMenuItem";
 import {results} from "../../../../actions/Action";
 import {selectFieldExecuteHandler} from "../../../../../textFields/types/selectField/selectFieldExecuteHandler";
 import {ISelectFieldExecuteData} from "../../../../../textFields/types/selectField/_types/ISelectFieldExecuteData";
-import {IActionMultiResult} from "../../../../actions/_types/IActionMultiResult";
 
 /**
  * A simple execute handler for updating boolean fields

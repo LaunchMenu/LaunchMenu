@@ -6,6 +6,7 @@ import {IMenuItem} from "../items/_types/IMenuItem";
 import {IActionParent} from "./_types/IActionParent";
 import {IActionMultiResult} from "./_types/IActionMultiResult";
 import {IMenuItemActionBindings} from "./_types/IMenuItemActionBindings";
+import {IIndexedMenuItem} from "./_types/IIndexedMenuItem";
 
 /** A symbol that can act as a key in a core return object to pass multiple results */
 export const results = Symbol("Multiple results");
@@ -14,7 +15,12 @@ export const results = Symbol("Multiple results");
 export const sources = Symbol("Multiple result sources");
 
 /** The action data type used by the action getter */
-export type IActionData = {action: IAction<any, any>; data: any[]; items: IMenuItem[][]};
+export type IActionData = {
+    action: IAction<any, any>;
+    data: any[];
+    /** Items should be sorted with an increasing index, where teh smallest index of the inner list is used for sorting the outer list */
+    items: IIndexedMenuItem[][];
+};
 
 /**
  * A class to get action executers of a certain type for a list of items
@@ -22,6 +28,7 @@ export type IActionData = {action: IAction<any, any>; data: any[]; items: IMenuI
 export class Action<I, O> implements IAction<I, O> {
     protected core: IActionCore<I, O>;
     protected defaultTags: any[];
+    protected name: string; // Present for debugging purposes, since no other data easily identifies it
 
     /** @override */
     public ancestors: IAction<any, any>[] = [];
@@ -120,17 +127,28 @@ export class Action<I, O> implements IAction<I, O> {
         actionsData: IActionData[],
         action: IAction<any, any>,
         data: any[],
-        sourceItems: IMenuItem[]
+        sourceItems: IIndexedMenuItem[]
     ): void {
         let actionData = actionsData.find(({action: a}) => a == action);
-
         if (!actionData) {
             actionData = {action: action, data: [], items: []};
             actionsData.push(actionData);
         }
 
-        actionData.data.push(data);
-        actionData.items.push(sourceItems);
+        // Find the correct index for the data
+        const targetItems = actionData.items;
+        const firstIndex = sourceItems[0].inputIndex;
+        let index = targetItems.length;
+        for (let i = 0; i < targetItems.length; i++) {
+            if (targetItems[i][0].inputIndex > firstIndex) {
+                index = i;
+                break;
+            }
+        }
+
+        // Add the data
+        actionData.data.splice(index, 0, data);
+        actionData.items.splice(index, 0, sourceItems);
     }
 
     /**
@@ -144,12 +162,12 @@ export class Action<I, O> implements IAction<I, O> {
         actionsData: IActionData[],
         action: IAction<any, any>,
         output: any,
-        sourceItems: IMenuItem[][]
+        sourceItems: IIndexedMenuItem[][]
     ): void {
         // Handle multiple results being returned
         if (typeof output == "object" && results in output) {
             const outputs = output[results] as any[];
-            let items = output[sources] as IMenuItem[][];
+            let items = output[sources] as IIndexedMenuItem[][];
             if (!items) {
                 if (outputs.length == sourceItems.length) {
                     items = sourceItems;
@@ -212,11 +230,11 @@ export class Action<I, O> implements IAction<I, O> {
             let actionsData = [] as IActionData[];
 
             // Collect all binding and actions
-            items.forEach(item => {
+            items.forEach((item, inputIndex) => {
                 item.actionBindings.forEach(binding => {
                     if (binding.action.ancestors[depth] == this || binding.action == this)
                         this.addActionInput(actionsData, binding.action, binding.data, [
-                            "item" in item ? item.item : item,
+                            {...("item" in item ? item.item : item), inputIndex},
                         ]);
                 });
             });

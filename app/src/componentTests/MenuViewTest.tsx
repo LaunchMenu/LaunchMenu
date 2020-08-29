@@ -57,6 +57,12 @@ const someField8 = createColorMenuItem({
     undoable: true,
     resetable: true,
 });
+const someField9 = createStringMenuItem({
+    init: "oranges",
+    name: "someField 9",
+    undoable: true,
+    resetable: true,
+});
 class SetFieldCmd extends Command {
     protected prev: string | undefined;
     protected text: string;
@@ -350,6 +356,7 @@ menu.addItems([
     someField6,
     someField7,
     someField8,
+    someField9,
     createStandardMenuItem({
         name: "Undo",
         onExecute: () => undoRedo.undo(),
