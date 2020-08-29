@@ -76,8 +76,10 @@ export class InputField<T> extends TextField {
      * Sets the initial value of the field
      */
     protected setInitialValue(): void {
-        const value = this.target.get(null);
-        this.set(this.config.serialize?.(value) ?? ((value as any) as string));
+        const rawValue = this.target.get(null);
+        const value = this.config.serialize?.(rawValue) ?? ((rawValue as any) as string);
+        this.set(value);
+        this.setSelection({start: value.length, end: value.length});
     }
 
     /**

@@ -20,13 +20,10 @@ import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 export function createMenuKeyHandler(
     menu: IMenu,
     {
-        ioContext = menu.getContext(),
         onExit,
         useItemKeyHandlers = true,
         useContextItemKeyHandlers = true,
     }: {
-        /** The context to open menus and other things in */
-        ioContext?: IIOContext;
         /** The code to execute when trying to exit the menu */
         onExit?: () => void;
         /** Whether to forward events to item key handlers (can be slow for menus with many items), defaults to true*/
@@ -41,7 +38,7 @@ export function createMenuKeyHandler(
         : undefined;
 
     // Setup the context key handler
-    const contextHandler = setupContextMenuHandler(menu, ioContext, {
+    const contextHandler = setupContextMenuHandler(menu, {
         useContextItemKeyHandlers,
     });
 
@@ -50,7 +47,7 @@ export function createMenuKeyHandler(
         async emit(e: KeyEvent): Promise<boolean | void> {
             if (await handleItemKeyListeners?.emit(e)) return true;
             if (await contextHandler.emit(e)) return true;
-            if (handleExecuteInput(e, menu, ioContext.undoRedo)) return true;
+            if (handleExecuteInput(e, menu)) return true;
             if (handleMoveInput(e, menu)) return true;
             if (handleDeselectInput(e, menu)) return true;
             if (handleDeselectInput(e, menu)) return true;

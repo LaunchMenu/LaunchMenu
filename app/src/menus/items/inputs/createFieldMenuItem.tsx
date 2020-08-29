@@ -15,6 +15,8 @@ import {MenuItemLayout} from "../../../components/items/MenuItemLayout";
 import {MenuItemIcon} from "../../../components/items/MenuItemIcon";
 import {SimpleSearchHighlight} from "../../../components/items/SimpleSearchHighlight";
 import {Truncated} from "../../../components/Truncated";
+import {Box} from "../../../styling/box/Box";
+import {resetFieldAction} from "./resetFieldAction";
 
 const get = <T extends unknown>(f: T, h?: IDataHook) =>
     f instanceof Function ? f(h) : f;
@@ -25,20 +27,25 @@ const get = <T extends unknown>(f: T, h?: IDataHook) =>
  * @returns The created field menu item
  */
 export function createFieldMenuItem<T>({
-    default: def,
-    valueView,
-    name,
-    icon,
-    description,
-    tags,
-    onExecute,
-    onSelect,
-    onCursor,
-    onMenuChange,
-    category,
-    actionBindings = [],
+    init,
+    data,
 }: IFieldMenuItemData<T>): IFieldMenuItem<T> {
-    const field = new Field(def);
+    const field = new Field(init);
+    const {
+        valueView,
+        name,
+        icon,
+        description,
+        tags,
+        onExecute,
+        onSelect,
+        onCursor,
+        onMenuChange,
+        category,
+        resetable,
+        resetUndoable,
+        actionBindings = [],
+    } = data(field);
 
     let bindings: IActionBinding<any>[] = [
         // TODO: make the action actually update if any of these change
@@ -54,6 +61,14 @@ export function createFieldMenuItem<T>({
     if (onCursor) bindings.push(onCursorAction.createBinding({onCursor}));
     if (onMenuChange) bindings.push(onMenuChangeAction.createBinding({onMenuChange}));
     if (category) bindings.push(getCategoryAction.createBinding(category));
+    if (resetable)
+        bindings.push(
+            resetFieldAction.createBinding({
+                default: init,
+                field,
+                undoable: resetUndoable,
+            })
+        );
 
     return {
         get: hook => field.get(hook),
@@ -74,6 +89,10 @@ export function createFieldMenuItem<T>({
                                 <SimpleSearchHighlight query={highlight}>
                                     {get(name, h)}
                                 </SimpleSearchHighlight>
+                                :
+                                <Box display="inline" marginLeft="small">
+                                    {valueView}
+                                </Box>
                                 {desc && (
                                     <Truncated title={desc}>
                                         <SimpleSearchHighlight query={highlight}>

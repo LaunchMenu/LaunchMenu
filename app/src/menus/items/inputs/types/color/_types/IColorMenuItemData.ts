@@ -1,8 +1,7 @@
-import {IInputFieldError} from "../../../../../../textFields/types/inputField/_types/IInputFieldError";
 import {IActionBinding} from "../../../../../actions/_types/IActionBinding";
 
-/** The input data to create a string menu item */
-export type IStringMenuItemData = {
+/** The input data to create a color menu item */
+export type IColorgMenuItemData = {
     /** The default value for the field */
     init: string;
     /** Whether to update the field as you type, defaults to false */
@@ -15,8 +14,6 @@ export type IStringMenuItemData = {
     description?: string;
     /** The tags for the menu item */
     tags?: string[];
-    /** Checks whether the given input is valid */
-    checkValidity?: (v: string) => IInputFieldError | undefined;
     /** The extra action bindings */
     actionBindings?: IActionBinding<any>[];
     /** Whether the field should be resetable to the initial value, defaults to false */

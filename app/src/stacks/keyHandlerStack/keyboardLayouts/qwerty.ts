@@ -13,7 +13,7 @@ export const keyboardLayout: IKeyboardLayout = {
         "17-2": {name: "ctrl", id: "controlRight", char: ""},
         "18-2": {name: "alt", id: "altRight", char: ""},
         27: {name: "esc", id: "escape", char: ""},
-        32: {name: "space", id: "space", char: " "},
+        32: {name: "space", id: "space", char: " ", shiftChar: " "},
         33: {name: "pageUp", id: "pageUp", char: ""},
         34: {name: "pageDown", id: "pageDown", char: ""},
         35: {name: "end", id: "end", char: ""},

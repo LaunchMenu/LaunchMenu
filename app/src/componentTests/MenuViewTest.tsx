@@ -29,12 +29,34 @@ import {numberInputSelectExecuteHandler} from "../menus/items/inputs/handlers/nu
 import {colorInputExecuteHandler} from "../menus/items/inputs/handlers/color/colorInputExecuteHandler";
 import {IContextExecuteData} from "../context/_types/IContextExecuteData";
 import {openUI} from "../context/openUI/openUI";
+import {createStringMenuItem} from "../menus/items/inputs/types/string/createStringMenuItem";
+import {createNumberMenuItem} from "../menus/items/inputs/types/number/createNumberMenuItem";
+import {createColorMenuItem} from "../menus/items/inputs/types/color/createColorMenuItem";
 
 const someField = new Field("oranges");
-const someField2 = new Field("shit");
+const someField2 = new Field("oof");
 const someField3 = new Field([45]);
 const someField4 = new Field(45);
 const someField5 = new Field("orange");
+const someField6 = createStringMenuItem({
+    init: "bob",
+    name: "someField 6",
+    undoable: true,
+    resetable: true,
+});
+const someField7 = createNumberMenuItem({
+    init: 4,
+    name: "someField 7",
+    undoable: true,
+    resetable: true,
+    min: 3,
+});
+const someField8 = createColorMenuItem({
+    init: "orange",
+    name: "someField 8",
+    undoable: true,
+    resetable: true,
+});
 class SetFieldCmd extends Command {
     protected prev: string | undefined;
     protected text: string;
@@ -321,11 +343,13 @@ menu.addItems([
         name: "Edit field 5",
         actionBindings: [
             colorInputExecuteHandler.createBinding({
-                context,
                 field: someField5,
             }),
         ],
     }),
+    someField6,
+    someField7,
+    someField8,
     createStandardMenuItem({
         name: "Undo",
         onExecute: () => undoRedo.undo(),
@@ -371,6 +395,7 @@ export const MenuViewTest: FC = () => {
             <Box height={30}>
                 <Loader>{h => someField.get(h)}</Loader>{" "}
                 <Loader>{h => someField2.get(h).toString()}</Loader>{" "}
+                <Loader>{h => someField6.get(h)}</Loader>{" "}
                 <Loader>{h => undoRedo.getState(h)}</Loader>
             </Box>
             <Box position="relative" height={80}>

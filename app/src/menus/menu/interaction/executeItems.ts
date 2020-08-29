@@ -9,10 +9,7 @@ import {IIOContext} from "../../../context/_types/IIOContext";
  * @param menu The menu for which to execute the items
  * @param undoRedo The undo redo facility to dispatch commands in
  */
-export async function executeItems(
-    menu: IMenu,
-    undoRedo: IUndoRedoFacility
-): Promise<void>;
+export async function executeItems(menu: IMenu): Promise<void>;
 
 /**
  * Executes the default actions of specified items
@@ -22,21 +19,19 @@ export async function executeItems(
  */
 export async function executeItems(
     context: IIOContext,
-    items: IMenuItem[],
-    undoRedo: IUndoRedoFacility
+    items: IMenuItem[]
 ): Promise<void>;
 export async function executeItems(
     context: IMenu | IIOContext,
-    items: IMenuItem[] | IUndoRedoFacility,
-    undoRedo?: IUndoRedoFacility
+    items?: IMenuItem[]
 ): Promise<void> {
     if ("getAllSelected" in context) {
         const cmd = await executeAction
             .get(context.getAllSelected())
             .execute({context: context.getContext()});
-        if (cmd) (items as IUndoRedoFacility).execute(cmd);
+        if (cmd) context.getContext().undoRedo.execute(cmd);
     } else {
         const cmd = await executeAction.get(items as IMenuItem[]).execute({context});
-        if (cmd) (undoRedo as IUndoRedoFacility).execute(cmd);
+        if (cmd) context.undoRedo.execute(cmd);
     }
 }

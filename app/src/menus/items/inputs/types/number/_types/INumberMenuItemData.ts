@@ -1,10 +1,10 @@
-import {IInputFieldError} from "../../../../../../textFields/types/inputField/_types/IInputFieldError";
 import {IActionBinding} from "../../../../../actions/_types/IActionBinding";
+import {INumberConstraints} from "../../../handlers/number/_types/INumberConstraints";
 
 /** The input data to create a string menu item */
-export type IStringMenuItemData = {
+export type INumberMenuItemData = {
     /** The default value for the field */
-    init: string;
+    init: number;
     /** Whether to update the field as you type, defaults to false */
     liveUpdate?: boolean;
     /** Whether the change in value should be undoable, defaults to false, can't be used together with liveUpdate */
@@ -15,12 +15,14 @@ export type IStringMenuItemData = {
     description?: string;
     /** The tags for the menu item */
     tags?: string[];
-    /** Checks whether the given input is valid */
-    checkValidity?: (v: string) => IInputFieldError | undefined;
     /** The extra action bindings */
     actionBindings?: IActionBinding<any>[];
+    /** The numeric options to choose from */
+    options?: number[];
+    /** Whether to allow custom inputs if options are specified (otherwise custom inputs are always enabled), defaults to false */
+    allowCustomInput?: boolean;
     /** Whether the field should be resetable to the initial value, defaults to false */
     resetable?: boolean;
     /** Whether the reset should be undoable, defaults to value of undoable */
     resetUndoable?: boolean;
-};
+} & INumberConstraints;

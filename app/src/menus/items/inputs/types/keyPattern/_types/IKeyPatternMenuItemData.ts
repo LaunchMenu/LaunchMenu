@@ -1,10 +1,10 @@
-import {IInputFieldError} from "../../../../../../textFields/types/inputField/_types/IInputFieldError";
+import {KeyPattern} from "../../../handlers/keyPattern/KeyPattern";
 import {IActionBinding} from "../../../../../actions/_types/IActionBinding";
 
-/** The input data to create a string menu item */
-export type IStringMenuItemData = {
+/** The input data to create a pattern menu item */
+export type IKeyPatternMenuItemData = {
     /** The default value for the field */
-    init: string;
+    init: KeyPattern;
     /** Whether to update the field as you type, defaults to false */
     liveUpdate?: boolean;
     /** Whether the change in value should be undoable, defaults to false, can't be used together with liveUpdate */
@@ -15,8 +15,6 @@ export type IStringMenuItemData = {
     description?: string;
     /** The tags for the menu item */
     tags?: string[];
-    /** Checks whether the given input is valid */
-    checkValidity?: (v: string) => IInputFieldError | undefined;
     /** The extra action bindings */
     actionBindings?: IActionBinding<any>[];
     /** Whether the field should be resetable to the initial value, defaults to false */
