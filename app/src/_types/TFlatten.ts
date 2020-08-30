@@ -19,5 +19,8 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
     ? I
     : never;
 
+/**
+ * Flattens an object structure by 1 level
+ */
 export type TFlatten<T> = Pick<T, NonObjectKeysOf<T>> &
     UnionToIntersection<ObjectValuesOf<T>>;
