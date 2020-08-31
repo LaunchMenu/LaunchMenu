@@ -1,5 +1,5 @@
-import {IField} from "../../../../_types/IField";
-import {IJSON} from "../../../../_types/IJSON";
+import {IField} from "../../../../../_types/IField";
+import {IJSON} from "../../../../../_types/IJSON";
 import {IJSONDeserializer} from "./IJSONDeserializer";
 
 export type TSerializables<T extends IJSONDeserializer> = T extends IJSONDeserializer<
@@ -7,7 +7,7 @@ export type TSerializables<T extends IJSONDeserializer> = T extends IJSONDeseria
     infer O,
     infer N
 >
-    ? {serialize(): I & {type: N}} & O
+    ? {serialize(): I & {$$type: N}} & O
     : never;
 
 /**

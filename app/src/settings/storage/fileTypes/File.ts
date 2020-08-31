@@ -9,11 +9,12 @@ import {
 import FS from "fs";
 import Path from "path";
 import mkdirp from "mkdirp";
+import {ISavable} from "./_types/ISavable";
 
 /**
  * A file class for simple data management
  */
-export class File<T = string, I extends T = T> extends Field<T> {
+export class File<T = string, I extends T = T> extends Field<T> implements ISavable {
     protected filePath: string;
     protected loading = new ActionState<T>();
     protected loadTime: number = 0;

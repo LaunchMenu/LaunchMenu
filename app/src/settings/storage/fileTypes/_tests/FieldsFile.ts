@@ -27,7 +27,7 @@ class Test {
     // Serialization stuff
     public serialize() {
         return {
-            type: Test.jsonTypeName,
+            $$type: Test.jsonTypeName,
             name: this.name,
         } as const;
     }
@@ -119,7 +119,7 @@ describe("FieldsFile", () => {
                     sub: {
                         sub: {
                             potatoes: {
-                                type: "$Test",
+                                $$type: "Test",
                                 name: "yes",
                             },
                         },
@@ -172,7 +172,7 @@ describe("FieldsFile", () => {
                         sub: {
                             sub: {
                                 potatoes: {
-                                    type: "$Test",
+                                    $$type: "Test",
                                     name: "orange",
                                 },
                             },

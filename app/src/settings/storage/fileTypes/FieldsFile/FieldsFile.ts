@@ -2,20 +2,21 @@ import {ActionState, Field, getExceptions, isLoading} from "model-react";
 import {IFieldsTree} from "./_types/IFieldsTree";
 import {IJSONDeserializer} from "./_types/IJSONDeserializer";
 import FS from "fs";
-import {IJSON} from "../../../_types/IJSON";
-import {ExtendedObject} from "../../../utils/ExtendedObject";
+import {IJSON} from "../../../../_types/IJSON";
+import {ExtendedObject} from "../../../../utils/ExtendedObject";
 import mkdirp from "mkdirp";
 import Path from "path";
+import {ISavable} from "../_types/ISavable";
 
 /**
  * A file that stores the value of the fields
  */
-export class FieldsFile<F extends IFieldsTree<T>, T extends IJSONDeserializer = never> {
+export class FieldsFile<F extends IFieldsTree<T>, T extends IJSONDeserializer = never>
+    implements ISavable {
     protected deserializers: T[];
     protected filePath: string;
     protected loading = new ActionState<void>();
     protected loadTime: number = 0;
-    protected typePrefix = "$";
 
     // The fields to interact with (equivalent to the input fields)
     public fields: F;
@@ -164,7 +165,7 @@ export class FieldsFile<F extends IFieldsTree<T>, T extends IJSONDeserializer = 
                     val.serialize instanceof Function
                 ) {
                     const serialized = (val.serialize as any)();
-                    serialized.type = this.typePrefix + serialized.type;
+                    serialized.type = serialized.type;
                     return serialized;
                 } else {
                     return val;
@@ -204,10 +205,10 @@ export class FieldsFile<F extends IFieldsTree<T>, T extends IJSONDeserializer = 
      * @returns The deserialized value
      */
     protected decodeValue(data: IJSON): any {
-        if (typeof data == "object" && data != null && "type" in data) {
-            const type = data.type;
+        if (typeof data == "object" && data != null && "$$type" in data) {
+            const type = data.$$type;
             const deserializer = this.deserializers.find(
-                ({jsonTypeName}) => this.typePrefix + jsonTypeName == type
+                ({jsonTypeName}) => jsonTypeName == type
             );
             if (deserializer) return deserializer.deserialize(data);
         }
