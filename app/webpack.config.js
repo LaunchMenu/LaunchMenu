@@ -3,7 +3,6 @@ const build = path.join(process.cwd(), "build");
 const src = path.join(process.cwd(), "src");
 
 const NodemonPlugin = require("nodemon-webpack-plugin");
-const CopyPlugin = require("copy-webpack-plugin");
 const WriteFilePlugin = require("write-file-webpack-plugin");
 
 const rules = [
@@ -16,7 +15,8 @@ const rules = [
         test: /(\.png|\.jpg|\.html|\.ttf)$/,
         loader: "file-loader",
         options: {
-            name: "[path][name].[ext]",
+            outputPath: (url, resourcePath, context) =>
+                resourcePath.substring(src.length),
         },
     },
 ];
@@ -49,17 +49,7 @@ module.exports = env => {
                 filename: "app.js",
                 path: build,
             },
-            plugins: [
-                new WriteFilePlugin(),
-                new CopyPlugin({
-                    patterns: [
-                        {
-                            from: path.join(src, "index.html"),
-                            to: path.join(build, "index.html"),
-                        },
-                    ],
-                }),
-            ],
+            plugins: [new WriteFilePlugin()],
         },
         {
             target: "electron-main",

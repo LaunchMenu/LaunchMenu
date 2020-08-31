@@ -29,7 +29,7 @@ export const useDataHook = ({
     }
 ] => {
     // A fake state in order to fore an update
-    const [, _update] = useState();
+    const [, _update] = useState({});
     const update = () => {
         onChange?.();
         _update({});

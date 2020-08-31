@@ -1,5 +1,5 @@
 import {File} from "./File";
-import {IJSON} from "../../_types/IJSON";
+import {IJSON} from "../../../_types/IJSON";
 
 /**
  * A class to store files in a json format
