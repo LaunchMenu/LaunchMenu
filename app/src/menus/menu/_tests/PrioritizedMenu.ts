@@ -8,14 +8,7 @@ import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangeAction";
-import {IIOContext} from "../../../context/_types/IIOContext";
-import {UndoRedoFacility} from "../../../undoRedo/UndoRedoFacility";
-
-const context: IIOContext = {
-    keyHandler: null as any,
-    panes: {content: null as any, field: null as any, menu: null as any},
-    undoRedo: new UndoRedoFacility(),
-};
+import {context} from "../../../_tests/context.helper";
 
 const createMenu = (items?: IPrioritizedMenuItem[]) => {
     const menu = new PrioritizedMenu(context, {

@@ -115,4 +115,28 @@ export class KeyPattern {
             return code1 - code2;
         });
     }
+
+    // Serialization
+    /**
+     * Serializes the pattern
+     * @returns The serialized pattern
+     */
+    public serialize() {
+        return {
+            $$type: KeyPattern.jsonTypeName,
+            pattern: this.patterns,
+        } as const;
+    }
+
+    /** The name of this class as a serialized json type */
+    public static readonly jsonTypeName = "KeyPattern";
+
+    /**
+     * Deserializes the pattern
+     * @param data The serialized pattern
+     * @returns The object pattern
+     */
+    public static deserialize(data: {pattern: IKeyArrayPatternData[]}): KeyPattern {
+        return new KeyPattern(data.pattern);
+    }
 }

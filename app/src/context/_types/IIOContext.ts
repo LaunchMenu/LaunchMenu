@@ -1,6 +1,7 @@
 import {IViewStack} from "../../stacks/_types/IViewStack";
 import {IKeyHandlerStack} from "../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {IUndoRedoFacility} from "../../undoRedo/_types/IUndoRedoFacility";
+import {SettingsContext} from "../../settings/SettingsContext";
 
 /**
  * A context to get general IO utilities from
@@ -13,7 +14,7 @@ export type IIOContext = {
     };
     keyHandler: IKeyHandlerStack;
     undoRedo: IUndoRedoFacility;
-    // TODO: add common/global settings
+    settings: SettingsContext;
 };
 
 /**
@@ -23,6 +24,7 @@ export type IPartialIOContext = {
     panes?: Partial<IIOContext["panes"]>;
     keyHandler?: IKeyHandlerStack;
     undoRedo?: IUndoRedoFacility;
+    settings?: SettingsContext;
 };
 
 /**
@@ -37,5 +39,6 @@ export function isIOContext(context: IPartialIOContext): context is IIOContext {
     if (!context.panes.field) return false;
     if (!context.keyHandler) return false;
     if (!context.undoRedo) return false;
+    if (!context.settings) return false;
     return true;
 }

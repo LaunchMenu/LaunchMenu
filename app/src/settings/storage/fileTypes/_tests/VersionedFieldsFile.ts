@@ -120,11 +120,15 @@ describe("FieldsFile", () => {
                 updater: (
                     version,
                     data: TFieldsTreeSerialized<
-                        typeof createFieldsCustom extends () => infer T ? T : unknown
+                        typeof createFieldsCustom extends () => infer T ? T : unknown,
+                        any
                     >
                 ) => {
                     if (version == 0) {
-                        const v0 = data as TFieldsTreeSerialized<typeof oldFieldsVersion>;
+                        const v0 = data as TFieldsTreeSerialized<
+                            typeof oldFieldsVersion,
+                            any
+                        >;
                         data = {
                             ...v0,
                             stuff: {

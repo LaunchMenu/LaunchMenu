@@ -2,14 +2,7 @@ import {SearchMenu} from "../SearchMenu";
 import {createSearchableMenuItem} from "./MenuItem.helper";
 import {wait} from "../../../_tests/wait.helper";
 import {Observer} from "../../../utils/modelReact/Observer";
-import {IIOContext} from "../../../context/_types/IIOContext";
-import {UndoRedoFacility} from "../../../undoRedo/UndoRedoFacility";
-
-const context: IIOContext = {
-    keyHandler: null as any,
-    panes: {content: null as any, field: null as any, menu: null as any},
-    undoRedo: new UndoRedoFacility(),
-};
+import {context} from "../../../_tests/context.helper";
 
 describe("SearchMenu", () => {
     describe("SearchMenu.addSearchItem -> SearchMenu.setSearch", () => {

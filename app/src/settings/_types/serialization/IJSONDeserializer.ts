@@ -1,4 +1,4 @@
-import {IJSON} from "../../../../../_types/IJSON";
+import {IJSON} from "../../../_types/IJSON";
 
 /**
  * A type that can be used to decode from JSON data

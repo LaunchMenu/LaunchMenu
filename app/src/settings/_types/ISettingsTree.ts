@@ -1,8 +1,7 @@
-import {IField} from "../../_types/IField";
+import {IFieldsTree} from "../storage/fileTypes/FieldsFile/_types/IFieldsTree";
+import {IJSONDeserializer} from "./serialization/IJSONDeserializer";
 
 /**
  * A tree of settings
  */
-export type ISettingsTree = {
-    [key: string]: ISettingsTree | IField<any>;
-};
+export type ISettingsTree<T extends IJSONDeserializer> = IFieldsTree<T>;

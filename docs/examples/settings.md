@@ -1,23 +1,27 @@
 ```tsx
 // Create settings that aren't associated with any file yet, defaults to the given values in case the settings are never registered
-export const someAppSettings = new SettingsGroup({
+export const someAppSettings = createSettings({
     version: 1,
-    settings: ()=>({
-            someNumberSetting: createNumberSetting({name: "potatoes", init: 3}),
-            someStringSetting: createStringSetting({name: "oranges", init: "yes"}),
-            someColorSetting: createColorSetting({name: "color", init: "orange"}),
-            someBooleanSetting: createBooleanSetting({name: "yes", init: true}),
-            someSubCategory: createSettingsCategory({
-                name: "keyboard",
-                children: {
-                    somePattern: createKeyPatternSetting({
-                        name: "pattern",
-                        init: new KeyPattern("ctrl+m"),
-                    }),
-                }j
-            }),
+    settings: () =>
+        createSettingsCategory({
+            name: "Shit",
+            children: {
+                someNumberSetting: createNumberSetting({name: "potatoes", init: 3}),
+                someStringSetting: createStringSetting({name: "oranges", init: "yes"}),
+                someColorSetting: createColorSetting({name: "color", init: "orange"}),
+                someBooleanSetting: createBooleanSetting({name: "yes", init: true}),
+                someSubCategory: createSettingsCategory({
+                    name: "keyboard",
+                    children: {
+                        somePattern: createKeyPatternSetting({
+                            name: "pattern",
+                            init: new KeyPattern("ctrl+m"),
+                        }),
+                    },
+                }),
+            },
         }),
-    updater: (currentVersion, data)=>data
+    updater: (currentVersion, data) => data,
 });
 
 // IOcontext.settings.add(someAppSettings);

@@ -1,7 +1,7 @@
 import {IJSON} from "../../../../_types/IJSON";
 import {FieldsFile} from "../FieldsFile/FieldsFile";
 import {IFieldsTree} from "../FieldsFile/_types/IFieldsTree";
-import {IJSONDeserializer} from "../FieldsFile/_types/IJSONDeserializer";
+import {IJSONDeserializer} from "../../../_types/serialization/IJSONDeserializer";
 import {TFieldsTreeSerialized} from "./_types/TFieldsTreeSerialized";
 
 export class VersionedFieldsFile<
@@ -10,7 +10,7 @@ export class VersionedFieldsFile<
     V extends IJSON = string
 > extends FieldsFile<F, T> {
     protected version: V;
-    protected updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F>;
+    protected updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F, T>;
 
     /**
      * Creates a new fields file object, without custom field types
@@ -20,7 +20,7 @@ export class VersionedFieldsFile<
         /** The version of the fields */
         version: V;
         /** A function that updates from previous versions of the data to the latest version */
-        updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F>;
+        updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F, T>;
         /** The path of the file */
         path: string;
         /** The fields without any custom types */
@@ -37,7 +37,7 @@ export class VersionedFieldsFile<
         /** The version of the fields */
         version: V;
         /** A function that updates from previous versions of the data to the latest version */
-        updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F>;
+        updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F, T>;
         /** The path of the file */
         path: string;
         /** The custom types for that can be used for deserialization */
@@ -47,7 +47,7 @@ export class VersionedFieldsFile<
     });
     public constructor(data: {
         version: any;
-        updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F>;
+        updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F, T>;
         path: string;
         deserializers?: T[];
         fields: F;

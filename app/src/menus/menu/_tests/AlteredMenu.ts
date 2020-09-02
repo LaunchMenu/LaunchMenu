@@ -3,8 +3,7 @@ import {Menu} from "../Menu";
 import {AlteredMenu} from "../AlteredMenu";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {wait} from "../../../_tests/wait.helper";
-import {IIOContext} from "../../../context/_types/IIOContext";
-import {UndoRedoFacility} from "../../../undoRedo/UndoRedoFacility";
+import {context} from "../../../_tests/context.helper";
 
 const someCategory: ICategory = {
     name: "Bob",
@@ -22,12 +21,6 @@ const items = [
     createMenuItem(someCategory),
     createMenuItem(someCategory2),
 ];
-
-const context: IIOContext = {
-    keyHandler: null as any,
-    panes: {content: null as any, field: null as any, menu: null as any},
-    undoRedo: new UndoRedoFacility(),
-};
 const parentMenu = new Menu(context, items);
 
 describe("AlteredMenu", () => {

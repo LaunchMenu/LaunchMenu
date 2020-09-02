@@ -1,6 +1,6 @@
 import {ActionState, Field, getExceptions, isLoading} from "model-react";
 import {IFieldsTree} from "./_types/IFieldsTree";
-import {IJSONDeserializer} from "./_types/IJSONDeserializer";
+import {IJSONDeserializer} from "../../../_types/serialization/IJSONDeserializer";
 import FS from "fs";
 import {IJSON} from "../../../../_types/IJSON";
 import {ExtendedObject} from "../../../../utils/ExtendedObject";

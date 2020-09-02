@@ -33,13 +33,14 @@ import {createStringMenuItem} from "../menus/items/inputs/types/createStringMenu
 import {createNumberMenuItem} from "../menus/items/inputs/types/createNumberMenuItem";
 import {createColorMenuItem} from "../menus/items/inputs/types/createColorMenuItem";
 import {createFolderMenuItem} from "../menus/items/createFolderMenuItem";
-import {createSettingsCategory} from "../settings/createSettingsCategory";
+import {createSettingsCategory} from "../settings/inputs/createSettingsCategory";
 import {createNumberSetting} from "../settings/inputs/createNumberSetting";
 import {createStringSetting} from "../settings/inputs/createStringSetting";
 import {createColorSetting} from "../settings/inputs/createColorSetting";
 import {createBooleanSetting} from "../settings/inputs/createBooleanSetting";
 import {createKeyPatternSetting} from "../settings/inputs/createKeyPatternSetting";
 import {extractSettings} from "../settings/utils/extractSettings";
+import {SettingsContext} from "../settings/SettingsContext";
 
 const someField = new Field("oranges");
 const someField2 = new Field("oof");
@@ -97,6 +98,7 @@ const settingsItem = createSettingsCategory({
     },
 });
 const settings = extractSettings(settingsItem);
+// settings
 console.log("pattern", settings.someSubCategory.somePattern.get());
 
 class SetFieldCmd extends Command {
@@ -200,6 +202,7 @@ const context = new IOContext({
     panes: {menu: menuViewStack, content: contentViewStack, field: fieldViewStack},
     keyHandler: inputStack,
     undoRedo,
+    settings: new SettingsContext(),
 });
 context.panes.content.push(<Box>I am a cool box yo</Box>);
 
