@@ -167,7 +167,7 @@ describe("Command", () => {
             const facility = new UndoRedoFacility();
             const resource = new Resource();
             const events = [] as string[];
-            const evt = l => async () => {
+            const evt = (l: string) => async () => {
                 events.push(l + "-start");
                 await wait(20);
                 events.push(l + "-end");
@@ -210,7 +210,7 @@ describe("Command", () => {
             const resource1 = new Resource();
             const resource2 = new Resource();
             const events = [] as string[];
-            const evt = l => async () => {
+            const evt = (l: string) => async () => {
                 events.push(l + "-start");
                 await wait(20);
                 events.push(l + "-end");

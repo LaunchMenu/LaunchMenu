@@ -1,10 +1,11 @@
 import React, {FC, useRef, createElement, useState, cloneElement} from "react";
 import {IStackViewProps} from "./_types/IStackViewProps";
-import {useDataHook} from "model-react";
 import {findStackChanges} from "../../stacks/findStackChanges";
 import {IIdentifiedItem} from "../../stacks/_types/IIdentifiedItem";
-import {IViewStackItem} from "../../stacks/_types/IViewStackItem";
+import {IViewStackItem, IViewStackItemView} from "../../stacks/_types/IViewStackItem";
 import {Transition} from "./transitions/Transition";
+import {useDataHook} from "model-react";
+import {getViewStackItemElement} from "./getViewStackItemElement";
 
 type IStackViewChild = {
     // A key for this specific transition element
@@ -12,7 +13,7 @@ type IStackViewChild = {
     // The ID of the item contained in this transition
     id: string;
     // The element that's currently shown
-    element: FC<{onTop: boolean; index: number}> | JSX.Element | undefined;
+    element: IViewStackItemView | undefined;
     // Whether the transition element is currently closing
     closing: boolean;
     // Whether the transition element is currently opening
@@ -85,7 +86,7 @@ function updateChildren(
  * Visualizes a stack of views
  */
 export const StackView: FC<IStackViewProps> = ({
-    items,
+    stack,
     smartHide = true,
     ChangeTransitionComp,
     CloseTransitionComp,
@@ -93,8 +94,7 @@ export const StackView: FC<IStackViewProps> = ({
 }) => {
     // Retrieve the items
     const [h] = useDataHook();
-    if ("get" in items) items = items.get(h);
-    if (items instanceof Function) items = items(h);
+    const items = stack.get(h);
     const prevItems = useRef<readonly IIdentifiedItem<IViewStackItem>[]>([]);
 
     // Keep track of the children to render
@@ -150,6 +150,7 @@ export const StackView: FC<IStackViewProps> = ({
                 const props = {
                     key: id,
                     onTop: index == childrenRef.current.length,
+                    stack,
                     index,
                 };
                 return (
@@ -162,11 +163,7 @@ export const StackView: FC<IStackViewProps> = ({
                         ChangeTransitionComp={ChangeTransitionComp}
                         CloseTransitionComp={CloseTransitionComp}
                         OpenTransitionComp={OpenTransitionComp}>
-                        {element instanceof Function
-                            ? createElement(element, props)
-                            : element
-                            ? cloneElement(element, props)
-                            : element}
+                        {element && getViewStackItemElement(element, props)}
                     </Transition>
                 );
             })}

@@ -2,7 +2,7 @@ import React, {FC} from "react";
 import {Menu} from "../menus/menu/Menu";
 import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
 import {createStandardMenuItem} from "../menus/items/createStandardMenuItem";
-import {ViewStack} from "../stacks/ViewStack";
+import {ViewStack} from "../stacks/viewStack/ViewStack";
 import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
 import {StackView} from "../components/stacks/StackView";
 import {Action} from "../menus/actions/Action";
@@ -17,8 +17,90 @@ import {createMenuKeyHandler} from "../menus/menu/interaction/keyHandler/createM
 import {wait} from "../_tests/wait.helper";
 import {getContextMenuItems} from "../menus/utils/getContextMenu";
 import {CompoundCommand} from "../undoRedo/commands/CompoundCommand";
+import {inputFieldExecuteHandler} from "../textFields/types/inputField/InputFieldExecuteHandler";
+import {SetFieldCommand} from "../undoRedo/commands/SetFieldCommand";
+import {selectFieldExecuteHandler} from "../textFields/types/selectField/selectFieldExecuteHandler";
+import {multiSelectFieldExecuteHandler} from "../textFields/types/multiselectField/multiSelectFieldExecuteHandler";
+import {KeyPattern} from "../menus/items/inputs/handlers/keyPattern/KeyPattern";
+import {keyInputExecuteHandler} from "../menus/items/inputs/handlers/keyPattern/keyInputExecuteHandler";
+import {advancedKeyInputEditAction} from "../menus/items/inputs/handlers/keyPattern/advancedKeyInputEditAction";
+import {numberInputExecuteHandler} from "../menus/items/inputs/handlers/number/numberInputExecuteHandler";
+import {numberInputSelectExecuteHandler} from "../menus/items/inputs/handlers/number/numberInputSelectExecuteHandler";
+import {colorInputExecuteHandler} from "../menus/items/inputs/handlers/color/colorInputExecuteHandler";
+import {IContextExecuteData} from "../context/_types/IContextExecuteData";
+import {openUI} from "../context/openUI/openUI";
+import {createStringMenuItem} from "../menus/items/inputs/types/createStringMenuItem";
+import {createNumberMenuItem} from "../menus/items/inputs/types/createNumberMenuItem";
+import {createColorMenuItem} from "../menus/items/inputs/types/createColorMenuItem";
+import {createFolderMenuItem} from "../menus/items/createFolderMenuItem";
+import {createSettingsCategory} from "../settings/inputs/createSettingsCategory";
+import {createNumberSetting} from "../settings/inputs/createNumberSetting";
+import {createStringSetting} from "../settings/inputs/createStringSetting";
+import {createColorSetting} from "../settings/inputs/createColorSetting";
+import {createBooleanSetting} from "../settings/inputs/createBooleanSetting";
+import {createKeyPatternSetting} from "../settings/inputs/createKeyPatternSetting";
+import {extractSettings} from "../settings/utils/extractSettings";
+import {SettingsContext} from "../settings/SettingsContext";
 
 const someField = new Field("oranges");
+const someField2 = new Field("oof");
+const someField3 = new Field([45]);
+const someField4 = new Field(45);
+const someField5 = new Field("orange");
+const someField6 = createStringMenuItem({
+    init: "bob",
+    name: "someField 6",
+    undoable: true,
+    resetable: true,
+});
+const someField7 = createNumberMenuItem({
+    init: 4,
+    name: "someField 7",
+    undoable: true,
+    resetable: true,
+    min: 3,
+});
+const someField8 = createColorMenuItem({
+    init: "orange",
+    name: "someField 8",
+    undoable: true,
+    resetable: true,
+});
+const someField9 = createStringMenuItem({
+    init: "oranges",
+    name: "someField 9",
+    undoable: true,
+    resetable: true,
+});
+const someFolder = createFolderMenuItem({
+    name: "fields",
+    children: [someField6, someField7, someField8, someField9],
+});
+// Programmatic data access
+someFolder.children[3].get();
+
+const settingsItem = createSettingsCategory({
+    name: "settings",
+    children: {
+        someNumberSetting: createNumberSetting({name: "potatoes", init: 5}),
+        someStringSetting: createStringSetting({name: "oranges", init: "yes"}),
+        someColorSetting: createColorSetting({name: "color", init: "orange"}),
+        someBooleanSetting: createBooleanSetting({name: "yes", init: true}),
+        someSubCategory: createSettingsCategory({
+            name: "keyboard",
+            children: {
+                somePattern: createKeyPatternSetting({
+                    name: "pattern",
+                    init: new KeyPattern("ctrl+m"),
+                }),
+            },
+        }),
+    },
+});
+const settings = extractSettings(settingsItem);
+// settings
+console.log("pattern", settings.someSubCategory.somePattern.get());
+
 class SetFieldCmd extends Command {
     protected prev: string | undefined;
     protected text: string;
@@ -39,6 +121,7 @@ class SetFieldCmd extends Command {
         if (this.prev != undefined) this.field.set(this.prev);
     }
 }
+const somePatternField = new Field(new KeyPattern([{type: "down", pattern: "ctrl+b"}]));
 
 // Create some context action
 const alertAction = new Action(
@@ -57,7 +140,7 @@ const alertHandlerAction = alertAction.createHandler(
             const text = "(" + data.map(({message}) => message).join(",") + ")";
             return {
                 message: text,
-                execute: (context: IOContext, closeParentMenu?: () => void) => {
+                execute: ({context, close: closeParentMenu}: IContextExecuteData) => {
                     let closeMenu = () => {};
                     const closeAll = () => {
                         closeMenu?.();
@@ -79,8 +162,8 @@ const alertHandlerAction = alertAction.createHandler(
                         },
                     });
 
-                    closeMenu = context.openUI({
-                        menu: new Menu([defaultExecuteItem, ...subItems]),
+                    closeMenu = openUI(context, {
+                        menu: new Menu(context, [defaultExecuteItem, ...subItems]),
                     });
                 },
             };
@@ -112,8 +195,40 @@ addOneToFieldAction.get([]).execute();
 // Create stacks and some menu
 const menuViewStack = new ViewStack();
 const fieldViewStack = new ViewStack();
+const contentViewStack = new ViewStack();
 const inputStack = new KeyHandlerStack(new KeyHandler(window));
-const menu = new Menu([
+const undoRedo = new UndoRedoFacility();
+const context = new IOContext({
+    panes: {menu: menuViewStack, content: contentViewStack, field: fieldViewStack},
+    keyHandler: inputStack,
+    undoRedo,
+    settings: new SettingsContext(),
+});
+context.panes.content.push(<Box>I am a cool box yo</Box>);
+
+const menu = new Menu(context);
+menu.addItems([
+    createStandardMenuItem({
+        name: h => `Key Pattern ${somePatternField.get(h || null)}`,
+        actionBindings: [
+            keyInputExecuteHandler.createBinding({
+                field: somePatternField,
+                undoable: true,
+            }),
+            advancedKeyInputEditAction.createBinding({
+                field: somePatternField,
+                undoable: true,
+            }),
+            keyHandlerAction.createBinding({
+                onKey: e => {
+                    if (somePatternField.get(null).matches(e)) {
+                        console.log("Event Matched yo");
+                        return true;
+                    }
+                },
+            }),
+        ],
+    }),
     createStandardMenuItem({
         name: "Bob (alert)",
         onExecute: () => new SetFieldCmd(someField, "Bob"),
@@ -135,6 +250,7 @@ const menu = new Menu([
                         console.log("p pressed mofo1");
                         return {
                             stopPropagation: true,
+                            stopImmediatePropagation: true,
                         };
                     }
                 },
@@ -158,7 +274,7 @@ const menu = new Menu([
     }),
     createStandardMenuItem({
         name: "Poof (sub alert)",
-        onExecute: () => new SetFieldCmd(someField, "Poof"),
+        onExecute: () => new SetFieldCommand(someField2, "poop"),
         actionBindings: [
             alertHandlerAction.createBinding({message: "Poof"}),
             addOneToFieldAction.createBinding({field: someField}),
@@ -166,8 +282,118 @@ const menu = new Menu([
     }),
     createStandardMenuItem({
         name: "Wow",
-        onExecute: () => new SetFieldCmd(someField, "Wow"),
+        onExecute: () => new SetFieldCommand(someField2, "shit"),
     }),
+    createStandardMenuItem({
+        name: "Edit field",
+        actionBindings: [
+            inputFieldExecuteHandler.createBinding({
+                field: someField,
+                undoable: true,
+                config: {
+                    checkValidity: text => {
+                        if (text[0] == "a")
+                            return {
+                                message: "Input may not start with A",
+                                ranges: [{start: 0, end: 1}],
+                            };
+                    },
+                },
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Edit field 2",
+        actionBindings: [
+            selectFieldExecuteHandler.createBinding({
+                field: someField2,
+                undoable: true,
+                config: {
+                    options: ["shit", "poop"],
+                    createOptionView: v => createStandardMenuItem({name: v}),
+                    allowCustomInput: true,
+                    checkValidity: text => {
+                        if (text.length > 4)
+                            return {
+                                message: "Only strings of at most length 4 are accepted",
+                                ranges: [{start: 4, end: text.length}],
+                            };
+                    },
+                },
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Edit field 3",
+        actionBindings: [
+            multiSelectFieldExecuteHandler.createBinding({
+                field: someField3,
+                undoable: true,
+                config: {
+                    options: [25, 50],
+                    allowCustomInput: true,
+                    checkValidity: text => {
+                        if (!/^\d+$/.exec(text)) {
+                            const pattern = /[^\d]+/g;
+                            let m: RegExpMatchArray | null;
+                            const ranges = [] as {start: number; end: number}[];
+                            while ((m = pattern.exec(text))) {
+                                if (m.index != undefined)
+                                    ranges.push({
+                                        start: m.index,
+                                        end: m.index + m[0].length,
+                                    });
+                            }
+                            return {
+                                message: "Value must be an integer",
+                                ranges,
+                            };
+                        }
+                    },
+                    createOptionView: (value, isSelected) =>
+                        createStandardMenuItem({
+                            name: h => (isSelected(h) ? "(x) " : "") + value,
+                        }),
+                    serialize: v => v.toString(),
+                    deserialize: v => Number(v),
+                },
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Edit field 4",
+        actionBindings: [
+            numberInputExecuteHandler.createBinding({
+                field: someField4,
+                min: 3,
+                max: 9,
+                increment: 0.1,
+                baseValue: 0.05,
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Edit field 4 select",
+        actionBindings: [
+            numberInputSelectExecuteHandler.createBinding({
+                field: someField4,
+                options: [3, 4, 5],
+                allowCustomInput: true,
+                min: 0,
+                max: 20,
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Edit field 5",
+        actionBindings: [
+            colorInputExecuteHandler.createBinding({
+                field: someField5,
+            }),
+        ],
+    }),
+    someFolder,
+    settingsItem,
     createStandardMenuItem({
         name: "Undo",
         onExecute: () => undoRedo.undo(),
@@ -197,34 +423,35 @@ const menu = new Menu([
         ],
     }),
 ]);
-const undoRedo = new UndoRedoFacility();
-
-const context = new IOContext({
-    panes: {menu: menuViewStack, content: menuViewStack, field: fieldViewStack},
-    keyHandler: inputStack,
-    undoRedo,
-});
 context.openUI({
     menu,
-    menuHandler: createMenuKeyHandler(menu, context),
+    menuHandler: createMenuKeyHandler(menu),
 });
 
 (window as any).alertAction = alertAction;
 (window as any).alertHandlerAction = alertHandlerAction;
 (window as any).createStandardMenuItem = createStandardMenuItem;
+console.log(contentViewStack);
 
 export const MenuViewTest: FC = () => {
     return (
         <Box display="flex" flexDirection="column" height="100%">
             <Box height={30}>
                 <Loader>{h => someField.get(h)}</Loader>{" "}
+                <Loader>{h => someField2.get(h).toString()}</Loader>{" "}
+                <Loader>{h => someField6.get(h)}</Loader>{" "}
                 <Loader>{h => undoRedo.getState(h)}</Loader>
             </Box>
             <Box position="relative" height={80}>
-                <StackView items={fieldViewStack} />
+                <StackView stack={fieldViewStack} />
             </Box>
-            <Box position="relative" flexGrow={1}>
-                <StackView items={menuViewStack} />
+            <Box flexGrow={1} display="flex">
+                <Box position="relative" width={300}>
+                    <StackView stack={menuViewStack} />
+                </Box>
+                <Box position="relative" flexGrow={1}>
+                    <StackView stack={contentViewStack} />
+                </Box>
             </Box>
         </Box>
     );

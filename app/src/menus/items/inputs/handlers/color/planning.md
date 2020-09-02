@@ -1,0 +1,7 @@
+-   Make searchbar look like it acts as an actual search bar
+-   Shows the currently typed value (if valid)
+-   Show recommendations or translations if not valid (suck as 'pink')
+-   Make the current text change when selecting an item with a different hex ID
+-   Commit the change when selecting an item with the same hex ID
+-   Show color wheel in content preview box for mouse inputs
+-   Add a context menu to all color values with 'rgb' and 'hsv' fields in order to pick said value but change 1 attribute.

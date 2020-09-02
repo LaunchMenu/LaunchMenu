@@ -1,11 +1,24 @@
 import {IDataHook} from "model-react";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IQuery} from "./IQuery";
+import {IMenuCategoryData} from "./IMenuCategoryData";
+import {IUIModel} from "../../../context/_types/IUIModel";
+import {IIOContext} from "../../../context/_types/IIOContext";
+import {IViewStackItem} from "../../../stacks/_types/IViewStackItem";
 
 /**
  * An interface for common menu interactions
  */
 export type IMenu = {
+    /** A possible default view for the menu */
+    readonly view?: IViewStackItem;
+
+    /**
+     * Retrieves the context associated to the menu
+     * @returns The context
+     */
+    getContext(): IIOContext;
+
     /**
      * Selects or deselects the given item
      * @param item The item to select or deselect
@@ -20,16 +33,18 @@ export type IMenu = {
     setCursor(item: IMenuItem): void;
 
     /**
-     * Destroys the menu, making sure that all items become unselected
-     */
-    destroy(): void;
-
-    /**
      * Retrieves all items in the menu
      * @param hook The hook to subscribe to changes
      * @returns All items including category items in the correct sequence
      */
     getItems(hook?: IDataHook): IMenuItem[];
+
+    /**
+     * Retrieves all categories of the menu
+     * @param hook The hook to subscribe to changes
+     * @returns All categories and the items that belong to those categories, in the correct sequence
+     */
+    getCategories(hook?: IDataHook): IMenuCategoryData[];
 
     /**
      * Retrieves the currently selected items of the menu
@@ -58,4 +73,4 @@ export type IMenu = {
      * @returns The highlight data
      */
     getHighlight?: (hook?: IDataHook) => IQuery | null;
-};
+} & IUIModel;

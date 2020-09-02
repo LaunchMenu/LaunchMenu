@@ -22,7 +22,7 @@ export class ExtendedObject {
      * @param func The function to use for the mapping, where the params are value, key, and the return value is used as the new value
      * @returns The object created as a mapping of the values of this object
      */
-    public static mapValues<O, T>(
+    public static mapValues<O extends {[key: string]: any}, T>(
         obj: O,
         func: (value: O[keyof O], key: string) => T
     ): {[P in keyof O]: T} {
@@ -30,7 +30,7 @@ export class ExtendedObject {
         const keys = Object.keys(obj);
 
         // Create an output object
-        const out = {};
+        const out = {} as {[key: string]: any};
 
         // Go through all keys
         for (let i = 0; i < keys.length; i++) {
@@ -74,7 +74,7 @@ export class ExtendedObject {
         const keys = Object.keys(obj);
 
         // Create an output object
-        const out = {};
+        const out = {} as {[key: string]: any};
 
         // Go through all keys
         for (let i = 0; i < keys.length; i++) {
@@ -105,7 +105,7 @@ export class ExtendedObject {
         const keys = Object.keys(obj);
 
         // Create an output object
-        const out = {};
+        const out = {} as {[key: string]: any};
 
         // Go through all keys
         for (let i = 0; i < keys.length; i++) {
@@ -128,7 +128,7 @@ export class ExtendedObject {
      * @returns The resulting object
      */
     public static fromEntries<S>(entries: [string, S][]): {[key: string]: S} {
-        const out = {};
+        const out = {} as {[key: string]: any};
         entries.forEach(([key, value]) => {
             out[key] = value;
         });
@@ -141,7 +141,7 @@ export class ExtendedObject {
      * @param func The function to use to filter, where the params are value and key
      * @returns The object created which contains all fields that the func returned true for
      */
-    public static filter<S extends Object>(
+    public static filter<S extends {[key: string]: any}>(
         obj: S,
         func: (value: S[keyof S], key: string) => boolean
     ): Partial<S> {
@@ -149,7 +149,7 @@ export class ExtendedObject {
         const keys = Object.keys(obj);
 
         // Create an output object
-        const out = {};
+        const out = {} as any;
 
         // Go through all keys
         for (let i = 0; i < keys.length; i++) {
@@ -172,12 +172,12 @@ export class ExtendedObject {
      * @param fields A list of fields to include in the object
      * @returns The object created which contains all specified fields
      */
-    public static project(obj: object, fields: Array<string>): object {
+    public static project(obj: {[key: string]: any}, fields: Array<string>): object {
         // Get the keys of the this object
         const keys = Object.keys(obj);
 
         // Create an output object
-        const out = {};
+        const out = {} as any;
 
         // Go through all keys
         for (let i = 0; i < keys.length; i++) {
@@ -248,7 +248,7 @@ export class ExtendedObject {
      * @param path The path to include to the callback of where we are at in the object
      */
     public static forEachPaired(
-        objects: object[],
+        objects: {[key: string]: any}[],
         func: (key: string, values: any[], path: string, parentPath: string) => void,
         recurse:
             | ((key: string, values: any[], path: string, parentPath: string) => boolean)
@@ -295,25 +295,93 @@ export class ExtendedObject {
         }
     }
 
+    // Modification methods
     /**
      * Merges two objects together
-     * @param a The first object
-     * @param b The second object (which takes precedence)
+     * @param obj1 The first object
+     * @param obj2 The second object (which takes precedence)
      * @returns The merged objects
      */
-    public static deepMerge<A, B>(a: A, b: B): TDeepMerge<A, B> {
-        if (a instanceof Object && b instanceof Object) {
-            const obj = {};
-            Object.keys(a).forEach(key => {
-                if (!b[key]) obj[key] = a[key];
+    public static deepMerge<
+        A extends {[key: string]: any},
+        B extends {[key: string]: any}
+    >(obj1: A, obj2: B): TDeepMerge<A, B> {
+        if (obj1 instanceof Object && obj2 instanceof Object) {
+            const obj = {} as any;
+            Object.keys(obj1).forEach(key => {
+                if (!obj2[key]) obj[key] = obj1[key];
             });
-            Object.keys(b).forEach(key => {
-                if (!a[key]) obj[key] = b[key];
+            Object.keys(obj2).forEach(key => {
+                if (!obj1[key]) obj[key] = obj2[key];
             });
-            Object.keys(a).forEach(key => {
-                if (a[key] && b[key]) obj[key] = this.deepMerge(a[key], b[key]);
+            Object.keys(obj1).forEach(key => {
+                if (obj1[key] && obj2[key])
+                    obj[key] = this.deepMerge(obj1[key], obj2[key]);
             });
-            return obj as any;
-        } else return b as any;
+            return obj;
+        } else return obj2 as any;
+    }
+
+    // Comparison methods
+    /**
+     * Checks if the contents of object 1 and 2 are equal
+     * @param obj1 The first object
+     * @param obj2 The second object
+     * @param includeObjects Whether object difference should be taken into account
+     * @returns Whether or not the contents of the two objects are equivalent
+     */
+    public static equals(
+        obj1: {[key: string]: any},
+        obj2: {[key: string]: any},
+        includeObjects: boolean = true
+    ): boolean {
+        // Check if there are the same number of values present
+        const obj1Keys = Object.keys(obj1);
+        const obj2Keys = Object.keys(obj2);
+        if (obj1Keys.length != obj2Keys.length) return false;
+
+        // Check if all values are equivalent
+        for (let i = 0; i < obj1Keys.length; i++) {
+            const key = obj1Keys[i];
+
+            // Values may only differ if they are objects
+            if (
+                (typeof obj1[key] != "object" || includeObjects) &&
+                obj1[key] !== obj2[key]
+            )
+                return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if the contents of object 1 and 2 are equal, including subobjects
+     * @param obj1 The first object
+     * @param obj2 The second object
+     * @returns Whether or not the contents of the two objects are equivalent
+     */
+    public static deepEquals(
+        obj1: {[key: string]: any},
+        obj2: {[key: string]: any}
+    ): boolean {
+        // Check if there are the same number of values present
+        const obj1Keys = Object.keys(obj1);
+        const obj2Keys = Object.keys(obj2);
+        if (obj1Keys.length != obj2Keys.length) return false;
+
+        // Check if all values are equivalent
+        for (let i = 0; i < obj1Keys.length; i++) {
+            const key = obj1Keys[i];
+            if (this.isPlainObject(obj1[key]) && this.isPlainObject(obj2[key])) {
+                // Recurse if object
+                if (!this.deepEquals(obj1[key], obj2[key])) return false;
+            } else {
+                // Check shallow equivalence otherwise
+                if (obj1[key] !== obj2[key]) return false;
+            }
+        }
+
+        return true;
     }
 }

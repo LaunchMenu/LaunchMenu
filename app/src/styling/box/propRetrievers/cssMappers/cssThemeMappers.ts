@@ -23,8 +23,8 @@ import {
 function mapBorderSide(side: string, border: IThemeBorder, theme: ITheme): IBorder {
     const borderData = theme.border[border];
     if (!borderData) return border as any;
-    const result = {};
-    Object.keys(borderData).forEach(propName => {
+    const result = {} as {[key: string]: IBorder[keyof IBorder]};
+    Object.keys(borderData).forEach((propName: keyof IBorder) => {
         result[propName.replace("border", `border${side}`)] = borderData[propName];
     });
     return result;

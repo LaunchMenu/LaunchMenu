@@ -2,12 +2,13 @@ import {SearchMenu} from "../SearchMenu";
 import {createSearchableMenuItem} from "./MenuItem.helper";
 import {wait} from "../../../_tests/wait.helper";
 import {Observer} from "../../../utils/modelReact/Observer";
+import {context} from "../../../_tests/context.helper";
 
 describe("SearchMenu", () => {
     describe("SearchMenu.addSearchItem -> SearchMenu.setSearch", () => {
         let menu: SearchMenu;
         beforeEach(() => {
-            menu = new SearchMenu();
+            menu = new SearchMenu(context);
         });
 
         it("Only includes non 0 priority search results", async () => {
@@ -107,7 +108,7 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.removeSearchItem -> SearchMenu.setSearch", () => {
         it("Doesn't include removed items in new search results", async () => {
-            const menu = new SearchMenu();
+            const menu = new SearchMenu(context);
             const item = createSearchableMenuItem({
                 searchPriorities: {something: 1},
             });
@@ -125,7 +126,7 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.setSearch -> SearchMenu.addSearchItem", () => {
         it("Correctly adds search results for the last search", async () => {
-            const menu = new SearchMenu();
+            const menu = new SearchMenu(context);
             await menu.setSearch("something");
 
             const item = createSearchableMenuItem({searchPriorities: {something: 1}});
@@ -138,7 +139,7 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.setSearch -> SearchMenu.removeSearchItem", () => {
         it("Cleans up previous search results", async () => {
-            const menu = new SearchMenu();
+            const menu = new SearchMenu(context);
             const item = createSearchableMenuItem({searchPriorities: {something: 1}});
             menu.addSearchItem(item);
             const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
@@ -154,7 +155,7 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.setSearchItems", () => {
         it("Correctly adds items", async () => {
-            const menu = new SearchMenu();
+            const menu = new SearchMenu(context);
             const item = createSearchableMenuItem({searchPriorities: {something: 1}});
             const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
             const item3 = createSearchableMenuItem({searchPriorities: {something: 4}});
@@ -170,7 +171,7 @@ describe("SearchMenu", () => {
             expect(menu.getItems()).toEqual([item3, item4, item2, item]);
         });
         it("Correctly removes items", async () => {
-            const menu = new SearchMenu();
+            const menu = new SearchMenu(context);
             const item = createSearchableMenuItem({searchPriorities: {something: 1}});
             const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
             const item3 = createSearchableMenuItem({searchPriorities: {something: 4}});
@@ -188,12 +189,12 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.getSearch", () => {
         it("Returns the last search value", async () => {
-            const menu = new SearchMenu();
+            const menu = new SearchMenu(context);
             await menu.setSearch("oranges");
             expect(menu.getSearch()).toBe("oranges");
         });
         it("Can be subscribed to", async () => {
-            const menu = new SearchMenu();
+            const menu = new SearchMenu(context);
             const callback = jest.fn();
 
             menu.setSearch("oranges");
@@ -207,12 +208,12 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.getHighlightText", () => {
         it("Returns the last search value", async () => {
-            const menu = new SearchMenu();
+            const menu = new SearchMenu(context);
             await menu.setSearch("oranges");
             expect(menu.getHighlight()).toEqual({search: "oranges"});
         });
         it("Can be subscribed to", async () => {
-            const menu = new SearchMenu();
+            const menu = new SearchMenu(context);
             const callback = jest.fn();
 
             menu.setSearch("oranges");

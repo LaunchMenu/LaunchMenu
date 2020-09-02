@@ -9,7 +9,7 @@ import {IHighlightTheme} from "./_types/IHighlightTheme";
 export function getHighlightThemeStyle(
     highlightTheme: IHighlightTheme
 ): ObjectInterpolation<undefined> {
-    const styles = {};
+    const styles = {} as {[key: string]: any};
     highlightTheme.syntax.forEach(style => {
         styles[
             style.scope

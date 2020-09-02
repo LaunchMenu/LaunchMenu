@@ -27,7 +27,7 @@ export const SyntaxHighlighterChar: FC<
 > = ({char, start, onMouseDown, onMouseUp, onMouseMove}) => {
     const getEventHandler = (
         listener?: (e: React.MouseEvent<HTMLSpanElement>, i: number) => void
-    ) => e => listener?.(e, start + getPosFrac(e));
+    ) => (e: React.MouseEvent<HTMLSpanElement>) => listener?.(e, start + getPosFrac(e));
 
     const mouseDown = useMemo(() => getEventHandler(onMouseDown), [onMouseDown]);
     const mouseUp = useMemo(() => getEventHandler(onMouseUp), [onMouseUp]);
@@ -71,7 +71,7 @@ export const SyntaxHighlighterNode: FC<
     const {onMouseDown, onMouseUp, onMouseMove} = listeners;
     const getEventHandler = (
         listener?: (e: React.MouseEvent<HTMLSpanElement>, i: number) => void
-    ) => e => {
+    ) => (e: React.MouseEvent<HTMLSpanElement>) => {
         const per = getFramePosFrac(e);
         if (per == 0.5) return;
         listener?.(e, start + text.length * (per > 0.5 ? 1 : 0));

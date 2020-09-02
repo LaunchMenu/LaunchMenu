@@ -7,7 +7,7 @@ export type ICategory = {
     /** The name of the category */
     name: string;
     /** The description of the category */
-    description: string;
+    description?: string;
     /** The menu item to represent the category */
     item: IMenuItem;
 };

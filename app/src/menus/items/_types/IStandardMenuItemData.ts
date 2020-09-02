@@ -2,25 +2,27 @@ import {ReactNode} from "react";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {IMenu} from "../../menu/_types/IMenu";
+import {IExecutable} from "../../actions/types/execute/_types/IExecutable";
+import {IDataHook} from "model-react";
 
 /**
  * A type for the data passed to a standard menu item
  */
 export type IStandardMenuItemData = {
     /** The name of the menu item */
-    name: string;
+    name: string | ((h?: IDataHook) => string);
 
     /** The icon of the menu item */
-    icon?: string | ReactNode;
+    icon?: string | ReactNode | ((h?: IDataHook) => string | ReactNode);
 
     /** The description of the menu item */
-    description?: string;
+    description?: string | ((h?: IDataHook) => string);
 
     /** Any tags that can be used for searching */
-    tags?: string[];
+    tags?: string[] | ((h?: IDataHook) => string[]);
 
     /** The function to execute when executing the menu item's default action */
-    onExecute?: () => void; // TODO: also add command based signature once undo/redo is made
+    onExecute?: IExecutable["execute"];
 
     /** A listener to execute side effects when the item is selected or deselected */
     onSelect?: (selected: boolean) => void;

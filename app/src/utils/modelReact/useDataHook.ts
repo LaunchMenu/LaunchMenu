@@ -11,11 +11,14 @@ import {IDataLoadRequest, IDataListener} from "model-react";
 export const useDataHook = ({
     forceRefreshTime,
     debounce = 0,
+    onChange,
 }: {
     /** The time such that if data is older, it will be refreshed */
     forceRefreshTime?: number;
     /** The number of milliseconds to debounce updates, -1 to forward changes synchronously, defaults to 0 */
     debounce?: number;
+    /** Code to call when a data update occurred */
+    onChange?: () => void;
 } = {}): [
     IDataListener & IDataLoadRequest,
     {
@@ -26,7 +29,11 @@ export const useDataHook = ({
     }
 ] => {
     // A fake state in order to fore an update
-    const [, update] = useState();
+    const [, _update] = useState({});
+    const update = () => {
+        onChange?.();
+        _update({});
+    };
     const updateTimeout = useRef(undefined as undefined | number);
 
     // A variable to track whether any retrieved data is refreshing, and exceptions
@@ -48,11 +55,11 @@ export const useDataHook = ({
         {
             // Data listener fields
             call() {
-                if (debounce == -1) update({});
+                if (debounce == -1) update();
                 else if (!updateTimeout.current)
                     updateTimeout.current = setTimeout(() => {
                         updateTimeout.current = undefined;
-                        update({});
+                        update();
                     }, debounce) as any;
             },
             registerRemover(remover: () => void) {

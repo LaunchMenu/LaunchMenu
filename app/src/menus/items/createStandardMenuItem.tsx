@@ -13,6 +13,11 @@ import {MenuItemIcon} from "../../components/items/MenuItemIcon";
 import {createSimpleSearchBinding} from "../actions/types/search/simpleSearch/simpleSearchHandler";
 import {SimpleSearchHighlight} from "../../components/items/SimpleSearchHighlight";
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
+import {useDataHook} from "../../utils/modelReact/useDataHook";
+import {IDataHook} from "model-react";
+
+const get = <T extends unknown>(f: T, h?: IDataHook) =>
+    f instanceof Function ? f(h) : f;
 
 /**
  * Creates a new standard menu item
@@ -32,7 +37,12 @@ export function createStandardMenuItem({
     actionBindings = [],
 }: IStandardMenuItemData): IMenuItem {
     let bindings: IActionBinding<any>[] = [
-        createSimpleSearchBinding({name, description, tags}),
+        // TODO: make the action actually update if any of these change
+        createSimpleSearchBinding({
+            name: get(name),
+            description: get(description),
+            tags: get(tags),
+        }),
         ...actionBindings,
     ];
     if (onExecute) bindings.push(executeAction.createBinding({execute: onExecute}));
@@ -42,30 +52,35 @@ export function createStandardMenuItem({
     if (category) bindings.push(getCategoryAction.createBinding(category));
 
     return {
-        view: memo(({highlight, ...props}) => (
-            <MenuItemFrame {...props} onExecute={onExecute}>
-                <MenuItemLayout
-                    icon={
-                        icon &&
-                        (typeof icon == "string" ? <MenuItemIcon icon={icon} /> : icon)
-                    }
-                    content={
-                        <>
-                            <SimpleSearchHighlight query={highlight}>
-                                {name}
-                            </SimpleSearchHighlight>
-                            {description && (
-                                <Truncated title={description}>
-                                    <SimpleSearchHighlight query={highlight}>
-                                        {description}
-                                    </SimpleSearchHighlight>
-                                </Truncated>
-                            )}
-                        </>
-                    }
-                />
-            </MenuItemFrame>
-        )),
+        view: memo(({highlight, ...props}) => {
+            const [h] = useDataHook();
+            const ico = get(icon, h);
+            const desc = get(description, h);
+            return (
+                <MenuItemFrame {...props}>
+                    <MenuItemLayout
+                        icon={
+                            ico &&
+                            (typeof ico == "string" ? <MenuItemIcon icon={ico} /> : ico)
+                        }
+                        content={
+                            <>
+                                <SimpleSearchHighlight query={highlight}>
+                                    {get(name, h)}
+                                </SimpleSearchHighlight>
+                                {desc && (
+                                    <Truncated title={desc}>
+                                        <SimpleSearchHighlight query={highlight}>
+                                            {desc}
+                                        </SimpleSearchHighlight>
+                                    </Truncated>
+                                )}
+                            </>
+                        }
+                    />
+                </MenuItemFrame>
+            );
+        }),
         actionBindings: bindings,
     };
 }

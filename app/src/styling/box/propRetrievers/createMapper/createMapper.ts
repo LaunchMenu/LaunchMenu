@@ -14,7 +14,7 @@ export function createMapper<C, I, O, M extends ICreateMapperInput<C, I, O>>(
 ): TCreateMapperOutput<M, C, I, O> {
     return ExtendedObject.map(mapperInput, value => {
         if (typeof value == "string")
-            return (value, context) => ({[value]: map(value, context)});
+            return (v: I, context: C) => ({[value]: map(v, context)});
         if (value == true) return map;
         return value;
     }) as any;

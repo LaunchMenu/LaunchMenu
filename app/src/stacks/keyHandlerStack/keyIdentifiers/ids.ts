@@ -1,5 +1,5 @@
 /** All valid key ids */
-export const ids = {
+export const keyIds = {
     backspace: "backspace",
     tab: "tab",
     enter: "enter",
@@ -88,7 +88,8 @@ export const ids = {
     backslash: "backslash",
     bracketRight: "bracketRight",
     quote: "quote",
+    space: "space",
 };
 
 /** A valid key id */
-export type IKeyId = keyof typeof ids;
+export type IKeyId = keyof typeof keyIds;

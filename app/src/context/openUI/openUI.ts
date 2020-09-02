@@ -1,8 +1,9 @@
 import {IOpenableUI} from "../_types/IOpenableUI";
-import {TPartialContextFromOpenable} from "../_types/TPartialContextFromContent";
 import {openMenu} from "./openMenu";
 import {openKeyHandler} from "./openKeyHandler";
 import {openTextField} from "./openTextField";
+import {IIOContext} from "../_types/IIOContext";
+import {openContent} from "./openContent";
 
 /**
  * Opens the given content within the given ui context
@@ -11,9 +12,9 @@ import {openTextField} from "./openTextField";
  * @param onClose A callback that gets triggered when the opened UI gets closed
  * @returns A function to close the opened content, returns false if it was already closed
  */
-export function openUI<D extends IOpenableUI>(
-    context: TPartialContextFromOpenable<D>,
-    content: D,
+export function openUI(
+    context: IIOContext,
+    content: IOpenableUI,
     onClose?: () => void
 ): () => boolean {
     // Create the function to close everything
@@ -43,6 +44,9 @@ export function openUI<D extends IOpenableUI>(
 
     const closeTextField = openTextField(context, content, close);
     if (closeTextField) closers.unshift(...closeTextField);
+
+    const closeContent = openContent(context, content, close);
+    if (closeContent) closers.unshift(...closeContent);
 
     const closeKeyHandlers = openKeyHandler(context, content);
     if (closeKeyHandlers) closers.unshift(...closeKeyHandlers);

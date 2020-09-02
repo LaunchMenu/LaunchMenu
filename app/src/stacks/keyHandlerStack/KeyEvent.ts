@@ -65,10 +65,13 @@ export class KeyEvent {
      */
     public is(
         keys: IKeyMatcher | IKeyMatcher[],
-        type: IKeyEventType | IKeyEventType[] = "down"
+        type: IKeyEventType | IKeyEventType[] | null = "down"
     ): boolean {
         // Check whether the event type corresponds
-        if (type instanceof Array ? !type.includes(this.type) : type != this.type)
+        if (
+            type &&
+            (type instanceof Array ? !type.includes(this.type) : type != this.type)
+        )
             return false;
 
         // Make sure nothing more than the specified keys was pressed
@@ -86,10 +89,13 @@ export class KeyEvent {
      */
     public matches(
         keys: IKeyMatcher | IKeyMatcher[],
-        type: IKeyEventType | IKeyEventType[] = "down"
+        type: IKeyEventType | IKeyEventType[] | null = "down"
     ): boolean {
         // Check whether the event type corresponds
-        if (type instanceof Array ? !type.includes(this.type) : type != this.type)
+        if (
+            type &&
+            (type instanceof Array ? !type.includes(this.type) : type != this.type)
+        )
             return false;
 
         // Make sure nothing more than the specified keys was pressed

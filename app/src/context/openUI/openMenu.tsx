@@ -1,17 +1,15 @@
 import React from "react";
-import {TPartialContextFromOpenable} from "../_types/TPartialContextFromContent";
 import {IOpenableMenu} from "../_types/IOpenableMenu";
-import {containsMenuStack} from "../partialContextChecks/containsMenuStack";
 import {isView, IViewStackItem} from "../../stacks/_types/IViewStackItem";
 import {MenuView} from "../../components/menu/MenuView";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
-import {containsKeyHandlerStack} from "../partialContextChecks/containsKeyHandlerStack";
-import {withPopError} from "../withPopError";
+import {withRemoveError} from "../withRemoveError";
 import {openTextField} from "./openTextField";
-import {SearchField} from "../../textFields/SearchField";
-import {containsFieldStack} from "../partialContextChecks/containsFieldStack";
-import {isIOContext} from "../_types/IIOContext";
+import {SearchField} from "../../textFields/types/SearchField";
+import {isIOContext, IIOContext} from "../_types/IIOContext";
+import {getViewWithContext} from "./getViewWithContext";
+import {IMenu} from "../../menus/menu/_types/IMenu";
 
 /**
  * Opens the given content within the given ui context
@@ -20,48 +18,58 @@ import {isIOContext} from "../_types/IIOContext";
  * @param close A function to close the opened UI
  * @returns An array of functions that can be executed in sequence to close the opened ui elements
  */
-export function openMenu<D extends IOpenableMenu>(
-    context: TPartialContextFromOpenable<D>,
-    content: D & IOpenableMenu,
+export function openMenu(
+    context: IIOContext,
+    content: IOpenableMenu,
     close?: () => void
 ): (() => void)[] {
     const closers = [] as (() => void)[];
-    if (content.menu && containsMenuStack(context)) {
+    if (content.menu) {
         const {menu} = content;
 
         // Handle opening if only a menu view
         if (isView(menu)) {
-            context.panes.menu.push(menu);
-            closers.unshift(() => withPopError(context.panes.menu.pop(menu), "menu"));
+            const wrappedMenu = getViewWithContext(menu, context);
+            context.panes.menu.push(wrappedMenu);
+            closers.unshift(() =>
+                withRemoveError(context.panes.menu.remove(wrappedMenu), "menu")
+            );
         }
         // Handle opening, and possibly creating, of menu view and key handlers
-        else if (containsKeyHandlerStack(context)) {
+        else {
             // Handle creating of menu components
             let view: IViewStackItem;
-            if ("menuView" in content && content.menuView) view = content.menuView;
-            else view = <MenuView menu={menu} />;
+            if ("menuView" in content && content.menuView)
+                view = getViewWithContext(content.menuView, context);
+            else
+                view = getViewWithContext(menu.view ?? <MenuView menu={menu} />, context);
 
             let keyHandler: IKeyEventListener | undefined;
             if ("menuHandler" in content && content.menuHandler)
                 keyHandler = content.menuHandler;
             else if (isIOContext(context))
-                keyHandler = createMenuKeyHandler(menu, context, {onExit: close});
+                keyHandler = createMenuKeyHandler(menu, {
+                    onExit:
+                        !("closable" in content) || content.closable ? close : undefined,
+                });
 
             // Handle opening of menu components
             context.panes.menu.push(view);
-            closers.unshift(() => withPopError(context.panes.menu.pop(view), "menu"));
+            closers.unshift(() =>
+                withRemoveError(context.panes.menu.remove(view), "menu")
+            );
 
             if (keyHandler) {
                 const kh = keyHandler;
                 context.keyHandler.push(kh);
                 closers.unshift(() =>
-                    withPopError(context.keyHandler.pop(kh), "key handler")
+                    withRemoveError(context.keyHandler.remove(kh), "key handler")
                 );
             }
 
             // Destroy the menu on close if specified
             if (!("destroyOnClose" in content) || content.destroyOnClose) {
-                closers.unshift(() => menu.destroy());
+                closers.unshift(() => menu.destroy?.());
                 const kh = keyHandler;
                 if (kh && !(kh instanceof Function) && kh.destroy)
                     closers.unshift(() => kh.destroy?.());
@@ -72,20 +80,20 @@ export function openMenu<D extends IOpenableMenu>(
                 !("field" in content) &&
                 (!("searchable" in content) || content.searchable)
             ) {
-                if (containsFieldStack(context)) {
-                    closers.unshift(
-                        ...openTextField(context, {
-                            field: new SearchField({menu, context}),
-                            highlighter:
-                                "highlighter" in content
-                                    ? content.highlighter
-                                    : undefined,
-                            icon: "search",
-                            destroyOnClose: true, // Caller has no reference to this field so can't manually destroy it
-                        })
-                    );
-                }
+                closers.unshift(
+                    ...openTextField(context, {
+                        field: new SearchField({menu, context}),
+                        highlighter:
+                            "highlighter" in content ? content.highlighter : undefined,
+                        icon: "search",
+                        destroyOnClose: true, // Caller has no reference to this field so can't manually destroy it
+                    })
+                );
             }
+
+            // Let the menu know when it has been opened and closed
+            menu.addViewCount();
+            closers.unshift(() => menu.removeViewCount());
         }
     }
 

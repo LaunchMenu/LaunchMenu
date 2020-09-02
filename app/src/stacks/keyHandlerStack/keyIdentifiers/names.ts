@@ -1,5 +1,5 @@
 /** All the valid key names */
-export const names = {
+export const keyNames = {
     "0": "0",
     "1": "1",
     "2": "2",
@@ -83,7 +83,8 @@ export const names = {
     backslash: "backslash",
     bracketRight: "bracketRight",
     quote: "quote",
+    space: "space",
 };
 
 /** A valid key names */
-export type IKeyName = keyof typeof names;
+export type IKeyName = keyof typeof keyNames;

@@ -6,7 +6,7 @@ import {IStack} from "./_types/IStack";
  */
 export class Stack<T> implements IStack<T> {
     protected rawItems = new Field([] as (T | this)[]);
-    protected items = new DataCacher(h =>
+    protected items: DataCacher<T[]> = new DataCacher(h =>
         this.rawItems
             .get(h)
             .reduce(

@@ -8,9 +8,8 @@ import {SyntaxHighlighterNodes} from "./SyntaxHighlighterNodes";
 import {SyntaxHighlighterSelection} from "./SyntaxHighlighterSelection";
 import {IHighlightNode} from "../../../textFields/syntax/_types/IHighlightNode";
 import {useHorizontalScroll} from "../../../utils/hooks/useHorizontalScroll";
-import {useSmoothScroll} from "../../../utils/hooks/useSmoothScroll";
 import {useCursorScroll} from "./useCursorScroll";
-import {FillBox} from "../../FillBox";
+import {useDataHook} from "../../../utils/modelReact/useDataHook";
 
 /**
  * A simple component to render syntax highlighted using a passed highlighter
@@ -26,19 +25,23 @@ export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
     getPixelSelection,
     ...rest
 }) => {
+    // Allow the highlighter to force updates
+    const highlightChangeID = useRef(0);
+    const [h] = useDataHook({onChange: () => highlightChangeID.current++});
+
     // Obtain the highlight nodes
     let nodes: IHighlightNode[];
     if ("value" in rest) {
         nodes = useMemo(() => {
             // Highlight the text including error tags
-            const {nodes, errors} = rest.highlighter.highlight(rest.value);
+            const {nodes, errors} = rest.highlighter.highlight(rest.value, h);
             if (rest.setErrors) rest.setErrors(errors);
             const errorHighlighted =
                 rest.highlightErrors == false ? nodes : highlightTagErrors(nodes, errors);
 
             // Return all nodes
             return errorHighlighted;
-        }, [rest.value, rest.highlightErrors]);
+        }, [rest.value, rest.highlightErrors, highlightChangeID.current]);
     } else {
         nodes = rest.nodes;
     }

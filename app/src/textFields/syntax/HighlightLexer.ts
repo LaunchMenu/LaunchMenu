@@ -62,7 +62,10 @@ export class HighlightLexer extends Lexer implements IHighlighter {
         if (lexerDefinition instanceof Array) {
             def = map(lexerDefinition);
         } else {
-            let modeDef = {modes: {}, defaultMode: lexerDefinition.defaultMode};
+            let modeDef = {
+                modes: {} as {[modeName: string]: IHighlightTokenType[]},
+                defaultMode: lexerDefinition.defaultMode,
+            };
             Object.keys(lexerDefinition.modes).forEach(modeName => {
                 const mode = lexerDefinition.modes[modeName];
                 modeDef.modes[modeName] = map(mode);

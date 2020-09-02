@@ -12,8 +12,10 @@ import {isItemSelectable} from "../items/isItemSelectable";
 import {IGenerator} from "../../utils/generator/_types/IGenerator";
 import {GeneratorStreamExtractor} from "../../utils/generator/GeneratorStreamExtractor";
 import {sortPrioritizedCategories} from "./SortPrioritizedCategories";
-import {IMenu} from "./_types/IMenu";
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
+import {IMenuCategoryData} from "./_types/IMenuCategoryData";
+import {AbstractMenu} from "./AbstractMenu";
+import {IIOContext} from "../../context/_types/IIOContext";
 
 type CategoryData<T> = {
     items: SortedList<IPrioritizedMenuItem<T>>;
@@ -25,40 +27,47 @@ type CategoryData<T> = {
     };
 };
 
-const createSortedList = <T>(menu: IMenu): SortedList<IPrioritizedMenuItem<T>> =>
+const createSortedList = <T>(changeList: {
+    added: IMenuItem[];
+    removed: IMenuItem[];
+}): SortedList<IPrioritizedMenuItem<T>> =>
     new SortedList({
         condition: (a, b) => a.priority >= b.priority,
-        onAdd: ({item}) => onMenuChangeAction.get([item]).onMenuChange(menu, true),
-        onRemove: ({item}) => onMenuChangeAction.get([item]).onMenuChange(menu, false),
+        onAdd: ({item}) => changeList.added.push(item),
+        onRemove: ({item}) => changeList.removed.push(item),
     });
 
 /**
  * A menu class to control menu items and their state
  */
-export class PrioritizedMenu<T = void> {
+export class PrioritizedMenu<T = void> extends AbstractMenu {
     protected categoryConfig: TRequired<IPrioritizedMenuCategoryConfig<T>>;
-    protected destroyed = new Field(false);
 
     // Batching tracking
     protected batchTimeout: NodeJS.Timeout | undefined;
     protected generators: GeneratorStreamExtractor<IPrioritizedMenuItem<T>>[] = [];
+    protected menuChangeEvents = {added: [] as IMenuItem[], removed: [] as IMenuItem[]};
 
     // Tracking menu items
-    protected categories = [
+    protected categoriesRaw = [
         {
-            items: createSortedList(this),
+            items: createSortedList(this.menuChangeEvents),
             category: undefined,
         },
     ] as CategoryData<T>[];
+    protected categories = new Field([] as IMenuCategoryData[]);
     protected items = new Field([] as IMenuItem[]); // Flat structure containing items (as IMenuItems) and categories headers (as IMenuItems)
-    protected cursor = new Field(null as IMenuItem | null);
-    protected selected = new Field([] as IMenuItem[]);
 
     /**
      * Creates a new menu
+     * @param context The context to be used by menu items
      * @param categoryConfig The configuration for category options
      */
-    public constructor(categoryConfig?: IPrioritizedMenuCategoryConfig<T>) {
+    public constructor(
+        context: IIOContext,
+        categoryConfig?: IPrioritizedMenuCategoryConfig<T>
+    ) {
+        super(context);
         // Create the category config
         this.categoryConfig = {
             getCategory: categoryConfig?.getCategory || getMenuCategory,
@@ -76,20 +85,22 @@ export class PrioritizedMenu<T = void> {
     public addItem(item: IPrioritizedMenuItem<T>): void {
         if (item.priority == 0) return;
         const category = this.categoryConfig.getCategory(item);
-        const categoryIndex = this.categories.findIndex(({category: c}) => c == category);
+        const categoryIndex = this.categoriesRaw.findIndex(
+            ({category: c}) => c == category
+        );
 
         // Add the item to a new or existing category
         if (categoryIndex == -1) {
-            this.categories.push({
+            this.categoriesRaw.push({
                 category,
-                items: createSortedList(this),
+                items: createSortedList(this.menuChangeEvents),
                 batch: {
                     remove: [],
                     add: [item],
                 },
             });
         } else {
-            const categoryData = this.categories[categoryIndex];
+            const categoryData = this.categoriesRaw[categoryIndex];
             if (!categoryData.batch) categoryData.batch = {add: [], remove: []};
 
             // If the batch contains an outdated version, remove it
@@ -140,20 +151,22 @@ export class PrioritizedMenu<T = void> {
      */
     public removeItem(item: IPrioritizedMenuItem<T> & {id: string | number}): void {
         const category = this.categoryConfig.getCategory(item);
-        const categoryIndex = this.categories.findIndex(({category: c}) => c == category);
+        const categoryIndex = this.categoriesRaw.findIndex(
+            ({category: c}) => c == category
+        );
 
         // Add the item to a new or existing category
         if (categoryIndex == -1) {
-            this.categories.push({
+            this.categoriesRaw.push({
                 category,
-                items: createSortedList(this),
+                items: createSortedList(this.menuChangeEvents),
                 batch: {
                     add: [],
                     remove: [item],
                 },
             });
         } else {
-            const categoryData = this.categories[categoryIndex];
+            const categoryData = this.categoriesRaw[categoryIndex];
             if (!categoryData.batch) categoryData.batch = {add: [], remove: []};
             categoryData.batch.remove.push(item);
         }
@@ -168,7 +181,7 @@ export class PrioritizedMenu<T = void> {
      * @returns A promise that resolves once updated
      */
     public async updateContents(data: T): Promise<void> {
-        const promises = this.categories.map(async categoryData => {
+        const promises = this.categoriesRaw.map(async categoryData => {
             const items = categoryData.items.get();
             const newItems = [] as IPrioritizedMenuItem<T>[];
             for (let i = 0; i < items.length; i++) {
@@ -203,13 +216,14 @@ export class PrioritizedMenu<T = void> {
         if (!this.batchTimeout) return;
         clearTimeout(this.batchTimeout);
         this.batchTimeout = undefined;
-        this.categories = this.categories.filter(categoryData => {
+        this.categoriesRaw = this.categoriesRaw.filter(categoryData => {
             if (categoryData.batch) {
                 // Reset the category if specified
-                if (categoryData.batch.clear) categoryData.items = createSortedList(this);
+                if (categoryData.batch.clear)
+                    categoryData.items = createSortedList(this.menuChangeEvents);
 
                 // Filters out old items
-                const keys = {};
+                const keys = {} as {[key: string]: boolean};
                 categoryData.batch.add.forEach(({id}) => id && (keys[id] = true));
                 categoryData.batch.remove.forEach(({id}) => id && (keys[id] = true));
                 categoryData.items.filter(({id}) => !id || !keys[id]);
@@ -233,19 +247,31 @@ export class PrioritizedMenu<T = void> {
      * Synchronizes the item list to be up to date with the categories data
      */
     protected updateItemsList(): void {
-        const order = this.categoryConfig.sortCategories(this.categories);
+        const order = this.categoryConfig.sortCategories(this.categoriesRaw);
 
         // Combine the items and categories into a single list
         const items = [] as IMenuItem[];
+        const categories = [] as IMenuCategoryData[];
         order.forEach(category => {
-            const categoryData = this.categories.find(({category: c}) => c == category);
+            const categoryData = this.categoriesRaw.find(
+                ({category: c}) => c == category
+            );
             const categoryItems = categoryData?.items.get().map(({item}) => item);
-            if (categoryItems)
+            if (categoryItems) {
+                categories.push({category, items: categoryItems});
                 if (category) items.push(category.item, ...categoryItems);
                 else items.push(...categoryItems);
+            }
         });
+        this.categories.set(categories);
         this.items.set(items);
         this.deselectRemovedItems();
+
+        // Fire the menu change events
+        onMenuChangeAction.get(this.menuChangeEvents.added).onMenuChange(this, true);
+        this.menuChangeEvents.added = [];
+        onMenuChangeAction.get(this.menuChangeEvents.removed).onMenuChange(this, false);
+        this.menuChangeEvents.removed = [];
     }
 
     /**
@@ -278,20 +304,7 @@ export class PrioritizedMenu<T = void> {
      */
     public setSelected(item: IMenuItem, selected: boolean = true): void {
         this.flushBatch();
-        if (this.items.get(null).includes(item) && !this.destroyed.get(null)) {
-            const selectedItems = this.selected.get(null);
-            if (selected) {
-                if (!selectedItems.includes(item)) {
-                    this.selected.set([...selectedItems, item]);
-                    onSelectAction.get([item]).onSelect(true, this);
-                }
-            } else {
-                if (selectedItems.includes(item)) {
-                    this.selected.set(selectedItems.filter(i => i != item));
-                    onSelectAction.get([item]).onSelect(false, this);
-                }
-            }
-        }
+        super.setSelected(item, selected);
     }
 
     /**
@@ -300,26 +313,21 @@ export class PrioritizedMenu<T = void> {
      */
     public setCursor(item: IMenuItem | null): void {
         this.flushBatch();
-        if ((!item || this.items.get(null).includes(item)) && !this.destroyed.get(null)) {
-            const currentCursor = this.cursor.get(null);
-            if (currentCursor) onCursorAction.get([currentCursor]).onCursor(false, this);
-
-            this.cursor.set(item);
-
-            if (item) onCursorAction.get([item]).onCursor(true, this);
-        }
+        super.setCursor(item);
     }
 
     /**
      * Destroys the menu, making sure that all items are unselected
      */
-    public destroy() {
-        if (this.destroyed.get(null) == true) return;
-        this.destroyed.set(true);
-        this.generators.forEach(generator => generator.stop());
-        onSelectAction.get(this.selected.get(null)).onSelect(false, this);
-        const cursor = this.cursor.get(null);
-        if (cursor) onCursorAction.get([cursor]).onCursor(false, this);
+    public destroy(): boolean {
+        if (super.destroy()) {
+            this.generators.forEach(generator => generator.stop());
+            onSelectAction.get(this.selected.get(null)).onSelect(false, this);
+            const cursor = this.cursor.get(null);
+            if (cursor) onCursorAction.get([cursor]).onCursor(false, this);
+            return true;
+        }
+        return false;
     }
 
     // Item retrieval
@@ -336,44 +344,14 @@ export class PrioritizedMenu<T = void> {
     }
 
     /**
-     * Retrieves the currently selected items of the menu
+     * Retrieves the item categories of the menu
      * @param hook The hook to subscribe to changes
-     * @returns The selected menu items
+     * @returns The categories and their items
      */
-    public getSelected(hook: IDataHook = null): IMenuItem[] {
+    public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
         if (this.isDestroyed(hook)) return [];
-        return this.selected.get(hook);
-    }
-
-    /**
-     * Retrieves the item that's currently at the cursor of the menu
-     * @param hook The hook to subscribe to changes
-     * @returns The cursor item
-     */
-    public getCursor(hook: IDataHook = null): IMenuItem | null {
-        if (this.isDestroyed(hook)) return null;
-        return this.cursor.get(hook);
-    }
-
-    /**
-     * Retrieves all the selected items including the cursor
-     * @param hook The hook to subscribe to changes
-     * @returns The selected items including the cursor
-     */
-    public getAllSelected(hook: IDataHook = null): IMenuItem[] {
-        if (this.isDestroyed(hook)) return [];
-        const cursor = this.cursor.get(hook);
-        const selected = this.getSelected(hook);
-        if (cursor && !selected.includes(cursor)) return [...selected, cursor];
-        return selected;
-    }
-
-    /**
-     * Retrieves whether the menu has been destroyed
-     * @param hook The hook to subscribe to changes
-     * @returns Whether the menu was destroyed
-     */
-    public isDestroyed(hook: IDataHook = null): boolean {
-        return this.destroyed.get(hook);
+        if (this.generators.length > 0 && hook && "markIsLoading" in hook)
+            hook.markIsLoading?.();
+        return this.categories.get(hook);
     }
 }

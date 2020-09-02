@@ -34,7 +34,7 @@ export function createContextAction<
     TGetActionCoreInput<G>,
     TGetActionCoreOutput<G> & {getMenuItem: IContextMenuItemGetter}
 > {
-    return ((data, items) => {
+    return ((data: TGetActionCoreInput<G>[], items: IMenuItem[][]) => {
         const actionGetterResult = getter(data, items);
 
         // Retrieve the original result as well as a menu item getter
@@ -43,7 +43,10 @@ export function createContextAction<
             getMenuItem: ((context, closeMenu) => {
                 //  Create an execute method that closes the menu when called
                 const executeItem = () => {
-                    const result = actionGetterResult.execute(context, closeMenu);
+                    const result = actionGetterResult.execute({
+                        context,
+                        close: closeMenu,
+                    });
                     if (closeOnExecute != false && closeMenu) closeMenu();
                     return result;
                 };

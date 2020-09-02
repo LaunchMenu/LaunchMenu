@@ -6,6 +6,7 @@ import {searchAction} from "../actions/types/search/searchAction";
 import {GeneratorStreamExtractor} from "../../utils/generator/GeneratorStreamExtractor";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
 import {IQuery} from "./_types/IQuery";
+import {IIOContext} from "../../context/_types/IIOContext";
 
 /**
  * A menu that can be used to perform a search on a collection of items
@@ -20,10 +21,14 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
 
     /**
      * Creates a new search menu
+     * @param context The context to be used by menu items
      * @param categoryConfig The config of the category
      */
-    public constructor(categoryConfig?: IPrioritizedMenuCategoryConfig<IQuery>) {
-        super(categoryConfig);
+    public constructor(
+        context: IIOContext,
+        categoryConfig?: IPrioritizedMenuCategoryConfig<IQuery>
+    ) {
+        super(context, categoryConfig);
     }
 
     /**
@@ -130,7 +135,7 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
             data.generator?.stop();
 
             // Remove all the items from this item
-            this.categories.forEach(({items}) => {
+            this.categoriesRaw.forEach(({items}) => {
                 (items.get() as (IPrioritizedMenuItem<IQuery> & {
                     source?: IMenuItem;
                 })[]).forEach(data => {

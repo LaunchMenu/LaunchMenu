@@ -2,6 +2,9 @@ import React, {FC, useCallback} from "react";
 import {Box} from "../../styling/box/Box";
 import {IMenu} from "../../menus/menu/_types/IMenu";
 import {IMenuItem} from "../../menus/items/_types/IMenuItem";
+import {isItemSelectable} from "../../menus/items/isItemSelectable";
+import {useIOContext} from "../../context/react/useIOContext";
+import {executeAction} from "../../menus/actions/types/execute/executeAction";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution
@@ -11,21 +14,27 @@ export const MenuItemFrame: FC<{
     isCursor: boolean;
     menu?: IMenu;
     item?: IMenuItem;
-    onExecute?: () => void;
-}> = ({isCursor, isSelected, menu, item, onExecute, children}) => (
-    <Box background={isSelected ? "secondary" : "bgPrimary"} paddingLeft="medium">
-        <Box
-            cursor="pointer"
-            onClick={
-                onExecute &&
-                useCallback(() => {
-                    if (!menu || !item || menu.getCursor() == item) onExecute();
-                    else menu.setCursor(item);
-                }, [onExecute, menu, item])
-            }
-            onContextMenu={() => console.log("detect")} // TODO: open context menu
-            background={isCursor ? "primary" : "bgPrimary"}>
-            {children}
+}> = ({isCursor, isSelected, menu, item, children}) => {
+    const ioContext = useIOContext();
+    return (
+        <Box background={isSelected ? "secondary" : "bgPrimary"} paddingLeft="medium">
+            <Box
+                cursor="pointer"
+                onClick={useCallback(async () => {
+                    if (!menu || !item) return;
+                    if (menu.getCursor() == item) {
+                        if (ioContext) {
+                            const cmd = await executeAction
+                                .get([item])
+                                .execute({context: menu.getContext()});
+                            if (cmd) ioContext.undoRedo.execute(cmd);
+                        }
+                    } else if (isItemSelectable(item)) menu.setCursor(item);
+                }, [ioContext, menu, item])}
+                onContextMenu={() => console.log("detect")} // TODO: open context menu
+                background={isCursor ? "primary" : "bgPrimary"}>
+                {children}
+            </Box>
         </Box>
-    </Box>
-);
+    );
+};

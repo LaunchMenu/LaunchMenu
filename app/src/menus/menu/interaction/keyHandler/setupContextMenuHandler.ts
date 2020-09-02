@@ -5,23 +5,17 @@ import {IMenuItem} from "../../../items/_types/IMenuItem";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
 import {getContextMenuItems} from "../../../utils/getContextMenu";
-import {IViewStack} from "../../../../stacks/_types/IViewStack";
-import {IKeyHandlerStack} from "../../../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {openUI} from "../../../../context/openUI/openUI";
 import {Menu} from "../../Menu";
-import {IUndoRedoFacility} from "../../../../undoRedo/_types/IUndoRedoFacility";
-import {IIOContext} from "../../../../context/_types/IIOContext";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
  * @param menu The menu to create the context menu handler for
- * @param ioContext The IO context to use to open the context menu
  * @param config The configuration to customize the handler
  * @returns An object with an event emit function and destroy function
  */
 export function setupContextMenuHandler(
     menu: IMenu,
-    ioContext: IIOContext,
     {
         useContextItemKeyHandlers = true,
         isOpenMenuButton = e => e.is("tab"),
@@ -32,6 +26,7 @@ export function setupContextMenuHandler(
         isOpenMenuButton?: IKeyEventListenerFunction;
     } = {}
 ) {
+    const ioContext = menu.getContext();
     let contextData: {
         emitter: {emit: IKeyEventListenerFunction};
         items: IMenuItem[];
@@ -71,7 +66,7 @@ export function setupContextMenuHandler(
             if (isMenuOpenEvent) {
                 if (contextData.items.length > 0)
                     contextData.close = openUI(ioContext, {
-                        menu: new Menu(contextData.items),
+                        menu: new Menu(ioContext, contextData.items),
                     });
                 return true;
             }

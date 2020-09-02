@@ -17,8 +17,15 @@ export type IKeyEventListenerFunction =
 export type IKeyEventListenerObject = {
     emit: IKeyEventListenerFunction;
 
-    /** Destroys any data created for the listener */
-    destroy?: () => void;
+    /**
+     * Initializes the text field potentially opening any UI
+     */
+    readonly init?: () => void;
+
+    /**
+     * Destroys any data created for the listener
+     */
+    readonly destroy?: () => void;
 };
 
 /**

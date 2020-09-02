@@ -8,9 +8,10 @@ import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangeAction";
+import {context} from "../../../_tests/context.helper";
 
 const createMenu = (items?: IPrioritizedMenuItem[]) => {
-    const menu = new PrioritizedMenu({
+    const menu = new PrioritizedMenu(context, {
         batchInterval: 10,
     });
     if (items) {
@@ -23,10 +24,10 @@ const createMenu = (items?: IPrioritizedMenuItem[]) => {
 describe("PrioritizedMenu", () => {
     describe("new PrioritizedMenu", () => {
         it("Properly creates a new prioritized menu", () => {
-            new PrioritizedMenu();
+            new PrioritizedMenu(context);
         });
         it("Can be initialized with a config", () => {
-            new PrioritizedMenu({
+            new PrioritizedMenu(context, {
                 batchInterval: 200,
             });
         });
@@ -147,6 +148,56 @@ describe("PrioritizedMenu", () => {
             await wait(20);
             expect(onMenuChange.mock.calls.length).toBe(1);
             expect(onMenuChange.mock.calls[0]).toEqual([menu, true]);
+        });
+    });
+    describe("Menu.getCategories", () => {
+        const someCategory: ICategory = {
+            name: "Bob",
+            description: "some category for Bob",
+            item: createMenuItem(),
+        };
+        const someCategory2: ICategory = {
+            name: "John",
+            description: "some category for John",
+            item: createMenuItem(),
+        };
+        const items = [
+            createPrioritizedMenuItem({priority: 5}),
+            createPrioritizedMenuItem({priority: 1}),
+            createPrioritizedMenuItem({priority: 3, category: someCategory}),
+            createPrioritizedMenuItem({priority: 5, category: someCategory}),
+            createPrioritizedMenuItem({priority: 6, category: someCategory2}),
+        ];
+        it("Correctly retrieves the categories", async () => {
+            const menu = createMenu();
+            items.forEach(item => menu.addItem(item));
+            await wait(20);
+            expect(menu.getCategories()).toEqual([
+                {category: undefined, items: [items[0].item, items[1].item]},
+                {category: someCategory2, items: [items[4].item]},
+                {category: someCategory, items: [items[3].item, items[2].item]},
+            ]);
+        });
+        it("Can be subscribed to", async () => {
+            const menu = createMenu();
+            items.forEach(item => menu.addItem(item));
+            await wait(20);
+
+            const cb = jest.fn();
+            new Observer(h => menu.getCategories(h)).listen(cb);
+
+            const newItem = createPrioritizedMenuItem({
+                priority: 4,
+                category: someCategory2,
+            });
+            menu.addItem(newItem);
+            await wait(20);
+            expect(cb.mock.calls.length).toBe(1);
+            expect(cb.mock.calls[0][0]).toEqual([
+                {category: undefined, items: [items[0].item, items[1].item]},
+                {category: someCategory2, items: [items[4].item, newItem.item]},
+                {category: someCategory, items: [items[3].item, items[2].item]},
+            ]);
         });
     });
     describe("PrioritizedMenu.addItems", () => {
@@ -325,7 +376,7 @@ describe("PrioritizedMenu", () => {
     });
     describe("PrioritizedMenu.updateContents", () => {
         it("Updates item priorities based on the passed filter", async () => {
-            const menu = new PrioritizedMenu<string>({
+            const menu = new PrioritizedMenu<string>(context, {
                 batchInterval: 10,
             });
             const item = createPrioritizedMenuItem({
@@ -355,7 +406,7 @@ describe("PrioritizedMenu", () => {
             expect(menu.getItems()).toEqual([item2.item, item.item, item3.item]);
         });
         it("Removes items with priority 0", async () => {
-            const menu = new PrioritizedMenu<string>({
+            const menu = new PrioritizedMenu<string>(context, {
                 batchInterval: 10,
             });
             const item = createPrioritizedMenuItem({
@@ -799,7 +850,7 @@ describe("PrioritizedMenu", () => {
             ];
             let menu: PrioritizedMenu;
             beforeEach(() => {
-                menu = new PrioritizedMenu({maxCategoryItemCount: 2});
+                menu = new PrioritizedMenu(context, {maxCategoryItemCount: 2});
             });
             it("Allows the number of items for each category to be limited", () => {
                 items.forEach(item => menu.addItem(item));
@@ -812,7 +863,7 @@ describe("PrioritizedMenu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new PrioritizedMenu({maxCategoryItemCount: 2});
+                const menu = new PrioritizedMenu(context, {maxCategoryItemCount: 2});
 
                 const items2 = [
                     createPrioritizedMenuItem({category: someCategory}),
@@ -879,7 +930,7 @@ describe("PrioritizedMenu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new PrioritizedMenu({getCategory: () => undefined});
+                const menu = new PrioritizedMenu(context, {getCategory: () => undefined});
                 const items = [
                     createPrioritizedMenuItem({}),
                     createPrioritizedMenuItem({}),
@@ -904,7 +955,9 @@ describe("PrioritizedMenu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new PrioritizedMenu({getCategory: () => someCategory});
+                const menu = new PrioritizedMenu(context, {
+                    getCategory: () => someCategory,
+                });
                 const items = [
                     createPrioritizedMenuItem({}),
                     createPrioritizedMenuItem({}),
@@ -933,7 +986,7 @@ describe("PrioritizedMenu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new PrioritizedMenu({
+                const menu = new PrioritizedMenu(context, {
                     sortCategories: categories =>
                         categories.map(({category}) => category).reverse(),
                 });
@@ -962,7 +1015,9 @@ describe("PrioritizedMenu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new PrioritizedMenu({sortCategories: () => [undefined]});
+                const menu = new PrioritizedMenu(context, {
+                    sortCategories: () => [undefined],
+                });
                 const items = [
                     createPrioritizedMenuItem({}),
                     createPrioritizedMenuItem({}),
@@ -982,7 +1037,7 @@ describe("PrioritizedMenu", () => {
 
         describe("categoryConfig.batchInterval", () => {
             it("Correctly flushes batches at this interval", async () => {
-                const menu = new PrioritizedMenu({
+                const menu = new PrioritizedMenu(context, {
                     batchInterval: 200,
                 });
                 const items = [

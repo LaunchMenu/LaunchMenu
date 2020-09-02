@@ -159,6 +159,12 @@ describe("Action", () => {
                 expect(action.get([])).toBe(0);
                 expect(action.get([createItem()])).toBe(0);
             });
+            it("Allows for specification of a subset of action bindings", () => {
+                const item = createItem(action.createBinding(2), action.createBinding(4));
+                const sub = {item, actionBindings: item.actionBindings.slice(1)};
+                expect(action.get([item])).toBe(6);
+                expect(action.get([sub])).toBe(4);
+            });
             it("Properly works for handlers", () => {
                 const handler = action.createHandler((inputs: string[]) => {
                     return inputs.reduce((cur, text) => cur + text.length, 0) + 1;

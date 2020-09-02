@@ -4,15 +4,18 @@ import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangeAction";
+import {Observer} from "../../../utils/modelReact/Observer";
+import {wait} from "../../../_tests/wait.helper";
+import {context} from "../../../_tests/context.helper";
 
 describe("Menu", () => {
     describe("new Menu", () => {
         it("Properly creates a new menu", () => {
-            new Menu();
+            new Menu(context);
         });
         it("Can be initialized with an item array", () => {
             const items = [createMenuItem(), createMenuItem(), createMenuItem()];
-            const menu = new Menu(items);
+            const menu = new Menu(context, items);
             expect(menu.getItems().length).toBe(3);
             expect(menu.getItems()).toEqual(items);
         });
@@ -22,7 +25,7 @@ describe("Menu", () => {
         let menu: Menu;
         const items = [createMenuItem(), createMenuItem(), createMenuItem()];
         beforeEach(() => {
-            menu = new Menu(items);
+            menu = new Menu(context, items);
         });
 
         it("Can add an item", () => {
@@ -54,7 +57,7 @@ describe("Menu", () => {
             ];
 
             it("Inserts the correct category in the menu", () => {
-                const menu = new Menu();
+                const menu = new Menu(context);
                 menu.addItem(items[0]);
                 menu.addItem(items[1]);
                 menu.addItem(items[2]);
@@ -65,7 +68,7 @@ describe("Menu", () => {
                     items[2],
                 ]);
 
-                const menu2 = new Menu();
+                const menu2 = new Menu(context);
                 menu2.addItem(items[2]);
                 menu2.addItem(items[1]);
                 menu2.addItem(items[0]);
@@ -77,7 +80,7 @@ describe("Menu", () => {
                 ]);
             });
             it("Adds categories in the order items of said categories were added", () => {
-                const menu = new Menu();
+                const menu = new Menu(context);
                 menu.addItem(items[0]);
                 menu.addItem(items[1]);
                 menu.addItem(items[2]);
@@ -91,7 +94,7 @@ describe("Menu", () => {
                     items[3],
                 ]);
 
-                const menu2 = new Menu();
+                const menu2 = new Menu(context);
                 menu2.addItem(items[1]);
                 menu2.addItem(items[3]);
                 menu2.addItem(items[2]);
@@ -114,7 +117,7 @@ describe("Menu", () => {
                     onMenuChange,
                 })
             );
-            const menu = new Menu(items);
+            const menu = new Menu(context, items);
             menu.addItem(item);
             expect(onMenuChange.mock.calls.length).toBe(1);
             expect(onMenuChange.mock.calls[0]).toEqual([menu, true]);
@@ -126,16 +129,67 @@ describe("Menu", () => {
                     onMenuChange: onMenuChange2,
                 })
             );
-            const menu2 = new Menu([...items, item2]);
+            const menu2 = new Menu(context, [...items, item2]);
             expect(onMenuChange2.mock.calls.length).toBe(1);
             expect(onMenuChange2.mock.calls[0]).toEqual([menu2, true]);
+        });
+    });
+
+    describe("Menu.getCategories", () => {
+        const someCategory: ICategory = {
+            name: "Bob",
+            description: "some category for Bob",
+            item: createMenuItem(),
+        };
+        const someCategory2: ICategory = {
+            name: "John",
+            description: "some category for John",
+            item: createMenuItem(),
+        };
+        const items = [
+            createMenuItem(),
+            createMenuItem(),
+            createMenuItem(someCategory),
+            createMenuItem(someCategory2),
+        ];
+        it("Correctly retrieves the categories", () => {
+            const menu = new Menu(context);
+            menu.addItem(items[0]);
+            menu.addItem(items[1]);
+            menu.addItem(items[2]);
+            menu.addItem(items[3]);
+            expect(menu.getCategories()).toEqual([
+                {category: undefined, items: [items[0], items[1]]},
+                {category: someCategory, items: [items[2]]},
+                {category: someCategory2, items: [items[3]]},
+            ]);
+        });
+        it("Can be subscribed to", async () => {
+            const menu = new Menu(context);
+            menu.addItem(items[0]);
+            menu.addItem(items[1]);
+            menu.addItem(items[2]);
+            menu.addItem(items[3]);
+
+            const cb = jest.fn();
+            new Observer(h => menu.getCategories(h)).listen(cb);
+
+            const newItem = createMenuItem(someCategory2);
+            menu.addItem(newItem);
+            await wait(0);
+            expect(cb.mock.calls.length).toBe(1);
+            expect(cb.mock.calls[0][0]).toEqual([
+                {category: undefined, items: [items[0], items[1]]},
+                {category: someCategory, items: [items[2]]},
+                {category: someCategory2, items: [items[3], newItem]},
+            ]);
         });
     });
 
     describe("Menu.addItems", () => {
         it("Can add items", () => {
             const items = [createMenuItem(), createMenuItem(), createMenuItem()];
-            const menu = new Menu(items);
+            const menu = new Menu(context, items);
             const item = createMenuItem();
             const item2 = createMenuItem();
             menu.addItems([item, item2]);
@@ -160,7 +214,7 @@ describe("Menu", () => {
             ];
 
             it("Inserts the correct category in the menu", () => {
-                const menu = new Menu();
+                const menu = new Menu(context);
                 menu.addItems(items.slice(0, 3));
                 expect(menu.getItems()).toEqual([
                     items[0],
@@ -169,7 +223,7 @@ describe("Menu", () => {
                     items[2],
                 ]);
 
-                const menu2 = new Menu();
+                const menu2 = new Menu(context);
                 menu2.addItems(items.slice(0, 3).reverse());
                 expect(menu2.getItems()).toEqual([
                     items[1],
@@ -179,7 +233,7 @@ describe("Menu", () => {
                 ]);
             });
             it("Adds categories in the order items of said categories were added", () => {
-                const menu = new Menu();
+                const menu = new Menu(context);
                 menu.addItems(items);
                 expect(menu.getItems()).toEqual([
                     items[0],
@@ -190,7 +244,7 @@ describe("Menu", () => {
                     items[3],
                 ]);
 
-                const menu2 = new Menu();
+                const menu2 = new Menu(context);
                 menu2.addItems([...items].reverse());
                 expect(menu2.getItems()).toEqual([
                     items[1],
@@ -218,7 +272,7 @@ describe("Menu", () => {
                 })
             );
 
-            const menu = new Menu();
+            const menu = new Menu(context);
             menu.addItems([item, item2]);
             expect(onMenuChange.mock.calls.length).toBe(1);
             expect(onMenuChange.mock.calls[0]).toEqual([menu, true]);
@@ -231,7 +285,7 @@ describe("Menu", () => {
         const items = [createMenuItem(), createMenuItem(), createMenuItem()];
         let menu: Menu;
         beforeEach(() => {
-            menu = new Menu(items);
+            menu = new Menu(context, items);
         });
 
         it("Can remove items", () => {
@@ -301,7 +355,7 @@ describe("Menu", () => {
                     onMenuChange,
                 })
             );
-            const menu = new Menu([...items, item]);
+            const menu = new Menu(context, [...items, item]);
             expect(onMenuChange.mock.calls.length).toBe(1);
             menu.removeItem(item);
             expect(onMenuChange.mock.calls.length).toBe(2);
@@ -314,7 +368,7 @@ describe("Menu", () => {
         const items = [createMenuItem(), createMenuItem(), createMenuItem()];
         let menu: Menu;
         beforeEach(() => {
-            menu = new Menu(items);
+            menu = new Menu(context, items);
         });
 
         it("Can remove items", () => {
@@ -378,7 +432,7 @@ describe("Menu", () => {
                     onMenuChange,
                 })
             );
-            const menu = new Menu([...items, item, item2]);
+            const menu = new Menu(context, [...items, item, item2]);
             expect(onMenuChange.mock.calls.length).toBe(1);
             menu.removeItems([item, item2]);
             expect(onMenuChange.mock.calls.length).toBe(2);
@@ -405,14 +459,14 @@ describe("Menu", () => {
             createMenuItem(someCategory2),
         ];
         it("Can select items", () => {
-            const menu = new Menu(items);
+            const menu = new Menu(context, items);
             menu.setSelected(items[0], true);
             expect(menu.getSelected()).toEqual([items[0]]);
             menu.setSelected(items[3], true);
             expect(menu.getSelected()).toEqual([items[0], items[3]]);
         });
         it("Can deselect items", () => {
-            const menu = new Menu(items);
+            const menu = new Menu(context, items);
             menu.setSelected(items[0], true);
             menu.setSelected(items[3], true);
             expect(menu.getSelected()).toEqual([items[0], items[3]]);
@@ -433,7 +487,7 @@ describe("Menu", () => {
                     },
                 })
             );
-            const menu = new Menu([...items, item]);
+            const menu = new Menu(context, [...items, item]);
             expect(selectCount).toBe(0);
             expect(deselectCount).toBe(0);
             menu.setSelected(item, true);
@@ -444,14 +498,14 @@ describe("Menu", () => {
             expect(deselectCount).toBe(1);
         });
         it("Can't select items that aren't in the menu", () => {
-            const menu = new Menu(items);
+            const menu = new Menu(context, items);
             const item = createMenuItem();
             menu.setSelected(item, true);
             expect(menu.getSelected()).toEqual([]);
         });
         it("Automatically deselects items when removed", () => {
             const item = createMenuItem();
-            const menu = new Menu([...items, item]);
+            const menu = new Menu(context, [...items, item]);
             menu.setSelected(item, true);
             expect(menu.getSelected()).toEqual([item]);
             menu.removeItem(item);
@@ -471,12 +525,12 @@ describe("Menu", () => {
             createMenuItem(someCategory),
         ];
         it("Has the correct initial cursor", () => {
-            expect(new Menu().getCursor()).toEqual(null);
+            expect(new Menu(context).getCursor()).toEqual(null);
             // It won't select unselectable items
-            expect(new Menu(items).getCursor()).toEqual(items[1]);
+            expect(new Menu(context, items).getCursor()).toEqual(items[1]);
         });
         it("Properly updates the cursor", () => {
-            const menu = new Menu(items);
+            const menu = new Menu(context, items);
             menu.setCursor(items[2]);
             expect(menu.getCursor()).toEqual(items[2]);
         });
@@ -493,7 +547,7 @@ describe("Menu", () => {
                     },
                 })
             );
-            const menu = new Menu([...items, item]);
+            const menu = new Menu(context, [...items, item]);
             expect(selectCount).toBe(0);
             expect(deselectCount).toBe(0);
             menu.setCursor(item);
@@ -504,14 +558,14 @@ describe("Menu", () => {
             expect(deselectCount).toBe(1);
         });
         it("Can't set item as cursor if not in the menu", () => {
-            const menu = new Menu(items);
+            const menu = new Menu(context, items);
             const item = createMenuItem();
             menu.setCursor(item);
             expect(menu.getCursor()).not.toEqual(item);
         });
         it("Automatically selects another cursor when cursor is removed", () => {
             const item = createMenuItem();
-            const menu = new Menu([...items, item]);
+            const menu = new Menu(context, [...items, item]);
             menu.setCursor(item);
             expect(menu.getCursor()).toEqual(item);
             menu.removeItem(item);
@@ -527,7 +581,7 @@ describe("Menu", () => {
         it("Combines the selection and cursor if present", () => {
             const item = createMenuItem();
             const item2 = createMenuItem();
-            const menu = new Menu([...items, item, item2]);
+            const menu = new Menu(context, [...items, item, item2]);
             menu.setCursor(item);
             expect(menu.getAllSelected()).toEqual([item]);
             menu.setSelected(item2);
@@ -536,7 +590,7 @@ describe("Menu", () => {
         it("Returns the selection if no cursor is present", () => {
             const item = createMenuItem();
             const item2 = createMenuItem();
-            const menu = new Menu([...items, item, item2]);
+            const menu = new Menu(context, [...items, item, item2]);
             menu.setCursor(null);
             menu.setSelected(item2);
             expect(menu.getAllSelected()).toEqual([item2]);
@@ -544,7 +598,7 @@ describe("Menu", () => {
         it("Only includes items once", () => {
             const item = createMenuItem();
             const item2 = createMenuItem();
-            const menu = new Menu([...items, item, item2]);
+            const menu = new Menu(context, [...items, item, item2]);
             menu.setCursor(item);
             expect(menu.getAllSelected()).toEqual([item]);
             menu.setSelected(item);
@@ -560,7 +614,7 @@ describe("Menu", () => {
         const items = [createMenuItem(), createMenuItem(), createMenuItem(someCategory)];
         let menu: Menu;
         beforeEach(() => {
-            menu = new Menu(items);
+            menu = new Menu(context, items);
         });
         it("Deselects all items", () => {
             const item = createMenuItem();
@@ -650,7 +704,7 @@ describe("Menu", () => {
         let menu: Menu;
         const items = [createMenuItem(), createMenuItem(), createMenuItem()];
         beforeEach(() => {
-            menu = new Menu(items);
+            menu = new Menu(context, items);
         });
         describe("Menu.getItems", () => {
             it("Correctly subscribes to changes", () => {
@@ -707,7 +761,7 @@ describe("Menu", () => {
             let menu: Menu;
             const items = [createMenuItem(), createMenuItem(), createMenuItem()];
             beforeEach(() => {
-                menu = new Menu({maxCategoryItemCount: 2});
+                menu = new Menu(context, {maxCategoryItemCount: 2});
             });
             it("Allows the number of items for each category to be limited", () => {
                 menu.addItems(items);
@@ -754,7 +808,7 @@ describe("Menu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new Menu({getCategory: () => undefined});
+                const menu = new Menu(context, {getCategory: () => undefined});
                 const items = [createMenuItem(), createMenuItem(), createMenuItem()];
                 const items2 = [
                     createMenuItem(someCategory),
@@ -771,7 +825,7 @@ describe("Menu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new Menu({getCategory: () => someCategory});
+                const menu = new Menu(context, {getCategory: () => someCategory});
                 const items = [createMenuItem(), createMenuItem(), createMenuItem()];
                 const items2 = [
                     createMenuItem(someCategory),
@@ -791,7 +845,7 @@ describe("Menu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new Menu({
+                const menu = new Menu(context, {
                     sortCategories: categories =>
                         categories.map(({category}) => category).reverse(),
                 });
@@ -811,7 +865,7 @@ describe("Menu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new Menu({sortCategories: () => [undefined]});
+                const menu = new Menu(context, {sortCategories: () => [undefined]});
                 const items = [createMenuItem(), createMenuItem(), createMenuItem()];
                 const items2 = [
                     createMenuItem(someCategory),
