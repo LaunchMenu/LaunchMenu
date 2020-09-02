@@ -5,25 +5,52 @@ import {v4 as uuid} from "uuid";
 import {SlideChangeTransition} from "./change/SlideChangeTransition";
 import {ITransitionProps} from "./_types/ITransitionProps";
 
+export const defaultTransitions = {
+    Open: SlideOpenTransition,
+    Change: SlideChangeTransition,
+    Close: SlideCloseTransition,
+};
+
 export const Transition: FC<ITransitionProps> = ({
     children: child,
     onOpen,
     onClose,
     onChange,
     hidden,
-    OpenTransitionComp = SlideOpenTransition,
-    ChangeTransitionComp = SlideChangeTransition,
-    CloseTransitionComp = SlideCloseTransition,
+    OpenTransitionComp: InputOpenTransitionComp = defaultTransitions.Open,
+    ChangeTransitionComp: InputChangeTransitionComp = defaultTransitions.Change,
+    CloseTransitionComp: InputCloseTransitionComp = defaultTransitions.Close,
 }) => {
     // Track previous children to transition a change from
     const prevChildren = useRef([] as ReactNode[]);
     // Track the last child to detect child changes
     const lastChild = useRef(undefined as undefined | JSX.Element);
 
+    // Manage possible changes to transition components (Don't update while they are animating)
+    const inputTransitionComps = useRef({
+        Change: InputChangeTransitionComp,
+        Close: InputCloseTransitionComp,
+    });
+    inputTransitionComps.current.Change = InputChangeTransitionComp;
+    inputTransitionComps.current.Close = InputCloseTransitionComp;
+    const transitionComps = useRef({
+        Open: InputOpenTransitionComp,
+        Change: InputChangeTransitionComp,
+        Close: InputCloseTransitionComp,
+    });
+    if (prevChildren.current.length == 1) {
+        transitionComps.current.Change = InputChangeTransitionComp;
+        transitionComps.current.Close = InputCloseTransitionComp;
+    }
+
     // Reset the slide change transition whenever a change finishes (to reduce element count)
     const [changeID, setChangeID] = useState("initial");
     const _onChange = useCallback(() => {
         prevChildren.current = [lastChild.current];
+        transitionComps.current = {
+            ...transitionComps.current,
+            ...inputTransitionComps.current,
+        };
         onChange?.();
         setChangeID(uuid());
     }, [onChange]);
@@ -39,25 +66,27 @@ export const Transition: FC<ITransitionProps> = ({
 
     // Handle change transitions
     const changeable = hidden ? undefined : prevChildren.current.length > 1 ? (
-        <ChangeTransitionComp key={changeID} onComplete={_onChange}>
+        <transitionComps.current.Change key={changeID} onComplete={_onChange}>
             {prevChildren.current}
-        </ChangeTransitionComp>
+        </transitionComps.current.Change>
     ) : (
         child || lastChild.current
     );
 
     // Handle open and close changes
     const closable = (
-        <CloseTransitionComp
+        <transitionComps.current.Close
             activate={!child && !!lastChild.current}
             onComplete={onClose}>
             {changeable}
-        </CloseTransitionComp>
+        </transitionComps.current.Close>
     );
 
     return (
-        <OpenTransitionComp onComplete={onOpen} activate={!!child || !!lastChild.current}>
+        <transitionComps.current.Open
+            onComplete={onOpen}
+            activate={!!child || !!lastChild.current}>
             {closable}
-        </OpenTransitionComp>
+        </transitionComps.current.Open>
     );
 };

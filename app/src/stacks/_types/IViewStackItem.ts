@@ -1,11 +1,12 @@
 import {FC, isValidElement} from "react";
 import {IViewStackItemProps} from "./IViewStackItemProps";
+import {IViewTransitions} from "./IViewTransitions";
 
 /**
  * An item that can be added to view stacks
  */
 export type IViewStackItem =
-    | {view: IViewStackItemView; transparent: boolean}
+    | {view: IViewStackItemView; transparent: boolean; transitions?: IViewTransitions}
     | IViewStackItemView;
 
 /**

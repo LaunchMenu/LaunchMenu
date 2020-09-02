@@ -6,6 +6,9 @@ import {Box} from "../styling/box/Box";
 import {v4 as uuid} from "uuid";
 import {FillBox} from "../components/FillBox";
 import {ViewStack} from "../stacks/viewStack/ViewStack";
+import {InstantOpenTransition} from "../components/stacks/transitions/open/InstantOpenTransition";
+import {InstantCloseTransition} from "../components/stacks/transitions/close/InstantCloseTransition";
+import {InstantChangeTransition} from "../components/stacks/transitions/change/InstantChangeTransition";
 
 const urls = [
     "https://images.unsplash.com/photo-1542261777448-23d2a287091c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1000&q=80",
@@ -14,9 +17,10 @@ const urls = [
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpkMaxrwdeNtjpyWAacApPblYkbt5lRynaypa19A2wznq9edc&s",
 ];
 const opacities = [0.5, 0.8, 1];
-const getRandomItem = () => {
+const getRandomItem = (instant: boolean = false) => {
     const url = urls[Math.floor(Math.random() * urls.length)];
     const opacity = opacities[Math.floor(Math.random() * opacities.length)];
+
     return {
         id: uuid(),
         value: {
@@ -29,6 +33,13 @@ const getRandomItem = () => {
                     }}></FillBox>
             ),
             transparent: opacity < 1,
+            transitions: instant
+                ? {
+                      Open: InstantOpenTransition,
+                      Close: InstantCloseTransition,
+                      Change: InstantChangeTransition,
+                  }
+                : undefined,
         },
     };
 };
@@ -40,6 +51,11 @@ export const StackViewTest: FC = () => {
     const change = useCallback(() => {
         stack.pop();
         stack.push(getRandomItem());
+    }, []);
+    const addInstant = useCallback(() => stack.push(getRandomItem(true)), []);
+    const changeInstant = useCallback(() => {
+        stack.pop();
+        stack.push(getRandomItem(true));
     }, []);
     const addM = useCallback(
         () => stack.insert(getRandomItem(), stack.get().length - 1),
@@ -65,6 +81,8 @@ export const StackViewTest: FC = () => {
             <button onClick={add}>add</button>
             <button onClick={remove}>remove</button>
             <button onClick={change}>change</button>
+            <button onClick={addInstant}>add instant</button>
+            <button onClick={changeInstant}>change instant</button>
             <button onClick={addM}>add middle</button>
             <button onClick={removeM}>remove middle</button>
             <button onClick={changeM}>change middle</button>
