@@ -11,10 +11,10 @@ import {Box} from "./styling/box/Box";
 import {FillBox} from "./components/FillBox";
 
 export const TestComp: FC = () => {
-    return <StackViewTest />;
+    // return <StackViewTest />;
     // return <KeyHandlerTest />;
     // return <ThemeTest />;
-    // return <MenuViewTest />;
+    return <MenuViewTest />;
     // return <InputFieldTest />;
     // return <SyntaxFieldTest />;
     // return <EditorFieldTest />;

@@ -4,9 +4,9 @@ import {findStackChanges} from "../../stacks/findStackChanges";
 import {IIdentifiedItem} from "../../stacks/_types/IIdentifiedItem";
 import {IViewStackItem, IViewStackItemView} from "../../stacks/_types/IViewStackItem";
 import {defaultTransitions, Transition} from "./transitions/Transition";
-import {useDataHook} from "model-react";
 import {getViewStackItemElement} from "./getViewStackItemElement";
 import {IViewTransitions} from "../../stacks/_types/IViewTransitions";
+import {useDataHook} from "../../utils/modelReact/useDataHook";
 
 type IStackViewChild = {
     // A key for this specific transition element
@@ -59,7 +59,7 @@ function updateChildren(
         if ("view" in item.value) view = item.value.view;
         else view = item.value;
         const {transparent, transitions} =
-            "transparent" in item.value
+            "transparent" in item.value || "transitions" in item.value
                 ? item.value
                 : {transparent: false, transitions: {}};
 
@@ -70,7 +70,7 @@ function updateChildren(
             currentChild.id = item.id;
             currentChild.wasTransparent =
                 currentChild.wasTransparent || currentChild.transparent;
-            currentChild.transparent = transparent;
+            currentChild.transparent = transparent ?? false;
             currentChild.transitions = {...defaultTransitions, ...transitions};
         } else {
             children.splice(childIndex, 0, {
@@ -80,7 +80,7 @@ function updateChildren(
                 closing: false,
                 opening: true,
                 wasTransparent: false,
-                transparent,
+                transparent: transparent ?? false,
                 transitions: {...defaultTransitions, ...transitions},
             });
         }

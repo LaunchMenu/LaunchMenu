@@ -1,12 +1,16 @@
+import React from "react";
 import {PrioritizedMenu} from "./PrioritizedMenu";
-import {IPrioritizedMenuCategoryConfig} from "./_types/IAsyncMenuCategoryConfig";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {Field, IDataHook} from "model-react";
 import {searchAction} from "../actions/types/search/searchAction";
 import {GeneratorStreamExtractor} from "../../utils/generator/GeneratorStreamExtractor";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
 import {IQuery} from "./_types/IQuery";
+import {MenuView} from "../../components/menu/MenuView";
 import {IIOContext} from "../../context/_types/IIOContext";
+import {IPrioritizedMenuCategoryConfig} from "./_types/IAsyncMenuCategoryConfig";
+import {InstantOpenTransition} from "../../components/stacks/transitions/open/InstantOpenTransition";
+import {InstantCloseTransition} from "../../components/stacks/transitions/close/InstantCloseTransition";
 
 /**
  * A menu that can be used to perform a search on a collection of items
@@ -30,6 +34,17 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
     ) {
         super(context, categoryConfig);
     }
+
+    /**
+     * A default view for a search menu, with instant open and close transitions
+     */
+    public view = {
+        view: <MenuView menu={this} />,
+        transitions: {
+            Open: InstantOpenTransition,
+            Close: InstantCloseTransition,
+        },
+    };
 
     /**
      * Sets the search query
@@ -62,6 +77,9 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
         this.searchGenerators.forEach(data => {
             data.generator = this.performSearch(data.item, query);
         });
+
+        // Increase the first batch speed
+        this.flushBatch();
     }
 
     /**

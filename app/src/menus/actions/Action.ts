@@ -231,10 +231,23 @@ export class Action<I, O> implements IAction<I, O> {
             // Collect all binding and actions
             items.forEach((item, inputIndex) => {
                 item.actionBindings.forEach(binding => {
-                    if (binding.action.ancestors[depth] == this || binding.action == this)
+                    if (
+                        binding.action.ancestors[depth] == this ||
+                        binding.action == this
+                    ) {
+                        const menuItem = ("item" in item
+                            ? item.item
+                            : item) as IIndexedMenuItem;
+                        /*
+                         It should be safe to attach this data in a mutable way, since only the action relies on the input index, and is executed synchronously.
+                         It may give issues if action handlers directly call other actions in line, so this is discouraged. But they are free to call other actions in a function returned by the action.
+                         The mutable fashion is preferable since it can be unexpected that the 'sourceItems' would be copies of the items, rather than references.
+                        */
+                        menuItem.inputIndex = inputIndex;
                         this.addActionInput(actionsData, binding.action, binding.data, [
-                            {...("item" in item ? item.item : item), inputIndex},
+                            menuItem,
                         ]);
+                    }
                 });
             });
 

@@ -11,6 +11,8 @@ import {Observer} from "../../utils/modelReact/Observer";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {TextFieldView} from "../../components/fields/TextFieldView";
 import {plaintextLexer} from "../syntax/plaintextLexer";
+import {InstantOpenTransition} from "../../components/stacks/transitions/open/InstantOpenTransition";
+import {InstantCloseTransition} from "../../components/stacks/transitions/close/InstantCloseTransition";
 
 /**
  * A search field that manages the search menu
@@ -64,7 +66,7 @@ export class SearchField extends TextField {
     public set(search: string): void {
         if (this.get() == search) return;
         super.set(search);
-        this.menu.setSearch(search);
+        if (search) this.menu.setSearch(search); // Don't update if the search is empty
 
         // Open or close the menu
         if (search.length == 0) {
@@ -73,7 +75,7 @@ export class SearchField extends TextField {
                 this.closeMenu = null;
             }
         } else {
-            if (!this.closeMenu)
+            if (!this.closeMenu) {
                 this.closeMenu = openUI(
                     this.context,
                     {
@@ -83,6 +85,7 @@ export class SearchField extends TextField {
                     },
                     () => this.set("")
                 );
+            }
         }
     }
 

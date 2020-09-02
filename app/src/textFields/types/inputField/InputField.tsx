@@ -8,10 +8,10 @@ import {openUI} from "../../../context/openUI/openUI";
 import {IHighlighter} from "../../syntax/_types/IHighlighter";
 import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {IField} from "../../../_types/IField";
-import {ContentErrorMessage} from "../../../components/content/ContentErrorMessage";
 import {IViewStackItem} from "../../../stacks/_types/IViewStackItem";
 import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
+import {createContentError} from "../../../components/content/error/createContentError";
 
 /**
  * A text field that displays error messages if the user input doesn't match a specified constraint
@@ -130,11 +130,7 @@ export class InputField<T> extends TextField {
         if (error && this.context) {
             let errorView: IViewStackItem;
             if ("view" in error) errorView = error.view;
-            else
-                errorView = {
-                    view: <ContentErrorMessage>{error.message}</ContentErrorMessage>,
-                    transparent: true,
-                };
+            else errorView = createContentError(error.message);
 
             this.closeError = openUI(this.context, {content: errorView});
         }

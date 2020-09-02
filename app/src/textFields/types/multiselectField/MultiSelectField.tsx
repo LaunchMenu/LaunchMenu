@@ -16,16 +16,16 @@ import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {IHighlighter} from "../../syntax/_types/IHighlighter";
 import {IInputFieldError} from "../inputField/_types/IInputFieldError";
 import {IViewStackItem} from "../../../stacks/_types/IViewStackItem";
-import {ContentErrorMessage} from "../../../components/content/ContentErrorMessage";
 import {openUI} from "../../../context/openUI/openUI";
 import {createFinishMenuItem} from "../../../menus/items/createFinishMenuItem";
 import {getCategoryAction} from "../../../menus/actions/types/category/getCategoryAction";
 import {controlsCategory} from "../../../menus/categories/types/controlsCategory";
 import {onMenuChangeAction} from "../../../menus/actions/types/onMenuChange/onMenuChangeAction";
 import {IMultiSelectOptionData} from "./_types/IMultiSelectOptionData";
-import {keyHandlerAction} from "../../../menus/actions/types/keyHandler/keyHandlerAction";
 import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
+import {createContentError} from "../../../components/content/error/createContentError";
+import {MenuView} from "../../../components/menu/MenuView";
 
 function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -101,6 +101,7 @@ export class MultiSelectField<T> extends TextField {
         if (this.context && !this.closeMenu)
             this.closeMenu = openUI(this.context, {
                 menu: this.menu,
+                menuView: <MenuView menu={this.menu} />,
                 searchable: false,
                 closable: false,
             });
@@ -227,12 +228,12 @@ export class MultiSelectField<T> extends TextField {
      * Adds a custom option based on the given or currently typed value
      * @param text The text to convert into a custom value (if valid)
      * @param add Whether to add the value to the current data field
-     * @returns Whether the option was added or toggled
+     * @returns The menu item that was added or selected
      */
     protected addCustomOption(
         rawValue: string = this.get(),
         add: boolean = true
-    ): boolean {
+    ): IMenuItem | null {
         const error = this.checkError(rawValue);
         if (!error) {
             const value = this.config.deserialize?.(rawValue) ?? ((rawValue as any) as T);
@@ -246,6 +247,7 @@ export class MultiSelectField<T> extends TextField {
                 // If it does exist, make sure it's selected
                 if (add && !selection.find(v => this.equals(v, value)))
                     this.field.set([...selection, value]);
+                return matchingOption.view;
             } else {
                 // If it doesn't exist create and add it
                 const rawItem = this.config.createOptionView(value, () => true, false);
@@ -275,10 +277,10 @@ export class MultiSelectField<T> extends TextField {
                 this.menu.addSearchItem(item);
                 this.customOptions.push({view: item, value});
                 if (add) this.field.set([...selection, value]);
+                return item;
             }
-            return true;
         }
-        return false;
+        return null;
     }
 
     /**
@@ -326,9 +328,10 @@ export class MultiSelectField<T> extends TextField {
                 ...customView.actionBindings,
                 executeAction.createBinding({
                     execute: () => {
-                        if (this.addCustomOption()) {
-                            this.set("");
-                        }
+                        const item = this.addCustomOption();
+                        if (item)
+                            // Don't update the error immediately, and select the added item
+                            this.set("", false).then(() => this.menu.setCursor(item));
                     },
                 }),
             ],
@@ -387,11 +390,13 @@ export class MultiSelectField<T> extends TextField {
     /**
      * Sets the new value of the input
      * @param value The value to set
+     * @param updateError Whether the error message should be updated
      */
-    public set(value: string): void {
-        this.menu.setSearch(value);
+    public set(value: string, updateError: boolean = true): Promise<void> {
+        let promise = this.menu.setSearch(value);
         super.set(value);
-        this.updateError();
+        if (updateError) this.updateError();
+        return promise;
     }
 
     /**
@@ -416,11 +421,7 @@ export class MultiSelectField<T> extends TextField {
         if (error && this.context) {
             let errorView: IViewStackItem;
             if ("view" in error) errorView = error.view;
-            else
-                errorView = {
-                    view: <ContentErrorMessage>{error.message}</ContentErrorMessage>,
-                    transparent: true,
-                };
+            else errorView = createContentError(error.message);
 
             this.closeError = openUI(this.context, {content: errorView});
         }
