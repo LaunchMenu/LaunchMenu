@@ -1,7 +1,7 @@
-import {IViewStackItem} from "../../stacks/_types/IViewStackItem";
+import {IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
 import {IHighlighter} from "../../textFields/syntax/_types/IHighlighter";
 import {getViewStackItemElement} from "../../components/stacks/getViewStackItemElement";
-import {IViewStackItemProps} from "../../stacks/_types/IViewStackItemProps";
+import {IViewStackItemProps} from "../../stacks/viewStack/_types/IViewStackItemProps";
 
 /**
  * Retrieves a view item, with the highlighter property replaced
@@ -13,7 +13,8 @@ export function getViewWithHighlighter(
     view: IViewStackItem,
     highlighter: IHighlighter
 ): IViewStackItem {
-    if ("view" in view)
+    if ("close" in view) return view;
+    else if ("view" in view)
         return {
             ...view,
             view: props =>

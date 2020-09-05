@@ -8,10 +8,10 @@ import {openUI} from "../../../context/openUI/openUI";
 import {IHighlighter} from "../../syntax/_types/IHighlighter";
 import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {IField} from "../../../_types/IField";
-import {IViewStackItem} from "../../../stacks/_types/IViewStackItem";
 import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {createContentError} from "../../../components/content/error/createContentError";
+import {IViewStackItem} from "../../../stacks/viewStack/_types/IViewStackItem";
 
 /**
  * A text field that displays error messages if the user input doesn't match a specified constraint

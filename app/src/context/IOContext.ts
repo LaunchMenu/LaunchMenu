@@ -1,5 +1,5 @@
 import {IIOContext} from "./_types/IIOContext";
-import {IViewStack} from "../stacks/_types/IViewStack";
+import {IViewStack} from "../stacks/viewStack/_types/IViewStack";
 import {IKeyHandlerStack} from "../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {ViewStack} from "../stacks/viewStack/ViewStack";
 import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";

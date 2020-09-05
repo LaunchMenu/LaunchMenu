@@ -6,6 +6,13 @@ import {IViewTransitions} from "./IViewTransitions";
  * An item that can be added to view stacks
  */
 export type IViewStackItem =
+    | {close: true; closeTransitionDuration?: number}
+    | IViewStackViewItem;
+
+/**
+ * An item that can be added to view stacks
+ */
+export type IViewStackViewItem =
     | {view: IViewStackItemView; transparent?: boolean; transitions?: IViewTransitions}
     | IViewStackItemView;
 

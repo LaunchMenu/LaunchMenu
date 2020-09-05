@@ -1,4 +1,4 @@
-import {IViewStackItem} from "../../stacks/_types/IViewStackItem";
+import {IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {ITextField} from "../../textFields/_types/ITextField";
 import {ReactElement} from "react";

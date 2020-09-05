@@ -41,6 +41,28 @@ import {createBooleanSetting} from "../settings/inputs/createBooleanSetting";
 import {createKeyPatternSetting} from "../settings/inputs/createKeyPatternSetting";
 import {extractSettings} from "../settings/utils/extractSettings";
 import {SettingsContext} from "../settings/SettingsContext";
+import {ApplicationLayout} from "../application/components/ApplicationLayout";
+import {IViewStack} from "../stacks/viewStack/_types/IViewStack";
+import {IViewStackItem} from "../stacks/viewStack/_types/IViewStackItem";
+import {MenuView} from "../components/menu/MenuView";
+
+class PushStackCommand extends Command {
+    protected stack: IViewStack;
+    protected item: IViewStackItem;
+
+    public metadata = {name: "Add stack item"};
+    public constructor(stack: IViewStack, item: IViewStackItem) {
+        super();
+        this.stack = stack;
+        this.item = item;
+    }
+    protected async onExecute() {
+        this.stack.push(this.item);
+    }
+    protected async onRevert() {
+        this.stack.remove(this.item);
+    }
+}
 
 const someField = new Field("oranges");
 const someField2 = new Field("oof");
@@ -422,6 +444,22 @@ menu.addItems([
             }),
         ],
     }),
+    createStandardMenuItem({
+        name: "close menu",
+        onExecute: () => new PushStackCommand(menuViewStack, {close: true}),
+    }),
+    createStandardMenuItem({
+        name: "close content",
+        onExecute: () => new PushStackCommand(contentViewStack, {close: true}),
+    }),
+    createStandardMenuItem({
+        name: "close field",
+        onExecute: () => new PushStackCommand(fieldViewStack, {close: true}),
+    }),
+    createStandardMenuItem({
+        name: "open Menu",
+        onExecute: () => new PushStackCommand(menuViewStack, <MenuView menu={menu} />),
+    }),
 ]);
 context.openUI({
     menu,
@@ -435,24 +473,10 @@ console.log(contentViewStack);
 
 export const MenuViewTest: FC = () => {
     return (
-        <Box display="flex" flexDirection="column" height="100%">
-            <Box height={30}>
-                <Loader>{h => someField.get(h)}</Loader>{" "}
-                <Loader>{h => someField2.get(h).toString()}</Loader>{" "}
-                <Loader>{h => someField6.get(h)}</Loader>{" "}
-                <Loader>{h => undoRedo.getState(h)}</Loader>
-            </Box>
-            <Box position="relative" height={80}>
-                <StackView stack={fieldViewStack} />
-            </Box>
-            <Box flexGrow={1} display="flex">
-                <Box position="relative" width={300}>
-                    <StackView stack={menuViewStack} />
-                </Box>
-                <Box position="relative" flexGrow={1}>
-                    <StackView stack={contentViewStack} />
-                </Box>
-            </Box>
-        </Box>
+        <ApplicationLayout
+            contentStack={contentViewStack}
+            fieldStack={fieldViewStack}
+            menuStack={menuViewStack}
+        />
     );
 };

@@ -1,6 +1,5 @@
 import React, {FC, useState, useCallback} from "react";
 import {IIdentifiedItem} from "../stacks/_types/IIdentifiedItem";
-import {IViewStackItem} from "../stacks/_types/IViewStackItem";
 import {StackView} from "../components/stacks/StackView";
 import {Box} from "../styling/box/Box";
 import {v4 as uuid} from "uuid";

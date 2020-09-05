@@ -15,7 +15,6 @@ import {v4 as uuid} from "uuid";
 import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {IHighlighter} from "../../syntax/_types/IHighlighter";
 import {IInputFieldError} from "../inputField/_types/IInputFieldError";
-import {IViewStackItem} from "../../../stacks/_types/IViewStackItem";
 import {openUI} from "../../../context/openUI/openUI";
 import {createFinishMenuItem} from "../../../menus/items/createFinishMenuItem";
 import {getCategoryAction} from "../../../menus/actions/types/category/getCategoryAction";
@@ -26,6 +25,7 @@ import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {createContentError} from "../../../components/content/error/createContentError";
 import {MenuView} from "../../../components/menu/MenuView";
+import {IViewStackItem} from "../../../stacks/viewStack/_types/IViewStackItem";
 
 function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;

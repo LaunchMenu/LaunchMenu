@@ -62,6 +62,7 @@ export const cssLiteralMappers = {
     maxWidth: (p: string | number) => p,
     maxHeight: (p: string | number) => p,
     opacity: (p: number) => p,
+    transition: (p: string) => p,
     noSelect: (value: boolean) => (value ? {userSelect: "none"} : {}),
     shadowCut: (value: Partial<("left" | "right" | "top" | "bottom")[]>) => {
         const sides = {left: -100, right: -100, top: -100, bottom: -100};

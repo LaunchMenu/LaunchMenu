@@ -4,7 +4,7 @@ import {IQuery} from "./IQuery";
 import {IMenuCategoryData} from "./IMenuCategoryData";
 import {IUIModel} from "../../../context/_types/IUIModel";
 import {IIOContext} from "../../../context/_types/IIOContext";
-import {IViewStackItem} from "../../../stacks/_types/IViewStackItem";
+import {IViewStackItem} from "../../../stacks/viewStack/_types/IViewStackItem";
 
 /**
  * An interface for common menu interactions

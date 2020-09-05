@@ -1,5 +1,5 @@
 import React, {cloneElement} from "react";
-import {isView, IViewStackItem} from "../../stacks/_types/IViewStackItem";
+import {isView, IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {withRemoveError} from "../withRemoveError";
 import {IOpenableField} from "../_types/IOpenableField";

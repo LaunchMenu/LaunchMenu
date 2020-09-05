@@ -1,4 +1,4 @@
-import {IIdentifiedItem} from "./IIdentifiedItem";
+import {IIdentifiedItem} from "../../_types/IIdentifiedItem";
 import {IViewStackItem} from "./IViewStackItem";
 import {IDataHook} from "model-react";
 

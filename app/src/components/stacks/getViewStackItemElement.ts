@@ -1,5 +1,5 @@
-import {IViewStackItemProps} from "../../stacks/_types/IViewStackItemProps";
-import {IViewStackItemView} from "../../stacks/_types/IViewStackItem";
+import {IViewStackItemProps} from "../../stacks/viewStack/_types/IViewStackItemProps";
+import {IViewStackItemView} from "../../stacks/viewStack/_types/IViewStackItem";
 import {cloneElement, createElement} from "react";
 
 /**

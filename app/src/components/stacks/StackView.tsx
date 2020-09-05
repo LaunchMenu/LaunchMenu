@@ -2,10 +2,13 @@ import React, {FC, useRef, useState} from "react";
 import {IStackViewProps} from "./_types/IStackViewProps";
 import {findStackChanges} from "../../stacks/findStackChanges";
 import {IIdentifiedItem} from "../../stacks/_types/IIdentifiedItem";
-import {IViewStackItem, IViewStackItemView} from "../../stacks/_types/IViewStackItem";
+import {
+    IViewStackItem,
+    IViewStackItemView,
+} from "../../stacks/viewStack/_types/IViewStackItem";
 import {defaultTransitions, Transition} from "./transitions/Transition";
 import {getViewStackItemElement} from "./getViewStackItemElement";
-import {IViewTransitions} from "../../stacks/_types/IViewTransitions";
+import {IViewTransitions} from "../../stacks/viewStack/_types/IViewTransitions";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
 
 type IStackViewChild = {
@@ -45,6 +48,8 @@ function updateChildren(
         if (child) child.element = undefined;
     });
     added.forEach(({index, item}) => {
+        if ("close" in item.value) return;
+
         // Find the index to add the item at
         let childIndex: number;
         if (index > 0) {
