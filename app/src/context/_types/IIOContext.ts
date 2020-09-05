@@ -1,4 +1,4 @@
-import {IViewStack} from "../../stacks/_types/IViewStack";
+import {IViewStack} from "../../stacks/viewStack/_types/IViewStack";
 import {IKeyHandlerStack} from "../../stacks/keyHandlerStack/_types/IKeyHandlerStack";
 import {IUndoRedoFacility} from "../../undoRedo/_types/IUndoRedoFacility";
 import {SettingsContext} from "../../settings/SettingsContext";

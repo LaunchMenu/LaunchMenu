@@ -1,4 +1,4 @@
-import {IViewStackItem} from "../../../../stacks/_types/IViewStackItem";
+import {IViewStackItem} from "../../../../stacks/viewStack/_types/IViewStackItem";
 
 /**
  * An error for input fields that can be displayed in the menu

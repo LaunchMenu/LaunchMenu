@@ -1,4 +1,4 @@
-import {IViewStackItem} from "../../stacks/_types/IViewStackItem";
+import {IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
 import {IMenu} from "../../menus/menu/_types/IMenu";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {IHighlighter} from "../../textFields/syntax/_types/IHighlighter";

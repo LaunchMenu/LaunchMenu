@@ -1,8 +1,8 @@
-import {FC} from "react";
 import React from "react";
 import {Box} from "../../styling/box/Box";
+import {LFC} from "../../_types/LFC";
 
-export const MenuItemIcon: FC<{icon: string}> = ({icon}) => (
+export const MenuItemIcon: LFC<{icon: string}> = ({icon}) => (
     <Box
         width={20}
         css={{

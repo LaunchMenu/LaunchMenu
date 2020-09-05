@@ -1,9 +1,9 @@
-import {FC} from "react";
+import {LFC} from "../../../_types/LFC";
 
 /**
  * An icon component
  */
-export type IIcon = FC<{
+export type IIcon = LFC<{
     /** The pixel size of the icon */
     size: number;
     /** The color of the icon */

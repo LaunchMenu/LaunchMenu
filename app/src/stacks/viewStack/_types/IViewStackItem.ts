@@ -1,17 +1,26 @@
-import {FC, isValidElement} from "react";
+import {isValidElement} from "react";
+import {LFC} from "../../../_types/LFC";
 import {IViewStackItemProps} from "./IViewStackItemProps";
+import {IViewTransitions} from "./IViewTransitions";
 
 /**
  * An item that can be added to view stacks
  */
 export type IViewStackItem =
-    | {view: IViewStackItemView; transparent: boolean}
+    | {close: true; closeTransitionDuration?: number}
+    | IViewStackViewItem;
+
+/**
+ * An item that can be added to view stacks
+ */
+export type IViewStackViewItem =
+    | {view: IViewStackItemView; transparent?: boolean; transitions?: IViewTransitions}
     | IViewStackItemView;
 
 /**
  * The view of a view stack item
  */
-export type IViewStackItemView = FC<IViewStackItemProps> | JSX.Element;
+export type IViewStackItemView = LFC<IViewStackItemProps> | JSX.Element;
 
 /**
  * Checks whether the given item is a view

@@ -1,5 +1,6 @@
 {
     "eslint.enable": false,
     "typescript.enablePromptUseWorkspaceTsdk": true,
-    "typescript.tsdk": "app/node_modules/typescript/lib"
+    "typescript.tsdk": "app/node_modules/typescript/lib",
+    "typescript.tsserver.experimental.enableProjectDiagnostics": false
 }

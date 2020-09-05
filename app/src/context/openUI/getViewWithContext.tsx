@@ -1,5 +1,5 @@
 import React from "react";
-import {IViewStackItem} from "../../stacks/_types/IViewStackItem";
+import {IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
 import {IIOContext} from "../_types/IIOContext";
 import {IOContextProvider} from "../react/IOContextContext";
 import {getViewStackItemElement} from "../../components/stacks/getViewStackItemElement";
@@ -14,6 +14,7 @@ export function getViewWithContext(
     view: IViewStackItem,
     context: IIOContext
 ): IViewStackItem {
+    if ("close" in view) return view;
     if ("view" in view)
         return {
             ...view,

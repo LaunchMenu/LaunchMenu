@@ -1,4 +1,4 @@
-import {IViewStackItem} from "../../stacks/_types/IViewStackItem";
+import {IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
 
 /**

@@ -5,6 +5,7 @@ import {Loader} from "model-react";
 import {IKeyPatternMenuItemData} from "./_types/IKeyPatternMenuItemData";
 import {KeyPattern} from "../handlers/keyPattern/KeyPattern";
 import {keyInputExecuteHandler} from "../handlers/keyPattern/keyInputExecuteHandler";
+import {advancedKeyInputEditAction} from "../handlers/keyPattern/advancedKeyInputEditAction";
 
 /**
  * Creates a new key pattern menu item
@@ -33,6 +34,11 @@ export function createKeyPatternMenuItem({
             actionBindings: [
                 ...actionBindings,
                 keyInputExecuteHandler.createBinding({
+                    field,
+                    liveUpdate: liveUpdate as any,
+                    undoable,
+                }),
+                advancedKeyInputEditAction.createBinding({
                     field,
                     liveUpdate: liveUpdate as any,
                     undoable,

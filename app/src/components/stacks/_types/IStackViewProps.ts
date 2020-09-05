@@ -1,10 +1,7 @@
-import {IDataHook} from "model-react";
-import {IIdentifiedItem} from "../../../stacks/_types/IIdentifiedItem";
-import {IViewStackItem} from "../../../stacks/_types/IViewStackItem";
 import {IChangeTransition} from "../transitions/change/_types/IChangeTransition";
 import {ICloseTransition} from "../transitions/close/_types/ICloseTransition";
 import {IOpenTransition} from "../transitions/open/_types/IOpenTransition";
-import {IViewStack} from "../../../stacks/_types/IViewStack";
+import {IViewStack} from "../../../stacks/viewStack/_types/IViewStack";
 
 export type IStackViewProps = {
     /** The stack of items to show */

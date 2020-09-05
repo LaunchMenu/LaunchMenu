@@ -1,7 +1,7 @@
 import {IDataHook} from "model-react";
 import {ITextSelection} from "./ITextSelection";
 import {IUIModel} from "../../context/_types/IUIModel";
-import {IViewStackItem} from "../../stacks/_types/IViewStackItem";
+import {IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
 
 /**
  * A mutable field to contain a text input as well as the selected range

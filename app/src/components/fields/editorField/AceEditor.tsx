@@ -1,9 +1,10 @@
-import React, {FC, useRef, useEffect, useState, useCallback} from "react";
+import React, {useRef, useEffect, useState, useCallback} from "react";
 import {edit, Ace, config} from "ace-builds";
 import {IAceEditorProps} from "./_types/IAceEditorProps";
 import {get2dSelectionRange} from "../../../textFields/utils/rangeConversion";
 import {Box} from "../../../styling/box/Box";
 import {useAceSelectionListener} from "./useAceSelectionListener";
+import {LFC} from "../../../_types/LFC";
 
 // Make sure all of ace is easily accessible
 export * from "ace-builds";
@@ -16,7 +17,7 @@ config.set("themePath", "/ace-builds/src-noconflict");
 /**
  * A react component for the ace text editor
  */
-export const AceEditor: FC<IAceEditorProps> = ({
+export const AceEditor: LFC<IAceEditorProps> = ({
     options,
     aceRef: ref,
     value,

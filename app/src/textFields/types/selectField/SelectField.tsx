@@ -19,6 +19,7 @@ import {ISelectOptionData} from "./_types/ISelectOptionData";
 import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {plaintextLexer} from "../../syntax/plaintextLexer";
+import {MenuView} from "../../../components/menu/MenuView";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -82,6 +83,7 @@ export class SelectField<T> extends InputField<T> {
         if (this.context && !this.closeMenu)
             this.closeMenu = openUI(this.context, {
                 menu: this.menu,
+                menuView: <MenuView menu={this.menu} />,
                 searchable: false,
                 closable: false,
             });

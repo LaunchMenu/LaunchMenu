@@ -1,5 +1,5 @@
 import React from "react";
-import {isView} from "../../stacks/_types/IViewStackItem";
+import {isView} from "../../stacks/viewStack/_types/IViewStackItem";
 import {withRemoveError} from "../withRemoveError";
 import {IIOContext} from "../_types/IIOContext";
 import {IOpenableContent} from "../_types/IOpenableContent";

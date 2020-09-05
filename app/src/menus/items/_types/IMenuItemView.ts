@@ -1,12 +1,12 @@
-import {FC} from "react";
 import {IMenuItem} from "./IMenuItem";
 import {IMenu} from "../../menu/_types/IMenu";
 import {IQuery} from "../../menu/_types/IQuery";
+import {LFC} from "../../../_types/LFC";
 
 /**
  * The visualization of an item on the menu
  */
-export type IMenuItemView = FC<{
+export type IMenuItemView = LFC<{
     /** Whether this item is currently selected as the cursor in the menu */
     isCursor: boolean;
     /** Whether this item is currently selected in the menu in order to execute actions on */

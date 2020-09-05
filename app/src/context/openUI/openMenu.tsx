@@ -1,6 +1,6 @@
 import React from "react";
 import {IOpenableMenu} from "../_types/IOpenableMenu";
-import {isView, IViewStackItem} from "../../stacks/_types/IViewStackItem";
+import {isView, IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
 import {MenuView} from "../../components/menu/MenuView";
 import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";

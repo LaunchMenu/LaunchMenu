@@ -1,8 +1,8 @@
 import React, {FC} from "react";
-import {usePreviousStackItem} from "../../stacks/viewStack/usePreviousStackItem";
-import {FillBox} from "../FillBox";
+import {usePreviousStackItem} from "../../../stacks/viewStack/usePreviousStackItem";
+import {FillBox} from "../../FillBox";
 import {ErrorMessage} from "./ErrorMessage";
-import {Box} from "../../styling/box/Box";
+import {Box} from "../../../styling/box/Box";
 
 export const ContentErrorMessage: FC = ({children, ...rest}) => {
     const prevItem = usePreviousStackItem(rest);

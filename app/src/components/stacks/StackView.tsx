@@ -1,11 +1,16 @@
-import React, {FC, useRef, createElement, useState, cloneElement} from "react";
+import React, {useRef, useState} from "react";
 import {IStackViewProps} from "./_types/IStackViewProps";
 import {findStackChanges} from "../../stacks/findStackChanges";
 import {IIdentifiedItem} from "../../stacks/_types/IIdentifiedItem";
-import {IViewStackItem, IViewStackItemView} from "../../stacks/_types/IViewStackItem";
-import {Transition} from "./transitions/Transition";
-import {useDataHook} from "model-react";
+import {
+    IViewStackItem,
+    IViewStackItemView,
+} from "../../stacks/viewStack/_types/IViewStackItem";
+import {defaultTransitions, Transition} from "./transitions/Transition";
 import {getViewStackItemElement} from "./getViewStackItemElement";
+import {IViewTransitions} from "../../stacks/viewStack/_types/IViewTransitions";
+import {useDataHook} from "../../utils/modelReact/useDataHook";
+import {LFC} from "../../_types/LFC";
 
 type IStackViewChild = {
     // A key for this specific transition element
@@ -22,6 +27,8 @@ type IStackViewChild = {
     wasTransparent: boolean;
     // Whether the current element is transparent
     transparent: boolean;
+    // The transition components to use
+    transitions: Required<IViewTransitions>;
 };
 
 /**
@@ -33,7 +40,8 @@ type IStackViewChild = {
 function updateChildren(
     items: readonly IIdentifiedItem<IViewStackItem>[],
     prevItems: readonly IIdentifiedItem<IViewStackItem>[],
-    children: IStackViewChild[]
+    children: IStackViewChild[],
+    defaultTransitions: Required<IViewTransitions>
 ): void {
     const {added, removed} = findStackChanges(prevItems, items);
     removed.forEach(({item}) => {
@@ -41,6 +49,8 @@ function updateChildren(
         if (child) child.element = undefined;
     });
     added.forEach(({index, item}) => {
+        if ("close" in item.value) return;
+
         // Find the index to add the item at
         let childIndex: number;
         if (index > 0) {
@@ -51,10 +61,13 @@ function updateChildren(
         }
 
         // Create the view element
-        let view: FC<{onTop: boolean; index: number}> | JSX.Element;
+        let view: LFC<{onTop: boolean; index: number}> | JSX.Element;
         if ("view" in item.value) view = item.value.view;
         else view = item.value;
-        const transparent = "transparent" in item.value ? item.value.transparent : false;
+        const {transparent, transitions} =
+            "transparent" in item.value || "transitions" in item.value
+                ? item.value
+                : {transparent: false, transitions: {}};
 
         // Add the child or replace a previous child
         const currentChild = children[childIndex];
@@ -63,7 +76,8 @@ function updateChildren(
             currentChild.id = item.id;
             currentChild.wasTransparent =
                 currentChild.wasTransparent || currentChild.transparent;
-            currentChild.transparent = transparent;
+            currentChild.transparent = transparent ?? false;
+            currentChild.transitions = {...defaultTransitions, ...transitions};
         } else {
             children.splice(childIndex, 0, {
                 key: item.id,
@@ -72,7 +86,8 @@ function updateChildren(
                 closing: false,
                 opening: true,
                 wasTransparent: false,
-                transparent,
+                transparent: transparent ?? false,
+                transitions: {...defaultTransitions, ...transitions},
             });
         }
     });
@@ -85,7 +100,7 @@ function updateChildren(
 /**
  * Visualizes a stack of views
  */
-export const StackView: FC<IStackViewProps> = ({
+export const StackView: LFC<IStackViewProps> = ({
     stack,
     smartHide = true,
     ChangeTransitionComp,
@@ -102,7 +117,11 @@ export const StackView: FC<IStackViewProps> = ({
 
     // Update the elements to render when the items array changes
     if (prevItems.current != items) {
-        updateChildren(items, prevItems.current, childrenRef.current);
+        updateChildren(items, prevItems.current, childrenRef.current, {
+            Open: OpenTransitionComp ?? defaultTransitions.Open,
+            Change: ChangeTransitionComp ?? defaultTransitions.Change,
+            Close: CloseTransitionComp ?? defaultTransitions.Close,
+        });
         prevItems.current = items;
     }
 
@@ -146,7 +165,7 @@ export const StackView: FC<IStackViewProps> = ({
     // Render the children
     return (
         <>
-            {childrenRef.current.map(({key, id, element}, index) => {
+            {childrenRef.current.map(({key, id, element, transitions}, index) => {
                 const props = {
                     key: id,
                     onTop: index == childrenRef.current.length,
@@ -160,9 +179,9 @@ export const StackView: FC<IStackViewProps> = ({
                         onClose={() => onClose(key)}
                         onChange={() => onChange(key)}
                         onOpen={() => onOpen(key)}
-                        ChangeTransitionComp={ChangeTransitionComp}
-                        CloseTransitionComp={CloseTransitionComp}
-                        OpenTransitionComp={OpenTransitionComp}>
+                        ChangeTransitionComp={transitions.Change}
+                        CloseTransitionComp={transitions.Close}
+                        OpenTransitionComp={transitions.Open}>
                         {element && getViewStackItemElement(element, props)}
                     </Transition>
                 );
