@@ -1,10 +1,11 @@
-import React, {FC, useCallback, useMemo} from "react";
+import React, {useMemo} from "react";
 import {
     ISyntaxHighlighterNodesProps,
     ISyntaxHighlighterNodesListenerProps,
 } from "./_types/ISyntaxHighlighterNodesProps";
 import {IHighlightNode} from "../../../textFields/syntax/_types/IHighlightNode";
 import {getFrameSize} from "./getFrameSize";
+import {LFC} from "../../../_types/LFC";
 
 /**
  * Determines how to the right in the div on which th event occurred the mouse is as a fraction
@@ -19,7 +20,7 @@ const getPosFrac = (event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
     return dx / rect.width;
 };
 
-export const SyntaxHighlighterChar: FC<
+export const SyntaxHighlighterChar: LFC<
     {
         char: string;
         start: number;
@@ -63,7 +64,7 @@ const getFramePosFrac = (event: React.MouseEvent<HTMLSpanElement, MouseEvent>) =
     return 0.5;
 };
 
-export const SyntaxHighlighterNode: FC<
+export const SyntaxHighlighterNode: LFC<
     {
         node: IHighlightNode;
     } & ISyntaxHighlighterNodesListenerProps
@@ -101,7 +102,7 @@ export const SyntaxHighlighterNode: FC<
 /**
  * Renders the passed highlight nodes
  */
-export const SyntaxHighlighterNodes: FC<ISyntaxHighlighterNodesProps> = ({
+export const SyntaxHighlighterNodes: LFC<ISyntaxHighlighterNodesProps> = ({
     nodes,
     ...listeners
 }) => {

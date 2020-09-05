@@ -1,15 +1,14 @@
-import React, {FC, useCallback, useState, useEffect} from "react";
+import React, {useCallback, useState} from "react";
 import {ISyntaxFieldProps} from "./_types/ISyntaxFieldProps";
 import {SyntaxHighlighter} from "./SyntaxHighlighter";
 import {useTheme} from "../../../styling/theming/ThemeContext";
 import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {ITextSelection} from "../../../textFields/_types/ITextSelection";
 import {useUpdateEffect} from "../../../utils/hooks/useUpdateEffect";
-import {Box} from "../../../styling/box/Box";
 import {mergeStyles} from "../../../utils/mergeStyles";
-import {useHorizontalScroll} from "../../../utils/hooks/useHorizontalScroll";
+import {LFC} from "../../../_types/LFC";
 
-export const SyntaxField: FC<ISyntaxFieldProps> = ({
+export const SyntaxField: LFC<ISyntaxFieldProps> = ({
     field,
     highlighter,
     setErrors,

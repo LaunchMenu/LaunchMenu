@@ -1,13 +1,14 @@
-import React, {FC, useLayoutEffect, useRef, useState} from "react";
+import React, {useLayoutEffect, useRef, useState} from "react";
 import {StackView} from "../../components/stacks/StackView";
 import {Box} from "../../styling/box/Box";
+import {LFC} from "../../_types/LFC";
 import {usePaneIsVisible} from "../hooks/usePaneIsVisible";
 import {IApplicationLayoutProps} from "./_types/IApplicationLayoutProps";
 
 /**
  * A component to make up the application layout and handle opening an closing of panes
  */
-export const ApplicationLayout: FC<IApplicationLayoutProps> = ({
+export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
     contentStack,
     fieldStack,
     menuStack,

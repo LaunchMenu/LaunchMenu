@@ -1,4 +1,4 @@
-import React, {FC, useRef, useState} from "react";
+import React, {useRef, useState} from "react";
 import {IStackViewProps} from "./_types/IStackViewProps";
 import {findStackChanges} from "../../stacks/findStackChanges";
 import {IIdentifiedItem} from "../../stacks/_types/IIdentifiedItem";
@@ -10,6 +10,7 @@ import {defaultTransitions, Transition} from "./transitions/Transition";
 import {getViewStackItemElement} from "./getViewStackItemElement";
 import {IViewTransitions} from "../../stacks/viewStack/_types/IViewTransitions";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
+import {LFC} from "../../_types/LFC";
 
 type IStackViewChild = {
     // A key for this specific transition element
@@ -60,7 +61,7 @@ function updateChildren(
         }
 
         // Create the view element
-        let view: FC<{onTop: boolean; index: number}> | JSX.Element;
+        let view: LFC<{onTop: boolean; index: number}> | JSX.Element;
         if ("view" in item.value) view = item.value.view;
         else view = item.value;
         const {transparent, transitions} =
@@ -99,7 +100,7 @@ function updateChildren(
 /**
  * Visualizes a stack of views
  */
-export const StackView: FC<IStackViewProps> = ({
+export const StackView: LFC<IStackViewProps> = ({
     stack,
     smartHide = true,
     ChangeTransitionComp,

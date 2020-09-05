@@ -1,4 +1,4 @@
-import React, {FC, useMemo, useCallback, useRef} from "react";
+import React, {useMemo, useCallback, useRef} from "react";
 import {highlightTagErrors} from "../../../textFields/syntax/utils/highlightTagErrors";
 import {ISyntaxHighlighterProps} from "./_types/ISyntaxHighlighterProps";
 import {getHighlightThemeStyle} from "../../../styling/theming/highlighting/getHighlightThemeStyle";
@@ -10,11 +10,12 @@ import {IHighlightNode} from "../../../textFields/syntax/_types/IHighlightNode";
 import {useHorizontalScroll} from "../../../utils/hooks/useHorizontalScroll";
 import {useCursorScroll} from "./useCursorScroll";
 import {useDataHook} from "../../../utils/modelReact/useDataHook";
+import {LFC} from "../../../_types/LFC";
 
 /**
  * A simple component to render syntax highlighted using a passed highlighter
  */
-export const SyntaxHighlighter: FC<ISyntaxHighlighterProps> = ({
+export const SyntaxHighlighter: LFC<ISyntaxHighlighterProps> = ({
     selection,
     onSelectionChange,
     theme,

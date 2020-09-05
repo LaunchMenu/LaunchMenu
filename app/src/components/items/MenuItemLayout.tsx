@@ -1,10 +1,11 @@
-import React, {FC, ReactNode} from "react";
+import React, {ReactNode} from "react";
 import {Box} from "../../styling/box/Box";
+import {LFC} from "../../_types/LFC";
 
 /**
  * The standard layout for menu items, having the icon on the left, and vertically stacked content on the right
  */
-export const MenuItemLayout: FC<{icon?: ReactNode; content: ReactNode}> = ({
+export const MenuItemLayout: LFC<{icon?: ReactNode; content: ReactNode}> = ({
     icon,
     content,
 }) => (

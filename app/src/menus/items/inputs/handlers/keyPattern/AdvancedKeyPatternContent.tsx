@@ -1,15 +1,15 @@
 import React from "react";
 import {IDataRetriever, useDataHook} from "model-react";
 import {KeyPattern} from "./KeyPattern";
-import {FC} from "react";
 import {Box} from "../../../../../styling/box/Box";
 import {Truncated} from "../../../../../components/Truncated";
+import {LFC} from "../../../../../_types/LFC";
 
 // TODO: add proper styling
 /**
  * The content to summary a key pattern
  */
-export const AdvancedKeyPatternContent: FC<{pattern: IDataRetriever<KeyPattern>}> = ({
+export const AdvancedKeyPatternContent: LFC<{pattern: IDataRetriever<KeyPattern>}> = ({
     pattern: patternGetter,
 }) => {
     const [h] = useDataHook();

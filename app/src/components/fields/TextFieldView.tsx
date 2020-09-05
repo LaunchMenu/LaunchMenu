@@ -1,17 +1,18 @@
-import React, {FC, isValidElement} from "react";
+import React, {isValidElement} from "react";
 import {Box} from "../../styling/box/Box";
 import {ITextFieldViewProps} from "./_types/ITextFieldViewProps";
 import {useTheme} from "../../styling/theming/ThemeContext";
 import {SyntaxField} from "./syntaxField/SyntaxField";
 import {plaintextLexer} from "../../textFields/syntax/plaintextLexer";
 import {ThemeIcon} from "../ThemeIcon";
+import {LFC} from "../../_types/LFC";
 
 const iconSize = 60;
 
 /**
  * A standard customizable view for text fields
  */
-export const TextFieldView: FC<ITextFieldViewProps> = ({
+export const TextFieldView: LFC<ITextFieldViewProps> = ({
     icon,
     field,
     highlighter = plaintextLexer,

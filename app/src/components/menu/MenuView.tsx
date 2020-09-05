@@ -1,14 +1,15 @@
-import React, {FC, useEffect, useRef} from "react";
+import React, {useEffect, useRef} from "react";
 import {useDataHook} from "model-react";
 import {FillBox} from "../FillBox";
 import {useSmoothScroll} from "../../utils/hooks/useSmoothScroll";
 import {IMenuViewProps} from "./_types/IMenuViewProps";
 import {useVerticalScroll} from "../../utils/hooks/useVerticalScroll";
+import {LFC} from "../../_types/LFC";
 
 /**
  * A standard simple view for a menu
  */
-export const MenuView: FC<IMenuViewProps> = ({
+export const MenuView: LFC<IMenuViewProps> = ({
     menu,
     cursorItemScrollPadding = 30,
     cursorItemScrollDuration = {far: 200, near: 70},

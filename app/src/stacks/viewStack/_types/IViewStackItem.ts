@@ -1,4 +1,5 @@
-import {FC, isValidElement} from "react";
+import {isValidElement} from "react";
+import {LFC} from "../../../_types/LFC";
 import {IViewStackItemProps} from "./IViewStackItemProps";
 import {IViewTransitions} from "./IViewTransitions";
 
@@ -19,7 +20,7 @@ export type IViewStackViewItem =
 /**
  * The view of a view stack item
  */
-export type IViewStackItemView = FC<IViewStackItemProps> | JSX.Element;
+export type IViewStackItemView = LFC<IViewStackItemProps> | JSX.Element;
 
 /**
  * Checks whether the given item is a view
