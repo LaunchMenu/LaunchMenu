@@ -1,9 +1,11 @@
-import { IAction } from "./IAction";
+import {IDataHook} from "model-react";
+import {INonFunction} from "../../../_types/INonFunction";
+import {IAction} from "./IAction";
 
 /**
- * A binding to an action action, specifying the data to execute the handler on an item
+ * A binding to an action action, specifying the data to execute the handler on an item, functions are not allowed
  */
-export type IActionBinding<I> = {
+export type IActionBinding<I extends INonFunction> = {
     /**
      * The action to bind
      */
@@ -11,7 +13,7 @@ export type IActionBinding<I> = {
     /**
      * The binding data to be used by the action handler
      */
-    readonly data: I;
+    readonly data: I | ((hook?: IDataHook) => I);
     /**
      * The tags for this binding, can be used to add extra meta data
      */

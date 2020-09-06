@@ -13,6 +13,7 @@ import {MultiSelectField} from "./MultiSelectField";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {openUI} from "../../../context/openUI/openUI";
 import {createTextFieldKeyHandler} from "../../interaction/keyHandler.ts/createTextFieldKeyHandler";
+import {INonFunction} from "../../../_types/INonFunction";
 
 /**
  * A handler to let users alter a field
@@ -93,7 +94,7 @@ export const multiSelectFieldExecuteHandler = sequentialExecuteHandler.createHan
          * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
          * @returns The created action handler
          */
-        createHandler<T, K>(
+        createHandler<T extends INonFunction, K>(
             handlerCore: IActionCore<T, IMultiSelectFieldExecuteData<K>>,
             defaultTags?: ITagsOverride
         ): IAction<T, IMultiSelectFieldExecuteData<K>>;
@@ -104,7 +105,7 @@ export const multiSelectFieldExecuteHandler = sequentialExecuteHandler.createHan
          * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
          * @returns The created action handler
          */
-        createHandler<T, K>(
+        createHandler<T extends INonFunction, K>(
             handlerCore: IActionCore<
                 T,
                 IActionMultiResult<IMultiSelectFieldExecuteData<K>>

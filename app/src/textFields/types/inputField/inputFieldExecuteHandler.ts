@@ -14,6 +14,7 @@ import {IAction} from "../../../menus/actions/_types/IAction";
 import {IActionMultiResult} from "../../../menus/actions/_types/IActionMultiResult";
 import {TReplace} from "../../../_types/TReplace";
 import {IActionCore} from "../../../menus/actions/_types/IActionCore";
+import {INonFunction} from "../../../_types/INonFunction";
 
 /**
  * A handler to let users alter a field
@@ -93,7 +94,7 @@ export const inputFieldExecuteHandler = sequentialExecuteHandler.createHandler(
          * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
          * @returns The created action handler
          */
-        createHandler<T, K>(
+        createHandler<T extends INonFunction, K>(
             handlerCore: IActionCore<T, IInputFieldExecuteData<K>>,
             defaultTags?: ITagsOverride
         ): IAction<T, IInputFieldExecuteData<K>>;
@@ -104,7 +105,7 @@ export const inputFieldExecuteHandler = sequentialExecuteHandler.createHandler(
          * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
          * @returns The created action handler
          */
-        createHandler<T, K>(
+        createHandler<T extends INonFunction, K>(
             handlerCore: IActionCore<T, IActionMultiResult<IInputFieldExecuteData<K>>>,
             defaultTags?: ITagsOverride
         ): IAction<T, IActionMultiResult<IInputFieldExecuteData<K>>>;

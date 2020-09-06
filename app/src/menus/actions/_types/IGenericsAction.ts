@@ -5,11 +5,13 @@ import {IActionBinding} from "./IActionBinding";
 import {IActionMultiResult} from "./IActionMultiResult";
 import {IMenuItemActionBindings} from "./IMenuItemActionBindings";
 import {IAction} from "./IAction";
+import {INonFunction} from "../../../_types/INonFunction";
+import {IDataHook} from "model-react";
 
 /**
  * The same as IAction, but with some more generics, which sometimes helps improve intellisense, and sometimes doesn't
  */
-export type IGenericsAction<I, O> = {
+export type IGenericsAction<I extends INonFunction, O> = {
     /**
      * All ancestor actions
      */
@@ -21,7 +23,11 @@ export type IGenericsAction<I, O> = {
      * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
      * @returns The created action handler
      */
-    createHandler<T, O extends AI | IActionMultiResult<AI>, AI extends I>(
+    createHandler<
+        T extends INonFunction,
+        O extends AI | IActionMultiResult<AI>,
+        AI extends I
+    >(
         handlerCore: IActionCore<T, O>,
         defaultTags?: ITagsOverride
     ): IAction<T, O>;
@@ -32,7 +38,10 @@ export type IGenericsAction<I, O> = {
      * @param tags The tags for the binding, inherited from the action if left out
      * @returns The binding
      */
-    createBinding<P extends I>(data: P, tags?: ITagsOverride): IActionBinding<P>;
+    createBinding<P extends I>(
+        data: P | ((hook: IDataHook) => P),
+        tags?: ITagsOverride
+    ): IActionBinding<P>;
 
     /**
      * Checks whether the item contains a direct or indirect binding for this action
