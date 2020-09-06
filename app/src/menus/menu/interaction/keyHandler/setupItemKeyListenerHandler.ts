@@ -11,11 +11,7 @@ import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
  */
 export function setupItemKeyListenerHandler(menu: IMenu) {
     let emitter: {emit: IKeyEventListenerFunction} | null = null;
-
-    // Remove the emitter if the list of items changes, since it's no longer valid
-    const itemObserver = new Observer(h => menu.getItems(h)).listen(() => {
-        emitter = null;
-    });
+    let itemObserver: Observer<void> | undefined;
 
     return {
         /**
@@ -25,14 +21,23 @@ export function setupItemKeyListenerHandler(menu: IMenu) {
          */
         async emit(e: KeyEvent): Promise<boolean | void> {
             // Cache the emitter for subsequent key presses
-            if (!emitter) emitter = keyHandlerAction.get(menu.getItems());
-            return await emitter.emit(e);
+            if (!itemObserver) {
+                itemObserver = new Observer(
+                    hook => {
+                        emitter = keyHandlerAction.get(menu.getItems(hook), hook);
+                    },
+                    {init: true}
+                );
+            }
+
+            if (emitter) return await emitter.emit(e);
         },
+
         /**
          * Destroys the hook that was added to the menu
          */
         destroy() {
-            itemObserver.destroy();
+            itemObserver?.destroy();
         },
     };
 }

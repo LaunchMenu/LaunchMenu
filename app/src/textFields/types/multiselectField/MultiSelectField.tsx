@@ -26,6 +26,7 @@ import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {createContentError} from "../../../components/content/error/createContentError";
 import {MenuView} from "../../../components/menu/MenuView";
 import {IViewStackItem} from "../../../stacks/viewStack/_types/IViewStackItem";
+import {adaptBindings} from "../../../menus/items/adjustBindings";
 
 function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -171,8 +172,8 @@ export class MultiSelectField<T> extends TextField {
         const item = this.config.createOptionView(value, includes, disabled);
         const finalItem = {
             view: item.view,
-            actionBindings: [
-                ...item.actionBindings,
+            actionBindings: adaptBindings(item.actionBindings, bindings => [
+                ...bindings,
                 ...(disabled
                     ? []
                     : [
@@ -188,7 +189,7 @@ export class MultiSelectField<T> extends TextField {
                               },
                           }),
                       ]),
-            ],
+            ]),
         };
         return finalItem;
     }
@@ -254,8 +255,8 @@ export class MultiSelectField<T> extends TextField {
                 let selectItem = add;
                 const item = {
                     view: rawItem.view,
-                    actionBindings: [
-                        ...rawItem.actionBindings,
+                    actionBindings: adaptBindings(rawItem.actionBindings, bindings => [
+                        ...bindings,
                         executeAction.createBinding({
                             execute: () => void this.removeCustomOption(value),
                         }),
@@ -271,7 +272,7 @@ export class MultiSelectField<T> extends TextField {
                                   }),
                               ]
                             : []),
-                    ],
+                    ]),
                 };
 
                 this.menu.addSearchItem(item);
@@ -324,8 +325,8 @@ export class MultiSelectField<T> extends TextField {
     protected getBoundCustomView(customView: IMenuItem): IMenuItem {
         return {
             view: customView.view,
-            actionBindings: [
-                ...customView.actionBindings,
+            actionBindings: adaptBindings(customView.actionBindings, bindings => [
+                ...bindings,
                 executeAction.createBinding({
                     execute: () => {
                         const item = this.addCustomOption();
@@ -334,7 +335,7 @@ export class MultiSelectField<T> extends TextField {
                             this.set("", false).then(() => this.menu.setCursor(item));
                     },
                 }),
-            ],
+            ]),
         };
     }
 
@@ -346,11 +347,6 @@ export class MultiSelectField<T> extends TextField {
     protected getSearchableCustomView(srcItem?: IMenuItem): IMenuItem {
         // TODO: create an menu item for custom, which shows the current text
         const item = srcItem ?? createStandardMenuItem({name: "Add custom"});
-
-        // Retrieve all action bindings except for the search bindings
-        const withoutSearch = item.actionBindings.filter(
-            binding => !searchAction.canBeAppliedTo([binding])
-        );
 
         // Create a search binding that returns this item no matter what the query
         const id = uuid();
@@ -369,11 +365,11 @@ export class MultiSelectField<T> extends TextField {
         // Return the item together with the new search action binding
         return {
             view: item.view,
-            actionBindings: [
-                ...withoutSearch,
+            actionBindings: adaptBindings(item.actionBindings, bindings => [
+                ...bindings.filter(binding => !searchAction.canBeAppliedTo([binding])),
                 searchBinding,
                 getCategoryAction.createBinding(controlsCategory),
-            ],
+            ]),
         };
     }
 

@@ -7,6 +7,8 @@ import {IActionParent} from "./_types/IActionParent";
 import {IActionMultiResult} from "./_types/IActionMultiResult";
 import {IMenuItemActionBindings} from "./_types/IMenuItemActionBindings";
 import {IIndexedMenuItem} from "./_types/IIndexedMenuItem";
+import {getBindings} from "../items/getBindings";
+import {IDataHook} from "model-react";
 
 /** A symbol that can act as a key in a core return object to pass multiple results */
 export const results = Symbol("Multiple results");
@@ -96,10 +98,17 @@ export class Action<I, O> implements IAction<I, O> {
     /**
      * Checks whether the item contains a direct or indirect binding for this action
      * @param item The item to check
+     * @param hook The data hook to subscribe to changes
      * @returns Whether it contains a binding
      */
-    public canBeAppliedTo(item: IMenuItem | IActionBinding<any>[]): boolean {
-        return !!(item instanceof Array ? item : item.actionBindings).find(
+    public canBeAppliedTo(
+        item: IMenuItem | IActionBinding<any>[],
+        hook?: IDataHook
+    ): boolean {
+        return !!getBindings(
+            item instanceof Array ? item : item.actionBindings,
+            hook
+        ).find(
             ({action}) =>
                 action == this || action.ancestors[this.ancestors.length] == this
         );
@@ -208,9 +217,10 @@ export class Action<I, O> implements IAction<I, O> {
     /**
      * Retrieves the action data for a set of items, in order to be executed
      * @param items The items to get the data for
+     * @param hook The data hook to subscribe to changes
      * @returns The action execution functions
      */
-    public get(items: (IMenuItem | IMenuItemActionBindings)[]): O;
+    public get(items: (IMenuItem | IMenuItemActionBindings)[], hook?: IDataHook): O;
 
     /**
      * Retrieves the action data for the given input data
@@ -221,16 +231,17 @@ export class Action<I, O> implements IAction<I, O> {
     public get(data: I[], items: IMenuItem[][]): O;
     public get(
         items: (IMenuItem | IMenuItemActionBindings)[] | I[],
-        sourceItems?: IMenuItem[][]
+        sourceItems?: IMenuItem[][] | IDataHook
     ): O {
         // Obtain the input data from all the items
         if (this.isItemArray(items)) {
+            const hook = sourceItems instanceof Array ? undefined : sourceItems;
             const depth = this.ancestors.length;
             let actionsData = [] as IActionData[];
 
             // Collect all binding and actions
             items.forEach((item, inputIndex) => {
-                item.actionBindings.forEach(binding => {
+                getBindings(item.actionBindings, hook).forEach(binding => {
                     if (
                         binding.action.ancestors[depth] == this ||
                         binding.action == this

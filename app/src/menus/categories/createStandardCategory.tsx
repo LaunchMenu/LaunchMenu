@@ -1,6 +1,7 @@
 import {ICategory} from "../actions/types/category/_types/ICategory";
 import {createStandardMenuItem} from "../items/createStandardMenuItem";
 import {searchAction} from "../actions/types/search/searchAction";
+import {adaptBindings} from "../items/adjustBindings";
 
 /**
  * Creates a standard category
@@ -22,8 +23,8 @@ export function createStandardCategory({
         description,
         item: {
             view: item.view,
-            actionBindings: item.actionBindings.filter(
-                binding => !searchAction.canBeAppliedTo([binding])
+            actionBindings: adaptBindings(item.actionBindings, bindings =>
+                bindings.filter(binding => !searchAction.canBeAppliedTo([binding]))
             ),
         },
     };

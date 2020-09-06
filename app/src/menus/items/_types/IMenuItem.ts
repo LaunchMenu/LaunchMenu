@@ -1,5 +1,5 @@
 import {IMenuItemView} from "./IMenuItemView";
-import {IActionBinding} from "../../actions/_types/IActionBinding";
+import {ISubscribableActionBindings} from "./ISubscribableActionBindings";
 
 /**
  * An item to appear on a menu
@@ -12,5 +12,5 @@ export type IMenuItem = {
     /**
      * All action bindings for this item, in order to execute an action of the item
      */
-    readonly actionBindings: IActionBinding<any>[];
+    readonly actionBindings: ISubscribableActionBindings;
 };

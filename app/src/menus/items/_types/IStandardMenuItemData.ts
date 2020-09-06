@@ -4,6 +4,7 @@ import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {IMenu} from "../../menu/_types/IMenu";
 import {IExecutable} from "../../actions/types/execute/_types/IExecutable";
 import {IDataHook} from "model-react";
+import {ISubscribableActionBindings} from "./ISubscribableActionBindings";
 
 /**
  * A type for the data passed to a standard menu item
@@ -37,5 +38,5 @@ export type IStandardMenuItemData = {
     category?: ICategory;
 
     /** Bindings to additional actions */
-    actionBindings?: IActionBinding<any>[];
+    actionBindings?: ISubscribableActionBindings;
 };

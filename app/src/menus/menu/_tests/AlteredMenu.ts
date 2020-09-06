@@ -18,8 +18,8 @@ const someCategory2: ICategory = {
 const items = [
     createMenuItem(),
     createMenuItem(),
-    createMenuItem(someCategory),
-    createMenuItem(someCategory2),
+    createMenuItem({category: someCategory}),
+    createMenuItem({category: someCategory2}),
 ];
 const parentMenu = new Menu(context, items);
 

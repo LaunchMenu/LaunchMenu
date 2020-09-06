@@ -28,15 +28,12 @@ export function setupContextMenuHandler(
 ) {
     const ioContext = menu.getContext();
     let contextData: {
-        emitter: {emit: IKeyEventListenerFunction};
-        items: IMenuItem[];
+        emitter?: {emit: IKeyEventListenerFunction};
+        items?: IMenuItem[];
+        menu?: Menu;
         close?: () => void;
-    } | null = null;
-
-    // Remove the emitter if the list of items changes, since it's no longer valid
-    const selectionObserver = new Observer(h => menu.getAllSelected(h)).listen(() => {
-        contextData = null;
-    });
+    } = {};
+    let contextItemsObserver: Observer<void> | undefined;
 
     return {
         /**
@@ -50,32 +47,57 @@ export function setupContextMenuHandler(
             if (!isMenuOpenEvent && !useContextItemKeyHandlers) return;
 
             // Cache the context data for subsequent key presses
-            if (!contextData) {
-                const items = getContextMenuItems(menu.getAllSelected(), ioContext, () =>
-                    contextData?.close?.()
+            if (!contextItemsObserver)
+                contextItemsObserver = new Observer(
+                    hook => {
+                        // Remove old items if relevant
+                        if (contextData.menu && contextData.items)
+                            contextData.menu.removeItems(contextData.items);
+
+                        // Retrieve the new context items, and subscribe to item changes
+                        contextData.items = getContextMenuItems(
+                            menu.getAllSelected(hook),
+                            ioContext,
+                            () => contextData?.close?.(),
+                            hook
+                        );
+
+                        // Add the new items to the context menu if relevant
+                        if (contextData.menu)
+                            contextData.menu.addItems(contextData.items);
+
+                        // Obtain a new emitter and subscribe to possible changes
+                        contextData.emitter = keyHandlerAction.get(
+                            contextData.items,
+                            hook
+                        );
+                    },
+                    {init: true}
                 );
-                const emitter = keyHandlerAction.get(items);
-                contextData = {items, emitter};
-            }
 
             // Forward events to context items
-            if (useContextItemKeyHandlers && (await contextData.emitter.emit(e)))
+            if (useContextItemKeyHandlers && (await contextData.emitter?.emit(e)))
                 return true;
 
             // Open the menu if requested
             if (isMenuOpenEvent) {
-                if (contextData.items.length > 0)
-                    contextData.close = openUI(ioContext, {
-                        menu: new Menu(ioContext, contextData.items),
+                const items = contextData.items;
+                if (items && items.length > 0 && !contextData.menu) {
+                    const menu = (contextData.menu = new Menu(ioContext, items));
+                    contextData.close = openUI(ioContext, {menu}, () => {
+                        contextData.close = undefined;
+                        contextData.menu = undefined;
                     });
+                }
                 return true;
             }
         },
+
         /**
          * Destroys the hook that was added to the menu
          */
         destroy() {
-            selectionObserver.destroy();
+            contextItemsObserver?.destroy();
         },
     };
 }

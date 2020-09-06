@@ -5,12 +5,16 @@ import {getCategoryAction} from "../actions/types/category/getCategoryAction";
 import {IActionBinding} from "../actions/_types/IActionBinding";
 import {IContextMenuItemGetter} from "../actions/contextAction/_types/IContextMenuItemGetter";
 import {IIOContext} from "../../context/_types/IIOContext";
+import {IDataHook} from "model-react";
+import {getBindings} from "../items/getBindings";
+import {adaptBindings} from "../items/adjustBindings";
 
 /**
  * Retrieves the context items for a context menu for a given item selection
  * @param items The item selection to get the menu for
  * @param ioContext The context that context items can use
  * @param close A function that can be used to close the menu that will be created
+ * @param hook The data hook to subscribe to changes
  * @param includeAction The function to determine whether or not to include an action in the menu, defaults to actions with the tag "context"
  * @returns The items
  */
@@ -18,6 +22,7 @@ export function getContextMenuItems(
     items: IMenuItem[],
     ioContext: IIOContext,
     close: () => void,
+    hook?: IDataHook,
     includeAction: (binding: IActionBinding<any>) => boolean = binding =>
         binding.tags.includes("context")
 ): IMenuItem[] {
@@ -29,7 +34,7 @@ export function getContextMenuItems(
 
     // Go through all action bindings and collect actions
     items.forEach(item => {
-        item.actionBindings.forEach(binding => {
+        getBindings(item.actionBindings, hook).forEach(binding => {
             // Make sure the item should show in the menu
             if (!includeAction(binding)) return;
 
@@ -55,17 +60,21 @@ export function getContextMenuItems(
 
     // Get all the menu items
     const foundActionsWithData = foundActions.flatMap(foundAction => {
-        const actionItem = (foundAction.action.get(foundAction.items)?.getMenuItem as
+        let actionItem = (foundAction.action.get(foundAction.items)?.getMenuItem as
             | IContextMenuItemGetter
             | undefined)?.(ioContext, close) as IMenuItem | undefined;
         if (!actionItem) return [];
 
         if (foundAction.items.length < count)
-            actionItem.actionBindings.push(
-                getCategoryAction.createBinding(
-                    getContextCategory(foundAction.items.length, count)
-                )
-            );
+            actionItem = {
+                ...actionItem,
+                actionBindings: adaptBindings(actionItem.actionBindings, bindings => [
+                    ...bindings,
+                    getCategoryAction.createBinding(
+                        getContextCategory(foundAction.items.length, count)
+                    ),
+                ]),
+            };
         return [
             {
                 ...foundAction,

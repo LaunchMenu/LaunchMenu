@@ -2,6 +2,7 @@ import {Action, results, sources} from "../Action";
 import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
 import {IMenuItem} from "../../items/_types/IMenuItem";
+import {adaptBindings} from "../../items/adjustBindings";
 
 const createItem = (...bindings: IActionBinding<any>[]): IMenuItem => ({
     view: null as any,
@@ -161,7 +162,12 @@ describe("Action", () => {
             });
             it("Allows for specification of a subset of action bindings", () => {
                 const item = createItem(action.createBinding(2), action.createBinding(4));
-                const sub = {item, actionBindings: item.actionBindings.slice(1)};
+                const sub = {
+                    item,
+                    actionBindings: adaptBindings(item.actionBindings, bindings =>
+                        bindings.slice(1)
+                    ),
+                };
                 expect(action.get([item])).toBe(6);
                 expect(action.get([sub])).toBe(4);
             });

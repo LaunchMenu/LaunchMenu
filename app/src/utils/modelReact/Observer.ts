@@ -26,24 +26,35 @@ export class Observer<T> {
     /**
      * Creates a new observer
      * @param getter The target data to observe
-     * @param debounce The number of milliseconds to debounce updates, -1 to forward changes synchronously, defaults to 0
-     * @param refreshData Whether to force data to load if it's not present yet (won't load E.G. data loaders if false), defaults to true
+     * @param options Any additional configuration options
      */
     public constructor(
         getter: IDataRetriever<T> | IDataSource<T>,
-        debounce: number = 0,
-        refreshData: boolean = true
+        {
+            init = false,
+            debounce = 0,
+            refreshData = true,
+        }: {
+            /** Whether to call the getter, even without any listeners present */
+            init?: boolean;
+            /** The number of milliseconds to debounce updates, -1 to forward changes synchronously, defaults to 0 */
+            debounce?: number;
+            /** Whether to force data to load if it's not present yet (won't load E.G. data loaders if false), defaults to true */
+            refreshData?: boolean;
+        } = {}
     ) {
         this.getter = "get" in getter ? getter.get.bind(getter) : getter;
         this.debounce = debounce;
         this.refreshData = refreshData;
+        if (init) this.getData(true);
     }
 
     /**
      * Gets the data and sets up the listener for the target
+     * @param force Whether to retrieve the data even without listeners
      */
-    protected getData(): void {
-        if (this.listeners.length == 0) return;
+    protected getData(force?: boolean): void {
+        if (this.listeners.length == 0 && !force) return;
 
         this.isLoading = false;
         this.exceptions = [];
@@ -53,7 +64,7 @@ export class Observer<T> {
                 this.isDirty = true;
 
                 // Setup the listener again, and call all our listeners
-                this.getData();
+                this.getData(force);
                 this.callListeners();
             },
             registerRemover: (remover: () => void) => {

@@ -20,6 +20,7 @@ import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {MenuView} from "../../../components/menu/MenuView";
+import {adaptBindings} from "../../../menus/items/adjustBindings";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -140,8 +141,8 @@ export class SelectField<T> extends InputField<T> {
         const item = this.dConfig.createOptionView(value, disabled);
         const finalItem = {
             view: item.view,
-            actionBindings: [
-                ...item.actionBindings,
+            actionBindings: adaptBindings(item.actionBindings, bindings => [
+                ...bindings,
                 ...(disabled
                     ? []
                     : [
@@ -161,7 +162,7 @@ export class SelectField<T> extends InputField<T> {
                               },
                           }),
                       ]),
-            ],
+            ]),
         };
         return finalItem;
     }
@@ -199,8 +200,8 @@ export class SelectField<T> extends InputField<T> {
     protected setupCustomView(customView: IMenuItem): IMenuItem {
         return {
             view: customView.view,
-            actionBindings: [
-                ...customView.actionBindings,
+            actionBindings: adaptBindings(customView.actionBindings, bindings => [
+                ...bindings,
                 executeAction.createBinding({
                     execute: () => {
                         const value = this.get();
@@ -213,7 +214,7 @@ export class SelectField<T> extends InputField<T> {
                             );
                     },
                 }),
-            ],
+            ]),
         };
     }
 
@@ -225,11 +226,6 @@ export class SelectField<T> extends InputField<T> {
     protected getCustomView(srcItem?: IMenuItem): IMenuItem {
         // TODO: create an menu item for custom, which shows the current text
         const item = srcItem ?? createStandardMenuItem({name: "Custom"});
-
-        // Retrieve all action bindings except for the search bindings
-        const withoutSearch = item.actionBindings.filter(
-            ({action}) => !(action == searchAction || action.ancestors[0] == searchAction)
-        );
 
         // Create a search binding that returns this item no matter what the query
         const id = uuid();
@@ -246,7 +242,16 @@ export class SelectField<T> extends InputField<T> {
         });
 
         // Return the item together with the new search action binding
-        return {view: item.view, actionBindings: [...withoutSearch, searchBinding]};
+        return {
+            view: item.view,
+            actionBindings: adaptBindings(item.actionBindings, bindings => [
+                ...bindings.filter(
+                    ({action}) =>
+                        !(action == searchAction || action.ancestors[0] == searchAction)
+                ),
+                searchBinding,
+            ]),
+        };
     }
 
     /**

@@ -4,6 +4,7 @@ import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IActionBinding} from "./IActionBinding";
 import {IActionMultiResult} from "./IActionMultiResult";
 import {IMenuItemActionBindings} from "./IMenuItemActionBindings";
+import {IDataHook} from "model-react";
 
 export type IAction<I, O> = {
     /**
@@ -33,16 +34,18 @@ export type IAction<I, O> = {
     /**
      * Checks whether the item contains a direct or indirect binding for this action
      * @param item The item to check
+     * @param hook The data hook to subscribe to changes
      * @returns Whether it contains a binding
      */
-    canBeAppliedTo(item: IMenuItem | IActionBinding<any>[]): boolean;
+    canBeAppliedTo(item: IMenuItem | IActionBinding<any>[], hook?: IDataHook): boolean;
 
     /**
      * Retrieves the action data for a set of items, in order to be executed
      * @param items The items to get the data for
+     * @param hook The data hook to subscribe to changes
      * @returns The action execution functions
      */
-    get(items: (IMenuItem | IMenuItemActionBindings)[]): O;
+    get(items: (IMenuItem | IMenuItemActionBindings)[], hook?: IDataHook): O;
 
     /**
      * Retrieves the action data for the given input data

@@ -6,14 +6,21 @@ import {getCategoryAction} from "../../actions/types/category/getCategoryAction"
 import {executeAction} from "../../actions/types/execute/executeAction";
 import {searchAction} from "../../actions/types/search/searchAction";
 import {wait} from "../../../_tests/wait.helper";
+import {IActionBinding} from "../../actions/_types/IActionBinding";
 
-export function createMenuItem(
-    category?: ICategory,
-    noSelect: boolean = false
-): IMenuItem {
+export function createMenuItem({
+    category,
+    noSelect = false,
+    actionBindings,
+}: {
+    category?: ICategory;
+    noSelect?: boolean;
+    actionBindings?: IActionBinding<any>[];
+} = {}): IMenuItem {
     return {
         view: () => <div>hoi</div>,
         actionBindings: [
+            ...(actionBindings ? actionBindings : []),
             ...(category ? [getCategoryAction.createBinding(category)] : []),
             ...(noSelect ? [] : [executeAction.createBinding({execute: () => {}})]),
         ],

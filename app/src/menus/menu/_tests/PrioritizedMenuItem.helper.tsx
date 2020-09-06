@@ -3,6 +3,7 @@ import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
 import {createMenuItem} from "./MenuItem.helper";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {v4 as uuid} from "uuid";
+import {IActionBinding} from "../../actions/_types/IActionBinding";
 
 export function createPrioritizedMenuItem<
     V,
@@ -11,6 +12,7 @@ export function createPrioritizedMenuItem<
         category?: ICategory | undefined;
         generateID?: boolean;
         noSelect?: boolean;
+        actionBindings?: IActionBinding<any>[];
         getUpdatedPriority?: (data: V) => Promise<number>;
     }
 >({
@@ -18,11 +20,12 @@ export function createPrioritizedMenuItem<
     category = undefined as undefined | ICategory,
     generateID = false,
     noSelect = false,
+    actionBindings,
     getUpdatedPriority,
 }: T): IPrioritizedMenuItem<V> {
     return {
         priority,
-        item: createMenuItem(category, noSelect),
+        item: createMenuItem({category, noSelect, actionBindings}),
         id: generateID ? uuid() : undefined,
         getUpdatedPriority,
     } as any;

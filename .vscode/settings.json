@@ -2,5 +2,6 @@
     "eslint.enable": false,
     "typescript.enablePromptUseWorkspaceTsdk": true,
     "typescript.tsdk": "app/node_modules/typescript/lib",
+    // It's useful to enable this when performing a large refactor
     "typescript.tsserver.experimental.enableProjectDiagnostics": false
 }

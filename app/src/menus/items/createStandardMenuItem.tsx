@@ -15,6 +15,8 @@ import {SimpleSearchHighlight} from "../../components/items/SimpleSearchHighligh
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {IDataHook} from "model-react";
+import {adaptBindings} from "./adjustBindings";
+import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings";
 
 const get = <T extends unknown>(f: T, h?: IDataHook) =>
     f instanceof Function ? f(h) : f;
@@ -34,22 +36,31 @@ export function createStandardMenuItem({
     onCursor,
     onMenuChange,
     category,
-    actionBindings = [],
+    actionBindings,
 }: IStandardMenuItemData): IMenuItem {
-    let bindings: IActionBinding<any>[] = [
+    const generatedBindings: IActionBinding<any>[] = [
         // TODO: make the action actually update if any of these change
         createSimpleSearchBinding({
             name: get(name),
             description: get(description),
             tags: get(tags),
         }),
-        ...actionBindings,
     ];
-    if (onExecute) bindings.push(executeAction.createBinding({execute: onExecute}));
-    if (onSelect) bindings.push(onSelectAction.createBinding({onSelect}));
-    if (onCursor) bindings.push(onCursorAction.createBinding({onCursor}));
-    if (onMenuChange) bindings.push(onMenuChangeAction.createBinding({onMenuChange}));
-    if (category) bindings.push(getCategoryAction.createBinding(category));
+    if (onExecute)
+        generatedBindings.push(executeAction.createBinding({execute: onExecute}));
+    if (onSelect) generatedBindings.push(onSelectAction.createBinding({onSelect}));
+    if (onCursor) generatedBindings.push(onCursorAction.createBinding({onCursor}));
+    if (onMenuChange)
+        generatedBindings.push(onMenuChangeAction.createBinding({onMenuChange}));
+    if (category) generatedBindings.push(getCategoryAction.createBinding(category));
+
+    // Combine the input action bindings with the created ones
+    let bindings = generatedBindings as ISubscribableActionBindings;
+    if (actionBindings)
+        bindings = adaptBindings(actionBindings, actionBindings => [
+            ...actionBindings,
+            ...generatedBindings,
+        ]);
 
     return {
         view: memo(({highlight, ...props}) => {

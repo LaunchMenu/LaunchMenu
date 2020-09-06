@@ -136,13 +136,15 @@ describe("PrioritizedMenu", () => {
             });
         });
         it("Calls onMenuChange actions", async () => {
-            const item = createPrioritizedMenuItem({priority: 1});
             const onMenuChange = jest.fn();
-            item.item.actionBindings.push(
-                onMenuChangeAction.createBinding({
-                    onMenuChange,
-                })
-            );
+            const item = createPrioritizedMenuItem({
+                priority: 1,
+                actionBindings: [
+                    onMenuChangeAction.createBinding({
+                        onMenuChange,
+                    }),
+                ],
+            });
             const menu = createMenu();
             menu.addItem(item);
             await wait(20);
@@ -328,13 +330,16 @@ describe("PrioritizedMenu", () => {
             ]);
         });
         it("Calls onMenuChange actions", async () => {
-            const item = createPrioritizedMenuItem({priority: 1, generateID: true});
             const onMenuChange = jest.fn();
-            item.item.actionBindings.push(
-                onMenuChangeAction.createBinding({
-                    onMenuChange,
-                })
-            );
+            const item = createPrioritizedMenuItem({
+                priority: 1,
+                generateID: true,
+                actionBindings: [
+                    onMenuChangeAction.createBinding({
+                        onMenuChange,
+                    }),
+                ],
+            });
             const menu = createMenu();
             menu.addItem(item);
             await wait(20);
@@ -462,18 +467,19 @@ describe("PrioritizedMenu", () => {
             expect(menu.getSelected()).toEqual([]);
         });
         it("Calls onSelect actions", () => {
-            const item = createPrioritizedMenuItem({});
             let selectCount = 0;
             let deselectCount = 0;
-            item.item.actionBindings.push(
-                onSelectAction.createBinding({
-                    onSelect: (selected, m) => {
-                        if (selected) selectCount++;
-                        else deselectCount++;
-                        expect(m).toEqual(menu);
-                    },
-                })
-            );
+            const item = createPrioritizedMenuItem({
+                actionBindings: [
+                    onSelectAction.createBinding({
+                        onSelect: (selected, m) => {
+                            if (selected) selectCount++;
+                            else deselectCount++;
+                            expect(m).toEqual(menu);
+                        },
+                    }),
+                ],
+            });
             const menu = createMenu([...items, item]);
             expect(selectCount).toBe(0);
             expect(deselectCount).toBe(0);
@@ -523,18 +529,19 @@ describe("PrioritizedMenu", () => {
             expect(menu.getCursor()).toEqual(items[2].item);
         });
         it("Calls onCursor actions", () => {
-            const item = createPrioritizedMenuItem({});
             let selectCount = 0;
             let deselectCount = 0;
-            item.item.actionBindings.push(
-                onCursorAction.createBinding({
-                    onCursor: (selected, m) => {
-                        if (selected) selectCount++;
-                        else deselectCount++;
-                        expect(m).toEqual(menu);
-                    },
-                })
-            );
+            const item = createPrioritizedMenuItem({
+                actionBindings: [
+                    onCursorAction.createBinding({
+                        onCursor: (selected, m) => {
+                            if (selected) selectCount++;
+                            else deselectCount++;
+                            expect(m).toEqual(menu);
+                        },
+                    }),
+                ],
+            });
             const menu = createMenu([...items, item]);
             expect(selectCount).toBe(0);
             expect(deselectCount).toBe(0);
@@ -616,16 +623,17 @@ describe("PrioritizedMenu", () => {
             menu = createMenu(items);
         });
         it("Deselects all items", () => {
-            const item = createPrioritizedMenuItem({});
             let deselectCount = 0;
-            item.item.actionBindings.push(
-                onSelectAction.createBinding({
-                    onSelect: (selected, m) => {
-                        if (!selected) deselectCount++;
-                        expect(m).toEqual(menu);
-                    },
-                })
-            );
+            const item = createPrioritizedMenuItem({
+                actionBindings: [
+                    onSelectAction.createBinding({
+                        onSelect: (selected, m) => {
+                            if (!selected) deselectCount++;
+                            expect(m).toEqual(menu);
+                        },
+                    }),
+                ],
+            });
             menu.addItem(item);
             menu.flushBatch();
             menu.setSelected(item.item, true);
@@ -636,16 +644,17 @@ describe("PrioritizedMenu", () => {
             expect(deselectCount).toBe(1);
         });
         it("Deselects the cursor", () => {
-            const item = createPrioritizedMenuItem({});
             let deselectCount = 0;
-            item.item.actionBindings.push(
-                onCursorAction.createBinding({
-                    onCursor: (selected, m) => {
-                        if (!selected) deselectCount++;
-                        expect(m).toEqual(menu);
-                    },
-                })
-            );
+            const item = createPrioritizedMenuItem({
+                actionBindings: [
+                    onCursorAction.createBinding({
+                        onCursor: (selected, m) => {
+                            if (!selected) deselectCount++;
+                            expect(m).toEqual(menu);
+                        },
+                    }),
+                ],
+            });
             menu.addItem(item);
             menu.flushBatch();
             menu.setCursor(item.item);
@@ -666,16 +675,17 @@ describe("PrioritizedMenu", () => {
             expect(menu.getItems()).toEqual([]);
         });
         it("Blocks changing the cursor", () => {
-            const item = createPrioritizedMenuItem({});
             let selectCount = 0;
-            item.item.actionBindings.push(
-                onCursorAction.createBinding({
-                    onCursor: (selected, m) => {
-                        if (selected) selectCount++;
-                        expect(m).toEqual(menu);
-                    },
-                })
-            );
+            const item = createPrioritizedMenuItem({
+                actionBindings: [
+                    onCursorAction.createBinding({
+                        onCursor: (selected, m) => {
+                            if (selected) selectCount++;
+                            expect(m).toEqual(menu);
+                        },
+                    }),
+                ],
+            });
             menu.addItem(item);
             menu.flushBatch();
             expect(menu.getCursor()).not.toEqual(null);
@@ -685,16 +695,17 @@ describe("PrioritizedMenu", () => {
             expect(selectCount).toBe(0);
         });
         it("Blocks selecting of items", () => {
-            const item = createPrioritizedMenuItem({});
             let selectCount = 0;
-            item.item.actionBindings.push(
-                onSelectAction.createBinding({
-                    onSelect: (selected, m) => {
-                        if (selected) selectCount++;
-                        expect(m).toEqual(menu);
-                    },
-                })
-            );
+            const item = createPrioritizedMenuItem({
+                actionBindings: [
+                    onSelectAction.createBinding({
+                        onSelect: (selected, m) => {
+                            if (selected) selectCount++;
+                            expect(m).toEqual(menu);
+                        },
+                    }),
+                ],
+            });
             menu.addItem(item);
             menu.flushBatch();
             menu.destroy();
@@ -883,31 +894,31 @@ describe("PrioritizedMenu", () => {
             describe("OnMenuChange", () => {
                 it("Doesn't call onMenuChange to inform about addition if the item wasn't added", () => {
                     items.forEach(item => menu.addItem(item));
+                    const onMenuChange = jest.fn();
                     const item = createPrioritizedMenuItem({
                         priority: 1,
                         generateID: true,
+                        actionBindings: [
+                            onMenuChangeAction.createBinding({
+                                onMenuChange,
+                            }),
+                        ],
                     });
-                    const onMenuChange = jest.fn();
-                    item.item.actionBindings.push(
-                        onMenuChangeAction.createBinding({
-                            onMenuChange,
-                        })
-                    );
                     menu.addItem(item);
                     menu.flushBatch();
                     expect(onMenuChange.mock.calls.length).toBe(0);
                 });
                 it("Does call onMenuChange to inform about removal if an item got pushed off the list", () => {
+                    const onMenuChange = jest.fn();
                     const item = createPrioritizedMenuItem({
                         priority: 1,
                         generateID: true,
+                        actionBindings: [
+                            onMenuChangeAction.createBinding({
+                                onMenuChange,
+                            }),
+                        ],
                     });
-                    const onMenuChange = jest.fn();
-                    item.item.actionBindings.push(
-                        onMenuChangeAction.createBinding({
-                            onMenuChange,
-                        })
-                    );
                     menu.addItem(item);
                     menu.flushBatch();
 
