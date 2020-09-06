@@ -7,6 +7,8 @@ import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangeA
 import {Observer} from "../../../utils/modelReact/Observer";
 import {wait} from "../../../_tests/wait.helper";
 import {context} from "../../../_tests/context.helper";
+import {Field} from "model-react";
+import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 
 describe("Menu", () => {
     describe("new Menu", () => {
@@ -255,6 +257,47 @@ describe("Menu", () => {
                     items[3],
                     someCategory.item,
                     items[2],
+                ]);
+            });
+            it("Moves items to their new category when its category changes", async () => {
+                const menu = new Menu(context);
+                const category = new Field(someCategory);
+                const item = createMenuItem({
+                    actionBindings: h => [
+                        getCategoryAction.createBinding(category.get(h ?? null)),
+                    ],
+                });
+                menu.addItems([...items, item]);
+                expect(menu.getItems()).toEqual([
+                    items[0],
+                    items[1],
+                    someCategory.item,
+                    items[2],
+                    item,
+                    someCategory2.item,
+                    items[3],
+                ]);
+                category.set(someCategory2);
+                await wait();
+                expect(menu.getItems()).toEqual([
+                    items[0],
+                    items[1],
+                    someCategory.item,
+                    items[2],
+                    someCategory2.item,
+                    items[3],
+                    item,
+                ]);
+                category.set(someCategory);
+                await wait();
+                expect(menu.getItems()).toEqual([
+                    items[0],
+                    items[1],
+                    someCategory.item,
+                    items[2],
+                    item,
+                    someCategory2.item,
+                    items[3],
                 ]);
             });
         });

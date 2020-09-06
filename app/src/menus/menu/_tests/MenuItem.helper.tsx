@@ -6,7 +6,8 @@ import {getCategoryAction} from "../../actions/types/category/getCategoryAction"
 import {executeAction} from "../../actions/types/execute/executeAction";
 import {searchAction} from "../../actions/types/search/searchAction";
 import {wait} from "../../../_tests/wait.helper";
-import {IActionBinding} from "../../actions/_types/IActionBinding";
+import {adaptBindings} from "../../items/adjustBindings";
+import {ISubscribableActionBindings} from "../../items/_types/ISubscribableActionBindings";
 
 export function createMenuItem({
     category,
@@ -15,15 +16,15 @@ export function createMenuItem({
 }: {
     category?: ICategory;
     noSelect?: boolean;
-    actionBindings?: IActionBinding<any>[];
+    actionBindings?: ISubscribableActionBindings;
 } = {}): IMenuItem {
     return {
         view: () => <div>hoi</div>,
-        actionBindings: [
-            ...(actionBindings ? actionBindings : []),
+        actionBindings: adaptBindings(actionBindings ?? [], bindings => [
+            ...bindings,
             ...(category ? [getCategoryAction.createBinding(category)] : []),
             ...(noSelect ? [] : [executeAction.createBinding({execute: () => {}})]),
-        ],
+        ]),
     };
 }
 

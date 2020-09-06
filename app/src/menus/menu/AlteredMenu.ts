@@ -81,27 +81,23 @@ export class AlteredMenu extends Menu {
         onMenuChangeAction.get(addedItems).onMenuChange(this, true);
     }
 
-    /**
-     * Removes an item from the menu
-     * @param item The item to remove
-     * @returns Whether the item was in the menu (and now removed)
-     */
+    /** @override */
     public removeItem(item: IMenuItem): boolean {
         return super.removeItem(item) || this.removeItems([item]);
     }
 
-    /**
-     * Removes all the items from the given array at once (slightly more efficient than removing one by one)
-     * @param item The item to remove
-     * @returns Whether any item was in the menu (and now removed)
-     */
-    public removeItems(items: IMenuItem[]): boolean {
-        const removedBefore = super.removeItems(items);
+    /** @override */
+    public removeItems(
+        items: IMenuItem[],
+        oldCategory: ICategory | null = null
+    ): boolean {
+        const removedBefore = super.removeItems(items, oldCategory);
         let removed = [] as IMenuItem[];
         const selectedItems = this.selected.get(null);
 
         items.forEach(item => {
-            const category = this.categoryConfig.getCategory(item);
+            const category =
+                oldCategory != null ? oldCategory : this.categoryConfig.getCategory(item);
             const categoryIndex = this.rawCategoriesBefore.findIndex(
                 ({category: c}) => c == category
             );

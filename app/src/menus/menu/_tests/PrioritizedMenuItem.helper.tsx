@@ -4,6 +4,7 @@ import {createMenuItem} from "./MenuItem.helper";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {v4 as uuid} from "uuid";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
+import {ISubscribableActionBindings} from "../../items/_types/ISubscribableActionBindings";
 
 export function createPrioritizedMenuItem<
     V,
@@ -12,7 +13,7 @@ export function createPrioritizedMenuItem<
         category?: ICategory | undefined;
         generateID?: boolean;
         noSelect?: boolean;
-        actionBindings?: IActionBinding<any>[];
+        actionBindings?: ISubscribableActionBindings;
         getUpdatedPriority?: (data: V) => Promise<number>;
     }
 >({

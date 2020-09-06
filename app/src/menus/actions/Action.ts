@@ -285,6 +285,9 @@ export class Action<I, O> implements IAction<I, O> {
                 }
             }
 
+            // Remove the indexing data
+            items.forEach((item: any) => delete item.inputIndex);
+
             // Retrieve the input data for this action
             const action = actionsData.find(
                 ({action: {ancestors}}) => ancestors.length == depth

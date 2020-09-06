@@ -1,3 +1,4 @@
+import {IDataHook} from "model-react";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 
@@ -8,9 +9,10 @@ export type IMenuCategoryConfig = {
     /**
      * Retrieves a category menu item
      * @param item The item to obtain the category of
+     * @param hook The hook to subscribe to changes
      * @returns The category to group this item under, if any
      */
-    readonly getCategory?: (item: IMenuItem) => ICategory | undefined;
+    readonly getCategory?: (item: IMenuItem, hook?: IDataHook) => ICategory | undefined;
 
     /**
      * Retrieves the order of the categories

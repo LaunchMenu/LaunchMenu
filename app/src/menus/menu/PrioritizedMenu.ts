@@ -16,6 +16,7 @@ import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeActi
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 import {AbstractMenu} from "./AbstractMenu";
 import {IIOContext} from "../../context/_types/IIOContext";
+import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
 
 type CategoryData<T> = {
     items: SortedList<IPrioritizedMenuItem<T>>;
@@ -84,13 +85,30 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
      */
     public addItem(item: IPrioritizedMenuItem<T>): void {
         if (item.priority == 0) return;
-        const category = this.categoryConfig.getCategory(item);
-        const categoryIndex = this.categoriesRaw.findIndex(
+
+        // Create a hook to move the item when the category is updated
+        const categoryChangeCallback = createCallbackHook(() => {
+            const inMenu = this.categoriesRaw[categoryIndex]?.items.find(item) != -1;
+            const categoryChanged = category != this.categoryConfig.getCategory(item);
+            // In addition, updating the category is only supported if the item provided an ID
+            if (inMenu && item.id && categoryChanged) {
+                this.removeItem(
+                    item as IPrioritizedMenuItem<T> & {id: number | string},
+                    category
+                );
+                this.addItem(item);
+            } else this.categoryConfig.getCategory(item, categoryChangeCallback);
+        });
+
+        // Obtain the category
+        const category = this.categoryConfig.getCategory(item, categoryChangeCallback);
+        let categoryIndex = this.categoriesRaw.findIndex(
             ({category: c}) => c == category
         );
 
         // Add the item to a new or existing category
         if (categoryIndex == -1) {
+            categoryIndex = this.categoriesRaw.length;
             this.categoriesRaw.push({
                 category,
                 items: createSortedList(this.menuChangeEvents),
@@ -147,10 +165,15 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
 
     /**
      * Removes the given item from the menu if present
+     * @param oldCategory The category that item was in (null to use the items' latest category)
      * @param item The item to remove
      */
-    public removeItem(item: IPrioritizedMenuItem<T> & {id: string | number}): void {
-        const category = this.categoryConfig.getCategory(item);
+    public removeItem(
+        item: IPrioritizedMenuItem<T> & {id: string | number},
+        oldCategory: ICategory | null = null
+    ): void {
+        const category =
+            oldCategory != null ? oldCategory : this.categoryConfig.getCategory(item);
         const categoryIndex = this.categoriesRaw.findIndex(
             ({category: c}) => c == category
         );

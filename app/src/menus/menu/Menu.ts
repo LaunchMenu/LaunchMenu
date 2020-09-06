@@ -11,6 +11,8 @@ import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeActi
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 import {AbstractMenu} from "./AbstractMenu";
 import {IIOContext} from "../../context/_types/IIOContext";
+import {Observer} from "../../utils/modelReact/Observer";
+import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
 
 /**
  * A menu class to control menu items and their state,
@@ -108,11 +110,23 @@ export class Menu extends AbstractMenu {
         destination: IMenuCategoryData[],
         index: number = Infinity
     ): boolean {
-        const category = this.categoryConfig.getCategory(item);
-        const categoryIndex = destination.findIndex(({category: c}) => c == category);
+        // Create a hook to move the item when the category is updated
+        const categoryChangeCallback = createCallbackHook(() => {
+            const inMenu = destination[categoryIndex]?.items.includes(item);
+            const categoryChanged = category != this.categoryConfig.getCategory(item);
+            if (inMenu && categoryChanged) {
+                this.removeItems([item], category);
+                this.addItem(item);
+            } else this.categoryConfig.getCategory(item, categoryChangeCallback);
+        });
+
+        // Obtain the category
+        const category = this.categoryConfig.getCategory(item, categoryChangeCallback);
+        let categoryIndex = destination.findIndex(({category: c}) => c == category);
 
         // Add the item to a new or existing category
         if (categoryIndex == -1) {
+            categoryIndex = destination.length;
             destination.push({category, items: [item]});
         } else {
             const {items} = destination[categoryIndex];
@@ -134,14 +148,19 @@ export class Menu extends AbstractMenu {
     /**
      * Removes all the items from the given array at once (slightly more efficient than removing one by one)
      * @param item The item to remove
+     * @param oldCategory The category that item was in (null to use the items' latest category)
      * @returns Whether any item was in the menu (and now removed)
      */
-    public removeItems(items: IMenuItem[]): boolean {
+    public removeItems(
+        items: IMenuItem[],
+        oldCategory: ICategory | null = null
+    ): boolean {
         let removed = [] as IMenuItem[];
         const selectedItems = this.selected.get(null);
 
         items.forEach(item => {
-            const category = this.categoryConfig.getCategory(item);
+            const category =
+                oldCategory != null ? oldCategory : this.categoryConfig.getCategory(item);
             const categoryIndex = this.rawCategories.findIndex(
                 ({category: c}) => c == category
             );

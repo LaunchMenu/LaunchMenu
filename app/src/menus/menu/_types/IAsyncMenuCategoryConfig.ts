@@ -1,6 +1,7 @@
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {IPrioritizedMenuItem} from "./IPrioritizedMenuItem";
 import {SortedList} from "../../../utils/SortedList";
+import {IDataHook} from "model-react";
 
 /**
  * Configuration for the categories in a prioritized menu
@@ -9,9 +10,13 @@ export type IPrioritizedMenuCategoryConfig<T> = {
     /**
      * Retrieves a category menu item
      * @param item The item and priority to obtain the category of
+     * @param hook The hook to subscribe to changes
      * @returns The category to group this item under, if any
      */
-    readonly getCategory?: (item: IPrioritizedMenuItem<T>) => ICategory | undefined;
+    readonly getCategory?: (
+        item: IPrioritizedMenuItem<T>,
+        hook?: IDataHook
+    ) => ICategory | undefined;
 
     /**
      * Retrieves the order of the categories

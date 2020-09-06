@@ -9,6 +9,8 @@ import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangeAction";
 import {context} from "../../../_tests/context.helper";
+import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
+import {Field} from "model-react";
 
 const createMenu = (items?: IPrioritizedMenuItem[]) => {
     const menu = new PrioritizedMenu(context, {
@@ -132,6 +134,55 @@ describe("PrioritizedMenu", () => {
                     someCategory.item,
                     items[3].item,
                     items[2].item,
+                ]);
+            });
+
+            it("Moves items to their new category when its category changes", async () => {
+                const menu = createMenu();
+                const category = new Field(someCategory);
+
+                const item = createPrioritizedMenuItem({
+                    generateID: true,
+                    actionBindings: h => [
+                        getCategoryAction.createBinding(category.get(h ?? null)),
+                    ],
+                });
+                items.forEach(item => menu.addItem(item));
+                menu.addItem(item);
+                await wait(20);
+                expect(menu.getItems()).toEqual([
+                    items[0].item,
+                    items[1].item,
+                    someCategory2.item,
+                    items[4].item,
+                    someCategory.item,
+                    items[3].item,
+                    items[2].item,
+                    item.item,
+                ]);
+                category.set(someCategory2);
+                await wait();
+                expect(menu.getItems()).toEqual([
+                    items[0].item,
+                    items[1].item,
+                    someCategory2.item,
+                    items[4].item,
+                    item.item,
+                    someCategory.item,
+                    items[3].item,
+                    items[2].item,
+                ]);
+                category.set(someCategory);
+                await wait();
+                expect(menu.getItems()).toEqual([
+                    items[0].item,
+                    items[1].item,
+                    someCategory2.item,
+                    items[4].item,
+                    someCategory.item,
+                    items[3].item,
+                    items[2].item,
+                    item.item,
                 ]);
             });
         });

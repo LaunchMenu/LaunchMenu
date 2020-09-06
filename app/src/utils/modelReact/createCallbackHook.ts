@@ -14,7 +14,7 @@ export function createCallbackHook(
     return {
         call: () => {
             hookListenerRemovers.forEach(remover => remover());
-            // Setup the listener again, and call all our listeners
+            callback();
         },
         registerRemover: (remover: () => void) => {
             hookListenerRemovers.push(remover);
