@@ -3,5 +3,5 @@
  * @param time The time in ms to wait (defaults to 200)
  * @returns A promise resolving after the specified amount of time
  */
-export const wait = (time: number = 200) =>
-    new Promise<void>(res => setTimeout(res, time));
+export const wait = <T>(time: number = 200, value?: T) =>
+    new Promise<T>(res => setTimeout(() => res(value), time));

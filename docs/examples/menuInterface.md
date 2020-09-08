@@ -2,7 +2,7 @@
 
 Real world example of using menu actions
 
-Disclaimer: Example slightly outdated
+Disclaimer: code is outdated
 
 ```tsx
 // Create an action
