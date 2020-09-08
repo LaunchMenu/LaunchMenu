@@ -350,17 +350,12 @@ export class MultiSelectField<T> extends TextField {
 
         // Create a search binding that returns this item no matter what the query
         const id = uuid();
-        const searchBinding = searchAction.createBinding({
-            search: async (query, cb) => {
-                if (this.customItem)
-                    cb({
-                        item: this.customItem,
-                        id,
-                        priority: 0.1,
-                        getUpdatedPriority: async () => 0.1,
-                    });
+        const searchBinding = searchAction.createBinding([
+            {
+                id,
+                search: async query => ({item: {item, id, priority: 0.1}}),
             },
-        });
+        ]);
 
         // Return the item together with the new search action binding
         return {

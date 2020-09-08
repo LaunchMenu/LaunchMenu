@@ -32,7 +32,7 @@ export const getCategoryAction = new Action(
  * @returns The first category the item is in, if any
  */
 export function getMenuCategory(
-    item: IMenuItem | IPrioritizedMenuItem<any>,
+    item: IMenuItem | IPrioritizedMenuItem,
     hook?: IDataHook
 ): ICategory | undefined {
     if ("priority" in item) item = item.item;

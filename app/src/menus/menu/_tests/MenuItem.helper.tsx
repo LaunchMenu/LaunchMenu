@@ -1,5 +1,5 @@
 import React from "react";
-
+import {v4 as uuid} from "uuid";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
@@ -39,26 +39,26 @@ export function createSearchableMenuItem({
     searchDelay?: number;
     searchPriorities?: {[search: string]: number};
 }): IMenuItem {
-    const id = Math.floor(Math.random() * 1e6) + "";
-    const item = {
+    const id = uuid();
+    const item: IMenuItem = {
         view: () => <div>hoi</div>,
         actionBindings: [
             ...(category ? [getCategoryAction.createBinding(category)] : []),
             ...(noSelect ? [] : [executeAction.createBinding({execute: () => {}})]),
-            ...[
-                searchAction.createBinding({
-                    search: async ({search}, cb) => {
+            searchAction.createBinding([
+                {
+                    id,
+                    search: async ({search}, hook) => {
                         if (searchDelay) await wait(searchDelay);
-                        await cb({
-                            item,
-                            priority: searchPriorities[search] || 0,
-                            id,
-                            getUpdatedPriority: async ({search}) =>
-                                searchPriorities[search] || 0,
-                        });
+                        const priority = searchPriorities[search] || 0;
+                        if (priority > 0)
+                            return {
+                                item: {priority, id, item},
+                            };
+                        return {};
                     },
-                }),
-            ],
+                },
+            ]),
         ],
     };
     return item;

@@ -40,11 +40,10 @@ export function createFolderMenuItem<T extends {[key: string]: IMenuItem} | IMen
     searchChildren = children,
 }: IFolderMenuItemData<T>): IMenuItem & {children: T} {
     const generatedBindings: IActionBinding<any>[] = [
-        // TODO: make the action actually update if any of these change
         createSimpleSearchBinding({
-            name: get(name),
-            description: get(description),
-            tags: get(tags),
+            name,
+            description,
+            tags,
             children: Object.values(searchChildren),
         }),
     ];

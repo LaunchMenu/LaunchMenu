@@ -50,12 +50,7 @@ export function createFieldMenuItem<T>({
     } = data(field);
 
     let generatedBindings: IActionBinding<any>[] = [
-        // TODO: make the action actually update if any of these change
-        createSimpleSearchBinding({
-            name: get(name),
-            description: get(description),
-            tags: get(tags),
-        }),
+        createSimpleSearchBinding({name, description, tags}),
     ];
     if (onExecute)
         generatedBindings.push(executeAction.createBinding({execute: onExecute}));

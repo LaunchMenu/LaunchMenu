@@ -14,12 +14,9 @@ import {createSimpleSearchBinding} from "../actions/types/search/simpleSearch/si
 import {SimpleSearchHighlight} from "../../components/items/SimpleSearchHighlight";
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
-import {IDataHook} from "model-react";
 import {adaptBindings} from "./adjustBindings";
 import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings";
-
-const get = <T extends unknown>(f: T, h?: IDataHook) =>
-    f instanceof Function ? f(h) : f;
+import {getHooked} from "../../utils/subscribables/getHooked";
 
 /**
  * Creates a new standard menu item
@@ -39,12 +36,7 @@ export function createStandardMenuItem({
     actionBindings,
 }: IStandardMenuItemData): IMenuItem {
     const generatedBindings: IActionBinding<any>[] = [
-        // TODO: make the action actually update if any of these change
-        createSimpleSearchBinding({
-            name: get(name),
-            description: get(description),
-            tags: get(tags),
-        }),
+        createSimpleSearchBinding({name, description, tags}),
     ];
     if (onExecute)
         generatedBindings.push(executeAction.createBinding({execute: onExecute}));
@@ -65,8 +57,8 @@ export function createStandardMenuItem({
     return {
         view: memo(({highlight, ...props}) => {
             const [h] = useDataHook();
-            const ico = get(icon, h);
-            const desc = get(description, h);
+            const ico = getHooked(icon, h);
+            const desc = getHooked(description, h);
             return (
                 <MenuItemFrame {...props}>
                     <MenuItemLayout
@@ -77,7 +69,7 @@ export function createStandardMenuItem({
                         content={
                             <>
                                 <SimpleSearchHighlight query={highlight}>
-                                    {get(name, h)}
+                                    {getHooked(name, h)}
                                 </SimpleSearchHighlight>
                                 {desc && (
                                     <Truncated title={desc}>

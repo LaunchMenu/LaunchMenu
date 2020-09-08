@@ -1,4 +1,4 @@
-import {IDataHook, Field, isDataLoadRequest} from "model-react";
+import {IDataHook, Field, isDataLoadRequest, isLoading} from "model-react";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {TRequired} from "../../_types/TRequired";
 import {IPrioritizedMenuCategoryConfig} from "./_types/IAsyncMenuCategoryConfig";
@@ -9,8 +9,6 @@ import {getMenuCategory} from "../actions/types/category/getCategoryAction";
 import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
 import {isItemSelectable} from "../items/isItemSelectable";
-import {IGenerator} from "../../utils/generator/_types/IGenerator";
-import {GeneratorStreamExtractor} from "../../utils/generator/GeneratorStreamExtractor";
 import {sortPrioritizedCategories} from "./SortPrioritizedCategories";
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
@@ -18,20 +16,20 @@ import {AbstractMenu} from "./AbstractMenu";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
 
-type CategoryData<T> = {
-    items: SortedList<IPrioritizedMenuItem<T>>;
+type CategoryData = {
+    items: SortedList<IPrioritizedMenuItem>;
     category: ICategory | undefined;
     batch?: {
-        add: IPrioritizedMenuItem<T>[];
-        remove: IPrioritizedMenuItem<T>[];
+        add: IPrioritizedMenuItem[];
+        remove: IPrioritizedMenuItem[];
         clear?: boolean;
     };
 };
 
-const createSortedList = <T>(changeList: {
+const createSortedList = (changeList: {
     added: IMenuItem[];
     removed: IMenuItem[];
-}): SortedList<IPrioritizedMenuItem<T>> =>
+}): SortedList<IPrioritizedMenuItem> =>
     new SortedList({
         condition: (a, b) => a.priority >= b.priority,
         onAdd: ({item}) => changeList.added.push(item),
@@ -41,12 +39,11 @@ const createSortedList = <T>(changeList: {
 /**
  * A menu class to control menu items and their state
  */
-export class PrioritizedMenu<T = void> extends AbstractMenu {
-    protected categoryConfig: TRequired<IPrioritizedMenuCategoryConfig<T>>;
+export class PrioritizedMenu extends AbstractMenu {
+    protected categoryConfig: TRequired<IPrioritizedMenuCategoryConfig>;
 
     // Batching tracking
     protected batchTimeout: NodeJS.Timeout | undefined;
-    protected generators: GeneratorStreamExtractor<IPrioritizedMenuItem<T>>[] = [];
     protected menuChangeEvents = {added: [] as IMenuItem[], removed: [] as IMenuItem[]};
 
     // Tracking menu items
@@ -55,7 +52,7 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
             items: createSortedList(this.menuChangeEvents),
             category: undefined,
         },
-    ] as CategoryData<T>[];
+    ] as CategoryData[];
     protected categories = new Field([] as IMenuCategoryData[]);
     protected items = new Field([] as IMenuItem[]); // Flat structure containing items (as IMenuItems) and categories headers (as IMenuItems)
 
@@ -66,7 +63,7 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
      */
     public constructor(
         context: IIOContext,
-        categoryConfig?: IPrioritizedMenuCategoryConfig<T>
+        categoryConfig?: IPrioritizedMenuCategoryConfig
     ) {
         super(context);
         // Create the category config
@@ -75,6 +72,7 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
             sortCategories: categoryConfig?.sortCategories || sortPrioritizedCategories,
             maxCategoryItemCount: categoryConfig?.maxCategoryItemCount || Infinity,
             batchInterval: categoryConfig?.batchInterval || 100,
+            isLoading: categoryConfig?.isLoading || new Field(false),
         };
     }
 
@@ -83,7 +81,7 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
      * Adds an item to the menu
      * @param item The item to be added
      */
-    public addItem(item: IPrioritizedMenuItem<T>): void {
+    public addItem(item: IPrioritizedMenuItem): void {
         if (item.priority == 0) return;
 
         // Create a hook to move the item when the category is updated
@@ -93,7 +91,7 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
             // In addition, updating the category is only supported if the item provided an ID
             if (inMenu && item.id && categoryChanged) {
                 this.removeItem(
-                    item as IPrioritizedMenuItem<T> & {id: number | string},
+                    item as IPrioritizedMenuItem & {id: number | string},
                     category
                 );
                 this.addItem(item);
@@ -134,42 +132,12 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
     }
 
     /**
-     * Adds all items from a generator to the the menu
-     * @param generator The generator to get the items from
-     * @returns The generator extractor, in order to pause execution
-     */
-    public addItems(
-        generator: IGenerator<IPrioritizedMenuItem<T>>
-    ): GeneratorStreamExtractor<IPrioritizedMenuItem<T>> {
-        const extractor = new GeneratorStreamExtractor(generator, item =>
-            this.addItem(item)
-        );
-
-        // Adds the extractor to the generator list
-        this.generators.push(extractor);
-        extractor.start().then(() => {
-            const index = this.generators.indexOf(extractor);
-            if (index != -1) {
-                this.generators.splice(index, 1);
-                // Force an update if we are no longer loading
-                if (this.generators.length == 0) this.items.set(this.items.get(null));
-            }
-        });
-
-        // Force an update if we just started loading items
-        if (this.generators.length == 1) this.items.set(this.items.get(null));
-
-        // Return the extractor
-        return extractor;
-    }
-
-    /**
      * Removes the given item from the menu if present
      * @param oldCategory The category that item was in (null to use the items' latest category)
      * @param item The item to remove
      */
     public removeItem(
-        item: IPrioritizedMenuItem<T> & {id: string | number},
+        item: IPrioritizedMenuItem & {id: string | number},
         oldCategory: ICategory | null = null
     ): void {
         const category =
@@ -192,33 +160,13 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
             const categoryData = this.categoriesRaw[categoryIndex];
             if (!categoryData.batch) categoryData.batch = {add: [], remove: []};
             categoryData.batch.remove.push(item);
+
+            // Make sure the item won't get added afterwards (unless the addItem call is made later)
+            const addIndex = categoryData.batch.add.indexOf(item);
+            if (addIndex != -1) categoryData.batch.add.splice(addIndex, 1);
         }
 
         // Schedule an update if required
-        this.scheduleUpdate();
-    }
-
-    /**
-     * Updates the contents based on the given data, removing any items that don't match
-     * @param data The filter to use
-     * @returns A promise that resolves once updated
-     */
-    public async updateContents(data: T): Promise<void> {
-        const promises = this.categoriesRaw.map(async categoryData => {
-            const items = categoryData.items.get();
-            const newItems = [] as IPrioritizedMenuItem<T>[];
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
-                const newPriority = await item.getUpdatedPriority?.(data);
-                if (newPriority) newItems.push({...(item as any), priority: newPriority});
-            }
-            categoryData.batch = {
-                add: newItems,
-                remove: [],
-                clear: true,
-            };
-        });
-        await Promise.all(promises);
         this.scheduleUpdate();
     }
 
@@ -344,7 +292,6 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
      */
     public destroy(): boolean {
         if (super.destroy()) {
-            this.generators.forEach(generator => generator.stop());
             onSelectAction.get(this.selected.get(null)).onSelect(false, this);
             const cursor = this.cursor.get(null);
             if (cursor) onCursorAction.get([cursor]).onCursor(false, this);
@@ -361,7 +308,7 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
      */
     public getItems(hook: IDataHook = null): IMenuItem[] {
         if (this.isDestroyed(hook)) return [];
-        if (this.generators.length > 0 && hook && "markIsLoading" in hook)
+        if (hook && "markIsLoading" in hook && this.categoryConfig.isLoading.get(hook))
             hook.markIsLoading?.();
         return this.items.get(hook);
     }
@@ -373,7 +320,7 @@ export class PrioritizedMenu<T = void> extends AbstractMenu {
      */
     public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
         if (this.isDestroyed(hook)) return [];
-        if (this.generators.length > 0 && hook && "markIsLoading" in hook)
+        if (hook && "markIsLoading" in hook && this.categoryConfig.isLoading.get(hook))
             hook.markIsLoading?.();
         return this.categories.get(hook);
     }

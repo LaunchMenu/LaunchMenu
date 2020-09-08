@@ -10,7 +10,7 @@ import {ICategory} from "../actions/types/category/_types/ICategory";
 export function sortPrioritizedCategories<T>(
     categories: {
         category: ICategory | undefined;
-        items: SortedList<IPrioritizedMenuItem<T>>;
+        items: SortedList<IPrioritizedMenuItem>;
     }[]
 ): (ICategory | undefined)[] {
     const categoryData = categories
