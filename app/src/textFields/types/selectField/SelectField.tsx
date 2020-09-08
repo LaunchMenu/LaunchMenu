@@ -20,6 +20,8 @@ import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {MenuView} from "../../../components/menu/MenuView";
+import {adaptBindings} from "../../../menus/items/adjustBindings";
+import {isItemSelectable} from "../../../menus/items/isItemSelectable";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -140,8 +142,8 @@ export class SelectField<T> extends InputField<T> {
         const item = this.dConfig.createOptionView(value, disabled);
         const finalItem = {
             view: item.view,
-            actionBindings: [
-                ...item.actionBindings,
+            actionBindings: adaptBindings(item.actionBindings, bindings => [
+                ...bindings,
                 ...(disabled
                     ? []
                     : [
@@ -161,7 +163,7 @@ export class SelectField<T> extends InputField<T> {
                               },
                           }),
                       ]),
-            ],
+            ]),
         };
         return finalItem;
     }
@@ -197,10 +199,10 @@ export class SelectField<T> extends InputField<T> {
      * @returns The item with execute handler
      */
     protected setupCustomView(customView: IMenuItem): IMenuItem {
-        return {
+        const n = {
             view: customView.view,
-            actionBindings: [
-                ...customView.actionBindings,
+            actionBindings: adaptBindings(customView.actionBindings, bindings => [
+                ...bindings,
                 executeAction.createBinding({
                     execute: () => {
                         const value = this.get();
@@ -213,8 +215,10 @@ export class SelectField<T> extends InputField<T> {
                             );
                     },
                 }),
-            ],
+            ]),
         };
+        console.log(n, isItemSelectable(n));
+        return n;
     }
 
     /**
@@ -223,30 +227,29 @@ export class SelectField<T> extends InputField<T> {
      * @returns The view
      */
     protected getCustomView(srcItem?: IMenuItem): IMenuItem {
-        // TODO: create an menu item for custom, which shows the current text
+        // TODO: create a menu item for custom, which shows the current text
         const item = srcItem ?? createStandardMenuItem({name: "Custom"});
-
-        // Retrieve all action bindings except for the search bindings
-        const withoutSearch = item.actionBindings.filter(
-            ({action}) => !(action == searchAction || action.ancestors[0] == searchAction)
-        );
 
         // Create a search binding that returns this item no matter what the query
         const id = uuid();
-        const searchBinding = searchAction.createBinding({
-            search: async (query, cb) => {
-                if (this.customItem)
-                    cb({
-                        item: this.customItem,
-                        id,
-                        priority: 0.1,
-                        getUpdatedPriority: async () => 0.1,
-                    });
+        const searchBinding = searchAction.createBinding([
+            {
+                id,
+                search: async query => ({
+                    // Note it should be this.customItem, not item, since item doesn't contain all data yet
+                    item: this.customItem && {item: this.customItem, id, priority: 0.1},
+                }),
             },
-        });
+        ]);
 
         // Return the item together with the new search action binding
-        return {view: item.view, actionBindings: [...withoutSearch, searchBinding]};
+        return {
+            view: item.view,
+            actionBindings: adaptBindings(item.actionBindings, bindings => [
+                ...bindings.filter(binding => !searchAction.canBeAppliedTo([binding])),
+                searchBinding,
+            ]),
+        };
     }
 
     /**

@@ -173,6 +173,7 @@ const alertHandlerAction = alertAction.createHandler(
                         items.flat(),
                         context,
                         closeAll,
+                        null,
                         binding => binding.tags.includes(mySubMenu)
                     );
 
@@ -210,7 +211,7 @@ const addOneToFieldAction = new Action(
         },
         {name: "Add one to field"}
     ),
-    [mySubMenu]
+    [mySubMenu, "context"]
 );
 addOneToFieldAction.get([]).execute();
 
@@ -228,6 +229,7 @@ const context = new IOContext({
 });
 context.panes.content.push(<Box>I am a cool box yo</Box>);
 
+const bindingsField = new Field([]);
 const menu = new Menu(context);
 menu.addItems([
     createStandardMenuItem({
@@ -253,8 +255,22 @@ menu.addItems([
     }),
     createStandardMenuItem({
         name: "Bob (alert)",
-        onExecute: () => new SetFieldCmd(someField, "Bob"),
-        actionBindings: [alertAction.createBinding({message: "Bob"})],
+        onExecute: () =>
+            new SetFieldCommand(bindingsField, [
+                addOneToFieldAction.createBinding({field: someField}),
+                keyHandlerAction.createBinding({
+                    onKey: e => {
+                        if (e.matches(["ctrl", "1"])) {
+                            alert("trigger");
+                            return true;
+                        }
+                    },
+                }),
+            ]),
+        actionBindings: h => [
+            ...bindingsField.get(h ?? null),
+            alertAction.createBinding({message: "Bob"}),
+        ],
     }),
     createStandardMenuItem({
         name: "Hank (alert)",

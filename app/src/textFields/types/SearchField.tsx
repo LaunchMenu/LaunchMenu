@@ -36,7 +36,7 @@ export class SearchField extends TextField {
         /** The context to open the search menu in */
         context: IIOContext;
         /** Category configuration for the search results */
-        categoryConfig?: IPrioritizedMenuCategoryConfig<IQuery>;
+        categoryConfig?: IPrioritizedMenuCategoryConfig;
         /** Initial search text */
         text?: string;
         /** Initial text selection */

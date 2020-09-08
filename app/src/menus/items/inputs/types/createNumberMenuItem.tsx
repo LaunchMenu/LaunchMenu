@@ -5,6 +5,7 @@ import {Loader} from "model-react";
 import {INumberMenuItemData} from "./_types/INumberMenuItemData";
 import {numberInputExecuteHandler} from "../handlers/number/numberInputExecuteHandler";
 import {numberInputSelectExecuteHandler} from "../handlers/number/numberInputSelectExecuteHandler";
+import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
 
 /**
  * Creates a new string menu item
@@ -31,12 +32,16 @@ export function createNumberMenuItem({
         data: field => ({
             name,
             valueView: <Loader>{h => field.get(h)}</Loader>,
-            tags: ["field", ...tags],
+            tags: adjustSubscribable(tags, (tags, h) => [
+                "field",
+                ...tags,
+                field.get(h).toString(),
+            ]),
             description,
             resetable,
             resetUndoable,
-            actionBindings: [
-                ...actionBindings,
+            actionBindings: adjustSubscribable(actionBindings, bindings => [
+                ...bindings,
                 options
                     ? numberInputSelectExecuteHandler.createBinding({
                           field,
@@ -52,7 +57,7 @@ export function createNumberMenuItem({
                           undoable,
                           ...rest,
                       }),
-            ],
+            ]),
         }),
     });
 }

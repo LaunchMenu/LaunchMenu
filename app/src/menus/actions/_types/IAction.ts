@@ -4,8 +4,14 @@ import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IActionBinding} from "./IActionBinding";
 import {IActionMultiResult} from "./IActionMultiResult";
 import {IMenuItemActionBindings} from "./IMenuItemActionBindings";
+import {IDataHook} from "model-react";
+import {INonFunction} from "../../../_types/INonFunction";
 
-export type IAction<I, O> = {
+/**
+ * An interface of an action that can be used on menu items.
+ * Input data may not be a function, since we can't differentiate between those and subscribable data in bindings
+ */
+export type IAction<I extends INonFunction, O> = {
     /**
      * All ancestor actions
      */
@@ -17,7 +23,11 @@ export type IAction<I, O> = {
      * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
      * @returns The created action handler
      */
-    createHandler<T, O extends AI | IActionMultiResult<AI>, AI extends I>(
+    createHandler<
+        T extends INonFunction,
+        O extends AI | IActionMultiResult<AI>,
+        AI extends I
+    >(
         handlerCore: IActionCore<T, O>,
         defaultTags?: ITagsOverride
     ): IAction<T, O>;
@@ -28,21 +38,26 @@ export type IAction<I, O> = {
      * @param tags The tags for the binding, inherited from the action if left out
      * @returns The binding
      */
-    createBinding(data: I, tags?: ITagsOverride): IActionBinding<I>;
+    createBinding(
+        data: I | ((hook: IDataHook) => I),
+        tags?: ITagsOverride
+    ): IActionBinding<I>;
 
     /**
      * Checks whether the item contains a direct or indirect binding for this action
      * @param item The item to check
+     * @param hook The data hook to subscribe to changes
      * @returns Whether it contains a binding
      */
-    canBeAppliedTo(item: IMenuItem | IActionBinding<any>[]): boolean;
+    canBeAppliedTo(item: IMenuItem | IActionBinding<any>[], hook?: IDataHook): boolean;
 
     /**
      * Retrieves the action data for a set of items, in order to be executed
      * @param items The items to get the data for
+     * @param hook The data hook to subscribe to changes
      * @returns The action execution functions
      */
-    get(items: (IMenuItem | IMenuItemActionBindings)[]): O;
+    get(items: (IMenuItem | IMenuItemActionBindings)[], hook?: IDataHook): O;
 
     /**
      * Retrieves the action data for the given input data

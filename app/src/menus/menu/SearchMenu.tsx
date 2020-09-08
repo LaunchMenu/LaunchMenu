@@ -1,7 +1,7 @@
 import React from "react";
 import {PrioritizedMenu} from "./PrioritizedMenu";
 import {IMenuItem} from "../items/_types/IMenuItem";
-import {Field, IDataHook} from "model-react";
+import {Field, IDataHook, isLoading} from "model-react";
 import {searchAction} from "../actions/types/search/searchAction";
 import {GeneratorStreamExtractor} from "../../utils/generator/GeneratorStreamExtractor";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
@@ -11,17 +11,25 @@ import {IIOContext} from "../../context/_types/IIOContext";
 import {IPrioritizedMenuCategoryConfig} from "./_types/IAsyncMenuCategoryConfig";
 import {InstantOpenTransition} from "../../components/stacks/transitions/open/InstantOpenTransition";
 import {InstantCloseTransition} from "../../components/stacks/transitions/close/InstantCloseTransition";
+import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
+import {IUUID} from "../../_types/IUUID";
+import {IMenuSearchable} from "../actions/types/search/_types/IMenuSearchable";
 
 /**
  * A menu that can be used to perform a search on a collection of items
  */
-export class SearchMenu extends PrioritizedMenu<IQuery> {
-    // The search data
-    protected search = new Field(null as {search: string} | null);
-    protected searchGenerators: {
-        item: IMenuItem;
-        generator: GeneratorStreamExtractor<IPrioritizedMenuItem<IQuery>> | undefined;
-    }[] = [];
+export class SearchMenu extends PrioritizedMenu {
+    protected searchItems = new Field([] as IMenuItem[]);
+    protected executer = new SearchExecuter({
+        searchable: {
+            id: "root",
+            search: async (query: IQuery, hook: IDataHook) => ({
+                children: searchAction.get(this.searchItems.get(hook)),
+            }),
+        },
+        onAdd: (item: IPrioritizedMenuItem) => this.addItem(item),
+        onRemove: (item: IPrioritizedMenuItem & {id: IUUID}) => this.removeItem(item),
+    });
 
     /**
      * Creates a new search menu
@@ -30,9 +38,19 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
      */
     public constructor(
         context: IIOContext,
-        categoryConfig?: IPrioritizedMenuCategoryConfig<IQuery>
+        categoryConfig?: IPrioritizedMenuCategoryConfig
     ) {
-        super(context, categoryConfig);
+        super(context, {
+            ...categoryConfig,
+            // Forward the loading state from the search executer
+            isLoading: {
+                get: hook => {
+                    const isSearching = this.executer.isSearching(hook);
+                    const isLoading = categoryConfig?.isLoading?.get(hook) ?? false;
+                    return isSearching || isLoading;
+                },
+            },
+        });
     }
 
     /**
@@ -49,37 +67,15 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
     /**
      * Sets the search query
      * @param search The text to search with
-     * @returns A promise that resolves once the new search has been started
+     * @returns A promise that resolves once the new search has finished
      */
     public async setSearch(search: string): Promise<void> {
         const query = {search};
 
-        // Dispose of the old generators
-        this.searchGenerators.forEach(data => {
-            // Find and remove the generator
-            const generatorIndex = data.generator
-                ? this.generators.indexOf(data.generator)
-                : -1;
-            if (generatorIndex) this.generators.splice(generatorIndex, 1);
+        // Make a snappy first result
+        setTimeout(() => this.flushBatch(), 10);
 
-            // Stop the generator
-            data.generator?.stop();
-            data.generator = undefined;
-        });
-
-        // Filter items that no longer match
-        await this.updateContents(query);
-
-        // Update the search text
-        this.search.set(query);
-
-        // Start the new searches
-        this.searchGenerators.forEach(data => {
-            data.generator = this.performSearch(data.item, query);
-        });
-
-        // Increase the first batch speed
-        this.flushBatch();
+        await this.executer.setQuery(query);
     }
 
     /**
@@ -87,17 +83,7 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
      * @param items The items
      */
     public setSearchItems(items: IMenuItem[]): void {
-        // Detect what items were added and removed
-        const addedItems = items.filter(
-            it => !this.searchGenerators.find(({item}) => item == it)
-        );
-        const removedItems = this.searchGenerators.filter(
-            ({item}) => !items.includes(item)
-        );
-
-        // Add the new items and remove the old
-        removedItems.forEach(({item}) => this.removeSearchItem(item));
-        addedItems.forEach(item => this.addSearchItem(item));
+        this.searchItems.set(items);
     }
 
     /**
@@ -105,38 +91,7 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
      * @param item The item to add
      */
     public addSearchItem(item: IMenuItem): void {
-        const search = this.search.get(null);
-        if (search != null) {
-            const generator = this.performSearch(item, search);
-            this.searchGenerators.push({
-                item,
-                generator,
-            });
-        } else {
-            this.searchGenerators.push({
-                item,
-                generator: undefined,
-            });
-        }
-    }
-
-    /**
-     * Performs an item search in a single item
-     * @param item The item to search in
-     * @param query The search text
-     * @returns The generator that performs the search
-     */
-    protected performSearch(
-        item: IMenuItem,
-        query: {search: string}
-    ): GeneratorStreamExtractor<IPrioritizedMenuItem<IQuery>> {
-        return this.addItems(cb =>
-            searchAction
-                .get([item])
-                .search(query, searchItem =>
-                    cb({...searchItem, source: item} as IPrioritizedMenuItem<IQuery>)
-                )
-        );
+        this.searchItems.set([...this.searchItems.get(null), item]);
     }
 
     /**
@@ -144,23 +99,7 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
      * @param item The item to remove
      */
     public removeSearchItem(item: IMenuItem): void {
-        const index = this.searchGenerators.findIndex(({item: fItem}) => fItem == item);
-        if (index != -1) {
-            const data = this.searchGenerators[index];
-            this.searchGenerators.splice(index, 1);
-
-            // Stop data retrieval
-            data.generator?.stop();
-
-            // Remove all the items from this item
-            this.categoriesRaw.forEach(({items}) => {
-                (items.get() as (IPrioritizedMenuItem<IQuery> & {
-                    source?: IMenuItem;
-                })[]).forEach(data => {
-                    if (data?.source == item) this.removeItem(data);
-                });
-            });
-        }
+        this.searchItems.set(this.searchItems.get(null).filter(i => i != item));
     }
 
     // Data retrieval
@@ -170,7 +109,7 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
      * @returns The search text
      */
     public getSearch(hook: IDataHook = null): string | null {
-        return this.search.get(hook)?.search || null;
+        return this.executer.getQuery(hook)?.search || null;
     }
 
     /**
@@ -179,6 +118,6 @@ export class SearchMenu extends PrioritizedMenu<IQuery> {
      * @returns The highlight data
      */
     public getHighlight(hook: IDataHook = null): IQuery | null {
-        return this.search.get(hook);
+        return this.executer.getQuery(hook) || null;
     }
 }

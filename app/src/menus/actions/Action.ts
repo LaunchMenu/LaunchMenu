@@ -7,6 +7,9 @@ import {IActionParent} from "./_types/IActionParent";
 import {IActionMultiResult} from "./_types/IActionMultiResult";
 import {IMenuItemActionBindings} from "./_types/IMenuItemActionBindings";
 import {IIndexedMenuItem} from "./_types/IIndexedMenuItem";
+import {IDataHook} from "model-react";
+import {INonFunction} from "../../_types/INonFunction";
+import {getHooked} from "../../utils/subscribables/getHooked";
 
 /** A symbol that can act as a key in a core return object to pass multiple results */
 export const results = Symbol("Multiple results");
@@ -17,15 +20,17 @@ export const sources = Symbol("Multiple result sources");
 /** The action data type used by the action getter */
 export type IActionData = {
     action: IAction<any, any>;
-    data: any[];
+    data: INonFunction[];
     /** Items should be sorted with an increasing index, where teh smallest index of the inner list is used for sorting the outer list */
     items: IIndexedMenuItem[][];
 };
 
 /**
- * A class to get action executers of a certain type for a list of items
+ * A class to get action executers of a certain type for a list of items.
+ * Input and output data may not be a function, since we can't differentiate between binding data being functions, or being subscribable data.
  */
-export class Action<I, O> implements IAction<I, O> {
+export class Action<I extends INonFunction, O extends INonFunction>
+    implements IAction<I, O> {
     protected core: IActionCore<I, O>;
     protected defaultTags: any[];
     protected name: string; // Present for debugging purposes, since no other data easily identifies it
@@ -68,7 +73,11 @@ export class Action<I, O> implements IAction<I, O> {
      * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
      * @returns The created action handler
      */
-    public createHandler<T, P extends I | IActionMultiResult<AI>, AI extends I>(
+    public createHandler<
+        T extends INonFunction,
+        P extends I | IActionMultiResult<AI>,
+        AI extends I
+    >(
         handlerCore: IActionCore<T, P>,
         defaultTags: ITagsOverride = tags => tags
     ): IAction<T, P> {
@@ -85,7 +94,10 @@ export class Action<I, O> implements IAction<I, O> {
      * @param tags The tags for the binding, inherited from the action if left out
      * @returns The binding
      */
-    public createBinding(data: I, tags: ITagsOverride = tags => tags): IActionBinding<I> {
+    public createBinding(
+        data: I | ((hook: IDataHook) => I),
+        tags: ITagsOverride = tags => tags
+    ): IActionBinding<I> {
         return {
             action: this,
             data,
@@ -96,10 +108,14 @@ export class Action<I, O> implements IAction<I, O> {
     /**
      * Checks whether the item contains a direct or indirect binding for this action
      * @param item The item to check
+     * @param hook The data hook to subscribe to changes
      * @returns Whether it contains a binding
      */
-    public canBeAppliedTo(item: IMenuItem | IActionBinding<any>[]): boolean {
-        return !!(item instanceof Array ? item : item.actionBindings).find(
+    public canBeAppliedTo(
+        item: IMenuItem | IActionBinding<any>[],
+        hook?: IDataHook
+    ): boolean {
+        return !!getHooked(item instanceof Array ? item : item.actionBindings, hook).find(
             ({action}) =>
                 action == this || action.ancestors[this.ancestors.length] == this
         );
@@ -126,7 +142,7 @@ export class Action<I, O> implements IAction<I, O> {
     protected addActionInput(
         actionsData: IActionData[],
         action: IAction<any, any>,
-        data: any[],
+        data: INonFunction,
         sourceItems: IIndexedMenuItem[]
     ): void {
         let actionData = actionsData.find(({action: a}) => a == action);
@@ -208,9 +224,10 @@ export class Action<I, O> implements IAction<I, O> {
     /**
      * Retrieves the action data for a set of items, in order to be executed
      * @param items The items to get the data for
+     * @param hook The data hook to subscribe to changes
      * @returns The action execution functions
      */
-    public get(items: (IMenuItem | IMenuItemActionBindings)[]): O;
+    public get(items: (IMenuItem | IMenuItemActionBindings)[], hook?: IDataHook): O;
 
     /**
      * Retrieves the action data for the given input data
@@ -221,16 +238,17 @@ export class Action<I, O> implements IAction<I, O> {
     public get(data: I[], items: IMenuItem[][]): O;
     public get(
         items: (IMenuItem | IMenuItemActionBindings)[] | I[],
-        sourceItems?: IMenuItem[][]
+        sourceItems?: IMenuItem[][] | IDataHook
     ): O {
         // Obtain the input data from all the items
         if (this.isItemArray(items)) {
+            const hook = sourceItems instanceof Array ? undefined : sourceItems;
             const depth = this.ancestors.length;
             let actionsData = [] as IActionData[];
 
             // Collect all binding and actions
             items.forEach((item, inputIndex) => {
-                item.actionBindings.forEach(binding => {
+                getHooked(item.actionBindings, hook).forEach(binding => {
                     if (
                         binding.action.ancestors[depth] == this ||
                         binding.action == this
@@ -244,7 +262,13 @@ export class Action<I, O> implements IAction<I, O> {
                          The mutable fashion is preferable since it can be unexpected that the 'sourceItems' would be copies of the items, rather than references.
                         */
                         menuItem.inputIndex = inputIndex;
-                        this.addActionInput(actionsData, binding.action, binding.data, [
+
+                        // Obtain the binding data, and add the input
+                        const data =
+                            binding.data instanceof Function
+                                ? binding.data(hook)
+                                : binding.data;
+                        this.addActionInput(actionsData, binding.action, data, [
                             menuItem,
                         ]);
                     }
@@ -273,6 +297,9 @@ export class Action<I, O> implements IAction<I, O> {
                     }
                 }
             }
+
+            // Remove the indexing data
+            items.forEach((item: any) => delete item.inputIndex);
 
             // Retrieve the input data for this action
             const action = actionsData.find(

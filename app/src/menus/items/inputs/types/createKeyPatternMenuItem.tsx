@@ -6,6 +6,7 @@ import {IKeyPatternMenuItemData} from "./_types/IKeyPatternMenuItemData";
 import {KeyPattern} from "../handlers/keyPattern/KeyPattern";
 import {keyInputExecuteHandler} from "../handlers/keyPattern/keyInputExecuteHandler";
 import {advancedKeyInputEditAction} from "../handlers/keyPattern/advancedKeyInputEditAction";
+import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
 
 /**
  * Creates a new key pattern menu item
@@ -28,11 +29,15 @@ export function createKeyPatternMenuItem({
         data: field => ({
             name,
             valueView: <Loader>{h => field.get(h).toString()}</Loader>,
-            tags: ["field", ...tags],
+            tags: adjustSubscribable(tags, (tags, h) => [
+                "field",
+                ...tags,
+                field.get(h).toString(),
+            ]),
             resetable,
             resetUndoable,
-            actionBindings: [
-                ...actionBindings,
+            actionBindings: adjustSubscribable(actionBindings, bindings => [
+                ...bindings,
                 keyInputExecuteHandler.createBinding({
                     field,
                     liveUpdate: liveUpdate as any,
@@ -43,7 +48,7 @@ export function createKeyPatternMenuItem({
                     liveUpdate: liveUpdate as any,
                     undoable,
                 }),
-            ],
+            ]),
             ...rest,
         }),
     });

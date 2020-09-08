@@ -4,6 +4,7 @@ import {IFieldMenuItem} from "../_types/IFieldMenuItem";
 import {IStringMenuItemData} from "./_types/IStringMenuItemData";
 import {inputFieldExecuteHandler} from "../../../../textFields/types/inputField/InputFieldExecuteHandler";
 import {Loader} from "model-react";
+import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
 
 /**
  * Creates a new string menu item
@@ -27,17 +28,21 @@ export function createStringMenuItem({
         data: field => ({
             name,
             valueView: <Loader>{h => field.get(h)}</Loader>,
-            tags: ["field", ...tags],
+            tags: adjustSubscribable(tags, (tags, h) => [
+                "field",
+                ...tags,
+                field.get(h).toString(),
+            ]),
             resetable,
             resetUndoable,
-            actionBindings: [
-                ...actionBindings,
+            actionBindings: adjustSubscribable(actionBindings, bindings => [
+                ...bindings,
                 inputFieldExecuteHandler.createBinding({
                     field,
                     config: {liveUpdate: liveUpdate as any},
                     undoable,
                 }),
-            ],
+            ]),
             ...rest,
         }),
     });

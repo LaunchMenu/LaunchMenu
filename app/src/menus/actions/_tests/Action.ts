@@ -2,8 +2,18 @@ import {Action, results, sources} from "../Action";
 import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
 import {IMenuItem} from "../../items/_types/IMenuItem";
+import {adaptBindings} from "../../items/adjustBindings";
+import {Field, IDataHook} from "model-react";
+import {Observer} from "../../../utils/modelReact/Observer";
+import {wait} from "../../../_tests/wait.helper";
 
 const createItem = (...bindings: IActionBinding<any>[]): IMenuItem => ({
+    view: null as any,
+    actionBindings: bindings,
+});
+const createSubscribableItem = (
+    bindings: (hook: IDataHook) => IActionBinding<any>[]
+): IMenuItem => ({
     view: null as any,
     actionBindings: bindings,
 });
@@ -161,7 +171,12 @@ describe("Action", () => {
             });
             it("Allows for specification of a subset of action bindings", () => {
                 const item = createItem(action.createBinding(2), action.createBinding(4));
-                const sub = {item, actionBindings: item.actionBindings.slice(1)};
+                const sub = {
+                    item,
+                    actionBindings: adaptBindings(item.actionBindings, bindings =>
+                        bindings.slice(1)
+                    ),
+                };
                 expect(action.get([item])).toBe(6);
                 expect(action.get([sub])).toBe(4);
             });
@@ -296,6 +311,99 @@ describe("Action", () => {
                             action.get(createItems(stringLengthHandler))
                         ).toThrow();
                     });
+                });
+            });
+            describe("Can be subscribed to", () => {
+                it("Correctly reflects updates to the whole binding lists", async () => {
+                    const bindings = new Field([action.createBinding(4)]);
+                    let value = 0;
+                    new Observer(h =>
+                        action.get(
+                            [
+                                createItem(action.createBinding(2)),
+                                createSubscribableItem(h => bindings.get(h)),
+                            ],
+                            h
+                        )
+                    ).listen(v => {
+                        value = v;
+                    }, true);
+
+                    expect(value).toEqual(6);
+
+                    bindings.set([]);
+                    await wait();
+                    expect(value).toEqual(2);
+
+                    bindings.set([action.createBinding(8)]);
+                    await wait();
+                    expect(value).toEqual(10);
+
+                    bindings.set([action.createBinding(3), action.createBinding(4)]);
+                    await wait();
+                    expect(value).toEqual(9);
+                });
+                it("Correctly reflects updates for a specific binding", async () => {
+                    const field = new Field(4);
+                    let value = 0;
+                    new Observer(h =>
+                        action.get(
+                            [
+                                createItem(action.createBinding(2)),
+                                createItem(action.createBinding(h => field.get(h))),
+                            ],
+                            h
+                        )
+                    ).listen(v => {
+                        value = v;
+                    }, true);
+
+                    expect(value).toEqual(6);
+
+                    field.set(0);
+                    await wait();
+                    expect(value).toEqual(2);
+
+                    field.set(8);
+                    await wait();
+                    expect(value).toEqual(10);
+                });
+                it("Doesn't recompute when data of unrelated bindings change", async () => {
+                    const action2 = new Action((inputs: number[]) => {
+                        return inputs.reduce((cur, data) => cur + data, 0);
+                    });
+
+                    const field = new Field(4);
+                    let callCount = 0;
+                    let value = 0;
+                    new Observer(h =>
+                        action.get(
+                            [
+                                createItem(action.createBinding(2)),
+                                createItem(
+                                    action.createBinding(4),
+                                    action2.createBinding(h => field.get(h))
+                                ),
+                            ],
+                            h
+                        )
+                    ).listen(v => {
+                        value = v;
+                        callCount++;
+                    }, true);
+
+                    expect(value).toEqual(6);
+                    expect(callCount).toEqual(1);
+
+                    field.set(0);
+                    await wait();
+                    expect(value).toEqual(6);
+                    expect(callCount).toEqual(1);
+
+                    field.set(8);
+                    await wait();
+                    expect(value).toEqual(6);
+                    expect(callCount).toEqual(1);
                 });
             });
         });

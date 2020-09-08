@@ -6,8 +6,9 @@ describe("Observer", () => {
     describe("new Observer", () => {
         it("Properly creates an observer", () => {
             new Observer(() => 2);
-            new Observer(() => 2, 2);
-            new Observer(() => 2, 2, false);
+            new Observer(() => 2, {debounce: 2});
+            new Observer(() => 2, {refreshData: false});
+            new Observer(() => 2, {init: true});
         });
         it("Doesn't call the getter", async () => {
             let called = false;
@@ -141,7 +142,7 @@ describe("Observer", () => {
 
             // -1ms debounce (synchronous)
             const listener2 = jest.fn();
-            new Observer(field, -1).listen(listener2);
+            new Observer(field, {debounce: -1}).listen(listener2);
             expect(listener2.mock.calls.length).toBe(0);
             field.set(1);
             field.set(2);
@@ -160,7 +161,7 @@ describe("Observer", () => {
 
             // Default debounce, 10ms
             const listener3 = jest.fn();
-            new Observer(field, 10).listen(listener3);
+            new Observer(field, {debounce: 10}).listen(listener3);
             expect(listener3.mock.calls.length).toBe(0);
             field.set(1);
             field.set(2);
@@ -211,10 +212,26 @@ describe("Observer", () => {
                 return 2;
             }, 0);
             const listener2 = jest.fn();
-            new Observer(loader2, 0, false).listen(listener2);
+            new Observer(loader2, {debounce: 0, refreshData: false}).listen(listener2);
             expect(listener2.mock.calls.length).toEqual(0);
             await wait(20);
             expect(listener2.mock.calls.length).toEqual(0);
+        });
+        it("Considers the init data variable", async () => {
+            let called = false;
+            new Observer(() => {
+                called = true;
+            });
+            let called2 = false;
+            new Observer(
+                () => {
+                    called2 = true;
+                },
+                {init: true}
+            );
+            await wait();
+            expect(called).toBeFalsy();
+            expect(called2).toBeTruthy();
         });
         it("Correctly provides the meta data", async () => {
             // Correctly specifies the loading state

@@ -20,6 +20,9 @@ const getPosFrac = (event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
     return dx / rect.width;
 };
 
+/**
+ * A component to highlight a single character
+ */
 export const SyntaxHighlighterChar: LFC<
     {
         char: string;
@@ -64,6 +67,9 @@ const getFramePosFrac = (event: React.MouseEvent<HTMLSpanElement, MouseEvent>) =
     return 0.5;
 };
 
+/**
+ * A component to highlight a single node
+ */
 export const SyntaxHighlighterNode: LFC<
     {
         node: IHighlightNode;

@@ -1,3 +1,4 @@
+import {IDataHook} from "model-react";
 import {IMenuItem} from "../../../../../items/_types/IMenuItem";
 
 /**
@@ -5,11 +6,11 @@ import {IMenuItem} from "../../../../../items/_types/IMenuItem";
  */
 export type ISimpleSearchData = {
     /** The name of the item */
-    name?: string;
+    name?: string | ((hook: IDataHook) => string);
     /** The description of the item */
-    description?: string;
+    description?: string | ((hook: IDataHook) => string);
     /** The tags of the item */
-    tags?: string[];
+    tags?: string[] | ((hook: IDataHook) => string[]);
     /** Any number of children that can be matched */
     children?: IMenuItem[];
 

@@ -1,8 +1,8 @@
 import {SearchMenu} from "../SearchMenu";
 import {createSearchableMenuItem} from "./MenuItem.helper";
 import {wait} from "../../../_tests/wait.helper";
-import {Observer} from "../../../utils/modelReact/Observer";
 import {context} from "../../../_tests/context.helper";
+import {Observer} from "../../../utils/modelReact/Observer";
 
 describe("SearchMenu", () => {
     describe("SearchMenu.addSearchItem -> SearchMenu.setSearch", () => {
@@ -29,55 +29,23 @@ describe("SearchMenu", () => {
             menu.flushBatch();
             expect(menu.getItems()).toEqual([item2, item]);
         });
-        describe("Filtering old items", () => {
-            it("Properly filters old items if search and update occur in the same batch", async () => {
-                const item = createSearchableMenuItem({
-                    searchPriorities: {something: 1, oranges: 1},
-                });
-                menu.addSearchItem(item);
-                const item2 = createSearchableMenuItem({
-                    searchPriorities: {something: 2},
-                });
-                menu.addSearchItem(item2);
-
-                await menu.setSearch("something");
-                menu.flushBatch();
-                expect(menu.getItems()).toEqual([item2, item]);
-
-                await menu.setSearch("oranges");
-                menu.flushBatch();
-                expect(menu.getItems()).toEqual([item]);
+        it("Properly filters old items", async () => {
+            const item = createSearchableMenuItem({
+                searchPriorities: {something: 1, oranges: 1},
             });
-            it("Properly filters old items if search and update occur in different batches", async () => {
-                const item = createSearchableMenuItem({
-                    searchDelay: 20,
-                    searchPriorities: {something: 1, oranges: 1},
-                });
-                menu.addSearchItem(item);
-                const item2 = createSearchableMenuItem({
-                    searchDelay: 20,
-                    searchPriorities: {something: 2},
-                });
-                menu.addSearchItem(item2);
-                const item3 = createSearchableMenuItem({
-                    searchDelay: 20,
-                    searchPriorities: {oranges: 2},
-                });
-                menu.addSearchItem(item3);
-
-                await menu.setSearch("something");
-                await wait(30);
-                menu.flushBatch();
-                expect(menu.getItems()).toEqual([item2, item]);
-
-                await menu.setSearch("oranges");
-                menu.flushBatch();
-                expect(menu.getItems()).toEqual([item]);
-
-                await wait(30);
-                menu.flushBatch();
-                expect(menu.getItems()).toEqual([item3, item]);
+            menu.addSearchItem(item);
+            const item2 = createSearchableMenuItem({
+                searchPriorities: {something: 2},
             });
+            menu.addSearchItem(item2);
+
+            await menu.setSearch("something");
+            menu.flushBatch();
+            expect(menu.getItems()).toEqual([item2, item]);
+
+            await menu.setSearch("oranges");
+            menu.flushBatch();
+            expect(menu.getItems()).toEqual([item]);
         });
         it("Properly stops previous searches", async () => {
             const item = createSearchableMenuItem({
@@ -91,15 +59,15 @@ describe("SearchMenu", () => {
             });
             menu.addSearchItem(item2);
 
-            await menu.setSearch("something");
+            menu.setSearch("something");
             await wait(15);
             menu.flushBatch();
             expect(menu.getItems()).toEqual([]);
 
-            await menu.setSearch("stuff");
+            menu.setSearch("stuff");
             await wait(15);
             menu.flushBatch();
-            expect(menu.getItems()).toEqual([]);
+            expect(menu.getItems()).toEqual([item]);
 
             await wait(15);
             menu.flushBatch();
@@ -133,6 +101,7 @@ describe("SearchMenu", () => {
             menu.addSearchItem(item);
             const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
             menu.addSearchItem(item2);
+            await wait(1);
             menu.flushBatch();
             expect(menu.getItems()).toEqual([item2, item]);
         });
@@ -149,6 +118,7 @@ describe("SearchMenu", () => {
             expect(menu.getItems()).toEqual([item2, item]);
 
             menu.removeSearchItem(item);
+            await wait(1);
             menu.flushBatch();
             expect(menu.getItems()).toEqual([item2]);
         });
@@ -167,6 +137,7 @@ describe("SearchMenu", () => {
             expect(menu.getItems()).toEqual([item2, item]);
 
             menu.setSearchItems([item3, item, item2, item4]);
+            await wait(1);
             menu.flushBatch();
             expect(menu.getItems()).toEqual([item3, item4, item2, item]);
         });
@@ -183,6 +154,7 @@ describe("SearchMenu", () => {
             expect(menu.getItems()).toEqual([item3, item4, item2, item]);
 
             menu.setSearchItems([item, item2]);
+            await wait(1);
             menu.flushBatch();
             expect(menu.getItems()).toEqual([item2, item]);
         });

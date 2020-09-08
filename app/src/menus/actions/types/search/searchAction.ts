@@ -1,15 +1,9 @@
 import {Action} from "../../Action";
-import {ISearchable} from "./_types/ISearchable";
+import {IMenuSearchable} from "./_types/IMenuSearchable";
 
 /**
  * The action to search for items within the given items
  */
-export const searchAction = new Action((searchers: ISearchable[]) => {
-    return {
-        search: async (query, callback) => {
-            for (const searcher of searchers) {
-                await searcher.search(query, callback);
-            }
-        },
-    } as ISearchable;
+export const searchAction = new Action((searchers: IMenuSearchable[][]) => {
+    return searchers.flat();
 }, []);

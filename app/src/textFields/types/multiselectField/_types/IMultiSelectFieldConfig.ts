@@ -20,7 +20,7 @@ export type IMultiSelectFieldConfig<T> = {
     /** A check whether two values are equal, used to highlight the currently selected option */
     equals?: (a: T, b: T) => boolean;
     /** Menu category configuration for the search results */
-    categoryConfig?: IPrioritizedMenuCategoryConfig<any>;
+    categoryConfig?: IPrioritizedMenuCategoryConfig;
 } & (
     | {
           /** Whether to allow custom user inputs */

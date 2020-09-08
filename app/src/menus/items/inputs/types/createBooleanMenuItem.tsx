@@ -4,6 +4,7 @@ import {IFieldMenuItem} from "../_types/IFieldMenuItem";
 import {Loader} from "model-react";
 import {IBooleanMenuItemData} from "./_types/IBooleanMenuItemData";
 import {booleanInputExecuteHandler} from "../handlers/boolean/booleanInputExecuteHandler";
+import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
 
 /**
  * Creates a new boolean menu item
@@ -26,17 +27,21 @@ export function createBooleanMenuItem({
         data: field => ({
             name,
             valueView: <Loader>{h => field.get(h).toString()}</Loader>,
-            tags: ["field", ...tags],
+            tags: adjustSubscribable(tags, (tags, h) => [
+                "field",
+                ...tags,
+                field.get(h).toString(),
+            ]),
             resetable,
             resetUndoable,
-            actionBindings: [
-                ...actionBindings,
+            actionBindings: adjustSubscribable(actionBindings, bindings => [
+                ...bindings,
                 booleanInputExecuteHandler.createBinding({
                     field,
                     liveUpdate: liveUpdate as any,
                     undoable,
                 }),
-            ],
+            ]),
             ...rest,
         }),
     });

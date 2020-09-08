@@ -265,7 +265,7 @@ describe("Command", () => {
             const cmd3 = new TestCommand({dependencies: [resource]});
 
             const callback = jest.fn();
-            new Observer(h => cmd2.getState(h), -1).listen(callback, true);
+            new Observer(h => cmd2.getState(h), {debounce: -1}).listen(callback, true);
 
             facility.execute(cmd1);
             facility.execute(cmd2);

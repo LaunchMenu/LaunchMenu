@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react";
+import React, {memo, useRef, useState} from "react";
 import {IStackViewProps} from "./_types/IStackViewProps";
 import {findStackChanges} from "../../stacks/findStackChanges";
 import {IIdentifiedItem} from "../../stacks/_types/IIdentifiedItem";
@@ -100,92 +100,97 @@ function updateChildren(
 /**
  * Visualizes a stack of views
  */
-export const StackView: LFC<IStackViewProps> = ({
-    stack,
-    smartHide = true,
-    ChangeTransitionComp,
-    CloseTransitionComp,
-    OpenTransitionComp,
-}) => {
-    // Retrieve the items
-    const [h] = useDataHook();
-    const items = stack.get(h);
-    const prevItems = useRef<readonly IIdentifiedItem<IViewStackItem>[]>([]);
+export const StackView: LFC<IStackViewProps> = memo(
+    ({
+        stack,
+        smartHide = true,
+        ChangeTransitionComp,
+        CloseTransitionComp,
+        OpenTransitionComp,
+    }) => {
+        // Retrieve the items
+        const [h] = useDataHook();
+        const items = stack.get(h);
+        const prevItems = useRef<readonly IIdentifiedItem<IViewStackItem>[]>([]);
 
-    // Keep track of the children to render
-    const childrenRef = useRef([] as IStackViewChild[]);
+        // Keep track of the children to render
+        const childrenRef = useRef([] as IStackViewChild[]);
 
-    // Update the elements to render when the items array changes
-    if (prevItems.current != items) {
-        updateChildren(items, prevItems.current, childrenRef.current, {
-            Open: OpenTransitionComp ?? defaultTransitions.Open,
-            Change: ChangeTransitionComp ?? defaultTransitions.Change,
-            Close: CloseTransitionComp ?? defaultTransitions.Close,
-        });
-        prevItems.current = items;
+        // Update the elements to render when the items array changes
+        if (prevItems.current != items) {
+            updateChildren(items, prevItems.current, childrenRef.current, {
+                Open: OpenTransitionComp ?? defaultTransitions.Open,
+                Change: ChangeTransitionComp ?? defaultTransitions.Change,
+                Close: CloseTransitionComp ?? defaultTransitions.Close,
+            });
+            prevItems.current = items;
+        }
+
+        // Handle transition changes
+        const [_, forceUpdate] = useState(false);
+        const onClose = (key: string) => {
+            const children = childrenRef.current;
+            const index = children.findIndex(({key: k}) => k == key);
+            if (index != -1) {
+                children.splice(index, 1);
+                forceUpdate(a => !a);
+            }
+        };
+        const onOpen = (key: string) => {
+            const children = childrenRef.current;
+            const child = children.find(({key: k}) => k == key);
+            if (child) {
+                child.opening = false;
+                forceUpdate(a => !a);
+            }
+        };
+        const onChange = (key: string) => {
+            const children = childrenRef.current;
+            const child = children.find(({key: k}) => k == key);
+            if (child) {
+                child.wasTransparent = false;
+                forceUpdate(a => !a);
+            }
+        };
+
+        // Find the first index that needs to be rendered
+        const children = childrenRef.current;
+        let firstOpaqueIndex = smartHide ? children.length : 0;
+        let childTransparent = true;
+        while (childTransparent && --firstOpaqueIndex >= 0) {
+            const child = children[firstOpaqueIndex];
+            childTransparent =
+                child.opening ||
+                child.closing ||
+                child.transparent ||
+                child.wasTransparent;
+        }
+
+        // Render the children
+        return (
+            <>
+                {childrenRef.current.map(({key, id, element, transitions}, index) => {
+                    const props = {
+                        key: id,
+                        onTop: index == childrenRef.current.length,
+                        stack,
+                        index,
+                    };
+                    return (
+                        <Transition
+                            key={key}
+                            hidden={index < firstOpaqueIndex}
+                            onClose={() => onClose(key)}
+                            onChange={() => onChange(key)}
+                            onOpen={() => onOpen(key)}
+                            ChangeTransitionComp={transitions.Change}
+                            CloseTransitionComp={transitions.Close}
+                            OpenTransitionComp={transitions.Open}>
+                            {element && getViewStackItemElement(element, props)}
+                        </Transition>
+                    );
+                })}
+            </>
+        );
     }
-
-    // Handle transition changes
-    const [_, forceUpdate] = useState(false);
-    const onClose = (key: string) => {
-        const children = childrenRef.current;
-        const index = children.findIndex(({key: k}) => k == key);
-        if (index != -1) {
-            children.splice(index, 1);
-            forceUpdate(a => !a);
-        }
-    };
-    const onOpen = (key: string) => {
-        const children = childrenRef.current;
-        const child = children.find(({key: k}) => k == key);
-        if (child) {
-            child.opening = false;
-            forceUpdate(a => !a);
-        }
-    };
-    const onChange = (key: string) => {
-        const children = childrenRef.current;
-        const child = children.find(({key: k}) => k == key);
-        if (child) {
-            child.wasTransparent = false;
-            forceUpdate(a => !a);
-        }
-    };
-
-    // Find the first index that needs to be rendered
-    const children = childrenRef.current;
-    let firstOpaqueIndex = smartHide ? children.length : 0;
-    let childTransparent = true;
-    while (childTransparent && --firstOpaqueIndex >= 0) {
-        const child = children[firstOpaqueIndex];
-        childTransparent =
-            child.opening || child.closing || child.transparent || child.wasTransparent;
-    }
-
-    // Render the children
-    return (
-        <>
-            {childrenRef.current.map(({key, id, element, transitions}, index) => {
-                const props = {
-                    key: id,
-                    onTop: index == childrenRef.current.length,
-                    stack,
-                    index,
-                };
-                return (
-                    <Transition
-                        key={key}
-                        hidden={index < firstOpaqueIndex}
-                        onClose={() => onClose(key)}
-                        onChange={() => onChange(key)}
-                        onOpen={() => onOpen(key)}
-                        ChangeTransitionComp={transitions.Change}
-                        CloseTransitionComp={transitions.Close}
-                        OpenTransitionComp={transitions.Open}>
-                        {element && getViewStackItemElement(element, props)}
-                    </Transition>
-                );
-            })}
-        </>
-    );
-};
+);
