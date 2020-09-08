@@ -73,7 +73,7 @@ export class SearchMenu extends PrioritizedMenu {
         const query = {search};
 
         // Make a snappy first result
-        setTimeout(() => this.flushBatch, 10);
+        setTimeout(() => this.flushBatch(), 10);
 
         await this.executer.setQuery(query);
     }

@@ -1,8 +1,8 @@
-import {useDataHook} from "model-react";
 import {useLayoutEffect, useRef} from "react";
 import {IViewStack} from "../../stacks/viewStack/_types/IViewStack";
 import {IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
 import {IIdentifiedItem} from "../../stacks/_types/IIdentifiedItem";
+import {useDataHook} from "../../utils/modelReact/useDataHook";
 
 /**
  * Checks whether the pane for a viewstack should be visible

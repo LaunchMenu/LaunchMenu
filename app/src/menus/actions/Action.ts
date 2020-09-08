@@ -7,9 +7,9 @@ import {IActionParent} from "./_types/IActionParent";
 import {IActionMultiResult} from "./_types/IActionMultiResult";
 import {IMenuItemActionBindings} from "./_types/IMenuItemActionBindings";
 import {IIndexedMenuItem} from "./_types/IIndexedMenuItem";
-import {getBindings} from "../items/getBindings";
 import {IDataHook} from "model-react";
 import {INonFunction} from "../../_types/INonFunction";
+import {getHooked} from "../../utils/subscribables/getHooked";
 
 /** A symbol that can act as a key in a core return object to pass multiple results */
 export const results = Symbol("Multiple results");
@@ -115,10 +115,7 @@ export class Action<I extends INonFunction, O extends INonFunction>
         item: IMenuItem | IActionBinding<any>[],
         hook?: IDataHook
     ): boolean {
-        return !!getBindings(
-            item instanceof Array ? item : item.actionBindings,
-            hook
-        ).find(
+        return !!getHooked(item instanceof Array ? item : item.actionBindings, hook).find(
             ({action}) =>
                 action == this || action.ancestors[this.ancestors.length] == this
         );
@@ -251,7 +248,7 @@ export class Action<I extends INonFunction, O extends INonFunction>
 
             // Collect all binding and actions
             items.forEach((item, inputIndex) => {
-                getBindings(item.actionBindings, hook).forEach(binding => {
+                getHooked(item.actionBindings, hook).forEach(binding => {
                     if (
                         binding.action.ancestors[depth] == this ||
                         binding.action == this

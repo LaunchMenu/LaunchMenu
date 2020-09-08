@@ -21,6 +21,7 @@ import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {MenuView} from "../../../components/menu/MenuView";
 import {adaptBindings} from "../../../menus/items/adjustBindings";
+import {isItemSelectable} from "../../../menus/items/isItemSelectable";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -198,7 +199,7 @@ export class SelectField<T> extends InputField<T> {
      * @returns The item with execute handler
      */
     protected setupCustomView(customView: IMenuItem): IMenuItem {
-        return {
+        const n = {
             view: customView.view,
             actionBindings: adaptBindings(customView.actionBindings, bindings => [
                 ...bindings,
@@ -216,6 +217,8 @@ export class SelectField<T> extends InputField<T> {
                 }),
             ]),
         };
+        console.log(n, isItemSelectable(n));
+        return n;
     }
 
     /**
@@ -224,7 +227,7 @@ export class SelectField<T> extends InputField<T> {
      * @returns The view
      */
     protected getCustomView(srcItem?: IMenuItem): IMenuItem {
-        // TODO: create an menu item for custom, which shows the current text
+        // TODO: create a menu item for custom, which shows the current text
         const item = srcItem ?? createStandardMenuItem({name: "Custom"});
 
         // Create a search binding that returns this item no matter what the query
@@ -232,7 +235,10 @@ export class SelectField<T> extends InputField<T> {
         const searchBinding = searchAction.createBinding([
             {
                 id,
-                search: async query => ({item: {item, id, priority: 0.1}}),
+                search: async query => ({
+                    // Note it should be this.customItem, not item, since item doesn't contain all data yet
+                    item: this.customItem && {item: this.customItem, id, priority: 0.1},
+                }),
             },
         ]);
 
@@ -240,10 +246,7 @@ export class SelectField<T> extends InputField<T> {
         return {
             view: item.view,
             actionBindings: adaptBindings(item.actionBindings, bindings => [
-                ...bindings.filter(
-                    ({action}) =>
-                        !(action == searchAction || action.ancestors[0] == searchAction)
-                ),
+                ...bindings.filter(binding => !searchAction.canBeAppliedTo([binding])),
                 searchBinding,
             ]),
         };

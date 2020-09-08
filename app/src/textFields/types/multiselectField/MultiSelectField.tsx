@@ -27,6 +27,7 @@ import {createContentError} from "../../../components/content/error/createConten
 import {MenuView} from "../../../components/menu/MenuView";
 import {IViewStackItem} from "../../../stacks/viewStack/_types/IViewStackItem";
 import {adaptBindings} from "../../../menus/items/adjustBindings";
+import {getHooked} from "../../../utils/subscribables/getHooked";
 
 function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -323,7 +324,7 @@ export class MultiSelectField<T> extends TextField {
      * @returns The item with execute handler
      */
     protected getBoundCustomView(customView: IMenuItem): IMenuItem {
-        return {
+        const n = {
             view: customView.view,
             actionBindings: adaptBindings(customView.actionBindings, bindings => [
                 ...bindings,
@@ -337,6 +338,7 @@ export class MultiSelectField<T> extends TextField {
                 }),
             ]),
         };
+        return n;
     }
 
     /**
@@ -353,7 +355,10 @@ export class MultiSelectField<T> extends TextField {
         const searchBinding = searchAction.createBinding([
             {
                 id,
-                search: async query => ({item: {item, id, priority: 0.1}}),
+                search: async query => ({
+                    // Note it should be this.customItem, not item, since item doesn't contain all data yet
+                    item: this.customItem && {item: this.customItem, id, priority: 0.1},
+                }),
             },
         ]);
 

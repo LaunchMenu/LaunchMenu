@@ -6,8 +6,8 @@ import {IActionBinding} from "../actions/_types/IActionBinding";
 import {IContextMenuItemGetter} from "../actions/contextAction/_types/IContextMenuItemGetter";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {IDataHook} from "model-react";
-import {getBindings} from "../items/getBindings";
 import {adaptBindings} from "../items/adjustBindings";
+import {getHooked} from "../../utils/subscribables/getHooked";
 
 /**
  * Retrieves the context items for a context menu for a given item selection
@@ -34,7 +34,7 @@ export function getContextMenuItems(
 
     // Go through all action bindings and collect actions
     items.forEach(item => {
-        getBindings(item.actionBindings, hook).forEach(binding => {
+        getHooked(item.actionBindings, hook).forEach(binding => {
             // Make sure the item should show in the menu
             if (!includeAction(binding)) return;
 

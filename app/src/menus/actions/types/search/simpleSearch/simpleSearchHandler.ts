@@ -8,6 +8,7 @@ import {IActionBinding} from "../../../_types/IActionBinding";
 import {IDataHook} from "model-react";
 import {IMenuSearchable} from "../_types/IMenuSearchable";
 import {getHooked} from "../../../../../utils/subscribables/getHooked";
+import {isItemSelectable} from "../../../../items/isItemSelectable";
 
 /**
  * The weights for how importing matching name vs description vs tags is (higher = more important)
