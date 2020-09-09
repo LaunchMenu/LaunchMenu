@@ -20,7 +20,7 @@ import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {MenuView} from "../../../components/menu/MenuView";
-import {adaptBindings} from "../../../menus/items/adjustBindings";
+import {adjustBindings} from "../../../menus/items/adjustBindings";
 import {isItemSelectable} from "../../../menus/items/isItemSelectable";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
@@ -142,7 +142,7 @@ export class SelectField<T> extends InputField<T> {
         const item = this.dConfig.createOptionView(value, disabled);
         const finalItem = {
             view: item.view,
-            actionBindings: adaptBindings(item.actionBindings, bindings => [
+            actionBindings: adjustBindings(item.actionBindings, bindings => [
                 ...bindings,
                 ...(disabled
                     ? []
@@ -201,7 +201,7 @@ export class SelectField<T> extends InputField<T> {
     protected setupCustomView(customView: IMenuItem): IMenuItem {
         const n = {
             view: customView.view,
-            actionBindings: adaptBindings(customView.actionBindings, bindings => [
+            actionBindings: adjustBindings(customView.actionBindings, bindings => [
                 ...bindings,
                 executeAction.createBinding({
                     execute: () => {
@@ -245,7 +245,7 @@ export class SelectField<T> extends InputField<T> {
         // Return the item together with the new search action binding
         return {
             view: item.view,
-            actionBindings: adaptBindings(item.actionBindings, bindings => [
+            actionBindings: adjustBindings(item.actionBindings, bindings => [
                 ...bindings.filter(binding => !searchAction.canBeAppliedTo([binding])),
                 searchBinding,
             ]),

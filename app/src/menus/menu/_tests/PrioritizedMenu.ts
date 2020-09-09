@@ -34,13 +34,21 @@ describe("PrioritizedMenu", () => {
             });
         });
     });
-    describe("PrioritizedMenu.addItem / PrioritizedMenu.getItems", () => {
+    describe("PrioritizedMenu.addItem(s) / PrioritizedMenu.getItems", () => {
         it("Can add an item", async () => {
             const menu = createMenu();
             const item = createPrioritizedMenuItem({priority: 1});
             menu.addItem(item);
             await wait(20);
             expect(menu.getItems()).toEqual([item.item]);
+        });
+        it("Can add multiple items at once", async () => {
+            const menu = createMenu();
+            const item = createPrioritizedMenuItem({priority: 1});
+            const item2 = createPrioritizedMenuItem({priority: 1});
+            menu.addItems([item, item2]);
+            await wait(20);
+            expect(menu.getItems()).toEqual([item.item, item2.item]);
         });
         it("Orders the items by priority", async () => {
             const menu = createMenu();
@@ -253,11 +261,30 @@ describe("PrioritizedMenu", () => {
             ]);
         });
     });
-    describe("PrioritizedMenu.removeItem", () => {
+    describe("PrioritizedMenu.removeItem(s)", () => {
         it("Removes the specified items, based on id", async () => {
             const menu = createMenu();
             const item = createPrioritizedMenuItem({priority: 1});
             const item2 = createPrioritizedMenuItem({priority: 4, generateID: true});
+            const item3 = createPrioritizedMenuItem({priority: 3, generateID: true});
+            const item4 = {...createPrioritizedMenuItem({priority: 6}), id: item3.id};
+            menu.addItem(item);
+            menu.addItem(item2);
+            menu.addItem(item3);
+            await wait(20);
+            expect(menu.getItems()).toEqual([item2.item, item3.item, item.item]);
+            menu.removeItem(item2);
+            await wait(20);
+            expect(menu.getItems()).toEqual([item3.item, item.item]);
+
+            menu.removeItem(item4);
+            await wait(20);
+            expect(menu.getItems()).toEqual([item.item]);
+        });
+        it("Removes the specified items, based on item equivalence (slower)", async () => {
+            const menu = createMenu();
+            const item = createPrioritizedMenuItem({priority: 1});
+            const item2 = createPrioritizedMenuItem({priority: 4});
             const item3 = createPrioritizedMenuItem({priority: 3});
             menu.addItem(item);
             menu.addItem(item2);
@@ -267,6 +294,20 @@ describe("PrioritizedMenu", () => {
             menu.removeItem(item2);
             await wait(20);
             expect(menu.getItems()).toEqual([item3.item, item.item]);
+        });
+        it("Removes multiple items", async () => {
+            const menu = createMenu();
+            const item = createPrioritizedMenuItem({priority: 1});
+            const item2 = createPrioritizedMenuItem({priority: 4});
+            const item3 = createPrioritizedMenuItem({priority: 3});
+            menu.addItem(item);
+            menu.addItem(item2);
+            menu.addItem(item3);
+            await wait(20);
+            expect(menu.getItems()).toEqual([item2.item, item3.item, item.item]);
+            menu.removeItems([item, item2]);
+            await wait(20);
+            expect(menu.getItems()).toEqual([item3.item]);
         });
         it("Batches item removals", async () => {
             const menu = createMenu();

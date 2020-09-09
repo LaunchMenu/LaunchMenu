@@ -15,7 +15,7 @@ import {Field, Loader} from "model-react";
 import {Command} from "../undoRedo/Command";
 import {createMenuKeyHandler} from "../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {wait} from "../_tests/wait.helper";
-import {getContextMenuItems} from "../menus/utils/getContextMenu";
+import {getContextMenuItems} from "../menus/contextMenu/getContextMenuItems";
 import {CompoundCommand} from "../undoRedo/commands/CompoundCommand";
 import {inputFieldExecuteHandler} from "../textFields/types/inputField/InputFieldExecuteHandler";
 import {SetFieldCommand} from "../undoRedo/commands/SetFieldCommand";
@@ -45,6 +45,8 @@ import {ApplicationLayout} from "../application/components/ApplicationLayout";
 import {IViewStack} from "../stacks/viewStack/_types/IViewStack";
 import {IViewStackItem} from "../stacks/viewStack/_types/IViewStackItem";
 import {MenuView} from "../components/menu/MenuView";
+import {PrioritizedMenu} from "../menus/menu/PrioritizedMenu";
+import {sortContextCategories} from "../menus/contextMenu/sortContextCategories";
 
 class PushStackCommand extends Command {
     protected stack: IViewStack;
@@ -177,16 +179,23 @@ const alertHandlerAction = alertAction.createHandler(
                         binding => binding.tags.includes(mySubMenu)
                     );
 
-                    const defaultExecuteItem = createStandardMenuItem({
-                        name: "Sub Alert",
-                        onExecute: () => {
-                            alert(text);
-                            closeAll();
-                        },
-                    });
+                    const defaultExecuteItem = {
+                        item: createStandardMenuItem({
+                            name: "Sub Alert",
+                            onExecute: () => {
+                                alert(text);
+                                closeAll();
+                            },
+                        }),
+                        priority: 1000,
+                    };
 
                     closeMenu = openUI(context, {
-                        menu: new Menu(context, [defaultExecuteItem, ...subItems]),
+                        menu: new PrioritizedMenu(
+                            context,
+                            [defaultExecuteItem, ...subItems],
+                            {sortCategories: sortContextCategories}
+                        ),
                     });
                 },
             };

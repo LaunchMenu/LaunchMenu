@@ -1,12 +1,13 @@
 import {IMenu} from "../../_types/IMenu";
 import {Observer} from "../../../../utils/modelReact/Observer";
 import {IKeyEventListenerFunction} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
-import {IMenuItem} from "../../../items/_types/IMenuItem";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
-import {getContextMenuItems} from "../../../utils/getContextMenu";
+import {getContextMenuItems} from "../../../contextMenu/getContextMenuItems";
 import {openUI} from "../../../../context/openUI/openUI";
-import {Menu} from "../../Menu";
+import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
+import {PrioritizedMenu} from "../../PrioritizedMenu";
+import {sortContextCategories} from "../../../contextMenu/sortContextCategories";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
@@ -29,8 +30,8 @@ export function setupContextMenuHandler(
     const ioContext = menu.getContext();
     let contextData: {
         emitter?: {emit: IKeyEventListenerFunction};
-        items?: IMenuItem[];
-        menu?: Menu;
+        items?: IPrioritizedMenuItem[];
+        menu?: PrioritizedMenu;
         close?: () => void;
     } = {};
     let contextItemsObserver: Observer<void> | undefined;
@@ -68,7 +69,7 @@ export function setupContextMenuHandler(
 
                         // Obtain a new emitter and subscribe to possible changes
                         contextData.emitter = keyHandlerAction.get(
-                            contextData.items,
+                            contextData.items.map(({item}) => item),
                             hook
                         );
                     },
@@ -83,7 +84,10 @@ export function setupContextMenuHandler(
             if (isMenuOpenEvent) {
                 const items = contextData.items;
                 if (items && items.length > 0 && !contextData.menu) {
-                    const menu = (contextData.menu = new Menu(ioContext, items));
+                    const menu = (contextData.menu = new PrioritizedMenu(ioContext, {
+                        sortCategories: sortContextCategories,
+                    }));
+                    menu.addItems(items);
                     contextData.close = openUI(ioContext, {menu}, () => {
                         contextData.close = undefined;
                         contextData.menu = undefined;

@@ -2,7 +2,7 @@ import {Action, results, sources} from "../Action";
 import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
 import {IMenuItem} from "../../items/_types/IMenuItem";
-import {adaptBindings} from "../../items/adjustBindings";
+import {adjustBindings} from "../../items/adjustBindings";
 import {Field, IDataHook} from "model-react";
 import {Observer} from "../../../utils/modelReact/Observer";
 import {wait} from "../../../_tests/wait.helper";
@@ -173,7 +173,7 @@ describe("Action", () => {
                 const item = createItem(action.createBinding(2), action.createBinding(4));
                 const sub = {
                     item,
-                    actionBindings: adaptBindings(item.actionBindings, bindings =>
+                    actionBindings: adjustBindings(item.actionBindings, bindings =>
                         bindings.slice(1)
                     ),
                 };

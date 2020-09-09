@@ -64,8 +64,27 @@ export class PrioritizedMenu extends AbstractMenu {
     public constructor(
         context: IIOContext,
         categoryConfig?: IPrioritizedMenuCategoryConfig
+    );
+
+    /**
+     * Creates a new menu
+     * @param context The context to be used by menu items
+     * @param items The initial items to store
+     * @param categoryConfig The configuration for category options
+     */
+    public constructor(
+        context: IIOContext,
+        items: IPrioritizedMenuItem[],
+        categoryConfig?: IPrioritizedMenuCategoryConfig
+    );
+    public constructor(
+        context: IIOContext,
+        items: IPrioritizedMenuItem[] | IPrioritizedMenuCategoryConfig | undefined,
+        categoryConfig?: IPrioritizedMenuCategoryConfig
     ) {
         super(context);
+        if (!(items instanceof Array)) categoryConfig = items;
+
         // Create the category config
         this.categoryConfig = {
             getCategory: categoryConfig?.getCategory || getMenuCategory,
@@ -74,9 +93,19 @@ export class PrioritizedMenu extends AbstractMenu {
             batchInterval: categoryConfig?.batchInterval || 100,
             isLoading: categoryConfig?.isLoading || new Field(false),
         };
+
+        if (items instanceof Array) this.addItems(items);
     }
 
     // Item management
+    /**
+     * Adds the given items to the menu
+     * @param items The items to be added
+     */
+    public addItems(items: IPrioritizedMenuItem[]): void {
+        items.forEach(item => this.addItem(item));
+    }
+
     /**
      * Adds an item to the menu
      * @param item The item to be added
@@ -132,12 +161,20 @@ export class PrioritizedMenu extends AbstractMenu {
     }
 
     /**
+     * Removes the given items from the menu if present
+     * @param items The items to be removed
+     */
+    public removeItems(items: IPrioritizedMenuItem[]): void {
+        items.forEach(item => this.removeItem(item));
+    }
+
+    /**
      * Removes the given item from the menu if present
-     * @param oldCategory The category that item was in (null to use the items' latest category)
      * @param item The item to remove
+     * @param oldCategory The category that item was in (null to use the items' latest category)
      */
     public removeItem(
-        item: IPrioritizedMenuItem & {id: string | number},
+        item: IPrioritizedMenuItem,
         oldCategory: ICategory | null = null
     ): void {
         const category =
@@ -193,11 +230,21 @@ export class PrioritizedMenu extends AbstractMenu {
                 if (categoryData.batch.clear)
                     categoryData.items = createSortedList(this.menuChangeEvents);
 
-                // Filters out old items
+                // Filters out old items (including previous versions of current items)
+                const adds = categoryData.batch.add;
+                const removes = categoryData.batch.remove;
+
                 const keys = {} as {[key: string]: boolean};
-                categoryData.batch.add.forEach(({id}) => id && (keys[id] = true));
-                categoryData.batch.remove.forEach(({id}) => id && (keys[id] = true));
-                categoryData.items.filter(({id}) => !id || !keys[id]);
+                adds.forEach(({id}) => id && (keys[id] = true));
+                removes.forEach(({id}) => id && (keys[id] = true));
+                categoryData.items.filter(({id, item}) =>
+                    id
+                        ? !keys[id]
+                        : !(
+                              adds.find(({item: it}) => item == it) ||
+                              removes.find(({item: it}) => item == it)
+                          )
+                );
 
                 // Adds the new items
                 categoryData.items.add(

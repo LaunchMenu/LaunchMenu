@@ -14,7 +14,7 @@ import {createSimpleSearchBinding} from "../actions/types/search/simpleSearch/si
 import {SimpleSearchHighlight} from "../../components/items/SimpleSearchHighlight";
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
-import {adaptBindings} from "./adjustBindings";
+import {adjustBindings} from "./adjustBindings";
 import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings";
 import {getHooked} from "../../utils/subscribables/getHooked";
 
@@ -49,7 +49,7 @@ export function createStandardMenuItem({
     // Combine the input action bindings with the created ones
     let bindings = generatedBindings as ISubscribableActionBindings;
     if (actionBindings)
-        bindings = adaptBindings(actionBindings, actionBindings => [
+        bindings = adjustBindings(actionBindings, actionBindings => [
             ...actionBindings,
             ...generatedBindings,
         ]);

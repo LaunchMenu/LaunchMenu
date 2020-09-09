@@ -6,8 +6,9 @@ import {IActionBinding} from "../actions/_types/IActionBinding";
 import {IContextMenuItemGetter} from "../actions/contextAction/_types/IContextMenuItemGetter";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {IDataHook} from "model-react";
-import {adaptBindings} from "../items/adjustBindings";
+import {adjustBindings} from "../items/adjustBindings";
 import {getHooked} from "../../utils/subscribables/getHooked";
+import {IPrioritizedMenuItem} from "../menu/_types/IPrioritizedMenuItem";
 
 /**
  * Retrieves the context items for a context menu for a given item selection
@@ -25,7 +26,7 @@ export function getContextMenuItems(
     hook?: IDataHook,
     includeAction: (binding: IActionBinding<any>) => boolean = binding =>
         binding.tags.includes("context")
-): IMenuItem[] {
+): IPrioritizedMenuItem[] {
     const count = items.length;
     const foundActions = [] as {
         action: IAction<any, any>;
@@ -60,25 +61,34 @@ export function getContextMenuItems(
 
     // Get all the menu items
     const foundActionsWithData = foundActions.flatMap(foundAction => {
-        let actionItem = (foundAction.action.get(foundAction.items)?.getMenuItem as
-            | IContextMenuItemGetter
-            | undefined)?.(ioContext, close) as IMenuItem | undefined;
-        if (!actionItem) return [];
+        let prioritizedActionItem = (foundAction.action.get(foundAction.items)
+            ?.getMenuItem as IContextMenuItemGetter | undefined)?.(ioContext, close) as
+            | IPrioritizedMenuItem
+            | undefined;
+        if (!prioritizedActionItem) return [];
 
+        // Augment the prioritized item with a category representing the number of matches
         if (foundAction.items.length < count)
-            actionItem = {
-                ...actionItem,
-                actionBindings: adaptBindings(actionItem.actionBindings, bindings => [
-                    ...bindings,
-                    getCategoryAction.createBinding(
-                        getContextCategory(foundAction.items.length, count)
+            prioritizedActionItem = {
+                ...prioritizedActionItem,
+                item: {
+                    ...prioritizedActionItem.item,
+                    actionBindings: adjustBindings(
+                        prioritizedActionItem.item.actionBindings,
+                        bindings => [
+                            getCategoryAction.createBinding(
+                                getContextCategory(foundAction.items.length, count)
+                            ),
+                            ...bindings,
+                        ]
                     ),
-                ]),
+                },
             };
+
         return [
             {
                 ...foundAction,
-                actionItem,
+                actionItem: prioritizedActionItem,
                 childHitCount: 0,
             },
         ];
@@ -103,6 +113,8 @@ export function getContextMenuItems(
     const filteredActions = foundActionsWithData.filter(
         ({items: actionItems, childHitCount}) => actionItems.length > childHitCount
     );
+
+    console.log(filteredActions);
 
     // Map the data to the items
     return filteredActions.map(({actionItem}) => actionItem);
