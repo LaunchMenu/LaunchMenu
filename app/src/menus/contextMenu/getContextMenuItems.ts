@@ -61,37 +61,41 @@ export function getContextMenuItems(
 
     // Get all the menu items
     const foundActionsWithData = foundActions.flatMap(foundAction => {
-        let prioritizedActionItem = (foundAction.action.get(foundAction.items)
+        // Retrieve the prioritized action item(s) from the action
+        let prioritizedActionItems = (foundAction.action.get(foundAction.items)
             ?.getMenuItem as IContextMenuItemGetter | undefined)?.(ioContext, close) as
             | IPrioritizedMenuItem
+            | IPrioritizedMenuItem[]
             | undefined;
-        if (!prioritizedActionItem) return [];
+        if (!prioritizedActionItems) return [];
+        if (!(prioritizedActionItems instanceof Array))
+            prioritizedActionItems = [prioritizedActionItems];
 
-        // Augment the prioritized item with a category representing the number of matches
-        if (foundAction.items.length < count)
-            prioritizedActionItem = {
-                ...prioritizedActionItem,
-                item: {
-                    ...prioritizedActionItem.item,
-                    actionBindings: adjustBindings(
-                        prioritizedActionItem.item.actionBindings,
-                        bindings => [
-                            getCategoryAction.createBinding(
-                                getContextCategory(foundAction.items.length, count)
-                            ),
-                            ...bindings,
-                        ]
-                    ),
-                },
-            };
+        return prioritizedActionItems.map(prioritizedActionItem => {
+            // Augment the prioritized item with a category representing the number of matches
+            if (foundAction.items.length < count)
+                prioritizedActionItem = {
+                    ...prioritizedActionItem,
+                    item: {
+                        ...prioritizedActionItem.item,
+                        actionBindings: adjustBindings(
+                            prioritizedActionItem.item.actionBindings,
+                            bindings => [
+                                getCategoryAction.createBinding(
+                                    getContextCategory(foundAction.items.length, count)
+                                ),
+                                ...bindings,
+                            ]
+                        ),
+                    },
+                };
 
-        return [
-            {
+            return {
                 ...foundAction,
                 actionItem: prioritizedActionItem,
                 childHitCount: 0,
-            },
-        ];
+            };
+        });
     });
 
     // Set the child hit counts
@@ -113,8 +117,6 @@ export function getContextMenuItems(
     const filteredActions = foundActionsWithData.filter(
         ({items: actionItems, childHitCount}) => actionItems.length > childHitCount
     );
-
-    console.log(filteredActions);
 
     // Map the data to the items
     return filteredActions.map(({actionItem}) => actionItem);

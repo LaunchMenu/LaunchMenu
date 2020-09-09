@@ -1,4 +1,3 @@
-import {IMenuItem} from "../../../items/_types/IMenuItem";
 import {IIOContext} from "../../../../context/_types/IIOContext";
 import {IPrioritizedMenuItem} from "../../../menu/_types/IPrioritizedMenuItem";
 
@@ -8,4 +7,4 @@ import {IPrioritizedMenuItem} from "../../../menu/_types/IPrioritizedMenuItem";
 export type IContextMenuItemGetter = (
     context: IIOContext,
     close?: () => void
-) => IPrioritizedMenuItem;
+) => IPrioritizedMenuItem | IPrioritizedMenuItem[];
