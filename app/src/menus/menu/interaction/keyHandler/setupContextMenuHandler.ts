@@ -11,6 +11,7 @@ import {openUI} from "../../../../context/openUI/openUI";
 import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
 import {PrioritizedMenu} from "../../PrioritizedMenu";
 import {sortContextCategories} from "../../../contextMenu/sortContextCategories";
+import {IIOContext} from "../../../../context/_types/IIOContext";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
@@ -32,7 +33,7 @@ export function setupContextMenuHandler(
 ): IKeyEventListenerObject {
     const ioContext = menu.getContext();
     let contextData: {
-        emitter?: {emit: IKeyEventListenerFunction};
+        emitter?: {emit(event: KeyEvent, context: IIOContext): Promise<boolean>};
         items?: IPrioritizedMenuItem[];
         menu?: PrioritizedMenu;
         close?: () => void;
@@ -80,7 +81,10 @@ export function setupContextMenuHandler(
                 );
 
             // Forward events to context items
-            if (useContextItemKeyHandlers && (await contextData.emitter?.emit(e)))
+            if (
+                useContextItemKeyHandlers &&
+                (await contextData.emitter?.emit(e, ioContext))
+            )
                 return true;
 
             // Open the menu if requested

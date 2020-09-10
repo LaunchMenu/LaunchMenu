@@ -119,5 +119,8 @@ export function getContextMenuItems(
     );
 
     // Map the data to the items
-    return filteredActions.map(({actionItem}) => actionItem);
+    const actionItems = filteredActions.map(({actionItem}) => actionItem);
+
+    // Augment the items with context items
+    return [...actionItems, ...getHooked(ioContext.contextMenuItems, hook)];
 }

@@ -1,3 +1,4 @@
+import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {IMenuItemView} from "./IMenuItemView";
 import {ISubscribableActionBindings} from "./ISubscribableActionBindings";
 
@@ -13,4 +14,8 @@ export type IMenuItem = {
      * All action bindings for this item, in order to execute an action of the item
      */
     readonly actionBindings: ISubscribableActionBindings;
+    /**
+     * Additional item tags that may be used for item identification
+     */
+    readonly tags?: ISubscribable<any[]>;
 };

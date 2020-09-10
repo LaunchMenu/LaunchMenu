@@ -8,6 +8,8 @@ import {openUI} from "./openUI/openUI";
 import {IOpenableUI} from "./_types/IOpenableUI";
 import {IUndoRedoFacility} from "../undoRedo/_types/IUndoRedoFacility";
 import {SettingsContext} from "../settings/SettingsContext";
+import {ISubscribable} from "../utils/subscribables/_types/ISubscribable";
+import {IPrioritizedMenuItem} from "../menus/menu/_types/IPrioritizedMenuItem";
 
 export class IOContext implements IIOContext {
     public panes: {
@@ -18,6 +20,7 @@ export class IOContext implements IIOContext {
     public keyHandler: IKeyHandlerStack;
     public undoRedo: IUndoRedoFacility;
     public settings: SettingsContext;
+    public contextMenuItems: ISubscribable<IPrioritizedMenuItem[]>;
 
     protected parentContext?: IIOContext;
 
@@ -50,6 +53,7 @@ export class IOContext implements IIOContext {
             // Copy anything that's identical
             this.undoRedo = context.undoRedo;
             this.settings = context.settings;
+            this.contextMenuItems = context.contextMenuItems;
         }
     }
 
