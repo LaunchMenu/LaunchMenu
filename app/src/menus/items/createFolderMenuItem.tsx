@@ -16,7 +16,7 @@ import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {createSimpleSearchBinding} from "../actions/types/search/simpleSearch/simpleSearchHandler";
 import {openMenuExecuteHandler} from "../actions/types/execute/openMenuExecuteHandler";
 import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings";
-import {adaptBindings} from "./adjustBindings";
+import {adjustBindings} from "./adjustBindings";
 
 const get = <T extends unknown>(f: T, h?: IDataHook) =>
     f instanceof Function ? f(h) : f;
@@ -59,7 +59,7 @@ export function createFolderMenuItem<T extends {[key: string]: IMenuItem} | IMen
     // Combine the input action bindings with the created ones
     let bindings = generatedBindings as ISubscribableActionBindings;
     if (actionBindings)
-        bindings = adaptBindings(actionBindings, actionBindings => [
+        bindings = adjustBindings(actionBindings, actionBindings => [
             ...actionBindings,
             ...generatedBindings,
         ]);

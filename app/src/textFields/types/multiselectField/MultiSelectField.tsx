@@ -26,7 +26,7 @@ import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {createContentError} from "../../../components/content/error/createContentError";
 import {MenuView} from "../../../components/menu/MenuView";
 import {IViewStackItem} from "../../../stacks/viewStack/_types/IViewStackItem";
-import {adaptBindings} from "../../../menus/items/adjustBindings";
+import {adjustBindings} from "../../../menus/items/adjustBindings";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 
 function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
@@ -173,7 +173,7 @@ export class MultiSelectField<T> extends TextField {
         const item = this.config.createOptionView(value, includes, disabled);
         const finalItem = {
             view: item.view,
-            actionBindings: adaptBindings(item.actionBindings, bindings => [
+            actionBindings: adjustBindings(item.actionBindings, bindings => [
                 ...bindings,
                 ...(disabled
                     ? []
@@ -256,7 +256,7 @@ export class MultiSelectField<T> extends TextField {
                 let selectItem = add;
                 const item = {
                     view: rawItem.view,
-                    actionBindings: adaptBindings(rawItem.actionBindings, bindings => [
+                    actionBindings: adjustBindings(rawItem.actionBindings, bindings => [
                         ...bindings,
                         executeAction.createBinding({
                             execute: () => void this.removeCustomOption(value),
@@ -326,7 +326,7 @@ export class MultiSelectField<T> extends TextField {
     protected getBoundCustomView(customView: IMenuItem): IMenuItem {
         const n = {
             view: customView.view,
-            actionBindings: adaptBindings(customView.actionBindings, bindings => [
+            actionBindings: adjustBindings(customView.actionBindings, bindings => [
                 ...bindings,
                 executeAction.createBinding({
                     execute: () => {
@@ -365,7 +365,7 @@ export class MultiSelectField<T> extends TextField {
         // Return the item together with the new search action binding
         return {
             view: item.view,
-            actionBindings: adaptBindings(item.actionBindings, bindings => [
+            actionBindings: adjustBindings(item.actionBindings, bindings => [
                 ...bindings.filter(binding => !searchAction.canBeAppliedTo([binding])),
                 searchBinding,
                 getCategoryAction.createBinding(controlsCategory),

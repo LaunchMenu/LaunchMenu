@@ -26,4 +26,7 @@ export type IContextActionConfig = {
 
     /** Any tags that can be used for searching */
     tags?: string[];
+
+    /** The priority with which this action should appear in the context menu */
+    priority?: number;
 };

@@ -8,7 +8,7 @@ import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings"
  * @param extendBindings The function to transform the action bindings
  * @returns The new subscribable action bindings
  */
-export function adaptBindings(
+export function adjustBindings(
     bindings: ISubscribableActionBindings,
     extendBindings: (
         bindings: IActionBinding<any>[],

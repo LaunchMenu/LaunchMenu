@@ -5,6 +5,7 @@ import {IMenuItem} from "../../menus/items/_types/IMenuItem";
 import {isItemSelectable} from "../../menus/items/isItemSelectable";
 import {useIOContext} from "../../context/react/useIOContext";
 import {executeAction} from "../../menus/actions/types/execute/executeAction";
+import {KeyEvent} from "../../stacks/keyHandlerStack/KeyEvent";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution
@@ -31,7 +32,21 @@ export const MenuItemFrame: FC<{
                         }
                     } else if (isItemSelectable(item)) menu.setCursor(item);
                 }, [ioContext, menu, item])}
-                onContextMenu={() => console.log("detect")} // TODO: open context menu
+                // Open the context menu on right click
+                onContextMenu={() => {
+                    if (!menu || !item) return;
+                    if (isItemSelectable(item)) {
+                        menu.setCursor(item);
+
+                        // Use the context menu keyboard shortcut to open the menu
+                        ioContext?.keyHandler.emit(
+                            new KeyEvent({key: {id: "tab", name: "tab"}, type: "down"})
+                        );
+                        ioContext?.keyHandler.emit(
+                            new KeyEvent({key: {id: "tab", name: "tab"}, type: "up"})
+                        );
+                    }
+                }}
                 background={isCursor ? "primary" : "bgPrimary"}>
                 {children}
             </Box>

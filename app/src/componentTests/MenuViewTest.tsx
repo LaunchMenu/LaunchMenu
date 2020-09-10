@@ -15,7 +15,7 @@ import {Field, Loader} from "model-react";
 import {Command} from "../undoRedo/Command";
 import {createMenuKeyHandler} from "../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {wait} from "../_tests/wait.helper";
-import {getContextMenuItems} from "../menus/utils/getContextMenu";
+import {getContextMenuItems} from "../menus/contextMenu/getContextMenuItems";
 import {CompoundCommand} from "../undoRedo/commands/CompoundCommand";
 import {inputFieldExecuteHandler} from "../textFields/types/inputField/InputFieldExecuteHandler";
 import {SetFieldCommand} from "../undoRedo/commands/SetFieldCommand";
@@ -45,6 +45,10 @@ import {ApplicationLayout} from "../application/components/ApplicationLayout";
 import {IViewStack} from "../stacks/viewStack/_types/IViewStack";
 import {IViewStackItem} from "../stacks/viewStack/_types/IViewStackItem";
 import {MenuView} from "../components/menu/MenuView";
+import {PrioritizedMenu} from "../menus/menu/PrioritizedMenu";
+import {sortContextCategories} from "../menus/contextMenu/sortContextCategories";
+import {prioritizedUndoMenuItem, undoMenuItem} from "../undoRedo/ui/undoMenuItem";
+import {prioritizedRedoMenuItem, redoMenuItem} from "../undoRedo/ui/redoMenuItem";
 
 class PushStackCommand extends Command {
     protected stack: IViewStack;
@@ -177,16 +181,23 @@ const alertHandlerAction = alertAction.createHandler(
                         binding => binding.tags.includes(mySubMenu)
                     );
 
-                    const defaultExecuteItem = createStandardMenuItem({
-                        name: "Sub Alert",
-                        onExecute: () => {
-                            alert(text);
-                            closeAll();
-                        },
-                    });
+                    const defaultExecuteItem = {
+                        item: createStandardMenuItem({
+                            name: "Sub Alert",
+                            onExecute: () => {
+                                alert(text);
+                                closeAll();
+                            },
+                        }),
+                        priority: 1000,
+                    };
 
                     closeMenu = openUI(context, {
-                        menu: new Menu(context, [defaultExecuteItem, ...subItems]),
+                        menu: new PrioritizedMenu(
+                            context,
+                            [defaultExecuteItem, ...subItems],
+                            {sortCategories: sortContextCategories}
+                        ),
                     });
                 },
             };
@@ -226,8 +237,40 @@ const context = new IOContext({
     keyHandler: inputStack,
     undoRedo,
     settings: new SettingsContext(),
+    contextMenuItems: [prioritizedUndoMenuItem, prioritizedRedoMenuItem],
 });
-context.panes.content.push(<Box>I am a cool box yo</Box>);
+context.panes.content.push(
+    <Box background="bgPrimary" padding="large">
+        I am a cool box yo
+        <Box>
+            1: <Loader>{h => someField.get(h)}</Loader>
+        </Box>
+        <Box>
+            2: <Loader>{h => someField2.get(h)}</Loader>
+        </Box>
+        <Box>
+            3: <Loader>{h => someField3.get(h)}</Loader>
+        </Box>
+        <Box>
+            4: <Loader>{h => someField4.get(h)}</Loader>
+        </Box>
+        <Box>
+            5: <Loader>{h => someField5.get(h)}</Loader>
+        </Box>
+        <Box>
+            6: <Loader>{h => someField6.get(h)}</Loader>
+        </Box>
+        <Box>
+            7: <Loader>{h => someField7.get(h)}</Loader>
+        </Box>
+        <Box>
+            8: <Loader>{h => someField8.get(h)}</Loader>
+        </Box>
+        <Box>
+            9: <Loader>{h => someField9.get(h)}</Loader>
+        </Box>
+    </Box>
+);
 
 const bindingsField = new Field([]);
 const menu = new Menu(context);
@@ -433,34 +476,6 @@ menu.addItems([
     someFolder,
     settingsItem,
     createStandardMenuItem({
-        name: "Undo",
-        onExecute: () => undoRedo.undo(),
-        actionBindings: [
-            keyHandlerAction.createBinding({
-                onKey: e => {
-                    if (e.is(["ctrl", "z"])) {
-                        undoRedo.undo();
-                        return true;
-                    }
-                },
-            }),
-        ],
-    }),
-    createStandardMenuItem({
-        name: "Redo",
-        onExecute: () => undoRedo.redo(),
-        actionBindings: [
-            keyHandlerAction.createBinding({
-                onKey: e => {
-                    if (e.is(["ctrl", "y"])) {
-                        undoRedo.redo();
-                        return true;
-                    }
-                },
-            }),
-        ],
-    }),
-    createStandardMenuItem({
         name: "close menu",
         onExecute: () => new PushStackCommand(menuViewStack, {close: true}),
     }),
@@ -482,6 +497,7 @@ context.openUI({
     menuHandler: createMenuKeyHandler(menu),
 });
 
+(window as any).context = context;
 (window as any).alertAction = alertAction;
 (window as any).alertHandlerAction = alertHandlerAction;
 (window as any).createStandardMenuItem = createStandardMenuItem;

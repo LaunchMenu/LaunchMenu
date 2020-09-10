@@ -8,6 +8,8 @@ import {TGetActionCoreOutput} from "./_types/TGetActionCoreOutput";
 import {TGetActionCoreInput} from "./_types/TGetActionCoreInput";
 import {IActionCore} from "../_types/IActionCore";
 import {IContextActionResult} from "./_types/IContextActionResult";
+import {IPrioritizedMenuItem} from "../../menu/_types/IPrioritizedMenuItem";
+import {v4 as uuid} from "uuid";
 
 /**
  * Creates an action that can be displayed in a menu like the context menu
@@ -29,11 +31,13 @@ export function createContextAction<
         description,
         tags,
         closeOnExecute,
+        priority = 1,
     }: IContextActionConfig
 ): IContextActionCore<
     TGetActionCoreInput<G>,
     TGetActionCoreOutput<G> & {getMenuItem: IContextMenuItemGetter}
 > {
+    const id = uuid();
     return ((data: TGetActionCoreInput<G>[], items: IMenuItem[][]) => {
         const actionGetterResult = getter(data, items);
 
@@ -64,18 +68,22 @@ export function createContextAction<
                     });
 
                 // Create the menu item
-                return createStandardMenuItem({
-                    name: name + (shortcut ? `(${shortcut.join("+")})` : ""),
-                    description,
-                    icon,
-                    tags,
-                    onExecute: executeItem,
-                    actionBindings: shortcutBinding
-                        ? actionBindings
-                            ? [shortcutBinding, ...actionBindings]
-                            : [shortcutBinding]
-                        : undefined,
-                }) as IMenuItem;
+                return {
+                    item: createStandardMenuItem({
+                        name: name + (shortcut ? ` (${shortcut.join("+")})` : ""),
+                        description,
+                        icon,
+                        tags,
+                        onExecute: executeItem,
+                        actionBindings: shortcutBinding
+                            ? actionBindings
+                                ? [shortcutBinding, ...actionBindings]
+                                : [shortcutBinding]
+                            : undefined,
+                    }),
+                    priority,
+                    id,
+                } as IPrioritizedMenuItem;
             }) as IContextMenuItemGetter,
         };
     }) as any;

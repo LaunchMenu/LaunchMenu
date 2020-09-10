@@ -1,5 +1,5 @@
 import {IMenu} from "../../_types/IMenu";
-import {openContextMenu} from "../openContextMenu";
+import {openContextMenu} from "../../../contextMenu/openContextMenu";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 import {IIOContext} from "../../../../context/_types/IIOContext";
 

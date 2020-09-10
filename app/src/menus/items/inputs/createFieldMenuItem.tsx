@@ -18,7 +18,7 @@ import {Truncated} from "../../../components/Truncated";
 import {Box} from "../../../styling/box/Box";
 import {resetFieldAction} from "./resetFieldAction";
 import {ISubscribableActionBindings} from "../_types/ISubscribableActionBindings";
-import {adaptBindings} from "../adjustBindings";
+import {adjustBindings} from "../adjustBindings";
 
 const get = <T extends unknown>(f: T, h?: IDataHook) =>
     f instanceof Function ? f(h) : f;
@@ -71,7 +71,7 @@ export function createFieldMenuItem<T>({
     // Combine the input action bindings with the created ones
     let bindings = generatedBindings as ISubscribableActionBindings;
     if (actionBindings)
-        bindings = adaptBindings(actionBindings, actionBindings => [
+        bindings = adjustBindings(actionBindings, actionBindings => [
             ...actionBindings,
             ...generatedBindings,
         ]);

@@ -10,4 +10,5 @@ export const context: IIOContext = {
     panes: {content: null as any, field: null as any, menu: null as any},
     undoRedo: new UndoRedoFacility(),
     settings: new SettingsContext(),
+    contextMenuItems: [],
 };

@@ -7,7 +7,7 @@ import {ICategory} from "../actions/types/category/_types/ICategory";
  * @param categories The categories to sort
  * @returns The sorted sequence of categories
  */
-export function sortPrioritizedCategories<T>(
+export function sortPrioritizedCategories(
     categories: {
         category: ICategory | undefined;
         items: SortedList<IPrioritizedMenuItem>;
