@@ -4,7 +4,7 @@ import {
 } from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {IMenu} from "../../_types/IMenu";
 import {handleExecuteInput} from "./handleExecuteInput";
-import {handleMoveInput} from "./handleMoveInput";
+import {setupMoveInputHandler} from "./setupMoveInputHandler";
 import {handleDeselectInput} from "./handleDeselectInput";
 import {IIOContext} from "../../../../context/_types/IIOContext";
 import {setupItemKeyListenerHandler} from "./setupItemKeyListenerHandler";
@@ -32,15 +32,14 @@ export function createMenuKeyHandler(
         useContextItemKeyHandlers?: boolean;
     } = {}
 ): IKeyEventListener {
-    // Setup the item key handler
+    // Setup handlers
     let handleItemKeyListeners = useItemKeyHandlers
         ? setupItemKeyListenerHandler(menu)
         : undefined;
-
-    // Setup the context key handler
     const contextHandler = setupContextMenuHandler(menu, {
         useContextItemKeyHandlers,
     });
+    const cursorMovementHandler = setupMoveInputHandler(menu);
 
     // Return the listener
     return {
@@ -48,8 +47,7 @@ export function createMenuKeyHandler(
             if (await handleItemKeyListeners?.emit(e)) return true;
             if (await contextHandler.emit(e)) return true;
             if (handleExecuteInput(e, menu)) return true;
-            if (handleMoveInput(e, menu)) return true;
-            if (handleDeselectInput(e, menu)) return true;
+            if (await cursorMovementHandler.emit(e)) return true;
             if (handleDeselectInput(e, menu)) return true;
             if (onExit && e.is("esc")) {
                 onExit();
@@ -57,8 +55,9 @@ export function createMenuKeyHandler(
             }
         },
         destroy() {
-            handleItemKeyListeners?.destroy();
-            contextHandler.destroy();
+            handleItemKeyListeners?.destroy?.();
+            contextHandler.destroy?.();
+            cursorMovementHandler.destroy?.();
         },
     } as IKeyEventListenerObject;
 }

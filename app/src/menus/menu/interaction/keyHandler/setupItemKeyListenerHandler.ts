@@ -1,6 +1,9 @@
 import {IMenu} from "../../_types/IMenu";
 import {Observer} from "../../../../utils/modelReact/Observer";
-import {IKeyEventListenerFunction} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {
+    IKeyEventListenerObject,
+    IKeyEventListenerFunction,
+} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 
@@ -9,7 +12,7 @@ import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
  * @param menu The menu for which to add item key event handlers
  * @returns An object with an event emit function and a destroy function
  */
-export function setupItemKeyListenerHandler(menu: IMenu) {
+export function setupItemKeyListenerHandler(menu: IMenu): IKeyEventListenerObject {
     let emitter: {emit: IKeyEventListenerFunction} | null = null;
     let itemObserver: Observer<void> | undefined;
 

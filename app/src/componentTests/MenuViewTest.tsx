@@ -491,6 +491,7 @@ context.openUI({
     menuHandler: createMenuKeyHandler(menu),
 });
 
+(window as any).context = context;
 (window as any).alertAction = alertAction;
 (window as any).alertHandlerAction = alertHandlerAction;
 (window as any).createStandardMenuItem = createStandardMenuItem;

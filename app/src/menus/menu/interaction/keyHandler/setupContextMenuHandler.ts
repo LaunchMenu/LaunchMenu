@@ -1,6 +1,9 @@
 import {IMenu} from "../../_types/IMenu";
 import {Observer} from "../../../../utils/modelReact/Observer";
-import {IKeyEventListenerFunction} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {
+    IKeyEventListenerObject,
+    IKeyEventListenerFunction,
+} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
 import {getContextMenuItems} from "../../../contextMenu/getContextMenuItems";
@@ -26,7 +29,7 @@ export function setupContextMenuHandler(
         /** A function returning whether the given event is a menu open event */
         isOpenMenuButton?: IKeyEventListenerFunction;
     } = {}
-) {
+): IKeyEventListenerObject {
     const ioContext = menu.getContext();
     let contextData: {
         emitter?: {emit: IKeyEventListenerFunction};
