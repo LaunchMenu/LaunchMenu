@@ -18,7 +18,6 @@ export function createBooleanMenuItem({
     undoable,
     actionBindings = [],
     tags = [],
-    resetable,
     resetUndoable = undoable,
     ...rest
 }: IBooleanMenuItemData): IFieldMenuItem<boolean> {
@@ -32,7 +31,6 @@ export function createBooleanMenuItem({
                 ...tags,
                 field.get(h).toString(),
             ]),
-            resetable,
             resetUndoable,
             actionBindings: adjustSubscribable(actionBindings, bindings => [
                 ...bindings,

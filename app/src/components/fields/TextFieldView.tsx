@@ -1,7 +1,6 @@
 import React, {isValidElement} from "react";
 import {Box} from "../../styling/box/Box";
 import {ITextFieldViewProps} from "./_types/ITextFieldViewProps";
-import {useTheme} from "../../styling/theming/ThemeContext";
 import {SyntaxField} from "./syntaxField/SyntaxField";
 import {plaintextLexer} from "../../textFields/syntax/plaintextLexer";
 import {ThemeIcon} from "../ThemeIcon";
@@ -20,7 +19,6 @@ export const TextFieldView: LFC<ITextFieldViewProps> = ({
     highlightErrors,
     ...rest
 }) => {
-    const theme = useTheme();
     return (
         <Box display="flex" alignItems="stretch" backgroundColor="bgPrimary" {...rest}>
             {icon && (

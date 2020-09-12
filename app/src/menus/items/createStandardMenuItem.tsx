@@ -33,10 +33,16 @@ export function createStandardMenuItem({
     onCursor,
     onMenuChange,
     category,
+    searchPattern,
     actionBindings,
 }: IStandardMenuItemData): IMenuItem {
     const generatedBindings: IActionBinding<any>[] = [
-        createSimpleSearchBinding({name, description, tags}),
+        createSimpleSearchBinding({
+            name,
+            description,
+            patternMatcher: searchPattern,
+            tags,
+        }),
     ];
     if (onExecute)
         generatedBindings.push(executeAction.createBinding({execute: onExecute}));

@@ -19,9 +19,9 @@ import {Box} from "../../../styling/box/Box";
 import {resetFieldAction} from "./resetFieldAction";
 import {ISubscribableActionBindings} from "../_types/ISubscribableActionBindings";
 import {adjustBindings} from "../adjustBindings";
+import {getHooked} from "../../../utils/subscribables/getHooked";
 
-const get = <T extends unknown>(f: T, h?: IDataHook) =>
-    f instanceof Function ? f(h) : f;
+// TODO: reuse standard menu item to reduce code duplication
 
 /**
  * Creates a new field menu item
@@ -47,10 +47,16 @@ export function createFieldMenuItem<T>({
         resetable,
         resetUndoable,
         actionBindings,
+        searchPattern,
     } = data(field);
 
     let generatedBindings: IActionBinding<any>[] = [
-        createSimpleSearchBinding({name, description, tags}),
+        createSimpleSearchBinding({
+            name,
+            description,
+            tags,
+            patternMatcher: searchPattern,
+        }),
     ];
     if (onExecute)
         generatedBindings.push(executeAction.createBinding({execute: onExecute}));
@@ -81,8 +87,8 @@ export function createFieldMenuItem<T>({
         set: value => field.set(value),
         view: memo(({highlight, ...props}) => {
             const [h] = useDataHook();
-            const ico = get(icon, h);
-            const desc = get(description, h);
+            const ico = getHooked(icon, h);
+            const desc = getHooked(description, h);
             return (
                 <MenuItemFrame {...props}>
                     <MenuItemLayout
@@ -93,7 +99,7 @@ export function createFieldMenuItem<T>({
                         content={
                             <>
                                 <SimpleSearchHighlight query={highlight}>
-                                    {get(name, h)}
+                                    {getHooked(name, h)}
                                 </SimpleSearchHighlight>
                                 :
                                 <Box display="inline" marginLeft="small">

@@ -375,8 +375,11 @@ export class ExtendedObject {
         // Check if all values are equivalent
         for (let i = 0; i < obj1Keys.length; i++) {
             const key = obj1Keys[i];
-            if (this.isPlainObject(obj1[key]) && this.isPlainObject(obj2[key])) {
-                // Recurse if object
+            if (
+                (this.isPlainObject(obj1[key]) || obj1[key] instanceof Array) &&
+                (this.isPlainObject(obj2[key]) || obj2[key] instanceof Array)
+            ) {
+                // Recurse if object or array
                 if (!this.deepEquals(obj1[key], obj2[key])) return false;
             } else {
                 // Check shallow equivalence otherwise

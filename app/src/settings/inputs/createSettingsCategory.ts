@@ -4,6 +4,7 @@ import {createFolderMenuItem} from "../../menus/items/createFolderMenuItem";
 import {ISettingsCategoryMenuItem} from "../_types/ISettingsCategoryMenuItem";
 import {ISerializable} from "../_types/serialization/ISerializable";
 import {IJSONDeserializer} from "../_types/serialization/IJSONDeserializer";
+import {settingPatternMatcher} from "./settingPatternMatcher";
 
 /**
  * Creates a new settings category to organize the settings
@@ -16,5 +17,8 @@ export function createSettingsCategory<
     },
     S extends IJSONDeserializer
 >(data: IFolderMenuItemData<T>): ISettingsCategoryMenuItem<S, T> {
-    return createFolderMenuItem(data);
+    return createFolderMenuItem({
+        searchPattern: settingPatternMatcher,
+        ...data,
+    });
 }

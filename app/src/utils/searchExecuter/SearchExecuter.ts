@@ -231,12 +231,7 @@ export class SearchExecuter<Q, I> {
         });
 
         // Invoke the search to obtain its new results
-        const result = await node.searchable.search(
-            query,
-            hook,
-            parent?.patternMatch,
-            this
-        );
+        const result = await node.searchable.search(query, hook, this);
         const newChildren = result.children?.map(({id}) => id) || [];
         const patternMatch =
             result.patternMatch &&

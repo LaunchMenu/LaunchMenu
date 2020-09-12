@@ -17,14 +17,16 @@ export function createNumberMenuItem({
     name,
     liveUpdate,
     undoable,
-    description,
     actionBindings = [],
     checkValidity,
     tags = [],
     options,
     allowCustomInput,
-    resetable,
     resetUndoable = undoable,
+    min,
+    max,
+    baseValue,
+    increment,
     ...rest
 }: INumberMenuItemData): IFieldMenuItem<number> {
     return createFieldMenuItem({
@@ -37,8 +39,6 @@ export function createNumberMenuItem({
                 ...tags,
                 field.get(h).toString(),
             ]),
-            description,
-            resetable,
             resetUndoable,
             actionBindings: adjustSubscribable(actionBindings, bindings => [
                 ...bindings,
@@ -49,15 +49,22 @@ export function createNumberMenuItem({
                           allowCustomInput,
                           liveUpdate: liveUpdate as any,
                           undoable,
-                          ...rest,
+                          min,
+                          max,
+                          baseValue,
+                          increment,
                       })
                     : numberInputExecuteHandler.createBinding({
                           field,
                           liveUpdate: liveUpdate as any,
                           undoable,
-                          ...rest,
+                          min,
+                          max,
+                          baseValue,
+                          increment,
                       }),
             ]),
+            ...rest,
         }),
     });
 }

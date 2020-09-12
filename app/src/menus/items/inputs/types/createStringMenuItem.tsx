@@ -19,7 +19,6 @@ export function createStringMenuItem({
     actionBindings = [],
     checkValidity,
     tags = [],
-    resetable,
     resetUndoable = undoable,
     ...rest
 }: IStringMenuItemData): IFieldMenuItem<string> {
@@ -33,7 +32,6 @@ export function createStringMenuItem({
                 ...tags,
                 field.get(h).toString(),
             ]),
-            resetable,
             resetUndoable,
             actionBindings: adjustSubscribable(actionBindings, bindings => [
                 ...bindings,

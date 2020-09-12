@@ -1,6 +1,6 @@
 import {MathParser, tokenList, tokens} from "./MathInterpreter.helper";
 import {HighlightParser} from "../HighlightParser";
-import {tags} from "../utils/standardTags";
+import {highlightTags} from "../utils/highlightTags";
 
 // The highlight parsers largely relies on correctness of chevrotain, since it's only a light wrapper
 describe("HighlightParser", () => {
@@ -43,19 +43,19 @@ describe("HighlightParser", () => {
                 text: "3",
                 start: 0,
                 end: 1,
-                tags: [tags.literal, tags.number],
+                tags: [highlightTags.literal, highlightTags.number],
             });
             expect(nodes[1]).toEqual({
                 text: "*",
                 start: 1,
                 end: 2,
-                tags: [tags.operator],
+                tags: [highlightTags.operator],
             });
             expect(nodes[2]).toEqual({
                 text: "5",
                 start: 2,
                 end: 3,
-                tags: [tags.literal, tags.number],
+                tags: [highlightTags.literal, highlightTags.number],
             });
             expect(nodes.length).toEqual(3);
             expect(errors.length).toEqual(0);

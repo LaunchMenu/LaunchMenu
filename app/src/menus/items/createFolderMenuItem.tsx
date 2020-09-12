@@ -37,6 +37,7 @@ export function createFolderMenuItem<T extends {[key: string]: IMenuItem} | IMen
     category,
     actionBindings,
     children,
+    searchPattern,
     searchChildren = children,
 }: IFolderMenuItemData<T>): IMenuItem & {children: T} {
     const generatedBindings: IActionBinding<any>[] = [
@@ -44,6 +45,7 @@ export function createFolderMenuItem<T extends {[key: string]: IMenuItem} | IMen
             name,
             description,
             tags,
+            patternMatcher: searchPattern,
             children: Object.values(searchChildren),
         }),
     ];

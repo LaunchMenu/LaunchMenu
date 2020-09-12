@@ -16,10 +16,11 @@ const tagsList = [
     "error",
     "empty",
     "text",
+    "patternMatch",
 ] as const;
 
 /**
  * A collection of standard
  */
-export const tags = {} as {[P in typeof tagsList[any]]: P};
-tagsList.forEach(tag => ((tags[tag] as any) = tag));
+export const highlightTags = {} as {[P in typeof tagsList[any]]: P};
+tagsList.forEach(tag => ((highlightTags[tag] as any) = tag));

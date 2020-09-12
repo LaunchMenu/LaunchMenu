@@ -29,12 +29,12 @@ const createSimpleSearch = ({
     pattern?: (text: string) => IPatternMatch | undefined;
 }): ISearchable<string, string> => ({
     id,
-    async search(query, hook, parentPattern) {
+    async search(query, hook) {
         return {
             item: (await matches?.(query, hook)) ? id : undefined,
             children:
                 children instanceof Function ? await children(query, hook) : children,
-            patternMatch: pattern?.(query) ?? parentPattern,
+            patternMatch: pattern?.(query),
         };
     },
 });
@@ -575,44 +575,6 @@ describe("SearchExecuter", () => {
 
                 await executer.setQuery("s");
                 expect(s(executer.getResults())).toEqual(s([search1.id, search4.id]));
-            });
-            it("Correctly inherits matched patterns", async () => {
-                // Behavior depends on searchable, which retrieves parent patterns to use
-                const search1 = createSimpleSearch({
-                    id: "1",
-                    m: s => s[0] == "s",
-                });
-                const search2 = createSimpleSearch({
-                    id: "2",
-                    m: s => s[0] == "o",
-                });
-                const search3 = createSimpleSearch({
-                    id: "3",
-                    m: s => s[0] == "o",
-                    children: s => [search1, search2],
-                    pattern: s => (s[s.length - 1] == "!" ? {name: "bob"} : undefined),
-                });
-                const search4 = createSimpleSearch({
-                    id: "4",
-                    m: s => s[0] == "s",
-                });
-                const search5 = createSimpleSearch({
-                    id: "5",
-                    m: s => s[0] == "o",
-                    children: s => [search3, search4],
-                });
-
-                const executer = createExecuter(search5);
-                await executer.setQuery("o");
-                expect(s(executer.getResults())).toEqual(
-                    s([search2.id, search3.id, search5.id])
-                );
-
-                await executer.setQuery("o!");
-                expect(s(executer.getResults())).toEqual(s([search2.id, search3.id]));
-
-                await executer.setQuery("s!");
-                expect(s(executer.getResults())).toEqual(s([search1.id]));
             });
         });
     });

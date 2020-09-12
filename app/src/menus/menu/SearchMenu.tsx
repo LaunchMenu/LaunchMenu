@@ -14,6 +14,7 @@ import {InstantCloseTransition} from "../../components/stacks/transitions/close/
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 import {IUUID} from "../../_types/IUUID";
 import {IMenuSearchable} from "../actions/types/search/_types/IMenuSearchable";
+import {IPatternMatch} from "../../utils/searchExecuter/_types/IPatternMatch";
 
 /**
  * A menu that can be used to perform a search on a collection of items
@@ -119,5 +120,14 @@ export class SearchMenu extends PrioritizedMenu {
      */
     public getHighlight(hook: IDataHook = null): IQuery | null {
         return this.executer.getQuery(hook) || null;
+    }
+
+    /**
+     * Retrieves the pattern matches from searches
+     * @param hook The hook to subscribe to changes
+     * @returns The patterns in searches
+     */
+    public getPatternMatches(hook: IDataHook = null): IPatternMatch[] {
+        return this.executer.getPatternMatches(hook);
     }
 }

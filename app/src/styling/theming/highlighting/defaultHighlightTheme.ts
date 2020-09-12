@@ -1,4 +1,4 @@
-import {tags} from "../../../textFields/syntax/utils/standardTags";
+import {highlightTags} from "../../../textFields/syntax/utils/highlightTags";
 import {IHighlightThemeInput} from "./_types/IHighlightThemeInput";
 
 /**
@@ -7,25 +7,25 @@ import {IHighlightThemeInput} from "./_types/IHighlightThemeInput";
 export const defaultHighlightTheme: IHighlightThemeInput = theme => ({
     syntax: [
         {
-            scope: [tags.number],
+            scope: [highlightTags.number, highlightTags.patternMatch],
             settings: {
                 color: theme.color.primary,
             },
         },
         {
-            scope: [tags.operator],
+            scope: [highlightTags.operator],
             settings: {
                 color: theme.color.tertiary,
             },
         },
         {
-            scope: [tags.error],
+            scope: [highlightTags.error],
             settings: {
                 background: "#ff7777",
             },
         },
         {
-            scope: [tags.empty],
+            scope: [highlightTags.empty],
             settings: {
                 width: 5,
                 "::before": {

@@ -12,14 +12,12 @@ export type ISearchable<Q, I> = {
      * May also return a matched pattern to ignore all items that don't match a pattern.
      * @param query The query to be checked against
      * @param hook A data hook to listen for changes
-     * @param parentPatternMatch The pattern match of your parent searchable, for easy pattern inheritance
      * @param executer The executer performing the search, for possible advanced optimizations
      * @returns The search result
      **/
     search(
         query: Q,
         hook: IDataHook,
-        parentPatternMatch?: IPatternMatch,
         executer?: SearchExecuter<Q, I>
     ): Promise<{
         /** The item that may have been found */

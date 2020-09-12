@@ -8,7 +8,7 @@ import {IActionBinding} from "../../../_types/IActionBinding";
 import {IDataHook} from "model-react";
 import {IMenuSearchable} from "../_types/IMenuSearchable";
 import {getHooked} from "../../../../../utils/subscribables/getHooked";
-import {isItemSelectable} from "../../../../items/isItemSelectable";
+import {IPatternMatch} from "../../../../../utils/searchExecuter/_types/IPatternMatch";
 
 /**
  * The weights for how importing matching name vs description vs tags is (higher = more important)
@@ -55,59 +55,34 @@ export function getSimplePriority(
 }
 
 /**
- * A search handler that performs simple searches based off a regex match of a number of fields
+ * A search handler that performs simple searches based off a regex match of a number of fields.
+ * If multiple items are bound to 1 simple search data object, only the first item will be used.
  */
 export const simpleSearchHandler = searchAction.createHandler(
     (data: ISimpleSearchData[], dataItems) => {
         // Map all the search data
-        return data.flatMap((data, i): IMenuSearchable | IMenuSearchable[] => {
-            const items = dataItems[i];
-
-            // IF we have multiple items, make independent searchables for items and children
-            if (items.length !== 1) {
-                const itemMatchers = items.map((item, i) => ({
-                    id: data.ids[i],
-                    search: async (
-                        query: IQuery & Partial<ISimpleSearchQuery>,
-                        hook: IDataHook
-                    ) => {
-                        const priority = getSimplePriority(query, data, hook);
-                        if (priority > 0)
-                            return {item: {priority, id: data.ids[i], item}};
-                        return {};
-                    },
-                }));
-
-                const children = data.children;
-                if (children)
-                    return [
-                        ...itemMatchers,
-                        {
-                            id: data.ids[i] + "-children",
-                            search: async () => ({children: searchAction.get(children)}),
-                        },
-                    ];
-                else return itemMatchers;
-            } else {
-                return {
-                    id: data.ids[0],
-                    search: async (
-                        query: IQuery & Partial<ISimpleSearchQuery>,
-                        hook: IDataHook
-                    ) => {
-                        const priority = getSimplePriority(query, data, hook);
-                        const children = data.children
-                            ? searchAction.get(data.children)
-                            : undefined;
-                        if (priority > 0)
-                            return {
-                                item: {priority, id: data.ids[0], item: items[0]},
-                                children,
-                            };
-                        return {children};
-                    },
-                };
-            }
+        return data.flatMap(({children: childItems, id, ...data}, i):
+            | IMenuSearchable
+            | IMenuSearchable[] => {
+            const item = dataItems[i][0];
+            return {
+                id,
+                search: async (
+                    query: IQuery & Partial<ISimpleSearchQuery>,
+                    hook: IDataHook
+                ) => {
+                    const priority = getSimplePriority(query, data, hook);
+                    const children = childItems
+                        ? searchAction.get(childItems)
+                        : undefined;
+                    const patternMatch = data.patternMatcher?.(query, hook);
+                    return {
+                        item: priority > 0 ? {priority, id, item} : undefined,
+                        children,
+                        patternMatch,
+                    };
+                },
+            };
         });
     }
 );
@@ -118,7 +93,7 @@ export const simpleSearchHandler = searchAction.createHandler(
  * @returns The created binding
  */
 export function createSimpleSearchBinding(
-    data: Omit<ISimpleSearchData, "ids">
+    data: Omit<ISimpleSearchData, "id">
 ): IActionBinding<ISimpleSearchData> {
-    return simpleSearchHandler.createBinding({ids: [uuid()], ...data});
+    return simpleSearchHandler.createBinding({id: uuid(), ...data});
 }

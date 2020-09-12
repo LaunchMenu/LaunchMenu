@@ -47,8 +47,8 @@ import {IViewStackItem} from "../stacks/viewStack/_types/IViewStackItem";
 import {MenuView} from "../components/menu/MenuView";
 import {PrioritizedMenu} from "../menus/menu/PrioritizedMenu";
 import {sortContextCategories} from "../menus/contextMenu/sortContextCategories";
-import {prioritizedUndoMenuItem, undoMenuItem} from "../undoRedo/ui/undoMenuItem";
-import {prioritizedRedoMenuItem, redoMenuItem} from "../undoRedo/ui/redoMenuItem";
+import {prioritizedUndoMenuItem} from "../undoRedo/ui/undoMenuItem";
+import {prioritizedRedoMenuItem} from "../undoRedo/ui/redoMenuItem";
 
 class PushStackCommand extends Command {
     protected stack: IViewStack;

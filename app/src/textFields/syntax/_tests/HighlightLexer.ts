@@ -1,5 +1,5 @@
 import {HighlightLexer} from "../HighlightLexer";
-import {tags} from "../utils/standardTags";
+import {highlightTags} from "../utils/highlightTags";
 import {tokenList} from "./MathInterpreter.helper";
 
 describe("HighlightLexer", () => {
@@ -19,19 +19,19 @@ describe("HighlightLexer", () => {
                 image: "3",
                 startOffset: 0,
                 endOffset: 0,
-                tags: [tags.literal, tags.number],
+                tags: [highlightTags.literal, highlightTags.number],
             });
             expect(tokens[1]).toMatchObject({
                 image: "*",
                 startOffset: 1,
                 endOffset: 1,
-                tags: [tags.operator],
+                tags: [highlightTags.operator],
             });
             expect(tokens[2]).toMatchObject({
                 image: "5",
                 startOffset: 2,
                 endOffset: 2,
-                tags: [tags.literal, tags.number],
+                tags: [highlightTags.literal, highlightTags.number],
             });
             expect(tokens.length).toEqual(3);
             expect(errors.length).toEqual(0);
@@ -48,19 +48,19 @@ describe("HighlightLexer", () => {
                 image: "3",
                 startOffset: 0,
                 endOffset: 0,
-                tags: [tags.literal, tags.number],
+                tags: [highlightTags.literal, highlightTags.number],
             });
             expect(tokens[1]).toMatchObject({
                 image: " ",
                 startOffset: 1,
                 endOffset: 1,
-                tags: [tags.whiteSpace],
+                tags: [highlightTags.whiteSpace],
             });
             expect(tokens[2]).toMatchObject({
                 image: "*",
                 startOffset: 2,
                 endOffset: 2,
-                tags: [tags.operator],
+                tags: [highlightTags.operator],
             });
             expect(tokens.length).toEqual(3);
             expect(errors.length).toEqual(0);
@@ -77,19 +77,19 @@ describe("HighlightLexer", () => {
                 text: "3",
                 start: 0,
                 end: 1,
-                tags: [tags.literal, tags.number],
+                tags: [highlightTags.literal, highlightTags.number],
             });
             expect(nodes[1]).toEqual({
                 text: "*",
                 start: 1,
                 end: 2,
-                tags: [tags.operator],
+                tags: [highlightTags.operator],
             });
             expect(nodes[2]).toEqual({
                 text: "5",
                 start: 2,
                 end: 3,
-                tags: [tags.literal, tags.number],
+                tags: [highlightTags.literal, highlightTags.number],
             });
             expect(nodes.length).toEqual(3);
             expect(errors.length).toEqual(0);
@@ -108,19 +108,19 @@ describe("HighlightLexer", () => {
                 text: "3",
                 start: 0,
                 end: 1,
-                tags: [tags.literal, tags.number],
+                tags: [highlightTags.literal, highlightTags.number],
             });
             expect(nodes[1]).toEqual({
                 text: " ",
                 start: 1,
                 end: 2,
-                tags: [tags.whiteSpace],
+                tags: [highlightTags.whiteSpace],
             });
             expect(nodes[2]).toEqual({
                 text: "*",
                 start: 2,
                 end: 3,
-                tags: [tags.operator],
+                tags: [highlightTags.operator],
             });
             expect(nodes.length).toEqual(3);
             expect(errors.length).toEqual(0);

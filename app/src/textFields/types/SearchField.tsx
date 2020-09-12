@@ -3,7 +3,6 @@ import {TextField} from "../TextField";
 import {ITextSelection} from "../_types/ITextSelection";
 import {SearchMenu} from "../../menus/menu/SearchMenu";
 import {IPrioritizedMenuCategoryConfig} from "../../menus/menu/_types/IAsyncMenuCategoryConfig";
-import {IQuery} from "../../menus/menu/_types/IQuery";
 import {openUI} from "../../context/openUI/openUI";
 import {IMenu} from "../../menus/menu/_types/IMenu";
 import {IMenuItem} from "../../menus/items/_types/IMenuItem";
@@ -11,8 +10,9 @@ import {Observer} from "../../utils/modelReact/Observer";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {TextFieldView} from "../../components/fields/TextFieldView";
 import {plaintextLexer} from "../syntax/plaintextLexer";
-import {InstantOpenTransition} from "../../components/stacks/transitions/open/InstantOpenTransition";
-import {InstantCloseTransition} from "../../components/stacks/transitions/close/InstantCloseTransition";
+import {IHighlighter} from "../syntax/_types/IHighlighter";
+import {addHighlightNodeTags} from "../syntax/utils/addHighlightNodeTags";
+import {highlightTags} from "../syntax/utils/highlightTags";
 
 /**
  * A search field that manages the search menu
@@ -56,7 +56,11 @@ export class SearchField extends TextField {
 
     /** The default view for a search bar */
     public view = (
-        <TextFieldView field={this} icon={"search"} highlighter={plaintextLexer} />
+        <TextFieldView
+            field={this}
+            icon={"search"}
+            highlighter={this.getHighlighterWithPattern(plaintextLexer)}
+        />
     );
 
     /**
@@ -96,5 +100,52 @@ export class SearchField extends TextField {
         this.closeMenu?.();
         this.menu.destroy();
         this.targetObserver.destroy();
+    }
+
+    // Utils
+    /**
+     * Augments a given highlighter with the pattern match highlighting
+     * @param defaultHighlighter The highlighter to extend, or the plain text highlighter if left out
+     * @param usePatternHighlighter Whether to inherit the highlighter from a search pattern when available
+     * @returns The augmented highlighter
+     */
+    public getHighlighterWithPattern(
+        defaultHighlighter: IHighlighter = plaintextLexer,
+        usePatternHighlighter: boolean = true
+    ): IHighlighter {
+        return {
+            highlight: (syntax, h) => {
+                const patternMatches = this.menu.getPatternMatches(h);
+
+                let highlighter = defaultHighlighter;
+                if (
+                    usePatternHighlighter &&
+                    patternMatches.length == 1 &&
+                    patternMatches[0].highlighter
+                )
+                    highlighter = patternMatches[0].highlighter;
+                const {nodes, errors} = highlighter.highlight(syntax);
+
+                // Augment the node tags with the specified new tags
+                let newNodes = nodes;
+                patternMatches.forEach(pattern => {
+                    if (pattern.highlight)
+                        pattern.highlight.forEach(node => {
+                            newNodes = addHighlightNodeTags(
+                                newNodes,
+                                node.start,
+                                node.end,
+                                "tags" in node ? node.tags : [highlightTags.patternMatch]
+                            );
+                        });
+                });
+
+                // Return the newly created nodes and the errors
+                return {
+                    nodes: newNodes,
+                    errors,
+                };
+            },
+        };
     }
 }

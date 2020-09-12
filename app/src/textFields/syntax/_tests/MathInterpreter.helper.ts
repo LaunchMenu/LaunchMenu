@@ -1,18 +1,18 @@
-import {createHighlightTokens} from "../utils/createHighightTokens";
+import {createHighlightTokens} from "../utils/createHighlightTokens";
 import {HighlightParser, Lexer} from "../HighlightParser";
-import {tags} from "../utils/standardTags";
+import {highlightTags} from "../utils/highlightTags";
 
 export const {tokens, tokenList} = createHighlightTokens({
-    lBracket: {pattern: /\(/, tags: [tags.bracket, tags.left]},
-    rBracket: {pattern: /\)/, tags: [tags.bracket, tags.right]},
-    add: {pattern: /\+/, tags: [tags.operator]},
-    sub: {pattern: /\-/, tags: [tags.operator]},
-    mul: {pattern: /\*/, tags: [tags.operator]},
-    div: {pattern: /\//, tags: [tags.operator]},
-    value: {pattern: /[0-9]+/, tags: [tags.literal, tags.number]},
+    lBracket: {pattern: /\(/, tags: [highlightTags.bracket, highlightTags.left]},
+    rBracket: {pattern: /\)/, tags: [highlightTags.bracket, highlightTags.right]},
+    add: {pattern: /\+/, tags: [highlightTags.operator]},
+    sub: {pattern: /\-/, tags: [highlightTags.operator]},
+    mul: {pattern: /\*/, tags: [highlightTags.operator]},
+    div: {pattern: /\//, tags: [highlightTags.operator]},
+    value: {pattern: /[0-9]+/, tags: [highlightTags.literal, highlightTags.number]},
     whiteSpace: {
         pattern: /\s+/,
-        tags: [tags.whiteSpace],
+        tags: [highlightTags.whiteSpace],
         group: Lexer.SKIPPED,
     },
 });

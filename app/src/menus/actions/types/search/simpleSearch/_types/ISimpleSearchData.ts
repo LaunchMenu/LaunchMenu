@@ -1,5 +1,8 @@
 import {IDataHook} from "model-react";
+import {IPatternMatch} from "../../../../../../utils/searchExecuter/_types/IPatternMatch";
+import {IUUID} from "../../../../../../_types/IUUID";
 import {IMenuItem} from "../../../../../items/_types/IMenuItem";
+import {IQuery} from "../../../../../menu/_types/IQuery";
 
 /**
  * Data for simple item searches
@@ -13,7 +16,16 @@ export type ISimpleSearchData = {
     tags?: string[] | ((hook: IDataHook) => string[]);
     /** Any number of children that can be matched */
     children?: IMenuItem[];
-
-    /** Consistent identifiers for the items with this data */
-    ids: (string | number)[];
+    /** A possible pattern matcher to recognize search types */
+    patternMatcher?: ISimpleSearchPatternMatcher;
+    /** An identifier for the searchable */
+    id: IUUID;
 };
+
+/**
+ * A pattern matcher that can be passed with the simple search data
+ */
+export type ISimpleSearchPatternMatcher = (
+    search: IQuery,
+    hook: IDataHook
+) => IPatternMatch | undefined;

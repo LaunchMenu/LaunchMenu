@@ -1,6 +1,7 @@
 import {createBooleanMenuItem} from "../../menus/items/inputs/types/createBooleanMenuItem";
 import {IFieldMenuItem} from "../../menus/items/inputs/_types/IFieldMenuItem";
 import {IBooleanMenuItemData} from "../../menus/items/inputs/types/_types/IBooleanMenuItemData";
+import {settingPatternMatcher} from "./settingPatternMatcher";
 
 /**
  * Creates a new boolean setting
@@ -10,5 +11,9 @@ import {IBooleanMenuItemData} from "../../menus/items/inputs/types/_types/IBoole
 export function createBooleanSetting(
     data: IBooleanMenuItemData
 ): IFieldMenuItem<boolean> {
-    return createBooleanMenuItem({resetable: true, ...data});
+    return createBooleanMenuItem({
+        resetable: true,
+        searchPattern: settingPatternMatcher,
+        ...data,
+    });
 }

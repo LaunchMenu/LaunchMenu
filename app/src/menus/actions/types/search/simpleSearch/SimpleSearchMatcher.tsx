@@ -30,6 +30,7 @@ export class SimpleSearchMatcher {
             this.regex = new RegExp(m[1]);
         } else {
             this.words = search
+                .replace(/\w+\:/, "")
                 .split(" ")
                 .map(word => word.toLowerCase())
                 .filter(Boolean);
@@ -88,7 +89,7 @@ export class SimpleSearchMatcher {
 
         if (this.words) {
             const indices = this.words.reduce<[number, number][]>((cur, word) => {
-                const index = lowerText.indexOf(word);
+                const index = lowerText.indexOf(word, cur[cur.length - 1]?.[1] ?? 0);
                 if (index != -1) return [...cur, [index, index + word.length]];
                 return cur;
             }, []);

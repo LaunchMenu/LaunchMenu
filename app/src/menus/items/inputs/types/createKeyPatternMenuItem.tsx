@@ -20,7 +20,6 @@ export function createKeyPatternMenuItem({
     undoable,
     actionBindings = [],
     tags = [],
-    resetable,
     resetUndoable = undoable,
     ...rest
 }: IKeyPatternMenuItemData): IFieldMenuItem<KeyPattern> {
@@ -34,7 +33,6 @@ export function createKeyPatternMenuItem({
                 ...tags,
                 field.get(h).toString(),
             ]),
-            resetable,
             resetUndoable,
             actionBindings: adjustSubscribable(actionBindings, bindings => [
                 ...bindings,

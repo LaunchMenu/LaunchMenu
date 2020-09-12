@@ -1,4 +1,5 @@
 import {ISubscribable} from "../../../../../utils/subscribables/_types/ISubscribable";
+import {ISimpleSearchPatternMatcher} from "../../../../actions/types/search/simpleSearch/_types/ISimpleSearchData";
 import {ISubscribableActionBindings} from "../../../_types/ISubscribableActionBindings";
 
 /**
@@ -21,4 +22,6 @@ export type IInputTypeMenuItemData = {
     resetable?: boolean;
     /** Whether the reset should be undoable, defaults to value of undoable */
     resetUndoable?: boolean;
+    /** A pattern matcher that can be used to capture patterns in a search and highlight them */
+    searchPattern?: ISimpleSearchPatternMatcher;
 };

@@ -19,7 +19,6 @@ export function createColorMenuItem({
     undoable,
     actionBindings = [],
     tags = [],
-    resetable,
     resetUndoable = undoable,
     ...rest
 }: IColorMenuItemData): IFieldMenuItem<string> {
@@ -35,7 +34,6 @@ export function createColorMenuItem({
                 ...tags,
                 field.get(h).toString(),
             ]),
-            resetable,
             resetUndoable,
             actionBindings: adjustSubscribable(actionBindings, bindings => [
                 ...bindings,

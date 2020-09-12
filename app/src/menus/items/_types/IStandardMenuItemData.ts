@@ -1,10 +1,10 @@
 import {ReactNode} from "react";
-import {IActionBinding} from "../../actions/_types/IActionBinding";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {IMenu} from "../../menu/_types/IMenu";
 import {IExecutable} from "../../actions/types/execute/_types/IExecutable";
 import {IDataHook} from "model-react";
 import {ISubscribableActionBindings} from "./ISubscribableActionBindings";
+import {ISimpleSearchPatternMatcher} from "../../actions/types/search/simpleSearch/_types/ISimpleSearchData";
 
 /**
  * A type for the data passed to a standard menu item
@@ -21,6 +21,9 @@ export type IStandardMenuItemData = {
 
     /** Any tags that can be used for searching */
     tags?: string[] | ((h?: IDataHook) => string[]);
+
+    /** A pattern matcher that can be used to capture patterns in a search and highlight them */
+    searchPattern?: ISimpleSearchPatternMatcher;
 
     /** The function to execute when executing the menu item's default action */
     onExecute?: IExecutable["execute"];
