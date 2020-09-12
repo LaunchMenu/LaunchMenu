@@ -6,7 +6,7 @@ import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventLi
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {withRemoveError} from "../withRemoveError";
 import {openTextField} from "./openTextField";
-import {SearchField} from "../../textFields/types/SearchField";
+import {SearchField} from "../../textFields/types/searchField/SearchField";
 import {isIOContext, IIOContext} from "../_types/IIOContext";
 import {getViewWithContext} from "./getViewWithContext";
 import {IMenu} from "../../menus/menu/_types/IMenu";

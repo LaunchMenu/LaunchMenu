@@ -1,9 +1,8 @@
 import React from "react";
 import {PrioritizedMenu} from "./PrioritizedMenu";
 import {IMenuItem} from "../items/_types/IMenuItem";
-import {Field, IDataHook, isLoading} from "model-react";
+import {Field, IDataHook} from "model-react";
 import {searchAction} from "../actions/types/search/searchAction";
-import {GeneratorStreamExtractor} from "../../utils/generator/GeneratorStreamExtractor";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
 import {IQuery} from "./_types/IQuery";
 import {MenuView} from "../../components/menu/MenuView";
@@ -13,7 +12,6 @@ import {InstantOpenTransition} from "../../components/stacks/transitions/open/In
 import {InstantCloseTransition} from "../../components/stacks/transitions/close/InstantCloseTransition";
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 import {IUUID} from "../../_types/IUUID";
-import {IMenuSearchable} from "../actions/types/search/_types/IMenuSearchable";
 import {IPatternMatch} from "../../utils/searchExecuter/_types/IPatternMatch";
 
 /**
@@ -21,6 +19,7 @@ import {IPatternMatch} from "../../utils/searchExecuter/_types/IPatternMatch";
  */
 export class SearchMenu extends PrioritizedMenu {
     protected searchItems = new Field([] as IMenuItem[]);
+    protected showAllOnEmptySearch?: boolean;
     protected executer = new SearchExecuter({
         searchable: {
             id: "root",
@@ -35,23 +34,27 @@ export class SearchMenu extends PrioritizedMenu {
     /**
      * Creates a new search menu
      * @param context The context to be used by menu items
-     * @param categoryConfig The config of the category
+     * @param config The config of the category and other options
      */
     public constructor(
         context: IIOContext,
-        categoryConfig?: IPrioritizedMenuCategoryConfig
+        config?: IPrioritizedMenuCategoryConfig & {
+            /** Whether to show all items when the set search is empty (defaults to false) */
+            showAllOnEmptySearch?: boolean;
+        }
     ) {
         super(context, {
-            ...categoryConfig,
+            ...config,
             // Forward the loading state from the search executer
             isLoading: {
                 get: hook => {
                     const isSearching = this.executer.isSearching(hook);
-                    const isLoading = categoryConfig?.isLoading?.get(hook) ?? false;
+                    const isLoading = config?.isLoading?.get(hook) ?? false;
                     return isSearching || isLoading;
                 },
             },
         });
+        this.showAllOnEmptySearch = config?.showAllOnEmptySearch;
     }
 
     /**
@@ -65,18 +68,30 @@ export class SearchMenu extends PrioritizedMenu {
         },
     };
 
+    // Search management
     /**
      * Sets the search query
      * @param search The text to search with
      * @returns A promise that resolves once the new search has finished
      */
     public async setSearch(search: string): Promise<void> {
+        // Update the default items (for empty searches)
+        const oldQuery = this.executer.getQuery();
+        if (this.showAllOnEmptySearch && (oldQuery?.search ?? "") != search) {
+            const prioritizedItems = this.searchItems
+                .get(null)
+                .map(item => ({priority: 1, item}));
+
+            if (search == "") this.addItems(prioritizedItems);
+            else this.removeItems(prioritizedItems);
+        }
+
+        // Perform the search
         const query = {search};
 
         // Make a snappy first result
         setTimeout(() => this.flushBatch(), 10);
-
-        await this.executer.setQuery(query);
+        return this.executer.setQuery(query);
     }
 
     /**
@@ -84,6 +99,12 @@ export class SearchMenu extends PrioritizedMenu {
      * @param items The items
      */
     public setSearchItems(items: IMenuItem[]): void {
+        if (this.showAllOnEmptySearch && (this.executer.getQuery()?.search ?? "") == "") {
+            this.removeItems(
+                this.searchItems.get(null).map(item => ({item, priority: 1}))
+            );
+            this.addItems(items.map(item => ({item, priority: 1})));
+        }
         this.searchItems.set(items);
     }
 
@@ -93,6 +114,8 @@ export class SearchMenu extends PrioritizedMenu {
      */
     public addSearchItem(item: IMenuItem): void {
         this.searchItems.set([...this.searchItems.get(null), item]);
+        if (this.showAllOnEmptySearch && (this.executer.getQuery()?.search ?? "") == "")
+            this.addItem({item, priority: 1});
     }
 
     /**
@@ -101,6 +124,8 @@ export class SearchMenu extends PrioritizedMenu {
      */
     public removeSearchItem(item: IMenuItem): void {
         this.searchItems.set(this.searchItems.get(null).filter(i => i != item));
+        if (this.showAllOnEmptySearch && (this.executer.getQuery()?.search ?? "") == "")
+            this.removeItem({item, priority: 1});
     }
 
     // Data retrieval

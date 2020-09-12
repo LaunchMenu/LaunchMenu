@@ -105,10 +105,10 @@ export class SelectField<T> extends InputField<T> {
      */
     protected setupMenu(): void {
         // Create the menu
-        this.menu = new SearchMenu(
-            this.context as IIOContext,
-            this.dConfig.categoryConfig
-        );
+        this.menu = new SearchMenu(this.context as IIOContext, {
+            ...this.dConfig.categoryConfig,
+            showAllOnEmptySearch: true,
+        });
 
         // Retrieve and store the options
         this.options = this.dConfig.options.map(option => ({
@@ -217,7 +217,6 @@ export class SelectField<T> extends InputField<T> {
                 }),
             ]),
         };
-        console.log(n, isItemSelectable(n));
         return n;
     }
 
@@ -237,7 +236,14 @@ export class SelectField<T> extends InputField<T> {
                 id,
                 search: async query => ({
                     // Note it should be this.customItem, not item, since item doesn't contain all data yet
-                    item: this.customItem && {item: this.customItem, id, priority: 0.1},
+                    item:
+                        query.search != "" // To prevent duplicates since all items show  when search is empty
+                            ? this.customItem && {
+                                  item: this.customItem,
+                                  id,
+                                  priority: 0.1,
+                              }
+                            : undefined,
                 }),
             },
         ]);

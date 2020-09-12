@@ -5,6 +5,16 @@ import {context} from "../../../_tests/context.helper";
 import {Observer} from "../../../utils/modelReact/Observer";
 
 describe("SearchMenu", () => {
+    describe("new SearchMenu", () => {
+        it("Properly creates a new search menu", () => {
+            new SearchMenu(context);
+        });
+        it("Can be initialized with a config", () => {
+            new SearchMenu(context, {
+                batchInterval: 200,
+            });
+        });
+    });
     describe("SearchMenu.addSearchItem -> SearchMenu.setSearch", () => {
         let menu: SearchMenu;
         beforeEach(() => {
@@ -195,6 +205,58 @@ describe("SearchMenu", () => {
             menu.setSearch("stuff");
             await wait(10);
             expect(callback.mock.calls.length).toBe(1);
+        });
+    });
+    describe("showAllOnEmptySearch", () => {
+        it("When set to true, shows the search items when the search is empty", async () => {
+            const menu = new SearchMenu(context, {showAllOnEmptySearch: true});
+
+            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
+            const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
+            menu.setSearchItems([item, item2]);
+
+            menu.flushBatch();
+            expect(menu.getItems()).toEqual([item, item2]);
+        });
+        it("When set to true, removes the search items when the search is not empty", async () => {
+            const menu = new SearchMenu(context, {showAllOnEmptySearch: true});
+
+            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
+            const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
+            menu.setSearchItems([item, item2]);
+
+            menu.flushBatch();
+            expect(menu.getItems()).toEqual([item, item2]);
+
+            await menu.setSearch("hoi");
+            menu.flushBatch();
+            expect(menu.getItems()).toEqual([]);
+
+            await menu.setSearch("");
+            menu.flushBatch();
+            expect(menu.getItems()).toEqual([item, item2]);
+        });
+        it("When set to false, does not show anything when search is empty", async () => {
+            const menu = new SearchMenu(context, {showAllOnEmptySearch: false});
+
+            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
+            const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
+            menu.setSearchItems([item, item2]);
+
+            menu.flushBatch();
+            expect(menu.getItems()).toEqual([]);
+
+            await menu.setSearch("hoi");
+            menu.flushBatch();
+            expect(menu.getItems()).toEqual([]);
+
+            await menu.setSearch("something");
+            menu.flushBatch();
+            expect(menu.getItems()).toEqual([item2, item]);
+
+            await menu.setSearch("");
+            menu.flushBatch();
+            expect(menu.getItems()).toEqual([]);
         });
     });
 });

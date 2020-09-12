@@ -1,18 +1,17 @@
 import React from "react";
-import {TextField} from "../TextField";
-import {ITextSelection} from "../_types/ITextSelection";
-import {SearchMenu} from "../../menus/menu/SearchMenu";
-import {IPrioritizedMenuCategoryConfig} from "../../menus/menu/_types/IAsyncMenuCategoryConfig";
-import {openUI} from "../../context/openUI/openUI";
-import {IMenu} from "../../menus/menu/_types/IMenu";
-import {IMenuItem} from "../../menus/items/_types/IMenuItem";
-import {Observer} from "../../utils/modelReact/Observer";
-import {IIOContext} from "../../context/_types/IIOContext";
-import {TextFieldView} from "../../components/fields/TextFieldView";
-import {plaintextLexer} from "../syntax/plaintextLexer";
-import {IHighlighter} from "../syntax/_types/IHighlighter";
-import {addHighlightNodeTags} from "../syntax/utils/addHighlightNodeTags";
-import {highlightTags} from "../syntax/utils/highlightTags";
+import {TextField} from "../../TextField";
+import {ITextSelection} from "../../_types/ITextSelection";
+import {SearchMenu} from "../../../menus/menu/SearchMenu";
+import {IPrioritizedMenuCategoryConfig} from "../../../menus/menu/_types/IAsyncMenuCategoryConfig";
+import {openUI} from "../../../context/openUI/openUI";
+import {IMenu} from "../../../menus/menu/_types/IMenu";
+import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
+import {Observer} from "../../../utils/modelReact/Observer";
+import {IIOContext} from "../../../context/_types/IIOContext";
+import {TextFieldView} from "../../../components/fields/TextFieldView";
+import {plaintextLexer} from "../../syntax/plaintextLexer";
+import {IHighlighter} from "../../syntax/_types/IHighlighter";
+import {createHighlighterWithSearchPattern} from "./createHighlighterWithSearchPattern";
 
 /**
  * A search field that manages the search menu
@@ -113,39 +112,10 @@ export class SearchField extends TextField {
         defaultHighlighter: IHighlighter = plaintextLexer,
         usePatternHighlighter: boolean = true
     ): IHighlighter {
-        return {
-            highlight: (syntax, h) => {
-                const patternMatches = this.menu.getPatternMatches(h);
-
-                let highlighter = defaultHighlighter;
-                if (
-                    usePatternHighlighter &&
-                    patternMatches.length == 1 &&
-                    patternMatches[0].highlighter
-                )
-                    highlighter = patternMatches[0].highlighter;
-                const {nodes, errors} = highlighter.highlight(syntax);
-
-                // Augment the node tags with the specified new tags
-                let newNodes = nodes;
-                patternMatches.forEach(pattern => {
-                    if (pattern.highlight)
-                        pattern.highlight.forEach(node => {
-                            newNodes = addHighlightNodeTags(
-                                newNodes,
-                                node.start,
-                                node.end,
-                                "tags" in node ? node.tags : [highlightTags.patternMatch]
-                            );
-                        });
-                });
-
-                // Return the newly created nodes and the errors
-                return {
-                    nodes: newNodes,
-                    errors,
-                };
-            },
-        };
+        return createHighlighterWithSearchPattern(
+            h => this.menu.getPatternMatches(h),
+            defaultHighlighter,
+            usePatternHighlighter
+        );
     }
 }

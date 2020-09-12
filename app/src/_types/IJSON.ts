@@ -1,1 +1,8 @@
-export type IJSON = string | number | boolean | null | IJSON[] | {[key: string]: IJSON};
+export type IJSON =
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | IJSON[]
+    | {[key: string]: IJSON};

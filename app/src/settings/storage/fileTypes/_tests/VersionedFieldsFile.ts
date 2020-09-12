@@ -58,7 +58,8 @@ describe("FieldsFile", () => {
                 updater: (version, data) => data as any,
                 path: getPath("t0.json"),
                 deserializers: [Test],
-                fields: createFieldsCustom(),
+                // fields: createFieldsCustom(),
+                fields: {},
             });
         });
     });

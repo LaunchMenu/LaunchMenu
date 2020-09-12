@@ -49,6 +49,7 @@ import {PrioritizedMenu} from "../menus/menu/PrioritizedMenu";
 import {sortContextCategories} from "../menus/contextMenu/sortContextCategories";
 import {prioritizedUndoMenuItem} from "../undoRedo/ui/undoMenuItem";
 import {prioritizedRedoMenuItem} from "../undoRedo/ui/redoMenuItem";
+import {VersionedFieldsFile} from "../settings/storage/fileTypes/VersionedFieldsFile/VersionFieldsFile";
 
 class PushStackCommand extends Command {
     protected stack: IViewStack;
@@ -126,6 +127,16 @@ const settingsItem = createSettingsCategory({
 const settings = extractSettings(settingsItem);
 // settings
 console.log("pattern", settings.someSubCategory.somePattern.get());
+
+// new VersionedFieldsFile({
+//     version: 1,
+//     updater: data => {
+//         return data as any;
+//     },
+//     path: "",
+//     fields: settings,
+//     deserializers: [KeyPattern],
+// });
 
 class SetFieldCmd extends Command {
     protected prev: string | undefined;

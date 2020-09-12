@@ -125,7 +125,10 @@ export class MultiSelectField<T> extends TextField {
      */
     protected setupMenu(): void {
         // Create the menu
-        this.menu = new SearchMenu(this.context, this.config.categoryConfig);
+        this.menu = new SearchMenu(this.context, {
+            ...this.config.categoryConfig,
+            showAllOnEmptySearch: true,
+        });
 
         // Retrieve and store the options
         this.options = this.config.options.map(option => ({
@@ -357,7 +360,14 @@ export class MultiSelectField<T> extends TextField {
                 id,
                 search: async query => ({
                     // Note it should be this.customItem, not item, since item doesn't contain all data yet
-                    item: this.customItem && {item: this.customItem, id, priority: 0.1},
+                    item:
+                        query.search != "" // To prevent duplicates since all items show  when search is empty
+                            ? this.customItem && {
+                                  item: this.customItem,
+                                  id,
+                                  priority: 0.1,
+                              }
+                            : undefined,
                 }),
             },
         ]);
