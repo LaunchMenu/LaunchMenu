@@ -5,10 +5,13 @@ import {Field, IDataHook, IDataListener} from "model-react";
 import {IUUID} from "../../../_types/IUUID";
 import {wait} from "../../../_tests/wait.helper";
 import {Observer} from "../../modelReact/Observer";
+import {IPatternMatch} from "../_types/IPatternMatch";
+import {ExtendedObject} from "../../ExtendedObject";
 
 const createSimpleSearch = ({
     id = uuid(),
     m: matches,
+    pattern,
     children,
 }: {
     /** The UUID for the searchable */
@@ -22,13 +25,16 @@ const createSimpleSearch = ({
               text: string,
               hook?: IDataHook
           ) => ISearchable<string, string>[] | Promise<ISearchable<string, string>[]>);
+    /** A function to match patterns */
+    pattern?: (text: string) => IPatternMatch | undefined;
 }): ISearchable<string, string> => ({
     id,
-    async search(query, hook) {
+    async search(query, hook, parentPattern) {
         return {
             item: (await matches?.(query, hook)) ? id : undefined,
             children:
                 children instanceof Function ? await children(query, hook) : children,
+            patternMatch: pattern?.(query) ?? parentPattern,
         };
     },
 });
@@ -310,8 +316,8 @@ describe("SearchExecuter", () => {
                 expect(sequence).toEqual([
                     {type: "add", item: search4.id},
                     {type: "add", item: search3.id},
-                    {type: "remove", item: search3.id}, // This remove would be last if following the normal addition sequence
                     {type: "remove", item: search4.id},
+                    {type: "remove", item: search3.id},
                     {type: "add", item: search1.id},
                     {type: "add", item: search2.id},
                 ]);
@@ -480,6 +486,135 @@ describe("SearchExecuter", () => {
                 s([search1.id, search4.id, search6.id])
             );
         });
+        describe("Correctly considers pattern matches", () => {
+            it("Removes items that don't match any pattern once a pattern is found", async () => {
+                const search1 = createSimpleSearch({
+                    id: "1",
+                    m: s => s[0] == "s",
+                    pattern: s => (s[s.length - 1] == "!" ? {name: "bob"} : undefined),
+                });
+                const search2 = createSimpleSearch({
+                    id: "2",
+                    m: s => s[0] == "o",
+                });
+                const search3 = createSimpleSearch({
+                    id: "3",
+                    m: s => s[0] == "o",
+                    children: s => [search1, search2],
+                });
+                const search4 = createSimpleSearch({
+                    id: "4",
+                    m: s => s[0] == "s",
+                });
+                const search5 = createSimpleSearch({
+                    id: "5",
+                    m: s => s[0] == "o",
+                    children: s => [search3, search4],
+                });
+
+                const executer1 = createExecuter(search5);
+                await executer1.setQuery("o");
+                expect(s(executer1.getResults())).toEqual(
+                    s([search2.id, search3.id, search5.id])
+                );
+
+                await executer1.setQuery("o!");
+                expect(s(executer1.getResults())).toEqual(s([]));
+
+                const executer2 = createExecuter(search5);
+                await executer2.setQuery("s");
+                expect(s(executer2.getResults())).toEqual(s([search1.id, search4.id]));
+
+                await executer2.setQuery("s!");
+                expect(s(executer2.getResults())).toEqual(s([search1.id]));
+            });
+            it("Reinserts found items that don't match any pattern once all patterns are removed", async () => {
+                const search1 = createSimpleSearch({
+                    id: "1",
+                    m: s => s[0] == "s",
+                    pattern: s => (s[s.length - 1] == "!" ? {name: "bob"} : undefined),
+                });
+                const search2 = createSimpleSearch({
+                    id: "2",
+                    m: s => s[0] == "o",
+                });
+                const search3 = createSimpleSearch({
+                    id: "3",
+                    m: s => s[0] == "o",
+                    children: s => [search1, search2],
+                });
+                const search4 = createSimpleSearch({
+                    id: "4",
+                    m: s => s[0] == "s",
+                });
+                const search5 = createSimpleSearch({
+                    id: "5",
+                    m: s => s[0] == "o",
+                    children: s => [search3, search4],
+                });
+
+                const executer = createExecuter(search5);
+                await executer.setQuery("o");
+                expect(s(executer.getResults())).toEqual(
+                    s([search2.id, search3.id, search5.id])
+                );
+
+                await executer.setQuery("o!");
+                expect(s(executer.getResults())).toEqual(s([]));
+
+                await executer.setQuery("o");
+                expect(s(executer.getResults())).toEqual(
+                    s([search2.id, search3.id, search5.id])
+                );
+
+                await executer.setQuery("s");
+                expect(s(executer.getResults())).toEqual(s([search1.id, search4.id]));
+
+                await executer.setQuery("s!");
+                expect(s(executer.getResults())).toEqual(s([search1.id]));
+
+                await executer.setQuery("s");
+                expect(s(executer.getResults())).toEqual(s([search1.id, search4.id]));
+            });
+            it("Correctly inherits matched patterns", async () => {
+                // Behavior depends on searchable, which retrieves parent patterns to use
+                const search1 = createSimpleSearch({
+                    id: "1",
+                    m: s => s[0] == "s",
+                });
+                const search2 = createSimpleSearch({
+                    id: "2",
+                    m: s => s[0] == "o",
+                });
+                const search3 = createSimpleSearch({
+                    id: "3",
+                    m: s => s[0] == "o",
+                    children: s => [search1, search2],
+                    pattern: s => (s[s.length - 1] == "!" ? {name: "bob"} : undefined),
+                });
+                const search4 = createSimpleSearch({
+                    id: "4",
+                    m: s => s[0] == "s",
+                });
+                const search5 = createSimpleSearch({
+                    id: "5",
+                    m: s => s[0] == "o",
+                    children: s => [search3, search4],
+                });
+
+                const executer = createExecuter(search5);
+                await executer.setQuery("o");
+                expect(s(executer.getResults())).toEqual(
+                    s([search2.id, search3.id, search5.id])
+                );
+
+                await executer.setQuery("o!");
+                expect(s(executer.getResults())).toEqual(s([search2.id, search3.id]));
+
+                await executer.setQuery("s!");
+                expect(s(executer.getResults())).toEqual(s([search1.id]));
+            });
+        });
     });
     describe("SearchExecuter.getQuery", () => {
         it("Correctly reflects the latest query", () => {
@@ -586,66 +721,198 @@ describe("SearchExecuter", () => {
             ]);
         });
     });
-    it("Correctly calls onAdd and onRemove hooks", async () => {
+    describe("SearchExecuter.getPatternMatches", () => {
         const search1 = createSimpleSearch({
             id: "1",
-            m: s => s == "s",
+            m: s => s[0] == "s",
+            pattern: s => (s[s.length - 1] == "!" ? {name: "bob"} : undefined),
         });
         const search2 = createSimpleSearch({
             id: "2",
-            m: s => s == "o",
+            m: s => s[0] == "o",
+            pattern: s => (s[s.length - 1] == "!" ? {name: "bob"} : undefined),
         });
         const search3 = createSimpleSearch({
             id: "3",
-            m: s => s == "o",
+            m: s => s[0] == "o",
             children: s => [search1, search2],
+            pattern: s => (s[s.length - 2] == "?" ? {name: "john"} : undefined),
         });
-        const search4 = createSimpleSearch({
-            id: "4",
-            m: s => s == "s",
-        });
-        const search5 = createSimpleSearch({
-            id: "5",
-            m: s => s == "o",
-            children: s => [search3, search4],
-        });
-        const search6 = createSimpleSearch({
-            id: "6",
-            m: s => s == "s",
-        });
-        const search7 = createSimpleSearch({
-            id: "7",
-            m: s => s == "o",
-            children: s => [search6, search5],
-        });
+        it("Correctly retrieves the currently matched patterns", async () => {
+            const executer = createExecuter(search3);
+            await executer.setQuery("o");
+            expect(executer.getPatternMatches()).toEqual([]);
 
-        const sequence = [] as {type: "add" | "remove"; item: string}[];
-        const executer = new SearchExecuter({
-            searchable: search7,
-            onAdd: item => sequence.push({type: "add", item}),
-            onRemove: item => sequence.push({type: "remove", item}),
-        });
-        await executer.setQuery("o");
-        expect(sequence).toEqual([
-            {type: "add", item: search7.id},
-            {type: "add", item: search5.id},
-            {type: "add", item: search3.id},
-            {type: "add", item: search2.id},
-        ]);
+            await executer.setQuery("o!");
+            expect(executer.getPatternMatches()).toEqual([{name: "bob"}]);
 
-        await executer.setQuery("s");
-        expect(sequence).toEqual([
-            {type: "add", item: search7.id},
-            {type: "add", item: search5.id},
-            {type: "add", item: search3.id},
-            {type: "add", item: search2.id},
-            {type: "remove", item: search2.id},
-            {type: "remove", item: search3.id},
-            {type: "remove", item: search5.id},
-            {type: "remove", item: search7.id},
-            {type: "add", item: search1.id},
-            {type: "add", item: search4.id},
-            {type: "add", item: search6.id},
-        ]);
+            await executer.setQuery("o?!");
+            expect(executer.getPatternMatches()).toEqual([{name: "bob"}, {name: "john"}]);
+        });
+        it("Can be subscribed to", async () => {
+            const executer = createExecuter(search3);
+
+            const listener = jest.fn();
+            new Observer((h: IDataListener) => executer.getPatternMatches(h)).listen(
+                listener
+            );
+
+            await executer.setQuery("o");
+            await wait();
+            await executer.setQuery("o!");
+            await wait();
+            await executer.setQuery("o?!");
+
+            await wait();
+            expect(listener.mock.calls.length).toBe(3);
+            expect(listener.mock.calls[0][0]).toEqual([]);
+            expect(listener.mock.calls[1][0]).toEqual([{name: "bob"}]);
+            expect(listener.mock.calls[2][0]).toEqual([{name: "bob"}, {name: "john"}]);
+        });
+        it("Indicates its loading state", async () => {
+            const search = createSimpleSearch({m: async s => wait(20, s == "s")});
+            const executer = createExecuter(search);
+
+            const listener = jest.fn();
+            new Observer((h: IDataListener) => executer.getPatternMatches(h)).listen(
+                listener
+            );
+
+            await executer.setQuery("s");
+            await executer.setQuery("t");
+
+            await wait();
+            expect(listener.mock.calls.length).toBe(3);
+            expect(listener.mock.calls[0]).toEqual([
+                [],
+                {isLoading: true, exceptions: []},
+                [],
+            ]);
+            expect(listener.mock.calls[1]).toEqual([
+                [],
+                {isLoading: true, exceptions: []},
+                [],
+            ]);
+            expect(listener.mock.calls[2]).toEqual([
+                [],
+                {isLoading: false, exceptions: []},
+                [],
+            ]);
+        });
+    });
+    describe("ISearchExecuterConfig", () => {
+        describe("getPatternMatch", () => {
+            const search1 = createSimpleSearch({
+                id: "1",
+                m: s => s[0] == "s",
+                pattern: s => (s[s.length - 1] == "!" ? {name: "bob"} : undefined),
+            });
+            const search2 = createSimpleSearch({
+                id: "2",
+                m: s => s[0] == "o",
+                pattern: s => (s[s.length - 1] == "!" ? {name: "bob"} : undefined),
+            });
+            const search3 = createSimpleSearch({
+                id: "3",
+                m: s => s[0] == "o",
+                children: s => [search1, search2],
+                pattern: s => (s[s.length - 2] == "?" ? {name: "john"} : undefined),
+            });
+            it("Can use the getPatternMatch to disable pattern matching", async () => {
+                const executer = createExecuter(search3);
+
+                await executer.setQuery("o");
+                expect(s(executer.getResults())).toEqual(s([search2.id, search3.id]));
+                await executer.setQuery("o!");
+                expect(s(executer.getResults())).toEqual(s([search2.id]));
+
+                const executer2 = new SearchExecuter({
+                    searchable: search3,
+                    getPatternMatch: () => undefined,
+                });
+                await executer2.setQuery("o");
+                expect(s(executer2.getResults())).toEqual(s([search2.id, search3.id]));
+                await executer2.setQuery("o!");
+                expect(s(executer2.getResults())).toEqual(s([search2.id, search3.id]));
+            });
+            it("Can use the getPatternMatch to only allow 1 pattern type to match", async () => {
+                const executer = new SearchExecuter({
+                    searchable: search3,
+                    getPatternMatch: (match, currentMatches) =>
+                        currentMatches.find(m => ExtendedObject.deepEquals(m, match)) ??
+                        (currentMatches.length == 0 ? match : undefined),
+                });
+                await executer.setQuery("o");
+                expect(executer.getPatternMatches()).toEqual([]);
+
+                await executer.setQuery("o!");
+                expect(executer.getPatternMatches()).toEqual([{name: "bob"}]);
+
+                await executer.setQuery("o?!");
+                expect(executer.getPatternMatches()).toEqual([{name: "bob"}]);
+            });
+        });
+        it("Correctly calls onAdd and onRemove hooks", async () => {
+            const search1 = createSimpleSearch({
+                id: "1",
+                m: s => s == "s",
+            });
+            const search2 = createSimpleSearch({
+                id: "2",
+                m: s => s == "o",
+            });
+            const search3 = createSimpleSearch({
+                id: "3",
+                m: s => s == "o",
+                children: s => [search1, search2],
+            });
+            const search4 = createSimpleSearch({
+                id: "4",
+                m: s => s == "s",
+            });
+            const search5 = createSimpleSearch({
+                id: "5",
+                m: s => s == "o",
+                children: s => [search3, search4],
+            });
+            const search6 = createSimpleSearch({
+                id: "6",
+                m: s => s == "s",
+            });
+            const search7 = createSimpleSearch({
+                id: "7",
+                m: s => s == "o",
+                children: s => [search6, search5],
+            });
+
+            const sequence = [] as {type: "add" | "remove"; item: string}[];
+            const executer = new SearchExecuter({
+                searchable: search7,
+                onAdd: item => sequence.push({type: "add", item}),
+                onRemove: item => sequence.push({type: "remove", item}),
+            });
+            await executer.setQuery("o");
+            expect(sequence).toEqual([
+                {type: "add", item: search7.id},
+                {type: "add", item: search5.id},
+                {type: "add", item: search3.id},
+                {type: "add", item: search2.id},
+            ]);
+
+            await executer.setQuery("s");
+            expect(sequence).toEqual([
+                {type: "add", item: search7.id},
+                {type: "add", item: search5.id},
+                {type: "add", item: search3.id},
+                {type: "add", item: search2.id},
+                {type: "remove", item: search7.id},
+                {type: "remove", item: search5.id},
+                {type: "remove", item: search3.id},
+                {type: "remove", item: search2.id},
+                {type: "add", item: search6.id},
+                {type: "add", item: search4.id},
+                {type: "add", item: search1.id},
+            ]);
+        });
     });
 });

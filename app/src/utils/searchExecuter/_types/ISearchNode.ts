@@ -1,12 +1,17 @@
 import {IUUID} from "../../../_types/IUUID";
+import {IPatternMatch} from "./IPatternMatch";
 import {ISearchable} from "./ISearchable";
 
 /** The search tree obtained by a search */
 export type ISearchNode<Q, I> = {
     /** The searchable data to identify and update this node */
     searchable: ISearchable<Q, I>;
-    /** The resulting item */
+    /** The parent node */
+    parent?: IUUID;
+    /** The last obtained resulting item */
     item?: I;
-    /** The previously obtained children for this tree */
+    /** The last obtained children for this tree */
     children: IUUID[];
+    /** The last obtained pattern match */
+    patternMatch?: IPatternMatch;
 };

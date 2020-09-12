@@ -365,6 +365,8 @@ export class ExtendedObject {
         obj1: {[key: string]: any},
         obj2: {[key: string]: any}
     ): boolean {
+        if (obj1 == obj2) return true;
+
         // Check if there are the same number of values present
         const obj1Keys = Object.keys(obj1);
         const obj2Keys = Object.keys(obj2);
