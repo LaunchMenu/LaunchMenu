@@ -23,7 +23,7 @@ export function openContent(
 
         // Handle opening if only a content view
         if (isView(content)) {
-            const wrappedContent = getViewWithContext(content, context);
+            const wrappedContent = content; //getViewWithContext(content, context);
             context.panes.content.push(wrappedContent);
             closers.unshift(() =>
                 withRemoveError(context.panes.content.remove(wrappedContent), "content")

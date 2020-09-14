@@ -16,6 +16,8 @@ export type ITransitionProps = {
     onChange?: () => void;
     /** Whether to hide the element without affecting the animation */
     hidden?: boolean;
+    /** Whether to skip the animation that would usually occur when the element is mounted (useful for remounting) */
+    skipMountAnimation?: boolean;
     /** The opening transition type */
     OpenTransitionComp?: IOpenTransition;
     /** The changing transition type */

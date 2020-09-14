@@ -5,6 +5,7 @@ import {IHighlightThemeInput} from "./highlighting/_types/IHighlightThemeInput";
 import {IHighlightTheme} from "./highlighting/_types/IHighlightTheme";
 import {createHighlightTheme} from "./highlighting/createHighlightTheme";
 import Lato from "../fonts/Lato-Light.ttf";
+import TestFont from "../fonts/Test.ttf";
 import {IBaseTheme} from "./_types/IBaseTheme";
 import {GoSearch} from "react-icons/go";
 import {
@@ -28,6 +29,24 @@ export function createTheme(
 ): ITheme {
     const accentFont = themeInput.colors.font.accent;
     const bgFont = themeInput.colors.font.background;
+
+    // Manage font assets and styling
+    const fonts = {} as {[key: string]: {name: string; path: string}};
+    const getFont = (font?: string) => {
+        if (!font) font = `url("${Lato.replace(/\\/g, "\\\\")}")`;
+        if (!fonts[font]) {
+            let nameMatch = font.match(/([\w-_]+)([^\w]*|\..*)$/); // Try to extract a name from file path
+            let name = (nameMatch && nameMatch[1]) || "font";
+            while (Object.values(fonts).find(({name: n}) => n == name)) name += "N";
+            fonts[font] = {
+                name,
+                path: font,
+            };
+        }
+        return fonts[font].name;
+    };
+
+    // The overall theme
     const theme: IBaseTheme = {
         ...themeInput,
         color: {
@@ -65,28 +84,28 @@ export function createTheme(
         },
         font: {
             textField: {
-                fontFamily: themeInput.fonts?.textField?.fontFamily || Lato,
+                fontFamily: getFont(themeInput.fonts?.textField?.fontFamily),
                 fontSize: themeInput.fonts?.textField?.fontSize || 24,
                 fontStyle: themeInput.fonts?.textField?.fontStyle || "normal",
                 fontWeight: themeInput.fonts?.textField?.fontWeight || 200,
                 textTransform: themeInput.fonts?.textField?.textTransform || "none",
             },
             header: {
-                fontFamily: themeInput.fonts?.header?.fontFamily || Lato,
+                fontFamily: getFont(themeInput.fonts?.header?.fontFamily),
                 fontSize: themeInput.fonts?.header?.fontSize || 18,
                 fontStyle: themeInput.fonts?.header?.fontStyle || "normal",
                 fontWeight: themeInput.fonts?.header?.fontWeight || 200,
                 textTransform: themeInput.fonts?.header?.textTransform || "none",
             },
             headerLarge: {
-                fontFamily: themeInput.fonts?.headerLarge?.fontFamily || Lato,
+                fontFamily: getFont(themeInput.fonts?.headerLarge?.fontFamily),
                 fontSize: themeInput.fonts?.headerLarge?.fontSize || 24,
                 fontStyle: themeInput.fonts?.headerLarge?.fontStyle || "normal",
                 fontWeight: themeInput.fonts?.headerLarge?.fontWeight || 200,
                 textTransform: themeInput.fonts?.headerLarge?.textTransform || "none",
             },
             paragraph: {
-                fontFamily: themeInput.fonts?.paragraph?.fontFamily || Lato,
+                fontFamily: getFont(themeInput.fonts?.paragraph?.fontFamily),
                 fontSize: themeInput.fonts?.paragraph?.fontSize || 14,
                 fontStyle: themeInput.fonts?.paragraph?.fontStyle || "normal",
                 fontWeight: themeInput.fonts?.paragraph?.fontWeight || 200,
@@ -123,6 +142,12 @@ export function createTheme(
             arrowUp: themeInput.icons?.arrowUp || <FiChevronUp />,
             arrowLeft: themeInput.icons?.arrowLeft || <FiChevronLeft />,
             arrowRight: themeInput.icons?.arrowRight || <FiChevronRight />,
+        },
+        globalCss: {
+            "@font-face": Object.values(fonts).map(({name, path}) => ({
+                fontFamily: name,
+                src: path,
+            })),
         },
     };
 

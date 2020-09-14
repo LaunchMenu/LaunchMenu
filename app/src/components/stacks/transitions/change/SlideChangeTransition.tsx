@@ -1,4 +1,4 @@
-import React, {useEffect, useState, FC, useCallback, useRef} from "react";
+import React, {useEffect, useState, FC, useCallback, useRef, isValidElement} from "react";
 import {Box} from "../../../../styling/box/Box";
 import {ISlideChangeTransitionProps} from "./_types/ISlideChangeTransitionProps";
 import {FillBox} from "../../../FillBox";
@@ -60,7 +60,7 @@ export const SlideChangeTransition: FC<ISlideChangeTransitionProps> = ({
                             maxWidth: "100%",
                             maxHeight: "100%",
                         }}
-                        key={i}
+                        key={(isValidElement(child) && child.key) || i}
                         position="relative">
                         {child}
                     </Box>

@@ -65,10 +65,12 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
     }
 
     // Obtain the layout size for animation calculations
+    const [animating, setAnimating] = useState(false); // Skip animating on first render
     const layoutRef = useRef<HTMLElement>();
     const [size, setSize] = useState({width: 0, height: 0});
     useLayoutEffect(() => {
         if (layoutRef.current) setSize(layoutRef.current.getBoundingClientRect());
+        setTimeout(() => setAnimating(true));
     }, [layoutRef.current]);
 
     // Return the layout with transition animations
@@ -90,7 +92,9 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                 position="relative"
                 overflow="hidden"
                 flexGrow={bottomSectionState.open ? 1 : 0}
-                transition={`${bottomSectionState.duration}ms flex-grow`}>
+                transition={
+                    animating ? `${bottomSectionState.duration}ms flex-grow` : undefined
+                }>
                 <Box
                     position="absolute"
                     bottom="none"
@@ -102,7 +106,11 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                         flexShrink={0}
                         onAnimationStart={() => (bottomSectionState.animating = true)}
                         onAnimationEnd={() => (bottomSectionState.animating = false)}
-                        transition={`${bottomDivisionState.duration}ms width`}
+                        transition={
+                            animating
+                                ? `${bottomDivisionState.duration}ms width`
+                                : undefined
+                        }
                         width={horizontalDivision}>
                         <Box
                             minWidth={size.width * menuWidthFraction}

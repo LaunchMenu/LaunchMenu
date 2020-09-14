@@ -18,6 +18,7 @@ export const InstantChangeTransition: FC<IChangeTransitionProps> = ({
     // Render the last child only
     return (
         <FillBox overflow="hidden">
+            {/* TODO: always render all children, but just change the order to show the correct one on top */}
             {children[activate ? 0 : children.length - 1]}
         </FillBox>
     );

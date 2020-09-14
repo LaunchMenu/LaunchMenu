@@ -13,22 +13,24 @@ import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {LFC} from "../../_types/LFC";
 
 type IStackViewChild = {
-    // A key for this specific transition element
+    /** A key for this specific transition element */
     key: string;
-    // The ID of the item contained in this transition
+    /** The ID of the item contained in this transition */
     id: string;
-    // The element that's currently shown
+    /** The element that's currently shown */
     element: IViewStackItemView | undefined;
-    // Whether the transition element is currently closing
+    /** Whether the transition element is currently closing */
     closing: boolean;
-    // Whether the transition element is currently opening
+    /** Whether the transition element is currently opening */
     opening: boolean;
-    // Whether any of the elements that are still in the change transition are transparent
+    /** Whether any of the elements that are still in the change transition are transparent */
     wasTransparent: boolean;
-    // Whether the current element is transparent
+    /** Whether the current element is transparent */
     transparent: boolean;
-    // The transition components to use
+    /** The transition components to use */
     transitions: Required<IViewTransitions>;
+    /** Whether to skip the opening animation */
+    skipOpening?: boolean;
 };
 
 /**
@@ -36,12 +38,15 @@ type IStackViewChild = {
  * @param items The new items array
  * @param prevItems The old items array
  * @param children The children list to modify
+ * @param defaultTransitions The default transitions to be used
+ * @param skipOpening Whether to skip opening animation for the new items
  */
 function updateChildren(
     items: readonly IIdentifiedItem<IViewStackItem>[],
     prevItems: readonly IIdentifiedItem<IViewStackItem>[],
     children: IStackViewChild[],
-    defaultTransitions: Required<IViewTransitions>
+    defaultTransitions: Required<IViewTransitions>,
+    skipOpening?: boolean
 ): void {
     const {added, removed} = findStackChanges(prevItems, items);
     removed.forEach(({item}) => {
@@ -84,10 +89,11 @@ function updateChildren(
                 id: item.id,
                 element: view,
                 closing: false,
-                opening: true,
+                opening: skipOpening ? false : true,
                 wasTransparent: false,
                 transparent: transparent ?? false,
                 transitions: {...defaultTransitions, ...transitions},
+                skipOpening,
             });
         }
     });
@@ -111,29 +117,36 @@ export const StackView: LFC<IStackViewProps> = memo(
         // Retrieve the items
         const [h] = useDataHook();
         const items = stack.get(h);
-        const prevItems = useRef<readonly IIdentifiedItem<IViewStackItem>[]>([]);
+        const prevItems = useRef<readonly IIdentifiedItem<IViewStackItem>[]>();
 
         // Keep track of the children to render
         const childrenRef = useRef([] as IStackViewChild[]);
 
         // Update the elements to render when the items array changes
         if (prevItems.current != items) {
-            updateChildren(items, prevItems.current, childrenRef.current, {
-                Open: OpenTransitionComp ?? defaultTransitions.Open,
-                Change: ChangeTransitionComp ?? defaultTransitions.Change,
-                Close: CloseTransitionComp ?? defaultTransitions.Close,
-            });
+            updateChildren(
+                items,
+                prevItems.current ?? [],
+                childrenRef.current,
+                {
+                    Open: OpenTransitionComp ?? defaultTransitions.Open,
+                    Change: ChangeTransitionComp ?? defaultTransitions.Change,
+                    Close: CloseTransitionComp ?? defaultTransitions.Close,
+                },
+                prevItems.current == undefined
+            );
             prevItems.current = items;
         }
 
         // Handle transition changes
-        const [_, forceUpdate] = useState(false);
+        const [_, _forceUpdate] = useState(false);
+        const forceUpdate = () => _forceUpdate(a => !a);
         const onClose = (key: string) => {
             const children = childrenRef.current;
             const index = children.findIndex(({key: k}) => k == key);
             if (index != -1) {
                 children.splice(index, 1);
-                forceUpdate(a => !a);
+                forceUpdate();
             }
         };
         const onOpen = (key: string) => {
@@ -141,7 +154,7 @@ export const StackView: LFC<IStackViewProps> = memo(
             const child = children.find(({key: k}) => k == key);
             if (child) {
                 child.opening = false;
-                forceUpdate(a => !a);
+                forceUpdate();
             }
         };
         const onChange = (key: string) => {
@@ -149,7 +162,7 @@ export const StackView: LFC<IStackViewProps> = memo(
             const child = children.find(({key: k}) => k == key);
             if (child) {
                 child.wasTransparent = false;
-                forceUpdate(a => !a);
+                forceUpdate();
             }
         };
 
@@ -169,27 +182,31 @@ export const StackView: LFC<IStackViewProps> = memo(
         // Render the children
         return (
             <>
-                {childrenRef.current.map(({key, id, element, transitions}, index) => {
-                    const props = {
-                        key: id,
-                        onTop: index == childrenRef.current.length,
-                        stack,
-                        index,
-                    };
-                    return (
-                        <Transition
-                            key={key}
-                            hidden={index < firstOpaqueIndex}
-                            onClose={() => onClose(key)}
-                            onChange={() => onChange(key)}
-                            onOpen={() => onOpen(key)}
-                            ChangeTransitionComp={transitions.Change}
-                            CloseTransitionComp={transitions.Close}
-                            OpenTransitionComp={transitions.Open}>
-                            {element && getViewStackItemElement(element, props)}
-                        </Transition>
-                    );
-                })}
+                {childrenRef.current.map(
+                    ({key, id, element, transitions, skipOpening}, index) => {
+                        const props = {
+                            key: id,
+                            onTop: index == childrenRef.current.length,
+                            stack,
+                            index,
+                        };
+                        const el = element && getViewStackItemElement(element, props);
+                        return (
+                            <Transition
+                                key={key}
+                                hidden={index < firstOpaqueIndex}
+                                onClose={() => onClose(key)}
+                                onChange={() => onChange(key)}
+                                onOpen={() => onOpen(key)}
+                                skipMountAnimation={skipOpening}
+                                ChangeTransitionComp={transitions.Change}
+                                CloseTransitionComp={transitions.Close}
+                                OpenTransitionComp={transitions.Open}>
+                                {el}
+                            </Transition>
+                        );
+                    }
+                )}
             </>
         );
     }
