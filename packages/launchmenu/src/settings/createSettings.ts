@@ -1,5 +1,5 @@
 import {IJSON} from "../_types/IJSON";
-import {IIdentiedSettingsConfig} from "./_types/IIdentifiedSettingsConfig";
+import {IIdentifiedSettingsConfig} from "./_types/IIdentifiedSettingsConfig";
 import {ISettingsConfig} from "./_types/ISettingsConfig";
 import {IJSONDeserializer} from "./_types/serialization/IJSONDeserializer";
 import {v4 as uuid} from "uuid";
@@ -14,6 +14,6 @@ export function createSettings<
     V extends IJSON,
     F extends ISettingsCategoryMenuItem<S>,
     S extends IJSONDeserializer = never
->(config: ISettingsConfig<V, F, S>): IIdentiedSettingsConfig<V, F, S> {
+>(config: ISettingsConfig<V, F, S>): IIdentifiedSettingsConfig<V, F, S> {
     return {...config, ID: uuid()};
 }

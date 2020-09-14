@@ -1,6 +1,5 @@
 import React from "react";
 import {Field, IDataHook, Loader} from "model-react";
-import {IAppletData} from "./applets/_types/IAppletData";
 import {LMSession} from "./LMSession/LMSession";
 import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
 import {ThemeProvider} from "../styling/theming/ThemeContext";
@@ -8,6 +7,9 @@ import {loadTheme} from "../styling/theming/loadTheme";
 import {defaultTheme} from "../styling/theming/defaultTheme";
 import {FillBox} from "../components/FillBox";
 import {Transition} from "../components/stacks/transitions/Transition";
+import {AppletData} from "./applets/AppletData";
+import {SettingsContext} from "../settings/SettingsContext";
+import {ISettingsCategoryMenuItem} from "../settings/_types/ISettingsCategoryMenuItem";
 
 /**
  * The main LM class
@@ -18,7 +20,7 @@ export class LaunchMenu {
     protected keyHandler: KeyHandler;
 
     protected sessions = new Field([] as LMSession[]);
-    protected applets = new Field([] as IAppletData[]);
+    protected applets = new Field([] as AppletData[]);
 
     /***
      * Creates a new instance of the LaunchMenu application
@@ -86,6 +88,19 @@ export class LaunchMenu {
      */
     protected setupInitialSession(): void {
         this.addSession();
+    }
+
+    // Applet management
+    /**
+     * Retrieves a settings context that contains settings for all applets
+     * @param hook THe data to subscribe to changes
+     */
+    public getSettingsContext(hook: IDataHook = null): SettingsContext {
+        const data = {} as {[id: string]: ISettingsCategoryMenuItem};
+        this.applets.get(null).forEach(({applet}) => {
+            data[applet.id] = applet.settings.settings();
+        });
+        return new SettingsContext(data);
     }
 
     // Session management

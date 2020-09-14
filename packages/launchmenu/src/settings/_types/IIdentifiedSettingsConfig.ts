@@ -6,7 +6,7 @@ import {IJSONDeserializer} from "./serialization/IJSONDeserializer";
 /**
  * A config for settings data that contains an ID such that it's indentifiable at runtime
  */
-export type IIdentiedSettingsConfig<
+export type IIdentifiedSettingsConfig<
     V extends IJSON,
     F extends ISettingsCategoryMenuItem<S>,
     S extends IJSONDeserializer = never

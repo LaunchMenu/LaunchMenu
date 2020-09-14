@@ -1,7 +1,7 @@
 import {IOContext} from "../../../context/IOContext";
 import {IMenuSearchable} from "../../../menus/actions/types/search/_types/IMenuSearchable";
+import {IIdentifiedSettingsConfig} from "../../../settings/_types/IIdentifiedSettingsConfig";
 import {ISettingsCategoryMenuItem} from "../../../settings/_types/ISettingsCategoryMenuItem";
-import {ISettingsConfig} from "../../../settings/_types/ISettingsConfig";
 import {IJSON} from "../../../_types/IJSON";
 import {IUUID} from "../../../_types/IUUID";
 import {IAppletInfo} from "./IAppletInfo";
@@ -9,7 +9,9 @@ import {IAppletInfo} from "./IAppletInfo";
 /**
  * An applet plugin for LM
  */
-export type IApplet<S extends ISettingsConfig<IJSON, ISettingsCategoryMenuItem, any>> = {
+export type IApplet<
+    S extends IIdentifiedSettingsConfig<IJSON, ISettingsCategoryMenuItem, any>
+> = {
     /**  */
     id: IUUID;
     /** Settings of the applet */
