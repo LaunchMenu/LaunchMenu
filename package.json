@@ -2,6 +2,7 @@
     "private": true,
     "workspaces": [
         "packages/launchmenu",
-        "packages/applets/*"
+        "packages/applets/*",
+        "packages/dev-tools/*"
     ]
 }

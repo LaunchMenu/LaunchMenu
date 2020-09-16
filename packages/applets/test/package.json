@@ -8,9 +8,12 @@
     ],
     "main": "build/applet.js",
     "scripts": {
-        "build": "webpack --env prod",
-        "dev": "webpack --env dev --watch",
-        "dist": "electron-builder",
+        "postinstall": "npm build",
+        "build": "lm-build-tools --build --production",
+        "dev": "lm-build-tools --watch",
+        "start": "lm-build-tools --launch --production",
+        "start:dev": "lm-build-tools --launch",
+        "clean": "lm-build-tools --cleanup",
         "test": "jest -i",
         "test-watch": "jest --watch -i",
         "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\""

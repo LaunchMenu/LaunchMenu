@@ -23,6 +23,10 @@
     </head>
     <body>
         <div id="root">Loading</div>
+        <script>
+            // Some code to allow for app.js to be a node module without erroring
+            exports = {};
+        </script>
         <script src="./app.js"></script>
     </body>
 </html>

@@ -1,6 +1,5 @@
 import {app, BrowserWindow} from "electron";
 import Path from "path";
-import page from "./index.html";
 
 const mode = process.env.NODE_ENV;
 function createWindow() {
@@ -17,11 +16,11 @@ function createWindow() {
     win.on("blur", () => win.webContents.send("blur"));
 
     // and load the index.html of the app.
-    if (mode == "development") {
+    if (mode == "dev") {
         win.loadURL("http://localhost:3000");
         win.webContents.openDevTools();
     } else {
-        win.loadURL(Path.join(__dirname, page));
+        win.loadURL(Path.join(__dirname, "index.html"));
     }
 }
 

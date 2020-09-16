@@ -4,10 +4,9 @@ import {ITheme} from "./_types/ITheme";
 import {IHighlightThemeInput} from "./highlighting/_types/IHighlightThemeInput";
 import {IHighlightTheme} from "./highlighting/_types/IHighlightTheme";
 import {createHighlightTheme} from "./highlighting/createHighlightTheme";
-import Lato from "../fonts/Lato-Light.ttf";
-import TestFont from "../fonts/Test.ttf";
 import {IBaseTheme} from "./_types/IBaseTheme";
 import {GoSearch} from "react-icons/go";
+import Path from "path";
 import {
     FiSettings,
     FiMenu,
@@ -33,7 +32,8 @@ export function createTheme(
     // Manage font assets and styling
     const fonts = {} as {[key: string]: {name: string; path: string}};
     const getFont = (font?: string) => {
-        if (!font) font = `url("${Lato.replace(/\\/g, "\\\\")}")`;
+        if (!font)
+            font = `url("${Path.join(__dirname, "..", "fonts", "Lato-Light.ttf")}")`;
         if (!fonts[font]) {
             let nameMatch = font.match(/([\w-_]+)([^\w]*|\..*)$/); // Try to extract a name from file path
             let name = (nameMatch && nameMatch[1]) || "font";
