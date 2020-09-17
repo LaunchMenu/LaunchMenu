@@ -44,6 +44,12 @@ Args.options([
         defaultValue: defaults.entry,
     },
     {
+        name: "srcEntry",
+        description:
+            "The entry file in the src dir (has to be specified to transpile without tsconfig)",
+        defaultValue: defaults.srcEntry,
+    },
+    {
         name: "launch",
         description: "Whether to launch the app after build",
         defaultValue: defaults.launch,

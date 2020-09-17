@@ -48,6 +48,7 @@
         }
     },
     "dependencies": {
+        "@launchmenu/hmr": "^0.0.0",
         "@emotion/core": "^10.0.28",
         "@material-ui/icons": "^4.9.1",
         "@uifabric/icons": "^7.3.55",
@@ -64,7 +65,7 @@
         "uuid": "^8.2.0"
     },
     "devDependencies": {
-        "@launchmenu/lm-build-tools": "^0.0.0",
+        "@launchmenu/build-tools": "^0.0.0",
         "@testing-library/jest-dom": "^5.5.0",
         "@testing-library/react": "^10.0.3",
         "@types/ace": "^0.0.43",
@@ -76,12 +77,12 @@
         "@types/react-dom": "^16.9.8",
         "@types/uuid": "^8.0.0",
         "concurrently": "^5.2.0",
+        "cpx": "^1.5.0",
         "electron": "^9.0.4",
         "electron-builder": "^22.7.0",
         "jest": "^26.0.1",
+        "ts-cleaner": "^1.0.1",
         "ts-jest": "^26.1.0",
-        "typescript": "4.0.2",
-        "cpx": "^1.5.0",
-        "ts-cleaner": "^1.0.1"
+        "typescript": "4.0.2"
     }
 }

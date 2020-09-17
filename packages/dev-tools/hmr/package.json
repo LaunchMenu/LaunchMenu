@@ -1,0 +1,28 @@
+{
+    "name": "@launchmenu/hmr",
+    "version": "0.0.0",
+    "main": "build/index.js",
+    "scripts": {
+        "watch": "lm-build-tools --watch",
+        "dev": "lm-build-tools --watch",
+        "build": "lm-build-tools --build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/LaunchMenu/LaunchMenu.git"
+    },
+    "keywords": [
+        "LaunchMenu",
+        "hmr",
+        "hot-module-replacement",
+        "tools"
+    ],
+    "author": "Tar van Krieken",
+    "license": "MIT",
+    "dependencies": {
+        "chokidar": "^3.4.2"
+    },
+    "devDependencies": {
+        "@launchmenu/build-tools": "^0.0.0"
+    }
+}

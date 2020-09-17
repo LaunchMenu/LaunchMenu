@@ -1,17 +1,9 @@
-// Declarations for other file type imports
-declare module "*.png" {
-    const value: string;
-    export default value;
-}
-declare module "*.jpg" {
-    const value: string;
-    export default value;
-}
-declare module "*.html" {
-    const value: string;
-    export default value;
-}
-declare module "*.ttf" {
-    const value: string;
-    export default value;
+/** Whether we are in dev mode */
+declare const DEV: boolean;
+
+declare module NodeJS {
+    interface Global {
+        /** Whether we are in dev mode */
+        DEV: boolean;
+    }
 }

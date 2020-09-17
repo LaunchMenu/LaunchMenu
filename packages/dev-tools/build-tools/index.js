@@ -27,6 +27,7 @@ const defaults = {
     launchParams: {},
     launchElectron: true,
     production: false,
+    srcEntry: "src/index.ts",
     entry: "build/index.js",
     copyExtensions: ["html", "css", "jpg", "png", "ttf", "js"],
     tsConfig: Path.join(process.cwd(), "tsconfig.json"),
@@ -48,6 +49,7 @@ function compileTS({
     tsConfig = defaults.tsConfig,
     verbose = defaults.verbose,
     watchMode = defaults.watch,
+    srcEntry = defaults.srcEntry,
 } = {}) {
     let params = [];
     if (FS.existsSync(tsConfig)) {
@@ -64,10 +66,12 @@ function compileTS({
             ...(emitDeclarations ? ["--declaration"] : []),
             ...(emitDeclarations && srcMaps ? ["--declarationMap"] : []),
             ...(verbose && !watchMode ? ["--listFiles", "--diagnostics"] : []),
-            "--rootDir",
-            srcDir,
+            "--esModuleInterop",
             "--outDir",
             buildDir,
+            "--rootDir",
+            srcDir,
+            srcEntry,
         ];
     }
     return spawn("node", [tsPath, ...params], {stdio: "inherit"});
@@ -85,7 +89,7 @@ function moveFiles({
     verbose = defaults.verbose,
     watchMode = defaults.watch,
 } = {}) {
-    const srcBlob = `${srcDir}/**/*{${extensions.join(",")}}`;
+    const srcBlob = `${srcDir}/**/*.{${extensions.join(",")}}`;
     if (watchMode) {
         return new Promise(() => {
             const watcher = cpx.watch(srcBlob, buildDir, {
@@ -161,10 +165,12 @@ async function run({
     launchParams = defaults.launchParams,
     launchElectron = defaults.launchElectron,
     entry = defaults.entry,
+    srcEntry = defaults.srcEntry,
     copyExtensions = defaults.copyExtensions,
     tsConfig = defaults.tsConfig,
     verbose = defaults.verbose,
     srcMaps = defaults.srcMaps,
+    production = defaults.production,
     emitDeclarations = defaults.emitDeclarations,
 } = {}) {
     if (typeof copyExtensions == "string") copyExtensions = copyExtensions.split(/,\s*/);
@@ -193,6 +199,7 @@ async function run({
             emitDeclarations,
             tsConfig,
             verbose,
+            srcEntry,
             watchMode: false,
         });
         if (verbose) console.log(info("[build]: finished transpiling typescript"));
@@ -201,9 +208,11 @@ async function run({
     let launchPromise;
     if (launch) {
         if (verbose) console.log(info("[launch]: launching application"));
-        launchPromise = launchApp({entry, launchParams, launchElectron}).then(() => {
-            if (verbose) console.log(info("[launch]: quite application"));
-        });
+        launchPromise = launchApp({entry, launchParams, launchElectron, production}).then(
+            () => {
+                if (verbose) console.log(info("[launch]: quite application"));
+            }
+        );
     }
 
     let watchPromise;
@@ -224,6 +233,7 @@ async function run({
                 emitDeclarations,
                 tsConfig,
                 verbose,
+                srcEntry,
                 watchMode: true,
             }),
         ]).then(() => {
