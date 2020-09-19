@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const Args = require("args");
-const buildTools = require("@launchmenu/lm-build-tools");
+const buildTools = require("@launchmenu/build-tools");
 const {defaults} = buildTools;
 const chalk = require("chalk");
 

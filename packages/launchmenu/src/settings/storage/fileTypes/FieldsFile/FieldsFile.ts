@@ -123,10 +123,14 @@ export class FieldsFile<F extends IFieldsTree<T>, T extends IJSONDeserializer = 
                             } catch (e) {
                                 rej(e);
                             }
-                        }
+                        } else res();
                     });
                 } catch (e) {
                     if (!allowFileNotFound) rej(e);
+                    else {
+                        console.error(e);
+                        res();
+                    }
                 }
             })
         );

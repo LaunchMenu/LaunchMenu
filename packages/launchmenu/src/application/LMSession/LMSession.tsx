@@ -22,6 +22,7 @@ import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 import {ApplicationLayout} from "../components/ApplicationLayout";
 import {LaunchMenu} from "../LaunchMenu";
 import {v4 as uuid} from "uuid";
+import {IApplet} from "../applets/_types/IApplet";
 
 /**
  * An application session
@@ -33,7 +34,9 @@ export class LMSession {
 
     protected lm: LaunchMenu;
 
+    protected appletObserver: Observer<IApplet[]>;
     protected searchObserver: Observer<string>;
+
     protected searchField: TextField;
     protected menu: PrioritizedMenu;
 
@@ -50,6 +53,15 @@ export class LMSession {
         this.setupContext();
         this.setupView();
         this.setupUI();
+        this.setupApplets();
+    }
+
+    /**
+     * Disposes of all data attached to this session
+     */
+    public destroy() {
+        this.appletObserver.destroy();
+        this.searchObserver.destroy();
     }
 
     /**
@@ -175,5 +187,49 @@ export class LMSession {
      */
     protected setupContent(): void {
         this.context.openUI({content: <Box padding="large">LM is great m8</Box>});
+    }
+
+    // Sets up the applets in this session
+    /**
+     * Initializes the applets within this context
+     */
+    protected setupApplets(): void {
+        this.appletObserver = new Observer(h => this.lm.getApplets(h)).listen(applets => {
+            const searchables = applets.filter(
+                applet => applet.search
+            ) as IMenuSearchable[];
+            this.searchables.set(
+                this.updateChangedSearchablesIDs(this.searchables.get(null), searchables)
+            );
+        }, true);
+    }
+
+    /**
+     * Updates the IDs of searchables whose search function changed (despite having the same id)
+     * @param oldSearchables The old searchables
+     * @param newSearchables The updated searchables
+     * @returns The updated searchables, with ids of changed searchables replaced
+     */
+    protected updateChangedSearchablesIDs(
+        oldSearchables: IMenuSearchable[],
+        newSearchables: IMenuSearchable[]
+    ): IMenuSearchable[] {
+        return newSearchables.map(searchable => {
+            // Find old searchable based on search function hard equivalence
+            const oldSearchable = oldSearchables.find(
+                ({search}) => search == searchable.search
+            );
+
+            // IF there is an equivalent searchable, nothing has to happen
+            if (oldSearchable) {
+                return searchable;
+            } else {
+                // If there is a non equivalent searchable by the same id, we most change the id to ensure the search executer picks up on the change
+                const containedID = !!oldSearchables.find(({id}) => id == searchable.id);
+                return containedID
+                    ? {...searchable, id: "updated-" + searchable.id}
+                    : searchable;
+            }
+        });
     }
 }

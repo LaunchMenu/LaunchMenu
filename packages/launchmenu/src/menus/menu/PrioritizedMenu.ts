@@ -114,7 +114,7 @@ export class PrioritizedMenu extends AbstractMenu {
         if (item.priority == 0) return;
 
         // Create a hook to move the item when the category is updated
-        const categoryChangeCallback = createCallbackHook(() => {
+        const [categoryChangeCallback, destroyHook] = createCallbackHook(() => {
             const inMenu = this.categoriesRaw[categoryIndex]?.items.find(item) != -1;
             const categoryChanged = category != this.categoryConfig.getCategory(item);
             // In addition, updating the category is only supported if the item provided an ID
@@ -125,7 +125,7 @@ export class PrioritizedMenu extends AbstractMenu {
                 );
                 this.addItem(item);
             } else this.categoryConfig.getCategory(item, categoryChangeCallback);
-        });
+        }); // TODO: store the destroyHook somewhere and call it when item gets removed
 
         // Obtain the category
         const category = this.categoryConfig.getCategory(item, categoryChangeCallback);

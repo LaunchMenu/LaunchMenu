@@ -222,7 +222,7 @@ describe("SearchExecuter", () => {
 
                 let resolved = false;
                 executer.setQuery("st").then(() => (resolved = true));
-                await wait(50); // Requires at most 10 ms to interrupt, + 40ms to complete
+                await wait(70); // Requires at most 10 ms to interrupt, + 40ms to complete
                 expect(executer.getResults()).toEqual([]);
                 expect(resolved).toBe(true);
             });

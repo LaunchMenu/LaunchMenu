@@ -34,6 +34,8 @@ export function createTheme(
     const getFont = (font?: string) => {
         if (!font)
             font = `url("${Path.join(__dirname, "..", "fonts", "Lato-Light.ttf")}")`;
+
+        font = font.replace(/\\/g, "/");
         if (!fonts[font]) {
             let nameMatch = font.match(/([\w-_]+)([^\w]*|\..*)$/); // Try to extract a name from file path
             let name = (nameMatch && nameMatch[1]) || "font";

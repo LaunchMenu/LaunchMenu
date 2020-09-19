@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
         "moduleResolution": "node",
-        "outDir": "./build/",
-        "rootDir": "./src/",
-        "sourceMap": true,
+        "rootDir": "src/",
+        "outDir": "build/",
+        "inlineSourceMap": true,
         "declaration": true,
         "declarationMap": true,
         "module": "commonjs",
@@ -14,7 +14,8 @@
         "preserveSymlinks": true,
         "strictNullChecks": true,
         "skipLibCheck": true,
-        "noImplicitAny": true
+        "noImplicitAny": true,
+        "incremental": true
     },
     "types": ["node"],
     "exclude": ["node_modules", "**/node_modules/*", "build", "demo", "examples"]

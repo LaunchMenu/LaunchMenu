@@ -11,7 +11,7 @@
         "postinstall": "npm build",
         "build": "lm-build-tools --build --production",
         "watch": "lm-build-tools --watch",
-        "dev": "lm-build-tools --launch --watch",
+        "dev": "lm-build-tools --build --launch --watch",
         "start": "lm-build-tools --launch --production",
         "start:dev": "lm-build-tools --launch",
         "clean": "lm-build-tools --cleanup",
@@ -48,8 +48,8 @@
         }
     },
     "dependencies": {
-        "@launchmenu/hmr": "^0.0.0",
         "@emotion/core": "^10.0.28",
+        "@launchmenu/hmr": "^0.0.0",
         "@material-ui/icons": "^4.9.1",
         "@uifabric/icons": "^7.3.55",
         "ace-builds": "^1.4.12",
@@ -78,7 +78,7 @@
         "@types/uuid": "^8.0.0",
         "concurrently": "^5.2.0",
         "cpx": "^1.5.0",
-        "electron": "^9.0.4",
+        "electron": "^10.1.2",
         "electron-builder": "^22.7.0",
         "jest": "^26.0.1",
         "ts-cleaner": "^1.0.1",

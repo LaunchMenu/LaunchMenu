@@ -111,14 +111,14 @@ export class Menu extends AbstractMenu {
         index: number = Infinity
     ): boolean {
         // Create a hook to move the item when the category is updated
-        const categoryChangeCallback = createCallbackHook(() => {
+        const [categoryChangeCallback, destroyHook] = createCallbackHook(() => {
             const inMenu = destination[categoryIndex]?.items.includes(item);
             const categoryChanged = category != this.categoryConfig.getCategory(item);
             if (inMenu && categoryChanged) {
                 this.removeItems([item], category);
                 this.addItem(item);
             } else this.categoryConfig.getCategory(item, categoryChangeCallback);
-        });
+        }); // TODO: store the destroyHook somewhere and call it when item gets removed
 
         // Obtain the category
         const category = this.categoryConfig.getCategory(item, categoryChangeCallback);

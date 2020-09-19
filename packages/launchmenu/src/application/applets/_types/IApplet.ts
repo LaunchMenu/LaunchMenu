@@ -10,9 +10,9 @@ import {IAppletInfo} from "./IAppletInfo";
  * An applet plugin for LM
  */
 export type IApplet<
-    S extends IIdentifiedSettingsConfig<IJSON, ISettingsCategoryMenuItem, any>
+    S extends IIdentifiedSettingsConfig<IJSON, ISettingsCategoryMenuItem, any> = any
 > = {
-    /**  */
+    /** A unique ID for this module */
     id: IUUID;
     /** Settings of the applet */
     settings: S;

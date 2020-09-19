@@ -2076,7 +2076,7 @@ chokidar@^1.6.0:
   optionalDependencies:
     fsevents "^1.0.0"
 
-chokidar@^2.0.4, chokidar@^2.1.8:
+chokidar@^2.1.8:
   version "2.1.8"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-2.1.8.tgz#804b3a7b6a99358c3c5c61e71d8728f041cff917"
   integrity sha512-ZmZUazfOzf0Nve7duiCKD23PFSCs4JPoYyccjUFF3aQkQadqBhfzhjkwBH2mNOG9cTBwhamM37EIsIkZw3nRgg==
@@ -2951,10 +2951,10 @@ electron-publish@22.8.0:
     lazy-val "^1.0.4"
     mime "^2.4.6"
 
-electron@^9.0.4:
-  version "9.3.0"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-9.3.0.tgz#a4f3dc17f31acc6797eb4c2c4bd0d0e25efb939b"
-  integrity sha512-7zPLEZ+kOjVJqfawMQ0vVuZZRqvZIeiID3tbjjbVybbxXIlFMpZ2jogoh7PV3rLrtm+dKRfu7Qc4E7ob1d0FqQ==
+electron@^10.1.2:
+  version "10.1.2"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-10.1.2.tgz#30b6fd7669f8daf08c56219a61dfa053fa2b0c70"
+  integrity sha512-SvN8DcKCmPZ0UcQSNAJBfaUu+LGACqtRhUn1rW0UBLHgdbbDM76L0GU5/XGQEllH5pu5bwlCZwax3srzIl+Aeg==
   dependencies:
     "@electron/get" "^1.0.1"
     "@types/node" "^12.0.12"
@@ -5743,13 +5743,6 @@ node-forge@0.9.0:
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/node-forge/-/node-forge-0.9.0.tgz#d624050edbb44874adca12bb9a52ec63cb782579"
   integrity sha512-7ASaDa3pD+lJ3WvXFsxekJQelBKRpne+GOVbLbtHYdd7pFspyeuJHnWfLplGf3SwKGbfs/aYl5V/JCIaHVUKKQ==
-
-node-hmr@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/node-hmr/-/node-hmr-1.2.0.tgz#4df794d28f6f72cff9ed0a8b0ce2c72054f7654f"
-  integrity sha512-2lFbbvYDTlYLLDpIz+bf0YOtl1bY4BVntiPsH23dIdOeJsxtfYN1s8yi5KwMLxyFDuFkuGnJFZeO1fMcbBc8LQ==
-  dependencies:
-    chokidar "^2.0.4"
 
 node-int64@^0.4.0:
   version "0.4.0"

@@ -9,6 +9,7 @@ import {
 import FS from "fs";
 import Path from "path";
 import mkdirp from "mkdirp";
+import {promisify} from "util";
 import {ISavable} from "./_types/ISavable";
 
 /**
@@ -78,20 +79,28 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
         return this.loading.addAction(
             new Promise(async (res, rej) => {
                 try {
-                    await mkdirp(this.filePath);
+                    if (!FS.existsSync(this.filePath))
+                        await mkdirp(Path.dirname(this.filePath));
                     FS.readFile(this.filePath, this.encoding, (err, data) => {
+                        res = rej = () => {};
                         if (err) rej(err);
                         else if (data) {
                             this.loadTime = Date.now();
                             try {
-                                res(this.decode(data));
+                                // Calling set automatically resets the loading state
+                                if (isLoading(h => this.loading.get(h)))
+                                    this.set(this.decode(data));
                             } catch (e) {
                                 rej(e);
                             }
-                        }
+                        } else res();
                     });
                 } catch (e) {
                     if (!allowFileNotFound) rej(e);
+                    else {
+                        console.error(e);
+                        res();
+                    }
                 }
             })
         );
@@ -146,8 +155,8 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
      * @param data The data to be set
      */
     public set(data: T): void {
-        this.loading.reset();
         super.set(data);
+        this.loading.reset();
     }
 
     /**

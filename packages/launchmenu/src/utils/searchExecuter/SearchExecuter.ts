@@ -6,7 +6,6 @@ import {IPatternMatch} from "./_types/IPatternMatch";
 import {ISearchable} from "./_types/ISearchable";
 import {ISearchExecuterConfig} from "./_types/ISearchExecuterConfig";
 import {ISearchNode} from "./_types/ISearchNode";
-
 /**
  * This class can be used to perform a 'recursive' search.
  * Every searchable item can return an item if it matched the search, and child searchables that should also be checked.
@@ -33,6 +32,7 @@ export class SearchExecuter<Q, I> {
     protected query = new Field(null as Q | null);
     protected results = new Field([] as I[]);
 
+    protected interruptSearch = false;
     protected searching = new Field(false);
     protected searchPromise = Promise.resolve();
     protected foundPatternMatches = new Field([] as IPatternMatch[]);
@@ -72,8 +72,11 @@ export class SearchExecuter<Q, I> {
         this.query.set(query);
 
         // Stop the search, and wait until it fully stopped
-        this.searching.set(false);
+        let s = Date.now();
+        this.interruptSearch = true;
         return this.searchPromise.then(() => {
+            this.interruptSearch = false;
+
             // Cancel the planned removals
             this.removalQueue = [];
 
@@ -147,7 +150,7 @@ export class SearchExecuter<Q, I> {
             // If there is a query, perform both node updates and removals
             if (query != null) {
                 while (
-                    this.searching.get(null) &&
+                    !this.interruptSearch &&
                     (this.removalQueue.length > 0 || this.updateQueue.length > 0)
                 ) {
                     if (this.removalQueue.length > 0) {
@@ -161,7 +164,7 @@ export class SearchExecuter<Q, I> {
             }
             // If there is no query, only perform removals
             else {
-                while (this.searching.get(null) && this.removalQueue.length > 0) {
+                while (!this.interruptSearch && this.removalQueue.length > 0) {
                     const first = this.removalQueue.shift() as IUUID;
                     await this.nodeRemoval(first);
                 }
@@ -222,11 +225,10 @@ export class SearchExecuter<Q, I> {
     protected async nodeUpdate(query: Q, node: ISearchNode<Q, I>): Promise<void> {
         const id = node.searchable.id;
         node = this.nodes.get(id) || node; // Prefer a newer version of the node if it exists
-        const parent =
-            node.parent !== undefined ? this.nodes.get(node.parent) : undefined;
 
         // Create a hook to schedule an update if the node is changed
-        const hook = createCallbackHook(() => {
+        node.destroyHook?.();
+        const [hook, destroyHook] = createCallbackHook(() => {
             this.scheduleUpdates([node], true);
         });
 
@@ -274,6 +276,7 @@ export class SearchExecuter<Q, I> {
             item: result.item,
             patternMatch,
             children: newChildren,
+            destroyHook,
         };
         this.nodes.set(id, newNode);
 

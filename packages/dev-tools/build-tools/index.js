@@ -55,7 +55,7 @@ function compileTS({
     if (FS.existsSync(tsConfig)) {
         params = [
             ...(watchMode ? ["--watch"] : []),
-            ...(verbose && !watchMode ? ["--listFiles", "--diagnostics"] : []),
+            ...(verbose && !watchMode ? ["--diagnostics"] : []),
             "--project",
             tsConfig,
         ];
@@ -65,8 +65,11 @@ function compileTS({
             ...(srcMaps ? ["--sourceMap"] : []),
             ...(emitDeclarations ? ["--declaration"] : []),
             ...(emitDeclarations && srcMaps ? ["--declarationMap"] : []),
-            ...(verbose && !watchMode ? ["--listFiles", "--diagnostics"] : []),
+            ...(verbose && !watchMode ? ["--diagnostics"] : []),
             "--esModuleInterop",
+            "--tsBuildInfoFile",
+            ".tsbuildinfo",
+            "--incremental",
             "--outDir",
             buildDir,
             "--rootDir",

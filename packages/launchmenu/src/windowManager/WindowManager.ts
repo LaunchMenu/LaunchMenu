@@ -1,6 +1,5 @@
 import {BrowserWindow} from "electron";
 import Path from "path";
-import hmr from "@launchmenu/hmr";
 
 export class WindowManager {
     protected window: BrowserWindow;
@@ -13,7 +12,7 @@ export class WindowManager {
         this.window = new BrowserWindow({
             width: 700,
             height: 450,
-            // frame: false,
+            frame: true,
             transparent: true,
             webPreferences: {
                 nodeIntegration: true,
@@ -24,16 +23,6 @@ export class WindowManager {
 
         // and load the index.html of the app.
         if (DEV) {
-            // // Watch within the windowManager dir for changes, and reload if changes are detected
-            // hmr({
-            //     onChange: () => {
-            //         console.log("changes");
-            //         console.log(__dirname);
-            //         this.window.loadURL(indexPath);
-            //         this.window.webContents.openDevTools();
-            //     },
-            //     watchDir: __dirname,
-            // });
             this.window.loadURL(indexPath);
             this.window.webContents.openDevTools({mode: "detach"});
         } else {

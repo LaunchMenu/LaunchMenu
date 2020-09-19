@@ -14,4 +14,6 @@ export type ISearchNode<Q, I> = {
     children: IUUID[];
     /** The last obtained pattern match */
     patternMatch?: IPatternMatch;
+    /** A function to dispose of the previously registered hook */
+    destroyHook?: () => void;
 };
