@@ -6,7 +6,7 @@ import {IPatternMatch} from "./IPatternMatch";
 /** Searchable data */
 export type ISearchable<Q, I> = {
     /** The ID for this search (used to diff children) */
-    id: IUUID;
+    ID: IUUID;
     /**
      * Searches for items, by possibly returning an item, and a collection of sub-searches.
      * May also return a matched pattern to ignore all items that don't match a pattern.

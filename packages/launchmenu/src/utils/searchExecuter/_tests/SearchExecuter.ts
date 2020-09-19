@@ -28,7 +28,7 @@ const createSimpleSearch = ({
     /** A function to match patterns */
     pattern?: (text: string) => IPatternMatch | undefined;
 }): ISearchable<string, string> => ({
-    id,
+    ID: id,
     async search(query, hook) {
         return {
             item: (await matches?.(query, hook)) ? id : undefined,
@@ -63,7 +63,7 @@ describe("SearchExecuter", () => {
                 const search = createSimpleSearch({m: s => s == "s"});
                 const executer = createExecuter(search);
                 await executer.setQuery("s");
-                expect(executer.getResults()).toEqual([search.id]);
+                expect(executer.getResults()).toEqual([search.ID]);
 
                 const executer2 = createExecuter(search);
                 await executer2.setQuery("");
@@ -76,11 +76,11 @@ describe("SearchExecuter", () => {
 
                 const executer = createExecuter(search3);
                 await executer.setQuery("s");
-                expect(executer.getResults()).toEqual([search1.id]);
+                expect(executer.getResults()).toEqual([search1.ID]);
 
                 const executer2 = createExecuter(search3);
                 await executer2.setQuery("s2");
-                expect(s(executer2.getResults())).toEqual(s([search1.id, search2.id]));
+                expect(s(executer2.getResults())).toEqual(s([search1.ID, search2.ID]));
 
                 const executer3 = createExecuter(search3);
                 await executer3.setQuery("test");
@@ -96,15 +96,15 @@ describe("SearchExecuter", () => {
 
                 const executer = createExecuter(search3);
                 await executer.setQuery("s");
-                expect(executer.getResults()).toEqual([search1.id]);
+                expect(executer.getResults()).toEqual([search1.ID]);
 
                 const executer2 = createExecuter(search3);
                 await executer2.setQuery("s2");
-                expect(s(executer2.getResults())).toEqual(s([search1.id, search2.id]));
+                expect(s(executer2.getResults())).toEqual(s([search1.ID, search2.ID]));
 
                 const executer3 = createExecuter(search3);
                 await executer3.setQuery("s3");
-                expect(s(executer3.getResults())).toEqual(s([search3.id, search1.id]));
+                expect(s(executer3.getResults())).toEqual(s([search3.ID, search1.ID]));
 
                 const executer4 = createExecuter(search3);
                 await executer4.setQuery("test");
@@ -129,13 +129,13 @@ describe("SearchExecuter", () => {
 
                 const executer = createExecuter(search3);
                 await executer.setQuery("s");
-                expect(executer.getResults()).toEqual([search1.id]);
+                expect(executer.getResults()).toEqual([search1.ID]);
 
                 await executer.setQuery("s2");
-                expect(s(executer.getResults())).toEqual(s([search1.id, search2.id]));
+                expect(s(executer.getResults())).toEqual(s([search1.ID, search2.ID]));
 
                 await executer.setQuery("s3");
-                expect(s(executer.getResults())).toEqual(s([search1.id, search3.id]));
+                expect(s(executer.getResults())).toEqual(s([search1.ID, search3.ID]));
 
                 await executer.setQuery("test");
                 expect(executer.getResults()).toEqual([]);
@@ -157,22 +157,22 @@ describe("SearchExecuter", () => {
 
                 const executer = createExecuter(search3);
                 await executer.setQuery("s");
-                expect(s(executer.getResults())).toEqual(s([search3.id, search1.id]));
+                expect(s(executer.getResults())).toEqual(s([search3.ID, search1.ID]));
 
                 await executer.setQuery("s2");
-                expect(executer.getResults()).toEqual([search3.id]);
+                expect(executer.getResults()).toEqual([search3.ID]);
 
                 await executer.setQuery("st");
-                expect(s(executer.getResults())).toEqual(s([search3.id, search2.id]));
+                expect(s(executer.getResults())).toEqual(s([search3.ID, search2.ID]));
 
                 await executer.setQuery("t");
                 expect(s(executer.getResults())).toEqual([]);
 
                 await executer.setQuery("st");
-                expect(s(executer.getResults())).toEqual(s([search3.id, search2.id]));
+                expect(s(executer.getResults())).toEqual(s([search3.ID, search2.ID]));
 
                 await executer.setQuery("s2");
-                expect(executer.getResults()).toEqual([search3.id]);
+                expect(executer.getResults()).toEqual([search3.ID]);
             });
         });
         describe("Correctly interrupts previous searches", () => {
@@ -210,14 +210,14 @@ describe("SearchExecuter", () => {
                 const executer = createExecuter(search4);
                 await executer.setQuery("s");
                 expect(s(executer.getResults())).toEqual(
-                    s([search1.id, search2.id, search3.id, search4.id])
+                    s([search1.ID, search2.ID, search3.ID, search4.ID])
                 );
 
                 const executer2 = createExecuter(search4);
                 executer2.setQuery("s");
                 await wait(20); // requires 40ms+ to complete
                 expect(s(executer2.getResults())).not.toEqual(
-                    s([search1.id, search2.id, search3.id, search4.id])
+                    s([search1.ID, search2.ID, search3.ID, search4.ID])
                 );
 
                 let resolved = false;
@@ -263,12 +263,12 @@ describe("SearchExecuter", () => {
 
                 // Update the query which should schedule all searches, but the first search should result in all searches being removed (despite being scheduled already)
                 await executer.setQuery("o");
-                expect(executer.getResults()).toEqual([search4.id]);
+                expect(executer.getResults()).toEqual([search4.ID]);
 
                 // Just a normal search to confirm nothing janky is going on in the test in general
                 await executer.setQuery("s");
                 expect(s(executer.getResults())).toEqual(
-                    s([search4.id, search3.id, search2.id, search1.id])
+                    s([search4.ID, search3.ID, search2.ID, search1.ID])
                 );
             });
             it("Correctly updates previously added items before finding new ones", async () => {
@@ -309,17 +309,17 @@ describe("SearchExecuter", () => {
                     onRemove: item => sequence.push({type: "remove", item}),
                 });
                 await executer.setQuery("o");
-                expect(s(executer.getResults())).toEqual(s([search4.id, search3.id]));
+                expect(s(executer.getResults())).toEqual(s([search4.ID, search3.ID]));
                 await executer.setQuery("s");
-                expect(s(executer.getResults())).toEqual(s([search1.id, search2.id]));
+                expect(s(executer.getResults())).toEqual(s([search1.ID, search2.ID]));
 
                 expect(sequence).toEqual([
-                    {type: "add", item: search4.id},
-                    {type: "add", item: search3.id},
-                    {type: "remove", item: search4.id},
-                    {type: "remove", item: search3.id},
-                    {type: "add", item: search1.id},
-                    {type: "add", item: search2.id},
+                    {type: "add", item: search4.ID},
+                    {type: "add", item: search3.ID},
+                    {type: "remove", item: search4.ID},
+                    {type: "remove", item: search3.ID},
+                    {type: "add", item: search1.ID},
+                    {type: "add", item: search2.ID},
                 ]);
             });
         });
@@ -343,23 +343,23 @@ describe("SearchExecuter", () => {
 
                 const executer = createExecuter(search3);
                 await executer.setQuery("s");
-                expect(s(executer.getResults())).toEqual(s([search2.id]));
+                expect(s(executer.getResults())).toEqual(s([search2.ID]));
 
                 await executer.setQuery("o");
-                expect(s(executer.getResults())).toEqual(s([search1.id, search3.id]));
+                expect(s(executer.getResults())).toEqual(s([search1.ID, search3.ID]));
 
                 field2.set("o");
                 await wait(1);
                 expect(s(executer.getResults())).toEqual(
-                    s([search1.id, search2.id, search3.id])
+                    s([search1.ID, search2.ID, search3.ID])
                 );
 
                 field1.set("s");
                 await wait(1);
-                expect(s(executer.getResults())).toEqual(s([search2.id, search3.id]));
+                expect(s(executer.getResults())).toEqual(s([search2.ID, search3.ID]));
 
                 await executer.setQuery("s");
-                expect(s(executer.getResults())).toEqual(s([search1.id]));
+                expect(s(executer.getResults())).toEqual(s([search1.ID]));
             });
             it("Correctly updates the children of a search when requested", async () => {
                 const search1 = createSimpleSearch({
@@ -380,19 +380,19 @@ describe("SearchExecuter", () => {
 
                 const executer = createExecuter(search3);
                 await executer.setQuery("s");
-                expect(s(executer.getResults())).toEqual(s([search1.id]));
+                expect(s(executer.getResults())).toEqual(s([search1.ID]));
 
                 await executer.setQuery("o");
-                expect(s(executer.getResults())).toEqual(s([search2.id, search3.id]));
+                expect(s(executer.getResults())).toEqual(s([search2.ID, search3.ID]));
 
                 await executer.setQuery("p");
                 expect(s(executer.getResults())).toEqual(
-                    s([search1.id, search2.id, search3.id])
+                    s([search1.ID, search2.ID, search3.ID])
                 );
 
                 field.set("p");
                 await wait(1);
-                expect(s(executer.getResults())).toEqual(s([search3.id]));
+                expect(s(executer.getResults())).toEqual(s([search3.ID]));
             });
             it("Doesn't update unaffected items", async () => {
                 const field1 = new Field("o");
@@ -417,28 +417,28 @@ describe("SearchExecuter", () => {
 
                 const executer = createExecuter(search3);
                 await executer.setQuery("s");
-                expect(s(executer.getResults())).toEqual(s([search2.id]));
+                expect(s(executer.getResults())).toEqual(s([search2.ID]));
 
                 request = false;
                 await executer.setQuery("o");
-                expect(s(executer.getResults())).toEqual(s([search1.id, search3.id]));
+                expect(s(executer.getResults())).toEqual(s([search1.ID, search3.ID]));
                 expect(request).toBe(true);
 
                 request = false;
                 field2.set("o");
                 await wait(1);
                 expect(s(executer.getResults())).toEqual(
-                    s([search1.id, search2.id, search3.id])
+                    s([search1.ID, search2.ID, search3.ID])
                 );
                 expect(request).toBe(false);
 
                 field1.set("s");
                 await wait(1);
-                expect(s(executer.getResults())).toEqual(s([search2.id, search3.id]));
+                expect(s(executer.getResults())).toEqual(s([search2.ID, search3.ID]));
                 expect(request).toBe(false);
 
                 await executer.setQuery("s");
-                expect(s(executer.getResults())).toEqual(s([search1.id]));
+                expect(s(executer.getResults())).toEqual(s([search1.ID]));
                 expect(request).toBe(true);
             });
         });
@@ -478,12 +478,12 @@ describe("SearchExecuter", () => {
             const executer = createExecuter(search7);
             await executer.setQuery("o");
             expect(s(executer.getResults())).toEqual(
-                s([search2.id, search3.id, search5.id, search7.id])
+                s([search2.ID, search3.ID, search5.ID, search7.ID])
             );
 
             await executer.setQuery("s");
             expect(s(executer.getResults())).toEqual(
-                s([search1.id, search4.id, search6.id])
+                s([search1.ID, search4.ID, search6.ID])
             );
         });
         describe("Correctly considers pattern matches", () => {
@@ -515,7 +515,7 @@ describe("SearchExecuter", () => {
                 const executer1 = createExecuter(search5);
                 await executer1.setQuery("o");
                 expect(s(executer1.getResults())).toEqual(
-                    s([search2.id, search3.id, search5.id])
+                    s([search2.ID, search3.ID, search5.ID])
                 );
 
                 await executer1.setQuery("o!");
@@ -523,10 +523,10 @@ describe("SearchExecuter", () => {
 
                 const executer2 = createExecuter(search5);
                 await executer2.setQuery("s");
-                expect(s(executer2.getResults())).toEqual(s([search1.id, search4.id]));
+                expect(s(executer2.getResults())).toEqual(s([search1.ID, search4.ID]));
 
                 await executer2.setQuery("s!");
-                expect(s(executer2.getResults())).toEqual(s([search1.id]));
+                expect(s(executer2.getResults())).toEqual(s([search1.ID]));
             });
             it("Reinserts found items that don't match any pattern once all patterns are removed", async () => {
                 const search1 = createSimpleSearch({
@@ -556,7 +556,7 @@ describe("SearchExecuter", () => {
                 const executer = createExecuter(search5);
                 await executer.setQuery("o");
                 expect(s(executer.getResults())).toEqual(
-                    s([search2.id, search3.id, search5.id])
+                    s([search2.ID, search3.ID, search5.ID])
                 );
 
                 await executer.setQuery("o!");
@@ -564,17 +564,17 @@ describe("SearchExecuter", () => {
 
                 await executer.setQuery("o");
                 expect(s(executer.getResults())).toEqual(
-                    s([search2.id, search3.id, search5.id])
+                    s([search2.ID, search3.ID, search5.ID])
                 );
 
                 await executer.setQuery("s");
-                expect(s(executer.getResults())).toEqual(s([search1.id, search4.id]));
+                expect(s(executer.getResults())).toEqual(s([search1.ID, search4.ID]));
 
                 await executer.setQuery("s!");
-                expect(s(executer.getResults())).toEqual(s([search1.id]));
+                expect(s(executer.getResults())).toEqual(s([search1.ID]));
 
                 await executer.setQuery("s");
-                expect(s(executer.getResults())).toEqual(s([search1.id, search4.id]));
+                expect(s(executer.getResults())).toEqual(s([search1.ID, search4.ID]));
             });
         });
     });
@@ -632,7 +632,7 @@ describe("SearchExecuter", () => {
             const executer = createExecuter(search);
 
             await executer.setQuery("s");
-            expect(executer.getResults()).toEqual([search.id]);
+            expect(executer.getResults()).toEqual([search.ID]);
 
             await executer.setQuery("t");
             expect(executer.getResults()).toEqual([]);
@@ -651,7 +651,7 @@ describe("SearchExecuter", () => {
 
             await wait();
             expect(listener.mock.calls.length).toBe(2);
-            expect(listener.mock.calls[0][0]).toEqual([search.id]);
+            expect(listener.mock.calls[0][0]).toEqual([search.ID]);
             expect(listener.mock.calls[1][0]).toEqual([]);
         });
         it("Indicates its loading state", async () => {
@@ -672,14 +672,14 @@ describe("SearchExecuter", () => {
                 [],
             ]);
             expect(listener.mock.calls[1]).toEqual([
-                [search.id],
+                [search.ID],
                 {isLoading: true, exceptions: []},
                 [],
             ]);
             expect(listener.mock.calls[2]).toEqual([
                 [],
                 {isLoading: false, exceptions: []},
-                [search.id],
+                [search.ID],
             ]);
         });
     });
@@ -784,18 +784,18 @@ describe("SearchExecuter", () => {
                 const executer = createExecuter(search3);
 
                 await executer.setQuery("o");
-                expect(s(executer.getResults())).toEqual(s([search2.id, search3.id]));
+                expect(s(executer.getResults())).toEqual(s([search2.ID, search3.ID]));
                 await executer.setQuery("o!");
-                expect(s(executer.getResults())).toEqual(s([search2.id]));
+                expect(s(executer.getResults())).toEqual(s([search2.ID]));
 
                 const executer2 = new SearchExecuter({
                     searchable: search3,
                     getPatternMatch: () => undefined,
                 });
                 await executer2.setQuery("o");
-                expect(s(executer2.getResults())).toEqual(s([search2.id, search3.id]));
+                expect(s(executer2.getResults())).toEqual(s([search2.ID, search3.ID]));
                 await executer2.setQuery("o!");
-                expect(s(executer2.getResults())).toEqual(s([search2.id, search3.id]));
+                expect(s(executer2.getResults())).toEqual(s([search2.ID, search3.ID]));
             });
             it("Can use the getPatternMatch to only allow 1 pattern type to match", async () => {
                 const executer = new SearchExecuter({
@@ -855,25 +855,25 @@ describe("SearchExecuter", () => {
             });
             await executer.setQuery("o");
             expect(sequence).toEqual([
-                {type: "add", item: search7.id},
-                {type: "add", item: search5.id},
-                {type: "add", item: search3.id},
-                {type: "add", item: search2.id},
+                {type: "add", item: search7.ID},
+                {type: "add", item: search5.ID},
+                {type: "add", item: search3.ID},
+                {type: "add", item: search2.ID},
             ]);
 
             await executer.setQuery("s");
             expect(sequence).toEqual([
-                {type: "add", item: search7.id},
-                {type: "add", item: search5.id},
-                {type: "add", item: search3.id},
-                {type: "add", item: search2.id},
-                {type: "remove", item: search7.id},
-                {type: "remove", item: search5.id},
-                {type: "remove", item: search3.id},
-                {type: "remove", item: search2.id},
-                {type: "add", item: search6.id},
-                {type: "add", item: search4.id},
-                {type: "add", item: search1.id},
+                {type: "add", item: search7.ID},
+                {type: "add", item: search5.ID},
+                {type: "add", item: search3.ID},
+                {type: "add", item: search2.ID},
+                {type: "remove", item: search7.ID},
+                {type: "remove", item: search5.ID},
+                {type: "remove", item: search3.ID},
+                {type: "remove", item: search2.ID},
+                {type: "add", item: search6.ID},
+                {type: "add", item: search4.ID},
+                {type: "add", item: search1.ID},
             ]);
         });
     });

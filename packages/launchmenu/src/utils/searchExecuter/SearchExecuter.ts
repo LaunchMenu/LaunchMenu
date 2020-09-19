@@ -88,7 +88,7 @@ export class SearchExecuter<Q, I> {
 
             // Schedule an update for all current nodes
             this.updateQueue = searchables;
-            if (!this.nodes.get(this.rootSearchable.id))
+            if (!this.nodes.get(this.rootSearchable.ID))
                 this.updateQueue.unshift({
                     searchable: this.rootSearchable,
                     children: [],
@@ -180,7 +180,7 @@ export class SearchExecuter<Q, I> {
     protected scheduleRemovals(ids: IUUID[]): void {
         this.removalQueue.push(...ids);
         this.updateQueue = this.updateQueue.filter(
-            ({searchable: {id}}) => !ids.includes(id)
+            ({searchable: {ID: id}}) => !ids.includes(id)
         );
         if (!this.searching.get(null)) this.search();
     }
@@ -223,7 +223,7 @@ export class SearchExecuter<Q, I> {
      * @param node The node to be updated
      */
     protected async nodeUpdate(query: Q, node: ISearchNode<Q, I>): Promise<void> {
-        const id = node.searchable.id;
+        const id = node.searchable.ID;
         node = this.nodes.get(id) || node; // Prefer a newer version of the node if it exists
 
         // Create a hook to schedule an update if the node is changed
@@ -234,7 +234,7 @@ export class SearchExecuter<Q, I> {
 
         // Invoke the search to obtain its new results
         const result = await node.searchable.search(query, hook, this);
-        const newChildren = result.children?.map(({id}) => id) || [];
+        const newChildren = result.children?.map(({ID: id}) => id) || [];
         const patternMatch =
             result.patternMatch &&
             this.getPatternMatch(result.patternMatch, this.foundPatternMatches.get(null));
@@ -242,7 +242,7 @@ export class SearchExecuter<Q, I> {
         // Obtain the added and removed IDs
         const oldChildren = node.children.filter(id => this.nodes.get(id)); // Don't consider the ones that weren't processed yet
         const additions = (result.children ?? []).filter(
-            ({id}) => !oldChildren.includes(id)
+            ({ID: id}) => !oldChildren.includes(id)
         );
         const removals = oldChildren.filter(id => !newChildren.includes(id));
 

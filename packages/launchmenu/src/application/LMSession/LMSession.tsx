@@ -1,4 +1,4 @@
-import {Field} from "model-react";
+import {Field, IDataHook} from "model-react";
 import React from "react";
 import {IOContext} from "../../context/IOContext";
 import {IMenuSearchable} from "../../menus/actions/types/search/_types/IMenuSearchable";
@@ -28,27 +28,37 @@ import {IApplet} from "../applets/_types/IApplet";
  * An application session
  */
 export class LMSession {
+    /** The view that can be used to render this session */
     public view: JSX.Element;
+    /** The IO context for this session */
     public context: IOContext;
+    /** The unique runtime id of this session */
     public readonly id = uuid();
 
-    protected lm: LaunchMenu;
+    /** The LaunchMenu runtime instance this session is part of */
+    public LM: LaunchMenu;
 
+    /** The main search field of this session */
+    public searchField: TextField;
+    /** The main results menu of this session */
+    public menu: PrioritizedMenu;
+
+    /** The searchable sources */
+    public searchables = new Field([] as IMenuSearchable[]);
+    /** The search executer responsible for making the searches */
+    public searchExecuter: SearchExecuter<IQuery, IPrioritizedMenuItem>;
+
+    // Observers that track changes
+    protected settingsContextObserver: Observer<SettingsContext>;
     protected appletObserver: Observer<IApplet[]>;
     protected searchObserver: Observer<string>;
-
-    protected searchField: TextField;
-    protected menu: PrioritizedMenu;
-
-    protected searchables = new Field([] as IMenuSearchable[]);
-    protected searchExecuter: SearchExecuter<IQuery, IPrioritizedMenuItem>;
 
     /**
      * Creates a new app session
      * @param lm The LM instance this is a session for
      */
     public constructor(lm: LaunchMenu) {
-        this.lm = lm;
+        this.LM = lm;
 
         this.setupContext();
         this.setupView();
@@ -62,6 +72,7 @@ export class LMSession {
     public destroy() {
         this.appletObserver.destroy();
         this.searchObserver.destroy();
+        this.settingsContextObserver.destroy();
     }
 
     /**
@@ -98,14 +109,26 @@ export class LMSession {
             settings: new SettingsContext(),
             contextMenuItems: this.getGlobalContextMenuItems(),
         });
+
+        // Retrieve the settings context from LM which includes all base settings data, and listen for changes
+        this.settingsContextObserver = new Observer(h =>
+            this.LM.getSettingsContext(h)
+        ).listen(settingsContext => {
+            this.context.settings = settingsContext;
+        }, true);
     }
 
     /**
      * Retrieves the context menu items that should be global in this session
      * @returns The menu items
      */
-    protected getGlobalContextMenuItems(): IPrioritizedMenuItem[] {
-        return [prioritizedUndoMenuItem, prioritizedRedoMenuItem];
+    protected getGlobalContextMenuItems(): (hook: IDataHook) => IPrioritizedMenuItem[] {
+        return hook =>
+            this.LM.getApplets(hook).flatMap(applet =>
+                applet.globalContextMenuItems instanceof Function
+                    ? applet.globalContextMenuItems(this, hook)
+                    : applet.globalContextMenuItems ?? []
+            );
     }
 
     /**
@@ -145,7 +168,7 @@ export class LMSession {
         // Setup a search executer
         this.searchExecuter = new SearchExecuter({
             searchable: {
-                id: "root",
+                ID: "root",
                 search: async (query, hook) => ({
                     children: this.searchables.get(hook),
                 }),
@@ -194,42 +217,38 @@ export class LMSession {
      * Initializes the applets within this context
      */
     protected setupApplets(): void {
-        this.appletObserver = new Observer(h => this.lm.getApplets(h)).listen(applets => {
-            const searchables = applets.filter(
-                applet => applet.search
-            ) as IMenuSearchable[];
-            this.searchables.set(
-                this.updateChangedSearchablesIDs(this.searchables.get(null), searchables)
-            );
-        }, true);
-    }
+        let first = true;
+        this.appletObserver = new Observer(h => this.LM.getApplets(h)).listen(
+            (applets, md, prevApplets) => {
+                const newApplets = first
+                    ? applets
+                    : applets.filter(applet => !prevApplets.includes(applet));
 
-    /**
-     * Updates the IDs of searchables whose search function changed (despite having the same id)
-     * @param oldSearchables The old searchables
-     * @param newSearchables The updated searchables
-     * @returns The updated searchables, with ids of changed searchables replaced
-     */
-    protected updateChangedSearchablesIDs(
-        oldSearchables: IMenuSearchable[],
-        newSearchables: IMenuSearchable[]
-    ): IMenuSearchable[] {
-        return newSearchables.map(searchable => {
-            // Find old searchable based on search function hard equivalence
-            const oldSearchable = oldSearchables.find(
-                ({search}) => search == searchable.search
-            );
+                // Obtain the new searchables
+                const oldSearchables = this.searchables.get(null);
+                const searchables = applets.flatMap(applet => {
+                    if (applet.search) {
+                        // Make sure the id changes if the applet changed, to make the search pick up on it
+                        if (
+                            newApplets.includes(applet) &&
+                            oldSearchables.find(({ID: id}) => id == applet.ID)
+                        ) {
+                            return {
+                                ...applet,
+                                ID: "updated-" + applet.ID,
+                            } as IMenuSearchable;
+                        } else return applet as IMenuSearchable;
+                    } else return [];
+                });
+                this.searchables.set(searchables);
 
-            // IF there is an equivalent searchable, nothing has to happen
-            if (oldSearchable) {
-                return searchable;
-            } else {
-                // If there is a non equivalent searchable by the same id, we most change the id to ensure the search executer picks up on the change
-                const containedID = !!oldSearchables.find(({id}) => id == searchable.id);
-                return containedID
-                    ? {...searchable, id: "updated-" + searchable.id}
-                    : searchable;
-            }
-        });
+                // Initialize the new applets
+                if (DEV)
+                    newApplets.forEach(applet => applet?.development?.onReload?.(this));
+
+                first = false;
+            },
+            true
+        );
     }
 }

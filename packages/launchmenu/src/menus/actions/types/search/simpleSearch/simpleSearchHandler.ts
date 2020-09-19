@@ -66,7 +66,7 @@ export const simpleSearchHandler = searchAction.createHandler(
             | IMenuSearchable[] => {
             const item = dataItems[i][0];
             return {
-                id,
+                ID: id,
                 search: async (
                     query: IQuery & Partial<ISimpleSearchQuery>,
                     hook: IDataHook
@@ -77,7 +77,7 @@ export const simpleSearchHandler = searchAction.createHandler(
                         : undefined;
                     const patternMatch = data.patternMatcher?.(query, hook);
                     return {
-                        item: priority > 0 ? {priority, id, item} : undefined,
+                        item: priority > 0 ? {priority, ID: id, item} : undefined,
                         children,
                         patternMatch,
                     };

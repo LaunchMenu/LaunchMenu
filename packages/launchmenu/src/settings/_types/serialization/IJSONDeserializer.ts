@@ -5,7 +5,7 @@ import {IJSON} from "../../../_types/IJSON";
  */
 export type IJSONDeserializer<
     I extends IJSON = IJSON,
-    O = any,
+    O = unknown,
     N extends string = string
 > = {
     /** The name of the data type, should be unique */

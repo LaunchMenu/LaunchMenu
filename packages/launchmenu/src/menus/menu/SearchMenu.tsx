@@ -22,7 +22,7 @@ export class SearchMenu extends PrioritizedMenu {
     protected showAllOnEmptySearch?: boolean;
     protected executer = new SearchExecuter({
         searchable: {
-            id: "root",
+            ID: "root",
             search: async (query: IQuery, hook: IDataHook) => ({
                 children: searchAction.get(this.searchItems.get(hook)),
             }),

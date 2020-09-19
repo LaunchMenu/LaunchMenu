@@ -36,9 +36,9 @@ export class SettingsContext {
      * @param config The settings group to retrieve
      * @returns The values for these settings within this context
      */
-    public get<F extends ISettingsCategoryMenuItem>(
-        config: IIdentifiedSettingsConfig<any, F, IJSONDeserializer>
-    ): TSettingsTree<F["children"]> {
+    public get<F extends ISettingsCategoryMenuItem, D extends IJSONDeserializer>(
+        config: IIdentifiedSettingsConfig<any, F, D>
+    ): TSettingsTree<F["children"], D> {
         return extractSettings(this.getUI(config));
     }
 

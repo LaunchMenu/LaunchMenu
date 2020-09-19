@@ -9,9 +9,10 @@ import {IJSONDeserializer} from "../_types/serialization/IJSONDeserializer";
  * @returns The settings tree
  */
 export function extractSettings<
-    T extends IRenderableSettingsTree<IJSONDeserializer>
->(renderableSettings: {children: T}): TSettingsTree<T> {
+    T extends IRenderableSettingsTree<D>,
+    D extends IJSONDeserializer
+>(renderableSettings: {children: T}): TSettingsTree<T, D> {
     return ExtendedObject.map(renderableSettings.children as IRenderableSettingsTree, v =>
         "children" in v ? extractSettings(v) : v
-    ) as TSettingsTree<T>;
+    ) as TSettingsTree<T, D>;
 }

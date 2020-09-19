@@ -47,13 +47,13 @@ export function createSearchableMenuItem({
             ...(noSelect ? [] : [executeAction.createBinding({execute: () => {}})]),
             searchAction.createBinding([
                 {
-                    id,
+                    ID: id,
                     search: async ({search}, hook) => {
                         if (searchDelay) await wait(searchDelay);
                         const priority = searchPriorities[search] || 0;
                         if (priority > 0)
                             return {
-                                item: {priority, id, item},
+                                item: {priority, ID: id, item},
                             };
                         return {};
                     },

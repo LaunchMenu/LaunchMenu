@@ -357,14 +357,14 @@ export class MultiSelectField<T> extends TextField {
         const id = uuid();
         const searchBinding = searchAction.createBinding([
             {
-                id,
+                ID: id,
                 search: async query => ({
                     // Note it should be this.customItem, not item, since item doesn't contain all data yet
                     item:
                         query.search != "" // To prevent duplicates since all items show  when search is empty
                             ? this.customItem && {
                                   item: this.customItem,
-                                  id,
+                                  ID: id,
                                   priority: 0.1,
                               }
                             : undefined,

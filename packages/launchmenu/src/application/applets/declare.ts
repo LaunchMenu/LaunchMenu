@@ -13,5 +13,5 @@ import {v4 as uuid} from "uuid";
 export function declare<
     S extends IIdentifiedSettingsConfig<IJSON, any, IJSONDeserializer>
 >(applet: IAppletConfig<S>): IApplet<S> {
-    return {id: uuid(), ...applet};
+    return {ID: uuid(), ...applet};
 }

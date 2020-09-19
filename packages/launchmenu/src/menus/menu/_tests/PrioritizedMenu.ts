@@ -267,7 +267,7 @@ describe("PrioritizedMenu", () => {
             const item = createPrioritizedMenuItem({priority: 1});
             const item2 = createPrioritizedMenuItem({priority: 4, generateID: true});
             const item3 = createPrioritizedMenuItem({priority: 3, generateID: true});
-            const item4 = {...createPrioritizedMenuItem({priority: 6}), id: item3.id};
+            const item4 = {...createPrioritizedMenuItem({priority: 6}), id: item3.ID};
             menu.addItem(item);
             menu.addItem(item2);
             menu.addItem(item3);

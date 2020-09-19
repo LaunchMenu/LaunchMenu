@@ -13,7 +13,6 @@ import {ISettingsCategoryMenuItem} from "../settings/_types/ISettingsCategoryMen
 import {AppletManager} from "./applets/AppletManager";
 import {JSONFile} from "../settings/storage/fileTypes/JSONFile";
 import {IAppletSource} from "./applets/_types/IAppletSource";
-import {AppletData} from "./applets/AppletData";
 import {IApplet} from "./applets/_types/IApplet";
 
 /**
@@ -25,7 +24,7 @@ export class LaunchMenu {
     protected keyHandler: KeyHandler;
     protected sessions = new Field([] as LMSession[]);
 
-    protected settingsDirectory = Path.join(process.cwd(), "data");
+    protected settingsDirectory = Path.join(process.cwd(), "data", "settings");
     protected appletManager: AppletManager;
     protected appletSources: JSONFile;
 
@@ -44,10 +43,12 @@ export class LaunchMenu {
         this.sessions.get(null).forEach(session => session.destroy());
     }
 
+    // Initialization
     /**
      * A method to initialize Launchmenu
      */
     public async setup(): Promise<void> {
+        if (this.keyHandler) throw Error("Instance has already been set up");
         this.setupKeyHandler();
         this.setupTheme();
         await this.setupApplets();
@@ -68,7 +69,7 @@ export class LaunchMenu {
      */
     protected setupKeyHandler(): void {
         this.keyHandler = new KeyHandler(window).listen(key => {
-            const top = this.getTopSession();
+            const top = this.getSelectedSession();
             return top?.emit(key);
         });
 
@@ -112,6 +113,7 @@ export class LaunchMenu {
         const appletSources = await this.getAppletSources();
 
         this.appletManager = new AppletManager(
+            this,
             appletSources,
             Path.join(this.settingsDirectory, "applets")
         );
@@ -121,12 +123,11 @@ export class LaunchMenu {
      * Initializes the the view
      */
     protected setupView(): void {
-        // TODO: add transitions
         this.view = (
             <ThemeProvider>
                 <FillBox font="paragraph">
                     <Loader>
-                        {h => <Transition>{this.getTopSession(h)?.view}</Transition>}
+                        {h => <Transition>{this.getSelectedSession(h)?.view}</Transition>}
                     </Loader>
                 </FillBox>
             </ThemeProvider>
@@ -140,6 +141,31 @@ export class LaunchMenu {
         this.addSession();
     }
 
+    // General getters
+    /**
+     * Retrieves the applet manager that loads all applets
+     * @returns The applet manager
+     */
+    public getAppletManager(): AppletManager {
+        return this.appletManager;
+    }
+
+    /**
+     * Retrieves the key handler that listens for keyboard events and dispatches them
+     * @returns The key handler
+     */
+    public getKeyHandler(): KeyHandler {
+        return this.keyHandler;
+    }
+
+    /**
+     * Retrieves the directory that all settings are stored in
+     * @returns The settings directory path
+     */
+    public getSettingsDirectory(): string {
+        return this.settingsDirectory;
+    }
+
     // Applet management
     /**
      * Retrieves a settings context that contains settings for all applets
@@ -148,9 +174,12 @@ export class LaunchMenu {
      */
     public getSettingsContext(hook: IDataHook = null): SettingsContext {
         const data = {} as {[id: string]: ISettingsCategoryMenuItem};
-        this.getApplets(hook).forEach(applet => {
-            data[applet.id] = applet.settings.settings();
-        });
+        this.appletManager
+            ?.getAppletData(hook)
+            .forEach(({applet: {ID: id}, settingsFile}) => {
+                data[id] = settingsFile.settings;
+            });
+        console.log(data);
         return new SettingsContext(data);
     }
 
@@ -160,7 +189,7 @@ export class LaunchMenu {
      * @returns The available applets
      */
     public getApplets(hook: IDataHook = null): IApplet<any>[] {
-        return this.appletManager?.getApplets(hook).map(({applet}) => applet) ?? [];
+        return this.appletManager?.getApplets(hook) ?? [];
     }
 
     // Session management
@@ -204,11 +233,11 @@ export class LaunchMenu {
     }
 
     /**
-     * Retrieves the sessions that are currently open
+     * Retrieves the session that is currently selected (the session in the last position)
      * @param hook The hook to subscribe to changes
      * @returns The current top session
      */
-    public getTopSession(hook: IDataHook = null): LMSession | null {
+    public getSelectedSession(hook: IDataHook = null): LMSession | null {
         const sessions = this.sessions.get(hook);
         return sessions[sessions.length - 1] ?? null;
     }

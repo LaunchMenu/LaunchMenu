@@ -26,14 +26,40 @@ export const settings = createSettings({
         }),
 });
 
-const item = createStandardMenuItem({name: "orange"});
+const item = createStandardMenuItem({
+    name: "purple",
+    onExecute({context}) {
+        context.settings.get(settings).someNumber.set(20);
+    },
+});
+const item2 = createStandardMenuItem({
+    name: "orange",
+    onExecute({context}) {
+        const a = context.settings.get(settings).someNumber.get();
+        console.log(a);
+    },
+});
 
 export default declare({
     info,
     settings,
+    globalContextMenuItems(session, hook) {
+        return [{priority: 3, item}];
+    },
     async search(query) {
         return {
-            children: searchAction.get([item]),
+            children: searchAction.get([item, item2]),
         };
+    },
+
+    development: {
+        onReload(session) {
+            session.searchField.set("orange");
+            session.context.keyHandler.push(event => {
+                if (event.is(["ctrl", "s"])) {
+                    session.LM.getAppletManager().saveAllSettings();
+                }
+            });
+        },
     },
 });

@@ -7,7 +7,7 @@ export type ISerializables<T extends IJSONDeserializer> = T extends IJSONDeseria
     infer N
 >
     ? {serialize(): I & {$$type: N}} & O
-    : never;
+    : unknown;
 
 /** Serializable data, if T deserializers are specified */
 export type ISerializable<T extends IJSONDeserializer = never> =

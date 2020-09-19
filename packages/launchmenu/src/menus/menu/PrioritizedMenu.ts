@@ -118,7 +118,7 @@ export class PrioritizedMenu extends AbstractMenu {
             const inMenu = this.categoriesRaw[categoryIndex]?.items.find(item) != -1;
             const categoryChanged = category != this.categoryConfig.getCategory(item);
             // In addition, updating the category is only supported if the item provided an ID
-            if (inMenu && item.id && categoryChanged) {
+            if (inMenu && item.ID && categoryChanged) {
                 this.removeItem(
                     item as IPrioritizedMenuItem & {id: number | string},
                     category
@@ -149,7 +149,9 @@ export class PrioritizedMenu extends AbstractMenu {
             if (!categoryData.batch) categoryData.batch = {add: [], remove: []};
 
             // If the batch contains an outdated version, remove it
-            const index = categoryData.batch.add.findIndex(({id}) => id && id == item.id);
+            const index = categoryData.batch.add.findIndex(
+                ({ID: id}) => id && id == item.ID
+            );
             if (index != -1) categoryData.batch.add.splice(index, 1);
 
             // Update the new version
@@ -235,9 +237,9 @@ export class PrioritizedMenu extends AbstractMenu {
                 const removes = categoryData.batch.remove;
 
                 const keys = {} as {[key: string]: boolean};
-                adds.forEach(({id}) => id && (keys[id] = true));
-                removes.forEach(({id}) => id && (keys[id] = true));
-                categoryData.items.filter(({id, item}) =>
+                adds.forEach(({ID: id}) => id && (keys[id] = true));
+                removes.forEach(({ID: id}) => id && (keys[id] = true));
+                categoryData.items.filter(({ID: id, item}) =>
                     id
                         ? !keys[id]
                         : !(

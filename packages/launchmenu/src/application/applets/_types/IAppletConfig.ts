@@ -13,4 +13,4 @@ export type IAppletConfig<
         ISettingsCategoryMenuItem,
         IJSONDeserializer
     >
-> = Omit<IApplet<S>, "id">;
+> = Omit<IApplet<S>, "ID">;

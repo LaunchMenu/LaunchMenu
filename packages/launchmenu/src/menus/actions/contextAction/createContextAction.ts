@@ -82,7 +82,7 @@ export function createContextAction<
                             : undefined,
                     }),
                     priority,
-                    id,
+                    ID: id,
                 } as IPrioritizedMenuItem;
             }) as IContextMenuItemGetter,
         };
