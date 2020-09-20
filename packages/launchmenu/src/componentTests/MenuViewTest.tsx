@@ -33,7 +33,7 @@ import {createStringMenuItem} from "../menus/items/inputs/types/createStringMenu
 import {createNumberMenuItem} from "../menus/items/inputs/types/createNumberMenuItem";
 import {createColorMenuItem} from "../menus/items/inputs/types/createColorMenuItem";
 import {createFolderMenuItem} from "../menus/items/createFolderMenuItem";
-import {createSettingsCategory} from "../settings/inputs/createSettingsCategory";
+import {createSettingsFolder} from "../settings/inputs/createSettingsFolder";
 import {createNumberSetting} from "../settings/inputs/createNumberSetting";
 import {createStringSetting} from "../settings/inputs/createStringSetting";
 import {createColorSetting} from "../settings/inputs/createColorSetting";
@@ -106,14 +106,14 @@ const someFolder = createFolderMenuItem({
 // Programmatic data access
 someFolder.children[3].get();
 
-const settingsItem = createSettingsCategory({
+const settingsItem = createSettingsFolder({
     name: "settings",
     children: {
         someNumberSetting: createNumberSetting({name: "potatoes", init: 5}),
         someStringSetting: createStringSetting({name: "oranges", init: "yes"}),
         someColorSetting: createColorSetting({name: "color", init: "orange"}),
         someBooleanSetting: createBooleanSetting({name: "yes", init: true}),
-        someSubCategory: createSettingsCategory({
+        someSubCategory: createSettingsFolder({
             name: "keyboard",
             children: {
                 somePattern: createKeyPatternSetting({

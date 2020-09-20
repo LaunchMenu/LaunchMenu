@@ -1,12 +1,12 @@
 import hmr, {HMRWatcher} from "@launchmenu/hmr";
 import {Field, IDataHook} from "model-react";
-import {AppletData} from "./AppletData";
 import {IAppletConfig} from "./_types/IAppletConfig";
 import {IAppletSource} from "./_types/IAppletSource";
 import Path from "path";
 import FS from "fs";
 import {IApplet} from "./_types/IApplet";
 import {LaunchMenu} from "../LaunchMenu";
+import {IUUID} from "../../_types/IUUID";
 
 /**
  * A manager of applets, takes care of loading applets given their locations
@@ -14,11 +14,14 @@ import {LaunchMenu} from "../LaunchMenu";
 export class AppletManager {
     protected LM: LaunchMenu;
     protected sources: IAppletSource[];
-    protected settingsDirectory: string;
     protected reloadOnChanges: boolean;
 
     protected watchers = {} as {[key: string]: HMRWatcher};
-    protected applets = new Field([] as AppletData[]);
+    protected applets = new Field([] as IApplet[]);
+    protected appletDestroyers = {} as {
+        [ID: string]: () => void;
+        [ID: number]: () => void;
+    };
 
     /**
      * Creates a new applet manager instances with the given sources
@@ -30,12 +33,10 @@ export class AppletManager {
     public constructor(
         LM: LaunchMenu,
         sources: IAppletSource[],
-        settingsDirectory: string,
         reloadOnChanges: boolean = DEV
     ) {
         this.LM = LM;
         this.sources = sources;
-        this.settingsDirectory = settingsDirectory;
         this.reloadOnChanges = reloadOnChanges;
         this.initApplets();
     }
@@ -45,9 +46,8 @@ export class AppletManager {
      */
     public destroy(): void {
         Object.values(this.watchers).forEach(watcher => watcher.destroy());
-        this.applets
-            .get(null)
-            .forEach(({applet}) => applet.lifeCycle?.onDestroy?.(this.LM));
+        Object.values(this.appletDestroyers).forEach(destroy => destroy());
+        this.appletDestroyers = {};
     }
 
     // Applet management
@@ -57,10 +57,10 @@ export class AppletManager {
      */
     public addApplet(source: IAppletSource): void {
         try {
-            const appletData = this.initApplet(source);
-            this.updateApplet(appletData);
-            if (appletData.applet.development?.liveReload != false)
-                this.setupAppletWatcher(source, appletData.applet);
+            const applet = this.initApplet(source);
+            this.updateApplet(applet);
+            if (applet.development?.liveReload != false)
+                this.setupAppletWatcher(source, applet);
         } catch (e) {
             console.error(e);
         }
@@ -68,18 +68,32 @@ export class AppletManager {
 
     /**
      * Removes an applet from the manager
-     * @param id The id of the applet to remove
+     * @param ID The id of the applet to remove
      */
-    public removeApplet(id: string): void {
-        this.watchers[id]?.destroy();
-        delete this.watchers[id];
+    public removeApplet(ID: IUUID): void {
+        this.watchers[ID]?.destroy();
+        delete this.watchers[ID];
 
         const applets = this.applets.get(null);
-        const appletData = applets.find(({applet: {ID: aid}}) => id == aid);
-        if (appletData) {
-            appletData.applet.lifeCycle?.onDestroy?.(this.LM);
-            this.applets.set(applets.filter(({applet: {ID: aid}}) => aid != id));
-        }
+        this.appletDestroyers[ID]?.();
+        this.applets.set(applets.filter(({ID: aid}) => aid != ID));
+    }
+
+    /**
+     * Adds a new function to the disposers that should be called when an applet is unitialized
+     * @param ID The ID of the applet to add the disposer to
+     * @param disposer The disposer to add
+     */
+    public addAppletDisposer(ID: IUUID, disposer: () => void): void {
+        const curDisposer =
+            this.appletDestroyers[ID] ??
+            (() => {
+                delete this.appletDestroyers[ID];
+            });
+        this.appletDestroyers[ID] = () => {
+            curDisposer();
+            disposer();
+        };
     }
 
     /**
@@ -88,15 +102,6 @@ export class AppletManager {
      * @returns The applets
      */
     public getApplets(hook: IDataHook = null): IApplet[] {
-        return this.getAppletData(hook).map(({applet}) => applet);
-    }
-
-    /**
-     * Retrieves the initialized applet data
-     * @param hook The hook to subscribe to changes
-     * @returns The applet data
-     */
-    public getAppletData(hook: IDataHook = null): AppletData[] {
         return this.applets.get(hook);
     }
 
@@ -113,17 +118,20 @@ export class AppletManager {
      * @throws An exception if no valid applet was found
      * @returns The applet data
      */
-    protected initApplet({id, directory}: IAppletSource): AppletData {
+    protected initApplet({ID, directory}: IAppletSource): IApplet {
         // Obtain the module export and check if it has a valid applet export
         const appletExport = require(directory);
         if (appletExport?.default?.info) {
             // Load the applet if valid
             const applet = appletExport.default as IAppletConfig<any>;
-            return new AppletData(applet, id, this.settingsDirectory);
+            return {
+                ...applet,
+                ID,
+            };
         } else {
             // Throw an error when the module has no proper applet
             throw Error(
-                `Failed to load applet ${id}, please make sure it has a proper default export`
+                `Failed to load applet ${ID}, please make sure it has a proper default export`
             );
         }
     }
@@ -144,15 +152,12 @@ export class AppletManager {
 
         const watcher = hmr(watchDir, () => {
             try {
-                const currentAppletData = this.applets
-                    .get(null)
-                    .find(({applet: {ID: id}}) => id == source.id);
-                currentAppletData?.applet.lifeCycle?.onDestroy?.(this.LM);
+                this.appletDestroyers[source.ID]?.();
 
                 const applet = this.initApplet(source);
                 this.updateApplet(applet);
                 console.log(
-                    `%cApplet %c${source.id} %chas been reloaded`,
+                    `%cApplet %c${source.ID} %chas been reloaded`,
                     "color: blue;",
                     "color: green;",
                     "color: blue;"
@@ -161,36 +166,25 @@ export class AppletManager {
                 console.error(e);
             }
         });
-        this.watchers[source.id] = watcher;
+        this.watchers[source.ID] = watcher;
         return watcher;
     }
 
     /**
      * Updates or adds the applet
-     * @param appletData The new application data to store
+     * @param applet The applet to update
      */
-    protected updateApplet(appletData: AppletData): void {
+    protected updateApplet(applet: IApplet): void {
         const applets = this.applets.get(null);
         let newApplets;
-        if (applets.find(ad => ad.applet.ID == appletData.applet.ID))
-            newApplets = applets.map(ad =>
-                ad.applet.ID == appletData.applet.ID ? appletData : ad
+        if (applets.find(({ID: OID}) => OID == applet.ID))
+            newApplets = applets.map(oApplet =>
+                oApplet.ID == applet.ID ? applet : oApplet
             );
-        else newApplets = [...applets, appletData];
+        else newApplets = [...applets, applet];
         this.applets.set(newApplets);
 
-        appletData.applet.lifeCycle?.onInit?.(this.LM);
-    }
-
-    // Settings data management
-    /**
-     * Saves all settings of modules that are currently loaded
-     */
-    public async saveAllSettings(): Promise<void> {
-        await Promise.all(
-            this.applets.get(null).map(({settingsFile}) => {
-                return settingsFile.save();
-            })
-        );
+        const disposer = applet.onInit?.(this.LM);
+        if (disposer) this.addAppletDisposer(applet.ID, disposer);
     }
 }

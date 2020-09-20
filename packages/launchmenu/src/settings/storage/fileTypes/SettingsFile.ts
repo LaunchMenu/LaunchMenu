@@ -1,18 +1,17 @@
 import {IJSON} from "../../../_types/IJSON";
 import {extractSettings} from "../../utils/extractSettings";
-import {ISettingsCategoryMenuItem} from "../../_types/ISettingsCategoryMenuItem";
+import {ISettingsFolderMenuItem} from "../../_types/ISettingsFolderMenuItem";
 import {IJSONDeserializer} from "../../_types/serialization/IJSONDeserializer";
 import {TSettingsTree} from "../../_types/TSettingsTree";
 import {VersionedFieldsFile} from "./VersionedFieldsFile/VersionFieldsFile";
-import {TFieldsTreeSerialized} from "./VersionedFieldsFile/_types/TFieldsTreeSerialized";
 
 /**
  * A file that stores the fields structure as well as the settings UI
  */
 export class SettingsFile<
-    F extends ISettingsCategoryMenuItem<T>,
     T extends IJSONDeserializer = never,
-    V extends IJSON = string
+    F extends ISettingsFolderMenuItem<T> = ISettingsFolderMenuItem<T>,
+    V extends IJSON = IJSON
 > extends VersionedFieldsFile<TSettingsTree<F["children"], T>, T, V> {
     public settings: F;
 
@@ -24,14 +23,11 @@ export class SettingsFile<
         /** The version of the settings */
         version: V;
         /** A function that updates from previous versions of the data to the latest version */
-        updater: (
-            version: V,
-            data: IJSON
-        ) => TFieldsTreeSerialized<TSettingsTree<F["children"], T>, T>;
+        updater: (version: V, data: IJSON) => IJSON;
         /** The path of the file */
         path: string;
         /** The settings without any custom types */
-        settings: F;
+        settings: (() => F) | F;
         /** No deserializers */
         deserializers?: undefined;
     });
@@ -44,28 +40,27 @@ export class SettingsFile<
         /** The version of the settings */
         version: V;
         /** A function that updates from previous versions of the data to the latest version */
-        updater: (
-            version: V,
-            data: IJSON
-        ) => TFieldsTreeSerialized<TSettingsTree<F["children"], T>, T>;
+        updater: (version: V, data: IJSON) => IJSON;
         /** The path of the file */
         path: string;
         /** The custom types for that can be used for deserialization */
         deserializers: T[];
         /** The settings with possible custom types */
-        settings: F;
+        settings: (() => F) | F;
     });
     public constructor(data: {
         version: any;
-        updater: (
-            version: V,
-            data: IJSON
-        ) => TFieldsTreeSerialized<TSettingsTree<F["children"], T>, T>;
+        updater: (version: V, data: IJSON) => IJSON;
         path: string;
         deserializers?: T[];
-        settings: F;
+        settings: (() => F) | F;
     }) {
-        super({...data, fields: extractSettings(data.settings)} as any);
-        this.settings = data.settings;
+        let settings =
+            data.settings instanceof Function ? data.settings() : data.settings;
+        super({
+            ...data,
+            fields: extractSettings(settings),
+        } as any);
+        this.settings = settings;
     }
 }

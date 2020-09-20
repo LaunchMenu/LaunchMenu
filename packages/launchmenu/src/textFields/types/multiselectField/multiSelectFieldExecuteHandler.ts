@@ -66,7 +66,7 @@ export const multiSelectFieldExecuteHandler = sequentialExecuteHandler.createHan
                                 field: dropdownField,
                                 keyHandler: createTextFieldKeyHandler(
                                     dropdownField,
-                                    false,
+                                    context,
                                     () => {
                                         if (dropdownField.get().length > 0)
                                             dropdownField.set("");

@@ -1,4 +1,5 @@
 import {ISubscribable} from "../../../../../utils/subscribables/_types/ISubscribable";
+import {ICategory} from "../../../../actions/types/category/_types/ICategory";
 import {ISimpleSearchPatternMatcher} from "../../../../actions/types/search/simpleSearch/_types/ISimpleSearchData";
 import {ISubscribableActionBindings} from "../../../_types/ISubscribableActionBindings";
 
@@ -16,6 +17,8 @@ export type IInputTypeMenuItemData = {
     description?: ISubscribable<string>;
     /** The tags for the menu item */
     tags?: ISubscribable<string[]>;
+    /** The category to show the input in */
+    category?: ICategory;
     /** The extra action bindings */
     actionBindings?: ISubscribableActionBindings;
     /** Whether the field should be resetable to the initial value, defaults to false */

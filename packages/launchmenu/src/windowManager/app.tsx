@@ -19,7 +19,12 @@ startup();
 if (DEV) {
     // Reload the contents whenever something changes
     hmr(Path.join(__dirname, ".."), (changed, affected) => {
-        if (lm) lm.destroy();
+        try {
+            if (lm) lm.destroy();
+        } catch (e) {
+            console.log("%cFailed to dispose of previous LM instance:", "color: red;");
+            console.error(e);
+        }
         console.log("%cApplication has been reloaded", "color: blue;");
         startup();
     });

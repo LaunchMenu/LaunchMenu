@@ -62,7 +62,7 @@ export function openTextField(
             let keyHandler: IKeyEventListener;
             if ("fieldHandler" in content && content.fieldHandler)
                 keyHandler = content.fieldHandler;
-            else keyHandler = createTextFieldKeyHandler(field, false, close);
+            else keyHandler = createTextFieldKeyHandler(field, context, close);
 
             // Handle opening of field components
             context.panes.field.push(view);

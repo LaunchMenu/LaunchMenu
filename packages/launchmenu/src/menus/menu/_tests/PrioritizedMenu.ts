@@ -8,12 +8,12 @@ import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangeAction";
-import {context} from "../../../_tests/context.helper";
+import {dummyContext} from "../../../_tests/context.helper";
 import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {Field} from "model-react";
 
 const createMenu = (items?: IPrioritizedMenuItem[]) => {
-    const menu = new PrioritizedMenu(context, {
+    const menu = new PrioritizedMenu(dummyContext, {
         batchInterval: 10,
     });
     if (items) {
@@ -26,10 +26,10 @@ const createMenu = (items?: IPrioritizedMenuItem[]) => {
 describe("PrioritizedMenu", () => {
     describe("new PrioritizedMenu", () => {
         it("Properly creates a new prioritized menu", () => {
-            new PrioritizedMenu(context);
+            new PrioritizedMenu(dummyContext);
         });
         it("Can be initialized with a config", () => {
-            new PrioritizedMenu(context, {
+            new PrioritizedMenu(dummyContext, {
                 batchInterval: 200,
             });
         });
@@ -746,7 +746,7 @@ describe("PrioritizedMenu", () => {
             });
             it("Correctly indicates the loading state of the menu", async () => {
                 const loading = new Field(false);
-                const menu = new PrioritizedMenu(context, {
+                const menu = new PrioritizedMenu(dummyContext, {
                     batchInterval: 10,
                     isLoading: loading,
                 });
@@ -769,7 +769,7 @@ describe("PrioritizedMenu", () => {
             });
             it("Correctly calls the hook when the loading status changes", async () => {
                 const loading = new Field(false);
-                const menu = new PrioritizedMenu(context, {
+                const menu = new PrioritizedMenu(dummyContext, {
                     batchInterval: 10,
                     isLoading: loading,
                 });
@@ -846,7 +846,7 @@ describe("PrioritizedMenu", () => {
             ];
             let menu: PrioritizedMenu;
             beforeEach(() => {
-                menu = new PrioritizedMenu(context, {maxCategoryItemCount: 2});
+                menu = new PrioritizedMenu(dummyContext, {maxCategoryItemCount: 2});
             });
             it("Allows the number of items for each category to be limited", () => {
                 items.forEach(item => menu.addItem(item));
@@ -859,7 +859,7 @@ describe("PrioritizedMenu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new PrioritizedMenu(context, {maxCategoryItemCount: 2});
+                const menu = new PrioritizedMenu(dummyContext, {maxCategoryItemCount: 2});
 
                 const items2 = [
                     createPrioritizedMenuItem({category: someCategory}),
@@ -926,7 +926,9 @@ describe("PrioritizedMenu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new PrioritizedMenu(context, {getCategory: () => undefined});
+                const menu = new PrioritizedMenu(dummyContext, {
+                    getCategory: () => undefined,
+                });
                 const items = [
                     createPrioritizedMenuItem({}),
                     createPrioritizedMenuItem({}),
@@ -951,7 +953,7 @@ describe("PrioritizedMenu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new PrioritizedMenu(context, {
+                const menu = new PrioritizedMenu(dummyContext, {
                     getCategory: () => someCategory,
                 });
                 const items = [
@@ -982,7 +984,7 @@ describe("PrioritizedMenu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new PrioritizedMenu(context, {
+                const menu = new PrioritizedMenu(dummyContext, {
                     sortCategories: categories =>
                         categories.map(({category}) => category).reverse(),
                 });
@@ -1011,7 +1013,7 @@ describe("PrioritizedMenu", () => {
                     description: "some category for Bob",
                     item: createMenuItem(),
                 };
-                const menu = new PrioritizedMenu(context, {
+                const menu = new PrioritizedMenu(dummyContext, {
                     sortCategories: () => [undefined],
                 });
                 const items = [
@@ -1033,7 +1035,7 @@ describe("PrioritizedMenu", () => {
 
         describe("categoryConfig.batchInterval", () => {
             it("Correctly flushes batches at this interval", async () => {
-                const menu = new PrioritizedMenu(context, {
+                const menu = new PrioritizedMenu(dummyContext, {
                     batchInterval: 200,
                 });
                 const items = [

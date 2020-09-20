@@ -4,5 +4,10 @@
     "typescript.tsdk": "node_modules/typescript/lib",
     // It's useful to enable this when performing a large refactor
     "typescript.tsserver.experimental.enableProjectDiagnostics": false,
-    "cSpell.words": ["IUUID", "parallelization", "searchables"]
+    "cSpell.words": [
+        "IJSON",
+        "IUUID",
+        "parallelization",
+        "searchables"
+    ]
 }

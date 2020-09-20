@@ -3,7 +3,7 @@ import {Menu} from "../Menu";
 import {AlteredMenu} from "../AlteredMenu";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {wait} from "../../../_tests/wait.helper";
-import {context} from "../../../_tests/context.helper";
+import {dummyContext} from "../../../_tests/context.helper";
 
 const someCategory: ICategory = {
     name: "Bob",
@@ -21,7 +21,7 @@ const items = [
     createMenuItem({category: someCategory}),
     createMenuItem({category: someCategory2}),
 ];
-const parentMenu = new Menu(context, items);
+const parentMenu = new Menu(dummyContext, items);
 
 describe("AlteredMenu", () => {
     describe("new AlteredMenu", () => {
@@ -249,7 +249,7 @@ describe("AlteredMenu", () => {
     });
     describe("Mirroring", () => {
         it("Correctly reflects changes of the parent menu", async () => {
-            const parentMenu = new Menu(context, items);
+            const parentMenu = new Menu(dummyContext, items);
 
             let someItem = createMenuItem();
             let someItem2 = createMenuItem();

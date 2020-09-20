@@ -1,5 +1,4 @@
 import {IField} from "../../_types/IField";
-import {IJSON} from "../../_types/IJSON";
 import {IRenderableSettingsTree} from "./IRenderableSettingsTree";
 import {IJSONDeserializer} from "./serialization/IJSONDeserializer";
 import {ISerializable} from "./serialization/ISerializable";
@@ -15,5 +14,5 @@ export type TSettingsTree<
         ? TSettingsTree<T[P]["children"], D>
         : T[P] extends IField<ISerializable<D>>
         ? T[P]
-        : IField<IJSON>; // This case shouldn't occur, is just a safety net
+        : IField<ISerializable<D>>; // This case shouldn't occur, is just a safety net
 };

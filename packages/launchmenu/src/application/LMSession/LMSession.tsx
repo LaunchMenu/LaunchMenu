@@ -2,7 +2,6 @@ import {Field, IDataHook} from "model-react";
 import React from "react";
 import {IOContext} from "../../context/IOContext";
 import {IMenuSearchable} from "../../menus/actions/types/search/_types/IMenuSearchable";
-import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {PrioritizedMenu} from "../../menus/menu/PrioritizedMenu";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
 import {IQuery} from "../../menus/menu/_types/IQuery";
@@ -14,8 +13,6 @@ import {Box} from "../../styling/box/Box";
 import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
 import {TextField} from "../../textFields/TextField";
 import {createHighlighterWithSearchPattern} from "../../textFields/types/searchField/createHighlighterWithSearchPattern";
-import {prioritizedRedoMenuItem} from "../../undoRedo/ui/redoMenuItem";
-import {prioritizedUndoMenuItem} from "../../undoRedo/ui/undoMenuItem";
 import {UndoRedoFacility} from "../../undoRedo/UndoRedoFacility";
 import {Observer} from "../../utils/modelReact/Observer";
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
@@ -112,7 +109,7 @@ export class LMSession {
 
         // Retrieve the settings context from LM which includes all base settings data, and listen for changes
         this.settingsContextObserver = new Observer(h =>
-            this.LM.getSettingsContext(h)
+            this.LM.getSettingsManager().getSettingsContext(h)
         ).listen(settingsContext => {
             this.context.settings = settingsContext;
         }, true);
@@ -124,11 +121,13 @@ export class LMSession {
      */
     protected getGlobalContextMenuItems(): (hook: IDataHook) => IPrioritizedMenuItem[] {
         return hook =>
-            this.LM.getApplets(hook).flatMap(applet =>
-                applet.globalContextMenuItems instanceof Function
-                    ? applet.globalContextMenuItems(this, hook)
-                    : applet.globalContextMenuItems ?? []
-            );
+            this.LM.getAppletManager()
+                .getApplets(hook)
+                .flatMap(applet =>
+                    applet.globalContextMenuItems instanceof Function
+                        ? applet.globalContextMenuItems(this, hook)
+                        : applet.globalContextMenuItems ?? []
+                );
     }
 
     /**
@@ -199,9 +198,13 @@ export class LMSession {
             field: this.searchField,
             highlighter,
             icon: "search",
-            fieldHandler: createTextFieldKeyHandler(this.searchField, false, () => {
-                console.log("detect");
-            }),
+            fieldHandler: createTextFieldKeyHandler(
+                this.searchField,
+                this.context,
+                () => {
+                    console.log("detect");
+                }
+            ),
         });
     }
 
@@ -218,37 +221,40 @@ export class LMSession {
      */
     protected setupApplets(): void {
         let first = true;
-        this.appletObserver = new Observer(h => this.LM.getApplets(h)).listen(
-            (applets, md, prevApplets) => {
-                const newApplets = first
-                    ? applets
-                    : applets.filter(applet => !prevApplets.includes(applet));
+        this.appletObserver = new Observer(h =>
+            this.LM.getAppletManager().getApplets(h)
+        ).listen((applets, _, prevApplets) => {
+            const newApplets = first
+                ? applets
+                : applets.filter(applet => !prevApplets.includes(applet));
 
-                // Obtain the new searchables
-                const oldSearchables = this.searchables.get(null);
-                const searchables = applets.flatMap(applet => {
-                    if (applet.search) {
-                        // Make sure the id changes if the applet changed, to make the search pick up on it
-                        if (
-                            newApplets.includes(applet) &&
-                            oldSearchables.find(({ID: id}) => id == applet.ID)
-                        ) {
-                            return {
-                                ...applet,
-                                ID: "updated-" + applet.ID,
-                            } as IMenuSearchable;
-                        } else return applet as IMenuSearchable;
-                    } else return [];
+            // Obtain the new searchables
+            const oldSearchables = this.searchables.get(null);
+            const searchables = applets.flatMap(applet => {
+                if (applet.search) {
+                    // Make sure the id changes if the applet changed, to make the search pick up on it
+                    if (
+                        newApplets.includes(applet) &&
+                        oldSearchables.find(({ID: id}) => id == applet.ID)
+                    ) {
+                        return {
+                            ...applet,
+                            ID: "updated-" + applet.ID,
+                        } as IMenuSearchable;
+                    } else return applet as IMenuSearchable;
+                } else return [];
+            });
+            this.searchables.set(searchables);
+
+            // Initialize the new applets
+            if (DEV)
+                newApplets.forEach(applet => {
+                    const disposer = applet?.development?.onReload?.(this);
+                    if (disposer)
+                        this.LM.getAppletManager().addAppletDisposer(applet.ID, disposer);
                 });
-                this.searchables.set(searchables);
 
-                // Initialize the new applets
-                if (DEV)
-                    newApplets.forEach(applet => applet?.development?.onReload?.(this));
-
-                first = false;
-            },
-            true
-        );
+            first = false;
+        }, true);
     }
 }

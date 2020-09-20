@@ -62,7 +62,7 @@ export const inputFieldExecuteHandler = sequentialExecuteHandler.createHandler(
                                 field: inputField,
                                 // TODO: add field with input styling
                                 fieldHandler: mergeKeyListeners(
-                                    createTextFieldKeyHandler(inputField, false, () =>
+                                    createTextFieldKeyHandler(inputField, context, () =>
                                         closeUI?.()
                                     ),
                                     key => {

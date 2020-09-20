@@ -5,7 +5,7 @@ import {UndoRedoFacility} from "../undoRedo/UndoRedoFacility";
 /**
  * A dummy context
  */
-export const context: IIOContext = {
+export const dummyContext: IIOContext = {
     keyHandler: null as any,
     panes: {content: null as any, field: null as any, menu: null as any},
     undoRedo: new UndoRedoFacility(),

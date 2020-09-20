@@ -1,5 +1,5 @@
 import {IJSON} from "../../_types/IJSON";
-import {ISettingsCategoryMenuItem} from "./ISettingsCategoryMenuItem";
+import {ISettingsFolderMenuItem} from "./ISettingsFolderMenuItem";
 import {IJSONDeserializer} from "./serialization/IJSONDeserializer";
 
 /**
@@ -7,7 +7,7 @@ import {IJSONDeserializer} from "./serialization/IJSONDeserializer";
  */
 export type ISettingsConfig<
     V extends IJSON,
-    F extends ISettingsCategoryMenuItem<S>,
+    F extends ISettingsFolderMenuItem<S>,
     S extends IJSONDeserializer = never
 > = {
     version: V;

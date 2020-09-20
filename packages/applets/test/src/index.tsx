@@ -4,6 +4,7 @@ import {createSettingsCategory} from "@launchmenu/launchmenu/build/settings/inpu
 import {createNumberSetting} from "@launchmenu/launchmenu/build/settings/inputs/createNumberSetting";
 import {createStandardMenuItem} from "@launchmenu/launchmenu/build/menus/items/createStandardMenuItem";
 import {searchAction} from "@launchmenu/launchmenu/build/menus/actions/types/search/searchAction";
+import {IKeyEventListenerFunction} from "@launchmenu/launchmenu/build/stacks/keyHandlerStack/_types/IKeyEventListener";
 
 export const info = {
     name: "Test",
@@ -27,7 +28,7 @@ export const settings = createSettings({
 });
 
 const item = createStandardMenuItem({
-    name: "purple",
+    name: "oofy",
     onExecute({context}) {
         context.settings.get(settings).someNumber.set(20);
     },
@@ -36,7 +37,7 @@ const item2 = createStandardMenuItem({
     name: "orange",
     onExecute({context}) {
         const a = context.settings.get(settings).someNumber.get();
-        console.log(a);
+        console.log(context.settings, a);
     },
 });
 
@@ -55,11 +56,21 @@ export default declare({
     development: {
         onReload(session) {
             session.searchField.set("orange");
-            session.context.keyHandler.push(event => {
+            const listener: IKeyEventListenerFunction = event => {
                 if (event.is(["ctrl", "s"])) {
-                    session.LM.getAppletManager().saveAllSettings();
+                    session.LM.getSettingsManager().saveAll();
+                    return true;
                 }
-            });
+                if (event.is(["ctrl", "m"])) {
+                    console.log(session.LM.getSettingsManager());
+                    return true;
+                }
+            };
+            session.context.keyHandler.push(listener);
+
+            return () => {
+                session.context.keyHandler.remove(listener);
+            };
         },
     },
 });

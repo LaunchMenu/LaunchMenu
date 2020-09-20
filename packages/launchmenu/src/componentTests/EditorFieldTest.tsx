@@ -5,10 +5,11 @@ import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
 import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
 import {createTextFieldKeyHandler} from "../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
 import {FillBox} from "../components/FillBox";
+import {dummyContext} from "../_tests/context.helper";
 
 const inputStack = new KeyHandlerStack(new KeyHandler(window));
 const textField = new TextField("I like trains.");
-inputStack.push(createTextFieldKeyHandler(textField, true));
+inputStack.push(createTextFieldKeyHandler(textField, dummyContext, () => {}, true));
 
 require("ace-builds/src-noconflict/mode-javascript");
 export const EditorFieldTest: FC = () => {

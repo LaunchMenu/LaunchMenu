@@ -1,6 +1,6 @@
 import {extractSettings} from "./utils/extractSettings";
 import {IIdentifiedSettingsConfig} from "./_types/IIdentifiedSettingsConfig";
-import {ISettingsCategoryMenuItem} from "./_types/ISettingsCategoryMenuItem";
+import {ISettingsFolderMenuItem} from "./_types/ISettingsFolderMenuItem";
 import {IJSONDeserializer} from "./_types/serialization/IJSONDeserializer";
 import {TSettingsTree} from "./_types/TSettingsTree";
 
@@ -8,13 +8,13 @@ import {TSettingsTree} from "./_types/TSettingsTree";
  * A context to store the setting values for given configs in
  */
 export class SettingsContext {
-    protected settings = {} as {[ID: string]: ISettingsCategoryMenuItem};
+    protected settings = {} as {[ID: string]: ISettingsFolderMenuItem};
 
     /**
      * Creates a new empty settings context
      * @param settings The settings to begin with, mapped under their config ids
      */
-    public constructor(settings?: {[ID: string]: ISettingsCategoryMenuItem}) {
+    public constructor(settings?: {[ID: string]: ISettingsFolderMenuItem}) {
         this.settings = settings ?? {};
     }
 
@@ -24,7 +24,7 @@ export class SettingsContext {
      * @param values The values to store for this config
      * @returns The newly created context
      */
-    public augment<F extends ISettingsCategoryMenuItem>(
+    public augment<F extends ISettingsFolderMenuItem>(
         config: IIdentifiedSettingsConfig<any, F, IJSONDeserializer>,
         values: F
     ): SettingsContext {
@@ -36,7 +36,7 @@ export class SettingsContext {
      * @param config The settings group to retrieve
      * @returns The values for these settings within this context
      */
-    public get<F extends ISettingsCategoryMenuItem, D extends IJSONDeserializer>(
+    public get<F extends ISettingsFolderMenuItem, D extends IJSONDeserializer>(
         config: IIdentifiedSettingsConfig<any, F, D>
     ): TSettingsTree<F["children"], D> {
         return extractSettings(this.getUI(config));
@@ -46,19 +46,19 @@ export class SettingsContext {
      * Retrieves all of the UI for settings in this menu
      * @returns The UI to represent the settings
      */
-    public getUI(): ISettingsCategoryMenuItem[];
+    public getUI(): ISettingsFolderMenuItem[];
 
     /**
      * Retrieves a selection of settings and UI from its config
      * @param config The settings group to retrieve
      * @returns The UI to represent the settings
      */
-    public getUI<F extends ISettingsCategoryMenuItem>(
+    public getUI<F extends ISettingsFolderMenuItem>(
         config: IIdentifiedSettingsConfig<any, F, IJSONDeserializer>
     ): F;
-    public getUI<F extends ISettingsCategoryMenuItem>(
+    public getUI<F extends ISettingsFolderMenuItem>(
         config?: IIdentifiedSettingsConfig<any, F, IJSONDeserializer>
-    ): F | ISettingsCategoryMenuItem[] {
+    ): F | ISettingsFolderMenuItem[] {
         if (config) {
             if (!this.settings[config.ID]) this.settings[config.ID] = config.settings();
             return this.settings[config.ID] as any;

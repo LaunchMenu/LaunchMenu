@@ -1,16 +1,16 @@
 import {SearchMenu} from "../SearchMenu";
 import {createSearchableMenuItem} from "./MenuItem.helper";
 import {wait} from "../../../_tests/wait.helper";
-import {context} from "../../../_tests/context.helper";
+import {dummyContext} from "../../../_tests/context.helper";
 import {Observer} from "../../../utils/modelReact/Observer";
 
 describe("SearchMenu", () => {
     describe("new SearchMenu", () => {
         it("Properly creates a new search menu", () => {
-            new SearchMenu(context);
+            new SearchMenu(dummyContext);
         });
         it("Can be initialized with a config", () => {
-            new SearchMenu(context, {
+            new SearchMenu(dummyContext, {
                 batchInterval: 200,
             });
         });
@@ -18,7 +18,7 @@ describe("SearchMenu", () => {
     describe("SearchMenu.addSearchItem -> SearchMenu.setSearch", () => {
         let menu: SearchMenu;
         beforeEach(() => {
-            menu = new SearchMenu(context);
+            menu = new SearchMenu(dummyContext);
         });
 
         it("Only includes non 0 priority search results", async () => {
@@ -86,7 +86,7 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.removeSearchItem -> SearchMenu.setSearch", () => {
         it("Doesn't include removed items in new search results", async () => {
-            const menu = new SearchMenu(context);
+            const menu = new SearchMenu(dummyContext);
             const item = createSearchableMenuItem({
                 searchPriorities: {something: 1},
             });
@@ -104,7 +104,7 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.setSearch -> SearchMenu.addSearchItem", () => {
         it("Correctly adds search results for the last search", async () => {
-            const menu = new SearchMenu(context);
+            const menu = new SearchMenu(dummyContext);
             await menu.setSearch("something");
 
             const item = createSearchableMenuItem({searchPriorities: {something: 1}});
@@ -118,7 +118,7 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.setSearch -> SearchMenu.removeSearchItem", () => {
         it("Cleans up previous search results", async () => {
-            const menu = new SearchMenu(context);
+            const menu = new SearchMenu(dummyContext);
             const item = createSearchableMenuItem({searchPriorities: {something: 1}});
             menu.addSearchItem(item);
             const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
@@ -135,7 +135,7 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.setSearchItems", () => {
         it("Correctly adds items", async () => {
-            const menu = new SearchMenu(context);
+            const menu = new SearchMenu(dummyContext);
             const item = createSearchableMenuItem({searchPriorities: {something: 1}});
             const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
             const item3 = createSearchableMenuItem({searchPriorities: {something: 4}});
@@ -152,7 +152,7 @@ describe("SearchMenu", () => {
             expect(menu.getItems()).toEqual([item3, item4, item2, item]);
         });
         it("Correctly removes items", async () => {
-            const menu = new SearchMenu(context);
+            const menu = new SearchMenu(dummyContext);
             const item = createSearchableMenuItem({searchPriorities: {something: 1}});
             const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
             const item3 = createSearchableMenuItem({searchPriorities: {something: 4}});
@@ -171,12 +171,12 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.getSearch", () => {
         it("Returns the last search value", async () => {
-            const menu = new SearchMenu(context);
+            const menu = new SearchMenu(dummyContext);
             await menu.setSearch("oranges");
             expect(menu.getSearch()).toBe("oranges");
         });
         it("Can be subscribed to", async () => {
-            const menu = new SearchMenu(context);
+            const menu = new SearchMenu(dummyContext);
             const callback = jest.fn();
 
             menu.setSearch("oranges");
@@ -190,12 +190,12 @@ describe("SearchMenu", () => {
     });
     describe("SearchMenu.getHighlightText", () => {
         it("Returns the last search value", async () => {
-            const menu = new SearchMenu(context);
+            const menu = new SearchMenu(dummyContext);
             await menu.setSearch("oranges");
             expect(menu.getHighlight()).toEqual({search: "oranges"});
         });
         it("Can be subscribed to", async () => {
-            const menu = new SearchMenu(context);
+            const menu = new SearchMenu(dummyContext);
             const callback = jest.fn();
 
             menu.setSearch("oranges");
@@ -209,7 +209,7 @@ describe("SearchMenu", () => {
     });
     describe("showAllOnEmptySearch", () => {
         it("When set to true, shows the search items when the search is empty", async () => {
-            const menu = new SearchMenu(context, {showAllOnEmptySearch: true});
+            const menu = new SearchMenu(dummyContext, {showAllOnEmptySearch: true});
 
             const item = createSearchableMenuItem({searchPriorities: {something: 1}});
             const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
@@ -219,7 +219,7 @@ describe("SearchMenu", () => {
             expect(menu.getItems()).toEqual([item, item2]);
         });
         it("When set to true, removes the search items when the search is not empty", async () => {
-            const menu = new SearchMenu(context, {showAllOnEmptySearch: true});
+            const menu = new SearchMenu(dummyContext, {showAllOnEmptySearch: true});
 
             const item = createSearchableMenuItem({searchPriorities: {something: 1}});
             const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
@@ -237,7 +237,7 @@ describe("SearchMenu", () => {
             expect(menu.getItems()).toEqual([item, item2]);
         });
         it("When set to false, does not show anything when search is empty", async () => {
-            const menu = new SearchMenu(context, {showAllOnEmptySearch: false});
+            const menu = new SearchMenu(dummyContext, {showAllOnEmptySearch: false});
 
             const item = createSearchableMenuItem({searchPriorities: {something: 1}});
             const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});

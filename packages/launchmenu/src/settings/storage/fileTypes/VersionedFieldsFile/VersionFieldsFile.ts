@@ -2,7 +2,6 @@ import {IJSON} from "../../../../_types/IJSON";
 import {FieldsFile} from "../FieldsFile/FieldsFile";
 import {IFieldsTree} from "../FieldsFile/_types/IFieldsTree";
 import {IJSONDeserializer} from "../../../_types/serialization/IJSONDeserializer";
-import {TFieldsTreeSerialized} from "./_types/TFieldsTreeSerialized";
 
 export class VersionedFieldsFile<
     F extends IFieldsTree<T>,
@@ -10,7 +9,7 @@ export class VersionedFieldsFile<
     V extends IJSON = string
 > extends FieldsFile<F, T> {
     protected version: V;
-    protected updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F, T>;
+    protected updater: (version: V, data: IJSON) => IJSON;
 
     /**
      * Creates a new fields file object, without custom field types
@@ -20,7 +19,7 @@ export class VersionedFieldsFile<
         /** The version of the fields */
         version: V;
         /** A function that updates from previous versions of the data to the latest version */
-        updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F, T>;
+        updater: (version: V, data: IJSON) => IJSON;
         /** The path of the file */
         path: string;
         /** The fields without any custom types */
@@ -37,7 +36,7 @@ export class VersionedFieldsFile<
         /** The version of the fields */
         version: V;
         /** A function that updates from previous versions of the data to the latest version */
-        updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F, T>;
+        updater: (version: V, data: IJSON) => IJSON;
         /** The path of the file */
         path: string;
         /** The custom types for that can be used for deserialization */
@@ -47,7 +46,7 @@ export class VersionedFieldsFile<
     });
     public constructor(data: {
         version: any;
-        updater: (version: V, data: IJSON) => TFieldsTreeSerialized<F, T>;
+        updater: (version: V, data: IJSON) => IJSON;
         path: string;
         deserializers?: T[];
         fields: F;

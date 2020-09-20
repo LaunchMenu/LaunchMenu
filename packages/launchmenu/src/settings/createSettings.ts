@@ -3,7 +3,8 @@ import {IIdentifiedSettingsConfig} from "./_types/IIdentifiedSettingsConfig";
 import {ISettingsConfig} from "./_types/ISettingsConfig";
 import {IJSONDeserializer} from "./_types/serialization/IJSONDeserializer";
 import {v4 as uuid} from "uuid";
-import {ISettingsCategoryMenuItem} from "./_types/ISettingsCategoryMenuItem";
+import {ISettingsFolderMenuItem} from "./_types/ISettingsFolderMenuItem";
+import {baseDeserializers, IBaseDeserializers} from "./baseDeserializers";
 
 /**
  * Type checks the specified settings and adds an identifier
@@ -12,8 +13,17 @@ import {ISettingsCategoryMenuItem} from "./_types/ISettingsCategoryMenuItem";
  */
 export function createSettings<
     V extends IJSON,
-    F extends ISettingsCategoryMenuItem<S>,
+    F extends ISettingsFolderMenuItem<S | IBaseDeserializers>,
     S extends IJSONDeserializer = never
->(config: ISettingsConfig<V, F, S>): IIdentifiedSettingsConfig<V, F, S> {
-    return {...config, ID: uuid()};
+>(
+    config: ISettingsConfig<V, F, S>
+): IIdentifiedSettingsConfig<V, F, S | IBaseDeserializers> {
+    return {
+        updater: (version, data) => data,
+        ...config,
+        deserializers: config.deserializers
+            ? [...config.deserializers, ...baseDeserializers]
+            : baseDeserializers,
+        ID: uuid(),
+    };
 }
