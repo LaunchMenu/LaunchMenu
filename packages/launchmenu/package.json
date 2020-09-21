@@ -3,10 +3,8 @@
     "version": "0.0.0",
     "description": "An environment for visual keyboard controlled applets",
     "types": "build/index.d.ts",
-    "files": [
-        "build/**/*.{js,d.ts}"
-    ],
     "main": "build/index.js",
+    "exports": {},
     "scripts": {
         "postinstall": "npm build",
         "build": "lm-build-tools --build --production",
