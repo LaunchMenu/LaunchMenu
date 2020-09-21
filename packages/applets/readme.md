@@ -1,6 +1,8 @@
-# Planned applets
+# Description
 
-## Util applet
+This directory contains applets that provide general utilities.
+
+# Planned applets
 
 -   Todo list
 -   Translator
@@ -13,11 +15,3 @@
 -   Advanced calculator
 -   Random game
 -   Yt
-
-## Program applets
-
--   Settings manager
--   Undo redo manager
--   Sessions manager
--   Theme manager (provides theming settings)
--   Applet manager

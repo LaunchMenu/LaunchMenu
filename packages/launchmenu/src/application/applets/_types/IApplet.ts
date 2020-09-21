@@ -36,7 +36,7 @@ export type IApplet<
     search?: IMenuSearchable["search"];
 
     /** Called whenever the applet is first loaded, return value is called when applet is disposed */
-    onInit?: (LM: LaunchMenu) => () => void;
+    onInit?: (LM: LaunchMenu) => (() => void) | void;
 
     /** Development time specific information/tools */
     development?: {
@@ -47,6 +47,6 @@ export type IApplet<
         /** A callback for when the module is reloaded during development, can be used to programmatically navigate to a specific section of your app.
          * Return function is called when applet is disposed
          */
-        onReload?: (session: LMSession) => () => void;
+        onReload?: (session: LMSession) => (() => void) | void;
     };
 };

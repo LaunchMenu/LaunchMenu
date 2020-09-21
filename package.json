@@ -3,6 +3,7 @@
     "workspaces": [
         "packages/launchmenu",
         "packages/applets/*",
+        "packages/core-applets/*",
         "packages/dev-tools/*"
     ]
 }
