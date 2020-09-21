@@ -1,9 +1,12 @@
+import {KeyPattern} from "../../../menus/items/inputs/handlers/keyPattern/KeyPattern";
 import {createSettings} from "../../../settings/createSettings";
+import {createKeyPatternSetting} from "../../../settings/inputs/createKeyPatternSetting";
 import {createSettingsFolder} from "../../../settings/inputs/createSettingsFolder";
 import {
     createFieldControlsSettingsFolder,
     fieldControlsFolderCategories,
-} from "./controls/fieldControlsSettingsFolder";
+} from "./controls/createFieldControlsSettingsFolder";
+import {createMenuControlsSettingsFolder} from "./controls/createMenuControlsSettingsFolder";
 
 /**
  * Categories in the base settings
@@ -24,7 +27,12 @@ export const baseSettings = createSettings({
                 controls: createSettingsFolder({
                     name: "Controls",
                     children: {
+                        menu: createMenuControlsSettingsFolder(),
                         field: createFieldControlsSettingsFolder(),
+                        back: createKeyPatternSetting({
+                            name: "back",
+                            init: new KeyPattern("esc"),
+                        }),
                     },
                 }),
             },

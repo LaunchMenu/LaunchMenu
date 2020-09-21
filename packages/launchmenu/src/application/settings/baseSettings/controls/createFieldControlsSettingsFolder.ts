@@ -90,6 +90,12 @@ export function createFieldControlsSettingsFolder() {
                 ]),
                 category: fieldControlsFolderCategories.textNavigation,
             }),
+            expandSelection: createKeyPatternSetting({
+                name: "Expand selection",
+                description: "Only pattern is used", // TODO: create a class + UI for modifier patterns
+                init: new KeyPattern("shift"),
+                category: fieldControlsFolderCategories.textNavigation,
+            }),
 
             // Text insertion and deletion
             backspace: createKeyPatternSetting({

@@ -6,10 +6,10 @@ import {IMenu} from "../../_types/IMenu";
 import {handleExecuteInput} from "./handleExecuteInput";
 import {setupMoveInputHandler} from "./setupMoveInputHandler";
 import {handleDeselectInput} from "./handleDeselectInput";
-import {IIOContext} from "../../../../context/_types/IIOContext";
 import {setupItemKeyListenerHandler} from "./setupItemKeyListenerHandler";
 import {setupContextMenuHandler} from "./setupContextMenuHandler";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
+import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 
 /**
  * Creates a standard menu key handler
@@ -32,24 +32,29 @@ export function createMenuKeyHandler(
         useContextItemKeyHandlers?: boolean;
     } = {}
 ): IKeyEventListener {
+    const context = menu.getContext();
+    const settings = context.settings.get(baseSettings).controls;
+    const fieldSettings = settings.menu;
+
     // Setup handlers
     let handleItemKeyListeners = useItemKeyHandlers
         ? setupItemKeyListenerHandler(menu)
         : undefined;
     const contextHandler = setupContextMenuHandler(menu, {
         useContextItemKeyHandlers,
+        pattern: () => fieldSettings.openContextMenu.get(),
     });
-    const cursorMovementHandler = setupMoveInputHandler(menu);
+    const cursorMovementHandler = setupMoveInputHandler(menu, fieldSettings);
 
     // Return the listener
     return {
         async emit(e: KeyEvent): Promise<boolean | void> {
             if (await handleItemKeyListeners?.emit(e)) return true;
             if (await contextHandler.emit(e)) return true;
-            if (handleExecuteInput(e, menu)) return true;
+            if (handleExecuteInput(e, menu, fieldSettings.execute.get())) return true;
             if (await cursorMovementHandler.emit(e)) return true;
-            if (handleDeselectInput(e, menu)) return true;
-            if (onExit && e.is("esc")) {
+            if (handleDeselectInput(e, menu, settings.back.get())) return true;
+            if (onExit && settings.back.get().matches(e)) {
                 onExit();
                 return true;
             }

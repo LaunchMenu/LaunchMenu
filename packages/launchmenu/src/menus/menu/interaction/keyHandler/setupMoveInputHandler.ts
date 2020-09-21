@@ -3,13 +3,37 @@ import {moveCursor} from "../moveCursor";
 import {toggleItemSelection} from "../toggleItemSelection";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 import {IKeyEventListenerObject} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {KeyPattern} from "../../../items/inputs/handlers/keyPattern/KeyPattern";
+import {createMenuControlsSettingsFolder} from "../../../../application/settings/baseSettings/controls/createMenuControlsSettingsFolder";
+import {TSettingsFromFactory} from "../../../../settings/_types/TSettingsFromFactory";
+import {isMenuControlsSettingsFolder} from "./isMenuControlsSettingsFolder";
+import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 
 /**
  * Sets up a key event handler that listens for cursor movement and selection change events
  * @param menu The menu for which to add cursor controls
  * @returns An object with an event emit function and a destroy function
  */
-export function setupMoveInputHandler(menu: IMenu): IKeyEventListenerObject {
+export function setupMoveInputHandler(
+    menu: IMenu,
+    patterns:
+        | {
+              up: KeyPattern;
+              down: KeyPattern;
+              selectItem: KeyPattern;
+          }
+        | TSettingsFromFactory<
+              typeof createMenuControlsSettingsFolder
+          > = menu.getContext().settings.get(baseSettings).controls.menu
+): IKeyEventListenerObject {
+    const pPatterns = isMenuControlsSettingsFolder(patterns)
+        ? (patterns = {
+              up: patterns.up.get(),
+              down: patterns.down.get(),
+              selectItem: patterns.selectItem.get(),
+          })
+        : patterns;
+
     // // Whether we should toggle the cursor selection when letting go of shift
     let toggleCursorSelection = false;
     let newStateSelected = undefined as undefined | boolean;
@@ -21,9 +45,10 @@ export function setupMoveInputHandler(menu: IMenu): IKeyEventListenerObject {
          * @returns Whether the event was caught
          */
         emit(event: KeyEvent): boolean | undefined {
-            const down = event.matches("down"); // TODO: create system for custom rate repeat
-            const up = event.matches("up");
-            if (down || up) {
+            // TODO: create system for custom rate repeat
+            const isUpKey = pPatterns.up.matches(event);
+            const isDownKey = pPatterns.down.matches(event);
+            if (isDownKey || isUpKey) {
                 const oldCursor = menu.getCursor();
                 const toggleSelection = event.shift;
                 if (oldCursor && toggleSelection) {
@@ -33,7 +58,7 @@ export function setupMoveInputHandler(menu: IMenu): IKeyEventListenerObject {
                 }
 
                 // Move the cursor
-                const newCursor = moveCursor(menu, up);
+                const newCursor = moveCursor(menu, isUpKey);
 
                 // If shift was pressed, change selection
                 if (newCursor && toggleSelection)
@@ -41,7 +66,7 @@ export function setupMoveInputHandler(menu: IMenu): IKeyEventListenerObject {
                 return true;
             }
             // Handle cursor selection toggling
-            else if (event.is("shift", ["up", "down"])) {
+            else if (pPatterns.selectItem.matches(event, true)) {
                 if (event.type == "down") toggleCursorSelection = true;
                 if (event.type == "up") {
                     if (newStateSelected === undefined && toggleCursorSelection) {

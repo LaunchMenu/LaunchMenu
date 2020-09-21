@@ -33,14 +33,16 @@ export class KeyPattern {
     /**
      * Checks whether the given event matches the
      * @param event The event to check
+     * @param ignoreType Whether to ignore the event type
      * @returns Whether a given event matches this pattern
      */
-    public matches(event: KeyEvent): boolean {
+    public matches(event: KeyEvent, ignoreType: boolean = false): boolean {
         return !!this.patterns.find(({pattern, type: eventType, allowExtra}) => {
             // Check if the event type matches
-            if (eventType == "down or repeat") {
-                if (!["down", "repeat"].includes(event.type)) return false;
-            } else if (eventType != event.type) return false;
+            if (!ignoreType)
+                if (eventType == "down or repeat") {
+                    if (!["down", "repeat"].includes(event.type)) return false;
+                } else if (eventType != event.type) return false;
 
             if (allowExtra && allowExtra.length > 0) {
                 // Check if all pattern keys are included
@@ -62,6 +64,17 @@ export class KeyPattern {
             }
 
             return true;
+        });
+    }
+
+    /**
+     * Checks whether the event matches this pattern as a modifier key
+     * @param event The event to check
+     */
+    public matchesModifier(event: KeyEvent): boolean {
+        // TODO: move this behavior to a dedicated modifier class
+        return !!this.patterns.find(({pattern}) => {
+            return event.includes(pattern);
         });
     }
 

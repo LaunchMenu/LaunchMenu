@@ -1,9 +1,6 @@
 import {IMenu} from "../../_types/IMenu";
 import {Observer} from "../../../../utils/modelReact/Observer";
-import {
-    IKeyEventListenerObject,
-    IKeyEventListenerFunction,
-} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {IKeyEventListenerObject} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
 import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
 import {getContextMenuItems} from "../../../contextMenu/getContextMenuItems";
@@ -12,6 +9,9 @@ import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
 import {PrioritizedMenu} from "../../PrioritizedMenu";
 import {sortContextCategories} from "../../../contextMenu/sortContextCategories";
 import {IIOContext} from "../../../../context/_types/IIOContext";
+import {KeyPattern} from "../../../items/inputs/handlers/keyPattern/KeyPattern";
+import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
+import {getHooked} from "../../../../utils/subscribables/getHooked";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
@@ -23,12 +23,15 @@ export function setupContextMenuHandler(
     menu: IMenu,
     {
         useContextItemKeyHandlers = true,
-        isOpenMenuButton = e => e.is("tab"),
+        pattern = menu
+            .getContext()
+            .settings.get(baseSettings)
+            .controls.menu.openContextMenu.get(),
     }: {
         /** Whether to forward key events to context menu items (can be costly for large selections or context menus), defaults to true */
         useContextItemKeyHandlers?: boolean;
-        /** A function returning whether the given event is a menu open event */
-        isOpenMenuButton?: IKeyEventListenerFunction;
+        /** A pattern to detect whether to handle the keyboard opening */
+        pattern?: KeyPattern | (() => KeyPattern);
     } = {}
 ): IKeyEventListenerObject {
     const ioContext = menu.getContext();
@@ -48,7 +51,7 @@ export function setupContextMenuHandler(
          */
         async emit(e: KeyEvent): Promise<boolean | void> {
             // Bail out if there is no reason to compute the context data
-            const isMenuOpenEvent = isOpenMenuButton(e);
+            const isMenuOpenEvent = getHooked(pattern).matches(e);
             if (!isMenuOpenEvent && !useContextItemKeyHandlers) return;
 
             // Cache the context data for subsequent key presses
