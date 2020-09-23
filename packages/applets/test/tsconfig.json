@@ -17,5 +17,5 @@
         "noImplicitAny": true
     },
     "types": ["node"],
-    "exclude": ["node_modules", "**/node_modules/*", "build", "demo", "examples"]
+    "references": [{"path": "../../launchmenu/build"}]
 }

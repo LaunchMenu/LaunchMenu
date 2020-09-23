@@ -159,6 +159,7 @@ export class LMSession {
      */
     protected setupMenu(): void {
         const menu = new PrioritizedMenu(this.context);
+        // TODO: make the prioritized menu specify a highlight function
         this.context.openUI({
             menu,
             searchable: false,

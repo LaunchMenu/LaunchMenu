@@ -4,7 +4,9 @@
     "description": "An environment for visual keyboard controlled applets",
     "types": "build/index.d.ts",
     "main": "build/index.js",
-    "exports": {},
+    "files": [
+        "build/**/*"
+    ],
     "scripts": {
         "postinstall": "npm build",
         "build": "lm-build-tools --build --production",
