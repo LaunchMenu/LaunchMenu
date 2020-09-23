@@ -4,6 +4,7 @@ const Path = require("path");
 const FS = require("fs");
 const rimraf = require("rimraf");
 const chalk = require("chalk");
+const exportTools = require("./exportTools");
 
 const error = chalk.rgb(200, 0, 0);
 const info = chalk.rgb(100, 100, 255);
@@ -248,4 +249,12 @@ async function run({
     await watchPromise;
 }
 
-module.exports = {compileTS, moveFiles, resetBuildDir, launchApp, run, defaults};
+module.exports = {
+    compileTS,
+    moveFiles,
+    resetBuildDir,
+    launchApp,
+    run,
+    defaults,
+    exportTools,
+};

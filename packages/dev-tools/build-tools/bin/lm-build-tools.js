@@ -3,6 +3,7 @@ const Args = require("args");
 const buildTools = require("@launchmenu/build-tools");
 const {defaults} = buildTools;
 const chalk = require("chalk");
+const Path = require("path");
 
 const error = chalk.rgb(200, 0, 0);
 
@@ -90,9 +91,29 @@ Args.options([
         description: "Whether to include the declaration files",
         defaultValue: defaults.emitDeclarations,
     },
+    {
+        name: "reexport",
+        description: "Whether to generate a reexport structure",
+        defaultValue: false,
+    },
 ]);
 const args = Args.parse(process.argv);
 
-buildTools.run(args).catch(e => {
-    console.log(error(e));
-});
+if (args.reexports) {
+    const s = Path.join(process.cwd, args.srcDir);
+    const b = Path.join(process.cwd, args.buildDir);
+    const d = {
+        path: Path.join(b, "api"),
+        children: {},
+        exports: {},
+    };
+    buildTools.exportTools.tools
+        .buildTree("exports.to", d, s, Path.join(b, "api"))
+        .then(() => {
+            console.log(d);
+        });
+} else {
+    buildTools.run(args).catch(e => {
+        console.log(error(e));
+    });
+}

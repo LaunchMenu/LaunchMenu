@@ -18,7 +18,8 @@
         "dist": "electron-builder",
         "test": "jest -i",
         "test-watch": "jest --watch -i",
-        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\""
+        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\"",
+        "export": "lm-build-tools --reexport"
     },
     "repository": {
         "type": "git",

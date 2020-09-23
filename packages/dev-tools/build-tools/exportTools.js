@@ -5,13 +5,6 @@ const Path = require("path");
 /**
  * Tooling to make a library reexport files to change the structure
  */
-
-/**
- * @typedef {Object} Config
- * @property {Exports} exports The base exports to add exports to
- * @property {string} folderExportsName The name of the file to declare folder exports
- */
-
 /**
  * @typedef {Object} ExportDir
  * @property {string} path The path to this directory
@@ -28,6 +21,18 @@ const Path = require("path");
  * @property {string} path The path to the export
  * @property {string[]|"*"} props The props to export
  */
+
+/**
+ * Strips the section that path and strip have in common from path
+ * @param {string} path The path to strip data from
+ * @param {string} strip The other path to get the common part of
+ * @returns {string} path with the common section removed
+ */
+function stripPathStart(path, strip) {
+    let i = 0;
+    while (path[i] == strip[i]) i++;
+    return path.substr(i);
+}
 
 /**
  * Calculates the relative path from a given file to another file
@@ -71,6 +76,8 @@ async function addToExportDir(exportDir, path, xport) {
             exportDir.exports[relativePath] = xport.props;
         }
     } else {
+        path = stripPathStart(path, exportDir.path);
+
         // Index the exports at the specified child exports name and recurse
         const pathParts = path.split("/");
         const child = pathParts.shift();
@@ -106,12 +113,17 @@ async function removeFromExportDir(exportDir, path, xport) {
                 delete exportDir.exports[relativePath];
         }
     } else {
+        path = stripPathStart(path, exportDir.path);
+
         // Index the exports at the specified child exports name and recurse
         const pathParts = path.split("/");
         const child = pathParts.shift();
 
-        if (!exportDir.children[child]) return;
-        await removeFromExportsDir(exportDir.children[child], pathParts.join("/"), xport);
+        const childDir = exportDir.children[child];
+        if (!childDir) return;
+        await removeFromExportsDir(childDir, pathParts.join("/"), xport);
+        if (Object.keys(childDir.children) == 0 && Object.keys(childDir.exports) == 0)
+            delete exportDir.children[child];
     }
 }
 
@@ -261,4 +273,49 @@ ${childrenExportsText},
 }`;
 }
 
-function buildTree(path, target, exports) {}
+/**
+ * Reads the given path and adds all found exports to the correct exportDir
+ * @param {string} exportFileName The name of the file to use to look for specified target paths
+ * @param {ExportDir} exportDir The root exportDir to add exports to
+ * @param {string} path The path to look at
+ * @param {string} target The target path to add exports to for this path
+ */
+async function buildTree(exportFileName, exportDir, path, target) {
+    if (FS.existsSync(path)) {
+        const isDir = FS.statSync(path).isDirectory();
+        if (isDir) {
+            // Update the target
+            const exportNamePath = Path.join(path, exportFileName);
+            if (FS.existsSync(exportNamePath)) {
+                const targetText = await promisify(FS.readFile)(exportNamePath, "utf8");
+                target = Path.join(exportFileName.path, targetText);
+            }
+
+            // Loop through the children and export them
+            const children = await promisify(FS.readdir)(path);
+            await Promise.all(
+                children.map(child =>
+                    buildTree(exportFileName, exportDir, Path.join(path, child), target)
+                )
+            );
+        } else {
+            if (Path.extname(path) == ".js") {
+                // TODO: TS api shit
+                console.log(target, path);
+            }
+        }
+    }
+}
+
+// Export everything
+module.exports = {
+    tools: {
+        addToExportDir,
+        removeFromExportDir,
+        readExportDir,
+        writeExportDir,
+        getExportDirTs,
+        getExportDirJs,
+        buildTree,
+    },
+};
