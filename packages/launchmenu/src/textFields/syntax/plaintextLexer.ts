@@ -6,4 +6,4 @@ export const {tokenList} = createHighlightTokens({
     text: {pattern: /(.|\n)+/, tags: [highlightTags.text]},
 });
 
-export let plaintextLexer = new HighlightLexer(tokenList);
+export const plaintextLexer = new HighlightLexer(tokenList);

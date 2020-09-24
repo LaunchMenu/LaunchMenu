@@ -32,3 +32,6 @@ if (app) {
         }
     });
 }
+
+/** @exportTo "oranges/shit" */
+export const stuff = 3;

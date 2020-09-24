@@ -1,15 +1,26 @@
 const FS = require("fs");
 const {promisify} = require("util");
 const Path = require("path");
+const ts = require("typescript");
 
 /**
  * Tooling to make a library reexport files to change the structure
  */
+
+/**
+ * @typedef {Object} Config
+ * @property {string} srcDir The source directory
+ * @property {string} buildDir The build directory
+ * @property {string} exportToFileName The name of the file to specify the export location of a directory
+ * @property {string} noExportText The text to represent that a the data shouldn't be exported (used in place of a path)
+ */
+
 /**
  * @typedef {Object} ExportDir
  * @property {string} path The path to this directory
  * @property {{[child: string]: ExportDir}} children Child exports representing an hierarchy
  * @property {Exports} exports The exports of this level
+ * @property {Exports} typeExports The exports of this level
  */
 
 /**
@@ -20,6 +31,7 @@ const Path = require("path");
  * @typedef {Object} Export
  * @property {string} path The path to the export
  * @property {string[]|"*"} props The props to export
+ * @property {boolean} isType Whether the
  */
 
 /**
@@ -30,8 +42,9 @@ const Path = require("path");
  */
 function stripPathStart(path, strip) {
     let i = 0;
-    while (path[i] == strip[i]) i++;
-    return path.substr(i);
+    while (path[i] == strip[i] && i < path.length) i++;
+    const rem = path.substr(i);
+    return rem[0] == "/" ? rem.substr(1) : rem;
 }
 
 /**
@@ -42,7 +55,7 @@ function stripPathStart(path, strip) {
  */
 function getRelativePath(from, to) {
     let i = 0;
-    while (to[i] == from[i]) i++;
+    while (to[i] == from[i] && i < to.length) i++;
     const toPath = to.substr(i);
     const fromPath = from.substr(i);
     return (
@@ -60,24 +73,28 @@ function getRelativePath(from, to) {
  * @param {ExportDir} exportDir The export dir object to add this export to at the given path
  * @param {string} path The path to the export dir object to add the export to
  * @param {Export} xport The export to add to the file
+ * @returns {ExportDir} The export dir the export was added to
  */
-async function addToExportDir(exportDir, path, xport) {
+function addToExportDir(exportDir, path, xport) {
+    path = stripPathStart(path, exportDir.path);
+    if (path.substr(0, 2) == "./") path = path.substr(2);
+
     // Check if we hit the exports object to add this path to yet
     if (path == "") {
         const relativePath = getRelativePath(exportDir.path, xport.path);
 
         // Merge the current exports from this path (if any) with the added exports
-        if (exportDir.exports[relativePath]) {
-            const target = exportDir.exports[relativePath];
+        const exports = xport.isType ? exportDir.typeExports : exportDir.exports;
+        if (exports[relativePath]) {
+            const target = exports[relativePath];
             xport.props.forEach(prop => {
                 if (!target.includes(prop)) target.push(prop);
             });
         } else {
-            exportDir.exports[relativePath] = xport.props;
+            exports[relativePath] = xport.props;
         }
+        return exportDir;
     } else {
-        path = stripPathStart(path, exportDir.path);
-
         // Index the exports at the specified child exports name and recurse
         const pathParts = path.split("/");
         const child = pathParts.shift();
@@ -87,9 +104,10 @@ async function addToExportDir(exportDir, path, xport) {
                 path: exportDir.path + "/" + child,
                 children: {},
                 exports: {},
+                typeExports: {},
             };
         }
-        await addToExportDir(exportDir.children[child], pathParts.join("/"), xport);
+        return addToExportDir(exportDir.children[child], pathParts.join("/"), xport);
     }
 }
 
@@ -98,32 +116,34 @@ async function addToExportDir(exportDir, path, xport) {
  * @param {ExportDir} exportDir The export dir object to add this export to at the given path
  * @param {string} path The path to the export dir object to remove the export from
  * @param {Export} xport The export to remove from the file
+ * @returns {ExportDir} The export dir the export was removed from
  */
 async function removeFromExportDir(exportDir, path, xport) {
+    path = stripPathStart(path, exportDir.path);
+
     // Check if we hit the exports object to add this path to yet
     if (path == "") {
         const relativePath = getRelativePath(exportDir.path, xport.path);
 
-        if (exportDir.exports[relativePath]) {
-            const target = exportDir.exports[relativePath];
-            exportDir.exports[relativePath] = target.filter(
-                x => !xport.props.includes(x)
-            );
-            if (exportDir.exports[relativePath].length == 0)
-                delete exportDir.exports[relativePath];
+        const exports = xport.isType ? exportDir.typeExports : exportDir.exports;
+        if (exports[relativePath]) {
+            const target = exports[relativePath];
+            exports[relativePath] = target.filter(x => !xport.props.includes(x));
+            if (exports[relativePath].length == 0) delete exports[relativePath];
         }
+        return exportDir;
     } else {
-        path = stripPathStart(path, exportDir.path);
-
         // Index the exports at the specified child exports name and recurse
         const pathParts = path.split("/");
         const child = pathParts.shift();
 
         const childDir = exportDir.children[child];
         if (!childDir) return;
-        await removeFromExportsDir(childDir, pathParts.join("/"), xport);
+        const ret = removeFromExportsDir(childDir, pathParts.join("/"), xport);
         if (Object.keys(childDir.children) == 0 && Object.keys(childDir.exports) == 0)
             delete exportDir.children[child];
+
+        return ret;
     }
 }
 
@@ -133,19 +153,35 @@ async function removeFromExportDir(exportDir, path, xport) {
  * @returns {Promise<ExportDir>} Either the exportDir extract from the index.js file at this path, or a new exportDir object
  */
 async function readExportDir(path) {
-    const filePath = Path.join(path, "index.d.ts");
+    const filePath = `${path}/index.d.ts`;
     const exportData = {};
+    const typeExportData = {};
 
-    if (FS.existsSync(file)) {
+    if (FS.existsSync(path)) {
         // Read the export declarations
         if (FS.existsSync(filePath)) {
             const data = await promisify(FS.readFile)(filePath, "utf8");
             try {
-                const exportRegex = /export\s*\{([^\}]+)\}\s*from\s*("|')([^"']+)("|');?/g;
+                const exportRegex = /export\s*\{([^\}]+)\}\s*from\s*("|')([^"']+)("|');?\n/g;
                 let m;
                 while ((m = exportRegex.exec(data))) {
-                    const [_, exports, _, path] = m;
+                    const [, exports, , path] = m;
                     exportData[path] = exports.split(",").map(s => s.trim());
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Read the type export declarations
+        if (FS.existsSync(filePath)) {
+            const data = await promisify(FS.readFile)(filePath, "utf8");
+            try {
+                const exportRegex = /export\s*\{([^\}]+)\}\s*from\s*("|')([^"']+)("|');?\s*\/\/type/g;
+                let m;
+                while ((m = exportRegex.exec(data))) {
+                    const [, exports, , path] = m;
+                    typeExportData[path] = exports.split(",").map(s => s.trim());
                 }
             } catch (e) {
                 console.error(e);
@@ -157,7 +193,7 @@ async function readExportDir(path) {
         if (FS.existsSync(file) && FS.statSync(file).isDirectory()) {
             const files = await promisify(FS.readdir)(file);
             const childPromises = files.map(async childFile => {
-                const childPath = Path.join(path, childFile);
+                const childPath = `${path}/${childFile}`;
                 const child = await readExportDir(childPath);
                 if (Object.keys(child.children) == 0 && Object.keys(child.exports) == 0)
                     return;
@@ -170,7 +206,7 @@ async function readExportDir(path) {
     }
 
     // Return the data
-    return {path, children: {}, exports: exportData};
+    return {path, children: {}, exports: exportData, typeExports: {}};
 }
 
 /**
@@ -181,15 +217,11 @@ async function readExportDir(path) {
 async function writeExportDir(exportDir) {
     const path = exportDir.path;
     await promisify(FS.writeFile)(
-        Path.join(path, "index.d.ts"),
+        `${path}/index.d.ts`,
         getExportDirTs(exportDir),
         "utf8"
     );
-    await promisify(FS.writeFile)(
-        Path.join(path, "index.js"),
-        getExportDirJs(exportDir),
-        "utf8"
-    );
+    await promisify(FS.writeFile)(`${path}/index.js`, getExportDirJs(exportDir), "utf8");
 }
 
 /**
@@ -199,12 +231,16 @@ async function writeExportDir(exportDir) {
  */
 async function getExportDirTs(exportDir) {
     // Get the exports text file
-    const exportsText = Object.keys(exportDir.exports)
-        .map(path => {
+    const exportsText = [
+        ...Object.keys(exportDir.exports).map(path => {
             const props = exportDir.exports[path];
             return `export {${props.join(",")}} from "${path}";`;
-        })
-        .join("\n");
+        }),
+        ...Object.keys(exportDir.typeExports).map(path => {
+            const props = exportDir.typeExports[path];
+            return `export {${props.join(",")}} from "${path}"; //type`;
+        }),
+    ].join("\n");
 
     // Construct the default export object structure
     const importsText = Object.keys(exportDir.exports)
@@ -275,36 +311,127 @@ ${childrenExportsText},
 
 /**
  * Reads the given path and adds all found exports to the correct exportDir
- * @param {string} exportFileName The name of the file to use to look for specified target paths
+ * @param {Config} config The config to be used for filling the export dirs
  * @param {ExportDir} exportDir The root exportDir to add exports to
  * @param {string} path The path to look at
  * @param {string} target The target path to add exports to for this path
  */
-async function buildTree(exportFileName, exportDir, path, target) {
+async function buildTree(config, exportDir, path, target) {
     if (FS.existsSync(path)) {
         const isDir = FS.statSync(path).isDirectory();
         if (isDir) {
             // Update the target
-            const exportNamePath = Path.join(path, exportFileName);
+            const exportNamePath = Path.join(path, config.exportToFileName);
             if (FS.existsSync(exportNamePath)) {
-                const targetText = await promisify(FS.readFile)(exportNamePath, "utf8");
-                target = Path.join(exportFileName.path, targetText);
+                let targetText = await promisify(FS.readFile)(exportNamePath, "utf8");
+                if (targetText.substr(0, 2) == "./") targetText = targetText.substr(2);
+                target = `${exportDir.path}/${targetText}`;
             }
 
             // Loop through the children and export them
             const children = await promisify(FS.readdir)(path);
             await Promise.all(
                 children.map(child =>
-                    buildTree(exportFileName, exportDir, Path.join(path, child), target)
+                    buildTree(config, exportDir, `${path}/${child}`, target)
                 )
             );
         } else {
-            if (Path.extname(path) == ".js") {
-                // TODO: TS api shit
-                console.log(target, path);
+            if (Path.extname(path) == ".ts" || Path.extname(path) == ".tsx") {
+                const contents = await promisify(FS.readFile)(path, "utf8");
+                const source = ts.createSourceFile(
+                    path,
+                    contents,
+                    ts.ScriptTarget.ES2018,
+                    true
+                );
+                const buildPath = config.buildDir + path.substring(config.srcDir.length);
+
+                // Retrieve the exports and type export from the file
+                const exports = {};
+                const typeExports = {};
+                getFileExports(
+                    (exportProp, t, isType) => {
+                        if (!t) t = target;
+                        if (t != config.noExportText) {
+                            if (isType) {
+                                if (!typeExports[t]) typeExports[t] = [];
+                                typeExports[t].push(exportProp);
+                            } else {
+                                if (!exports[t]) exports[t] = [];
+                                exports[t].push(exportProp);
+                            }
+                        }
+                    },
+                    contents,
+                    source
+                );
+
+                // Add the exports
+                Object.keys(exports).forEach(t => {
+                    addToExportDir(exportDir, t, {
+                        path: buildPath,
+                        isType: false,
+                        props: exports[t],
+                    });
+                });
+                Object.keys(typeExports).forEach(t => {
+                    addToExportDir(exportDir, t, {
+                        path: buildPath,
+                        isType: true,
+                        props: typeExports[t],
+                    });
+                });
             }
         }
     }
+}
+
+/**
+ * Retrieves the exports of a given ts file
+ * @param {Function} report A callback to pass a found export and target to
+ * @param {string} fullText The complete file node text
+ * @param {ts.SourceFile} node The file to get the exports from
+ */
+function getFileExports(report, fullText, node) {
+    const exports = [];
+    let isType = false;
+    switch (node.kind) {
+        case ts.SyntaxKind.TypeAliasDeclaration:
+        case ts.SyntaxKind.InterfaceDeclaration:
+            isType = true;
+        case ts.SyntaxKind.VariableStatement: {
+            if (node.declarationList)
+                node.declarationList.declarations.forEach(declaration => {
+                    exports.push(declaration.name.escapedText);
+                });
+        }
+        case ts.SyntaxKind.ClassDeclaration:
+        case ts.SyntaxKind.FunctionDeclaration: {
+            if (
+                node.modifiers &&
+                node.modifiers.find(({kind}) => kind == ts.SyntaxKind.ExportKeyword)
+            ) {
+                if (node.name) exports.push(node.name.escapedText);
+
+                const comments = ts.getLeadingCommentRanges(fullText, node.pos) || [];
+                let exportTo = undefined;
+                comments.forEach(({pos, end}) => {
+                    const text = fullText.substring(pos, end);
+                    const match = text.match(
+                        /@exportTo\s+(\"?\'?)([^\s'"*\n]+)(\"?\'?)/i
+                    );
+                    if (match) exportTo = match[2];
+                });
+
+                exports.forEach(
+                    exportProp => exportProp && report(exportProp, exportTo, isType)
+                );
+            }
+            break;
+        }
+    }
+
+    ts.forEachChild(node, getFileExports.bind(this, report, fullText));
 }
 
 // Export everything

@@ -99,18 +99,30 @@ Args.options([
 ]);
 const args = Args.parse(process.argv);
 
-if (args.reexports) {
-    const s = Path.join(process.cwd, args.srcDir);
-    const b = Path.join(process.cwd, args.buildDir);
+if (args.reexport) {
+    const s = Path.join(process.cwd(), args.srcDir).replace(/\\/g, "/");
+    const b = Path.join(process.cwd(), args.buildDir).replace(/\\/g, "/");
     const d = {
-        path: Path.join(b, "api"),
+        path: `${b}/api`,
         children: {},
         exports: {},
+        typeExports: {},
     };
     buildTools.exportTools.tools
-        .buildTree("exports.to", d, s, Path.join(b, "api"))
+        .buildTree(
+            {
+                exportToFileName: "export.to",
+                noExportText: "noExport",
+                srcDir: s,
+                buildDir: b,
+            },
+            d,
+            s,
+            d.path
+        )
         .then(() => {
-            console.log(d);
+            const out = JSON.stringify(d, null, 4);
+            require("child_process").spawn("clip").stdin.end(out);
         });
 } else {
     buildTools.run(args).catch(e => {
