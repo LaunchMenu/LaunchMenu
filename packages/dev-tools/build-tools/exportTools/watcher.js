@@ -181,21 +181,25 @@ async function watch(config, outputs) {
     });
 
     if (config.indexPath) {
-        let skip = 0;
+        const onChange = async (skip, only, type, path) => {
+            // Add some buffer time to prevent infinite loops
+            const now = Date.now();
+            if (skip.c - now < 0) {
+                skip.c = now + 1000;
+                await writeExportsToIndex(
+                    `${config.buildDir}/${config.indexPath}`,
+                    outputs,
+                    only
+                );
+                skip.c = now + 200;
+            }
+        };
         chokidar
-            .watch(`${config.buildDir}/${config.indexPath}`, {ignoreInitial: true})
-            .on("all", async (type, path) => {
-                // Add some buffer time to prevent infinite loops
-                const now = Date.now();
-                if (skip - now < 0) {
-                    skip = now + 1000;
-                    await writeExportsToIndex(
-                        `${config.buildDir}/${config.indexPath}`,
-                        outputs
-                    );
-                    skip = now + 200;
-                }
-            });
+            .watch(`${config.buildDir}/${config.indexPath}.js`, {ignoreInitial: true})
+            .on("all", onChange.bind(this, {c: 0}, "js"));
+        chokidar
+            .watch(`${config.buildDir}/${config.indexPath}.d.ts`, {ignoreInitial: true})
+            .on("all", onChange.bind(this, {c: 0}, "ts"));
     }
 }
 

@@ -40,7 +40,7 @@ const defaults = {
     typesDir: "types",
     exportToFileName: ".exportTo",
     noExportText: "noExport",
-    indexPath: "index.js",
+    indexPath: "index",
 };
 
 /**
@@ -172,6 +172,7 @@ async function run({
     cleanup = defaults.cleanup,
     build = defaults.build,
     watch = defaults.watch,
+    reexport = defaults.reexport,
     launch = defaults.launch,
     launchParams = defaults.launchParams,
     launchElectron = defaults.launchElectron,
@@ -220,18 +221,20 @@ async function run({
             watchMode: false,
         });
         if (verbose) console.log(info("[build]: finished transpiling typescript"));
-        if (verbose) console.log(info("[build]: started adding exports structure"));
-        exportOutputs = await exportTools.buildExports({
-            srcDir,
-            buildDir,
-            apiDir,
-            typesDir,
-            exportToFileName,
-            noExportText,
-            indexPath,
-            watchMode: false,
-        });
-        if (verbose) console.log(info("[build]: finished adding exports structure"));
+        if (reexport) {
+            if (verbose) console.log(info("[build]: started adding exports structure"));
+            exportOutputs = await exportTools.buildExports({
+                srcDir,
+                buildDir,
+                apiDir,
+                typesDir,
+                exportToFileName,
+                noExportText,
+                indexPath,
+                watchMode: false,
+            });
+            if (verbose) console.log(info("[build]: finished adding exports structure"));
+        }
     }
 
     let launchPromise;
@@ -269,17 +272,19 @@ async function run({
                 srcEntry,
                 watchMode: true,
             }),
-            exportTools.buildExports({
-                srcDir,
-                buildDir,
-                apiDir,
-                typesDir,
-                exportToFileName,
-                noExportText,
-                indexPath,
-                watchMode: true,
-                outputs: exportOutputs,
-            }),
+            reexport
+                ? exportTools.buildExports({
+                      srcDir,
+                      buildDir,
+                      apiDir,
+                      typesDir,
+                      exportToFileName,
+                      noExportText,
+                      indexPath,
+                      watchMode: true,
+                      outputs: exportOutputs,
+                  })
+                : [],
         ]).then(() => {
             if (verbose) console.log(info("[watch]: stopped watching for file changes"));
         });

@@ -87,8 +87,13 @@ async function buildTree(config, outputs, path, target) {
  * @returns {ExportOutputs}
  */
 async function buildExports({watchMode, outputs, ...config}) {
+    if (!Path.isAbsolute(config.srcDir))
+        config.srcDir = Path.join(process.cwd(), config.srcDir).replace(/\\/g, "/");
+    if (!Path.isAbsolute(config.buildDir))
+        config.buildDir = Path.join(process.cwd(), config.buildDir).replace(/\\/g, "/");
+
     if (watchMode) {
-        return watch(config);
+        return watch(config, outputs);
     } else {
         const outputs = {
             runtime: {

@@ -100,31 +100,31 @@ Args.options([
         name: "apiDir",
         description:
             "The directory path, relative to build, to put the exports in (only if using reexport)",
-        defaultsValue: defaults.apiDir,
+        defaultValue: defaults.apiDir,
     },
     {
         name: "typesDir",
         description:
             "The directory path, relative to build, to put the export types in (only if using reexport)",
-        defaultsValue: defaults.typesDir,
+        defaultValue: defaults.typesDir,
     },
     {
         name: "exportToFileName",
         description:
             "The filename of the file to read directory export mapping locations from (only if using reexport)",
-        defaultsValue: defaults.exportToFileName,
+        defaultValue: defaults.exportToFileName,
     },
     {
         name: "noExportText",
         description:
             "The export text (instead of file path) to indicate this export shouldn't be exposed (only if using reexport)",
-        defaultsValue: defaults.noExportText,
+        defaultValue: defaults.noExportText,
     },
     {
         name: "indexPath",
         description:
-            "The path to the index to export the flattened export hierarchy to (only if using reexport, make falsy to disable)",
-        defaultsValue: defaults.noExportText,
+            "The path to the index to export the flattened export hierarchy to (only if using reexport, make falsy to disable, don't include extension)",
+        defaultValue: defaults.indexPath,
     },
 ]);
 const args = Args.parse(process.argv);

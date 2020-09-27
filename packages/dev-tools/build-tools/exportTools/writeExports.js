@@ -131,9 +131,11 @@ ${exportsText}
  * Writes the given exports to the index build file
  * @param {string} path The path to write the flattened exports too
  * @param {ExportOutputs} outputs The output to
+ * @param {"ts"|"js"|undefined} only Indicates to potentially only update js or ts files
  */
-async function writeExportsToIndex(path, outputs) {
-    const declarationPath = path.replace(/\.js/, ".d.ts");
+async function writeExportsToIndex(path, outputs, only) {
+    const declarationPath = path + ".d.ts";
+    path = path + ".js";
     const dirPath = Path.dirname(path).replace(/\\/g, "/");
 
     let jsText = `Object.defineProperty(exports, "__esModule", { value: true });
@@ -157,6 +159,7 @@ async function writeExportsToIndex(path, outputs) {
 
     // Add the exports to the base text
     jsText += getExportDirToIndexJS(dirPath, outputs.runtime);
+
     tsText += getExportDirToIndexTS(dirPath, outputs.runtime);
     tsText += getExportDirToIndexTS(dirPath, outputs.type);
 
@@ -170,8 +173,8 @@ async function writeExportsToIndex(path, outputs) {
     )}";`;
 
     // Save the files
-    await promisify(FS.writeFile)(path, jsText, "utf8");
-    await promisify(FS.writeFile)(declarationPath, tsText, "utf8");
+    if (only != "ts") await promisify(FS.writeFile)(path, jsText, "utf8");
+    if (only != "js") await promisify(FS.writeFile)(declarationPath, tsText, "utf8");
 }
 
 /**
