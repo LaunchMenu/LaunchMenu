@@ -94,29 +94,41 @@ Args.options([
     {
         name: "reexport",
         description: "Whether to generate a reexport structure",
-        defaultValue: false,
+        defaultValue: defaults.reexport,
+    },
+    {
+        name: "apiDir",
+        description:
+            "The directory path, relative to build, to put the exports in (only if using reexport)",
+        defaultsValue: defaults.apiDir,
+    },
+    {
+        name: "typesDir",
+        description:
+            "The directory path, relative to build, to put the export types in (only if using reexport)",
+        defaultsValue: defaults.typesDir,
+    },
+    {
+        name: "exportToFileName",
+        description:
+            "The filename of the file to read directory export mapping locations from (only if using reexport)",
+        defaultsValue: defaults.exportToFileName,
+    },
+    {
+        name: "noExportText",
+        description:
+            "The export text (instead of file path) to indicate this export shouldn't be exposed (only if using reexport)",
+        defaultsValue: defaults.noExportText,
+    },
+    {
+        name: "indexPath",
+        description:
+            "The path to the index to export the flattened export hierarchy to (only if using reexport, make falsy to disable)",
+        defaultsValue: defaults.noExportText,
     },
 ]);
 const args = Args.parse(process.argv);
 
-if (args.reexport) {
-    const s = Path.join(process.cwd(), args.srcDir).replace(/\\/g, "/");
-    const b = Path.join(process.cwd(), args.buildDir).replace(/\\/g, "/");
-    buildTools.exportTools.tools.buildExports({
-        exportToFileName: "export.to",
-        noExportText: "noExport",
-        srcDir: s,
-        buildDir: b,
-        apiDir: "api",
-        typesDir: "types",
-        indexPath: `${b}/index.js`,
-    });
-    // .then(() => {
-    //     const out = JSON.stringify(t, null, 4);
-    //     require("child_process").spawn("clip").stdin.end(out);
-    // });
-} else {
-    buildTools.run(args).catch(e => {
-        console.log(error(e));
-    });
-}
+buildTools.run(args).catch(e => {
+    console.log(error(e));
+});

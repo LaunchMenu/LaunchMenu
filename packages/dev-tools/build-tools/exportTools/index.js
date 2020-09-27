@@ -1,22 +1,19 @@
 const FS = require("fs");
 const {promisify} = require("util");
 const Path = require("path");
-const ts = require("typescript");
-const {addToExportDir, removeFromExportDir} = require("./exportsManagement");
-const {readExportDir, readExports} = require("./readExports");
-const {getRelativePath, stripPathStart} = require("./utils");
-const {
-    getExportDirJS,
-    getExportDirTS,
-    getExportDirToIndexJS,
-    getExportDirToIndexTS,
-    writeExportDir,
-    writeExportsToIndex,
-} = require("./writeExports");
+const {addToExportDir} = require("./exportsManagement");
+const {getFileExports} = require("./exportsRetriever");
+const {watch} = require("./watcher");
+const {writeExportDir, writeExportsToIndex} = require("./writeExports");
 
 /**
  * Tooling to make a library reexport files to change the structure
  * TODO: create files using babel or something else better structured
+ */
+
+/**
+ * @typedef {import("./types").Config} Config
+ * @typedef {import("./types").ExportOutputs} ExportOutputs
  */
 
 /**
@@ -33,8 +30,9 @@ async function buildTree(config, outputs, path, target) {
             // Update the target
             const exportNamePath = Path.join(path, config.exportToFileName);
             if (FS.existsSync(exportNamePath)) {
-                target = await promisify(FS.readFile)(exportNamePath, "utf8");
-                if (target.substr(0, 2) == "./") target = target.substr(2);
+                const fTarget = await promisify(FS.readFile)(exportNamePath, "utf8");
+                if (fTarget.substr(0, 2) == "./") fTarget = fTarget.substr(2);
+                if (fTarget.length > 0) target = fTarget;
             }
 
             // Loop through the children and export them
@@ -48,149 +46,80 @@ async function buildTree(config, outputs, path, target) {
             const isTSFile = Path.extname(path) == ".ts";
             const isTSXFile = Path.extname(path) == ".tsx";
             if (isTSFile || isTSXFile) {
-                const contents = await promisify(FS.readFile)(path, "utf8");
-                const source = ts.createSourceFile(
-                    path,
-                    contents,
-                    ts.ScriptTarget.ES2018,
-                    true
-                );
                 const buildPath =
                     config.buildDir +
                     path.substring(
                         config.srcDir.length,
                         path.length - (isTSFile ? 3 : 4)
                     );
-
-                // Retrieve the exports and type export from the file
-                const exports = {};
-                const typeExports = {};
-                getFileExports(
-                    (exportProp, t, isType) => {
-                        if (!t) t = target;
-                        if (t != config.noExportText) {
-                            if (isType) {
-                                if (!typeExports[t]) typeExports[t] = [];
-                                typeExports[t].push(exportProp);
-                            } else {
-                                if (!exports[t]) exports[t] = [];
-                                exports[t].push(exportProp);
-                            }
-                        }
-                    },
-                    contents,
-                    source
-                );
+                const extlessPath = path.substring(0, path.length - (isTSFile ? 3 : 4));
+                const {exports, typeExports} = await getFileExports(config, path, target);
 
                 // Add the exports
+                outputs.fileExports[extlessPath] = [];
                 Object.keys(exports).forEach(t => {
-                    const exports = {
+                    const cExports = {
                         path: buildPath,
                         props: exports[t],
                         target: t,
                     };
-                    addToExportDir(outputs.runtime, exports);
-                    if (!outputs.fileExports[path]) outputs.fileExports[path] = [];
-                    outputs.fileExports[path].push(exports);
+                    addToExportDir(outputs.runtime, cExports);
+                    outputs.fileExports[extlessPath].push(cExports);
                 });
                 Object.keys(typeExports).forEach(t => {
-                    const exports = {
+                    const cExports = {
                         path: buildPath,
                         props: typeExports[t],
                         target: t,
                         isType: true,
                     };
-                    addToExportDir(outputs.type, exports);
-                    if (!outputs.fileExports[path]) outputs.fileExports[path] = [];
-                    outputs.fileExports[path].push(exports);
+                    addToExportDir(outputs.type, cExports);
+                    outputs.fileExports[extlessPath].push(cExports);
                 });
             }
         }
     }
-}
-
-/**
- * Retrieves the exports of a given ts file
- * @param {Function} report A callback to pass a found export and target to
- * @param {string} fullText The complete file node text
- * @param {ts.SourceFile} node The file to get the exports from
- */
-function getFileExports(report, fullText, node) {
-    const exports = [];
-    let isType = false;
-    switch (node.kind) {
-        case ts.SyntaxKind.TypeAliasDeclaration:
-        case ts.SyntaxKind.InterfaceDeclaration:
-            isType = true;
-        case ts.SyntaxKind.VariableStatement: {
-            if (node.declarationList)
-                node.declarationList.declarations.forEach(declaration => {
-                    exports.push(declaration.name.escapedText);
-                });
-        }
-        case ts.SyntaxKind.ClassDeclaration:
-        case ts.SyntaxKind.FunctionDeclaration: {
-            if (
-                node.modifiers &&
-                node.modifiers.find(({kind}) => kind == ts.SyntaxKind.ExportKeyword)
-            ) {
-                if (node.name) exports.push(node.name.escapedText);
-
-                const comments = ts.getLeadingCommentRanges(fullText, node.pos) || [];
-                let exportTo = undefined;
-                comments.forEach(({pos, end}) => {
-                    const text = fullText.substring(pos, end);
-                    const match = text.match(
-                        /@exportTo\s+(\"?\'?)([^\s'"*\n]+)(\"?\'?)/i
-                    );
-                    if (match) exportTo = match[2];
-                });
-
-                exports.forEach(
-                    exportProp => exportProp && report(exportProp, exportTo, isType)
-                );
-            }
-            break;
-        }
-    }
-
-    ts.forEachChild(node, getFileExports.bind(this, report, fullText));
 }
 
 /**
  * Builds the exports data
- * @param {Config} config The config for the build process
+ * @param {Config & {watchMode: boolean, outputs?: ExportOutputs}} config The config for the build process
+ * @returns {ExportOutputs}
  */
-async function buildExports(config) {
-    // const outputs = {
-    //     runtime: {
-    //         path: `${config.buildDir}/${config.apiDir}`,
-    //         children: {},
-    //         exports: {},
-    //     },
-    //     type: {
-    //         path: `${config.buildDir}/${config.typesDir}`,
-    //         children: {},
-    //         exports: {},
-    //     },
-    // };
-    // await buildTree(config, outputs, config.srcDir, "");
-    // await writeExportDir(outputs.runtime);
-    // await writeExportDir(outputs.type, false);
-    // if (config.indexPath) await writeExportsToIndex(config.indexPath, outputs);
-    console.log(await readExports(config));
+async function buildExports({watchMode, outputs, ...config}) {
+    if (watchMode) {
+        return watch(config);
+    } else {
+        const outputs = {
+            runtime: {
+                path: `${config.buildDir}/${config.apiDir}`,
+                children: {},
+                exports: {},
+            },
+            type: {
+                path: `${config.buildDir}/${config.typesDir}`,
+                children: {},
+                exports: {},
+            },
+            fileExports: {},
+        };
+        await buildTree(config, outputs, config.srcDir, "");
+        await writeExportDir(outputs.runtime);
+        await writeExportDir(outputs.type, false);
+        if (config.indexPath)
+            await writeExportsToIndex(`${config.buildDir}/${config.indexPath}`, outputs);
+        return outputs;
+    }
 }
 
 // Export everything
 module.exports = {
-    tools: {
-        addToExportDir,
-        removeFromExportDir,
-        readExportDir,
-        writeExportDir,
-        getExportDirTS,
-        getExportDirJS,
-        buildTree,
-        buildExports,
-    },
+    exportsManagement: require("./exportsManagement"),
+    readExports: require("./readExports"),
+    exportsRetriever: require("./exportsRetriever"),
+    utils: require("./utils"),
+    watcher: require("./watcher"),
+    writeExports: require("./writeExports"),
+    buildExports,
+    buildTree,
 };

@@ -24,17 +24,23 @@ const defaults = {
     cleanup: false,
     build: false,
     watch: false,
+    reexport: false,
     launch: false,
     launchParams: {},
     launchElectron: true,
     production: false,
-    srcEntry: "src/index.ts",
-    entry: "build/index.js",
+    srcEntry: "index.ts",
+    entry: "index.js",
     copyExtensions: ["html", "css", "jpg", "png", "ttf", "js"],
     tsConfig: Path.join(process.cwd(), "tsconfig.json"),
     verbose: true,
     srcMaps: true,
     emitDeclarations: true,
+    apiDir: "api",
+    typesDir: "types",
+    exportToFileName: ".exportTo",
+    noExportText: "noExport",
+    indexPath: "index.js",
 };
 
 /**
@@ -75,7 +81,7 @@ function compileTS({
             buildDir,
             "--rootDir",
             srcDir,
-            srcEntry,
+            `${srcDir}/${srcEntry}`,
         ];
     }
     return spawn("node", [tsPath, ...params], {stdio: "inherit"});
@@ -138,13 +144,14 @@ function resetBuildDir({buildDir = defaults.buildDir} = {}) {
  * @returns {Promise<void>} A promise that resolves once the application closes
  */
 function launchApp({
+    buildDir = defaults.buildDir,
     entry = defaults.entry,
     launchParams = defaults.launchParams,
     launchElectron = defaults.launchElectron,
     production = defaults.production,
 } = {}) {
     if (!production) launchParams = {...launchParams, NODE_ENV: "dev"};
-    const params = [entry];
+    const params = [`${buildDir}/${entry}`];
     Object.keys(launchParams).forEach(key => {
         params.push("--" + key, launchParams[key]);
     });
@@ -176,6 +183,11 @@ async function run({
     srcMaps = defaults.srcMaps,
     production = defaults.production,
     emitDeclarations = defaults.emitDeclarations,
+    apiDir = defaults.apiDir,
+    typesDir = defaults.typesDir,
+    exportToFileName = defaults.exportToFileName,
+    noExportText = defaults.noExportText,
+    indexPath = defaults.indexPath,
 } = {}) {
     if (typeof copyExtensions == "string") copyExtensions = copyExtensions.split(/,\s*/);
     if (typeof launchParams == "string") launchParams = JSON.parse(launchParams);
@@ -185,6 +197,7 @@ async function run({
         await resetBuildDir({buildDir});
         if (verbose) console.log(info("[Cleanup]: finished"));
     }
+    let exportOutputs;
     if (build) {
         if (verbose) console.log(info("[build]: started copying files"));
         await moveFiles({
@@ -207,16 +220,32 @@ async function run({
             watchMode: false,
         });
         if (verbose) console.log(info("[build]: finished transpiling typescript"));
+        if (verbose) console.log(info("[build]: started adding exports structure"));
+        exportOutputs = await exportTools.buildExports({
+            srcDir,
+            buildDir,
+            apiDir,
+            typesDir,
+            exportToFileName,
+            noExportText,
+            indexPath,
+            watchMode: false,
+        });
+        if (verbose) console.log(info("[build]: finished adding exports structure"));
     }
 
     let launchPromise;
     if (launch) {
         if (verbose) console.log(info("[launch]: launching application"));
-        launchPromise = launchApp({entry, launchParams, launchElectron, production}).then(
-            () => {
-                if (verbose) console.log(info("[launch]: quite application"));
-            }
-        );
+        launchPromise = launchApp({
+            buildDir,
+            entry,
+            launchParams,
+            launchElectron,
+            production,
+        }).then(() => {
+            if (verbose) console.log(info("[launch]: quite application"));
+        });
     }
 
     let watchPromise;
@@ -239,6 +268,17 @@ async function run({
                 verbose,
                 srcEntry,
                 watchMode: true,
+            }),
+            exportTools.buildExports({
+                srcDir,
+                buildDir,
+                apiDir,
+                typesDir,
+                exportToFileName,
+                noExportText,
+                indexPath,
+                watchMode: true,
+                outputs: exportOutputs,
             }),
         ]).then(() => {
             if (verbose) console.log(info("[watch]: stopped watching for file changes"));

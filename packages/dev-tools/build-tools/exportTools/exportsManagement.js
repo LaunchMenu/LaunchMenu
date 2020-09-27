@@ -9,7 +9,7 @@ const {getRelativePath, stripPathStart} = require("./utils");
  * @param {ExportDir} exportDir The export dir object to add this export to at the given path
  * @param {Export} xport The export to add to the file
  * @param {string} [path] The path to the export dir object to add the export to
- * @returns {ExportDir} The export dir the export was added to
+ * @returns {ExportDir[]} The export dirs that updated
  */
 function addToExportDir(exportDir, xport, path = xport.target) {
     path = stripPathStart(path, exportDir.path);
@@ -29,20 +29,25 @@ function addToExportDir(exportDir, xport, path = xport.target) {
         } else {
             exports[relativePath] = xport.props;
         }
-        return exportDir;
+        return [exportDir];
     } else {
         // Index the exports at the specified child exports name and recurse
         const pathParts = path.split("/");
         const child = pathParts.shift();
 
+        const updated = [];
         if (!exportDir.children[child]) {
             exportDir.children[child] = {
                 path: exportDir.path + "/" + child,
                 children: {},
                 exports: {},
             };
+            updated.push(exportDir);
         }
-        return addToExportDir(exportDir.children[child], pathParts.join("/"), xport);
+        return [
+            ...updated,
+            ...addToExportDir(exportDir.children[child], xport, pathParts.join("/")),
+        ];
     }
 }
 
@@ -51,9 +56,9 @@ function addToExportDir(exportDir, xport, path = xport.target) {
  * @param {ExportDir} exportDir The export dir object to add this export to at the given path
  * @param {Export} xport The export to remove from the file
  * @param {string} [path] The path to the export dir object to remove the export from
- * @returns {ExportDir} The export dir the export was removed from
+ * @returns {ExportDir[]} The export dirs that updated
  */
-async function removeFromExportDir(exportDir, xport, path = xport.target) {
+function removeFromExportDir(exportDir, xport, path = xport.target) {
     path = stripPathStart(path, exportDir.path);
 
     // Check if we hit the exports object to add this path to yet
@@ -66,19 +71,23 @@ async function removeFromExportDir(exportDir, xport, path = xport.target) {
             exports[relativePath] = target.filter(x => !xport.props.includes(x));
             if (exports[relativePath].length == 0) delete exports[relativePath];
         }
-        return exportDir;
+        return [exportDir];
     } else {
         // Index the exports at the specified child exports name and recurse
         const pathParts = path.split("/");
         const child = pathParts.shift();
 
         const childDir = exportDir.children[child];
-        if (!childDir) return;
-        const ret = removeFromExportsDir(childDir, pathParts.join("/"), xport);
-        if (Object.keys(childDir.children) == 0 && Object.keys(childDir.exports) == 0)
-            delete exportDir.children[child];
+        if (!childDir) return [];
 
-        return ret;
+        const updated = [];
+        const ret = removeFromExportDir(childDir, xport, pathParts.join("/"));
+        if (Object.keys(childDir.children) == 0 && Object.keys(childDir.exports) == 0) {
+            delete exportDir.children[child];
+            updated.push(exportDir);
+        }
+
+        return [...updated, ...ret];
     }
 }
 

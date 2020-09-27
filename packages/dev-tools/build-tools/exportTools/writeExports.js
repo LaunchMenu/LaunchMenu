@@ -144,13 +144,13 @@ async function writeExportsToIndex(path, outputs) {
     if (FS.existsSync(path)) {
         const jsContent = await promisify(FS.readFile)(path, "utf8");
         jsText =
-            jsContent.replace(/\r?\n?\/\*\* generated exports \*\/(.|\n)*$/g, "") +
+            jsContent.replace(/\r?\n?\/\*\* generated exports \*\/(.|\r?\n)*$/g, "") +
             "\n/** generated exports */";
 
         if (FS.existsSync(declarationPath)) {
             const tsContent = await promisify(FS.readFile)(declarationPath, "utf8");
             tsText =
-                tsContent.replace(/\r?\n?\/\*\* generated exports \*\/(.|\n)*$/g, "") +
+                tsContent.replace(/\r?\n?\/\*\* generated exports \*\/(.|\r?\n)*$/g, "") +
                 "\n/** generated exports */";
         }
     }

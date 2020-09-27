@@ -1,5 +1,7 @@
 const FS = require("fs");
+const Path = require("path");
 const {promisify} = require("util");
+const {stripPathStart} = require("./utils");
 
 /**
  * @typedef {import("./types").ExportMap} ExportMap
@@ -15,16 +17,18 @@ const {promisify} = require("util");
  */
 async function readExports(config) {
     const {exportMap: apiExportMap, exportDir: apiExportDir} = await readExportDir(
+        config,
         `${config.buildDir}/${config.apiDir}`
     );
     const {exportMap: typesExportMap, exportDir: typesExportDir} = await readExportDir(
+        config,
         `${config.buildDir}/${config.typesDir}`
     );
 
     const fileExports = {...apiExportMap};
     Object.keys(typesExportMap).forEach(file => {
         if (!fileExports[file]) fileExports[file] = [];
-        fileExports[file].push(typesExportMap[file].map(e => ({...e, isType: true})));
+        fileExports[file].push(...typesExportMap[file].map(e => ({...e, isType: true})));
     });
 
     return {
@@ -36,10 +40,11 @@ async function readExports(config) {
 
 /**
  * Checks the given path for presence of an index file that can be read as a (partial, no children) ExportDir
+ * @param {Config} config The config
  * @param {string} path The path to read the exportDir from
  * @returns {Promise<{exportMap: ExportMap, exportDir: ExportDir}>} Either the exportDir extract from the index.js file at this path, or a new exportDir object
  */
-async function readExportDir(path) {
+async function readExportDir(config, path) {
     const filePath = `${path}/index.d.ts`;
     const exportData = {};
     const children = {};
@@ -51,18 +56,26 @@ async function readExportDir(path) {
     if (FS.existsSync(path)) {
         // Read the export declarations
         if (FS.existsSync(filePath)) {
-            exportMap[filePath] = [];
             const data = await promisify(FS.readFile)(filePath, "utf8");
             try {
                 const exportRegex = /export\s*\{([^\}]+)\}\s*from\s*("|')([^"']+)("|');?/g;
                 let m;
                 while ((m = exportRegex.exec(data))) {
-                    const [, exports, , path] = m;
+                    const [, exports, , exportPath] = m;
                     const props = exports.split(",").map(s => s.trim());
-                    exportData[path] = props;
-                    exportMap[filePath].push({
-                        path,
+                    exportData[exportPath] = props;
+
+                    // Get the absolute file path to the source, and add to the exportMap
+                    const p = Path.resolve(path, exportPath)
+                        .replace(/\\/g, "/")
+                        .substr(config.buildDir.length);
+                    const srcPath = config.srcDir + p;
+                    const buildPath = config.buildDir + p;
+                    if (!exportMap[srcPath]) exportMap[srcPath] = [];
+                    exportMap[srcPath].push({
+                        path: buildPath,
                         props,
+                        target: path,
                     });
                 }
             } catch (e) {
@@ -71,18 +84,22 @@ async function readExportDir(path) {
         }
 
         // Look for children
-        if (FS.existsSync(path) && FS.statSync(path).isDirectory()) {
+        if (FS.statSync(path).isDirectory()) {
             const files = await promisify(FS.readdir)(path);
             const childPromises = files.map(async childFile => {
                 const childPath = `${path}/${childFile}`;
                 const {exportDir: child, exportMap: childExportMap} = await readExportDir(
+                    config,
                     childPath
                 );
                 if (Object.keys(child.children) == 0 && Object.keys(child.exports) == 0)
                     return;
                 else {
-                    children[childPath] = child;
-                    exportMap = {...exportMap, ...childExportMap};
+                    children[childFile] = child;
+                    Object.keys(childExportMap).forEach(file => {
+                        if (!exportMap[file]) exportMap[file] = [];
+                        exportMap[file].push(...childExportMap[file]);
+                    });
                 }
             });
             await Promise.all(childPromises);

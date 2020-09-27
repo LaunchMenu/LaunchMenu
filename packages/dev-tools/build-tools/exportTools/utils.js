@@ -1,3 +1,7 @@
+const Path = require("path");
+const FS = require("fs");
+const {promisify} = require("util");
+
 /**
  * Strips the section that path and strip have in common from path
  * @param {string} path The path to strip data from
@@ -7,8 +11,10 @@
 function stripPathStart(path, strip) {
     let i = 0;
     while (path[i] == strip[i] && i < path.length) i++;
-    const rem = path.substr(i);
-    return rem[0] == "/" ? rem.substr(1) : rem;
+    let rem = path.substr(i);
+    if (rem[0] == "/") rem = rem.substr(1);
+    if (rem.substr(0, 2) == "./") rem = rem.substr(2);
+    return rem;
 }
 
 /**
@@ -35,7 +41,38 @@ function getRelativePath(from, to) {
     return relative;
 }
 
+/**
+ * Deletes the given path recursively, removing any empty folders
+ * @param {string} path The path to remove
+ */
+async function deleteRecursive(path) {
+    await deleteFolder(path);
+
+    const dir = Path.dirname(path);
+    if (FS.existsSync(dir) && FS.statSync(dir).isDirectory()) {
+        const children = await promisify(FS.readdir)(dir);
+        if (children.length == 0) await deleteRecursive(dir);
+    }
+}
+
+/**
+ * Deletes the given folder, getting rid of any children within it
+ * @param {string} path The path to remove
+ */
+async function deleteFolder(path) {
+    if (FS.existsSync(path)) {
+        if (FS.statSync(path).isDirectory()) {
+            const children = await promisify(FS.readdir)(path);
+            await Promise.all(children.map(c => deleteFolder(`${path}/${c}`)));
+            await promisify(FS.rmdir)(path);
+        } else {
+            await promisify(FS.unlink)(path);
+        }
+    }
+}
+
 module.exports = {
     stripPathStart,
     getRelativePath,
+    deleteRecursive,
 };
