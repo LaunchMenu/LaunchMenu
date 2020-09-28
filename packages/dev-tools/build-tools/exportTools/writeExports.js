@@ -58,21 +58,24 @@ function getExportDirTS(exportDir, accumulate = true) {
         .join("\n");
     const exportsLines = Object.keys(exportDir.exports).flatMap(path => {
         const props = exportDir.exports[path];
-        return props.map(prop => `    ${prop}`);
+        return props.map(prop => `    ${prop}: typeof ${prop}`);
     });
 
     const childrenImportsText = Object.keys(exportDir.children)
         .map(child => `import $${child} from "./${child}";`)
         .join("\n");
-    const childrenLines = Object.keys(exportDir.children).map(child => `    $${child}`);
+    const childrenLines = Object.keys(exportDir.children).map(
+        child => `    $${child}: typeof $${child}`
+    );
 
     const defaultExportText = [...childrenLines, ...exportsLines].join(",\n");
     const defExport = `
 ${importsText}
 ${childrenImportsText}
-export default {
+declare const __default: {
 ${defaultExportText}
-}`;
+}
+export default __default;`;
 
     // Return everything
     return `${exportsText}` + (accumulate ? defExport : "");
@@ -109,12 +112,12 @@ function getExportDirJS(exportDir, accumulate = true) {
     ].join(",\n");
 
     if (accumulate)
-        return `Object.defineProperty(exports, "__esModule", { value: true });
+        return `Object.defineProperty(module.exports, "__esModule", { value: true });
 ${importsText}\n${childrenImportsText}
 const standardExports = {
 ${exportsText}
 };
-exports = {
+module.exports = {
     default: {
 ${childrenExportsText}
     },
@@ -138,7 +141,7 @@ async function writeExportsToIndex(path, outputs, only) {
     path = path + ".js";
     const dirPath = Path.dirname(path).replace(/\\/g, "/");
 
-    let jsText = `Object.defineProperty(exports, "__esModule", { value: true });
+    let jsText = `Object.defineProperty(module.exports, "__esModule", { value: true });
 /** generated exports */`;
     let tsText = "/** generated exports */";
 
@@ -163,7 +166,7 @@ async function writeExportsToIndex(path, outputs, only) {
     tsText += getExportDirToIndexTS(dirPath, outputs.runtime);
     tsText += getExportDirToIndexTS(dirPath, outputs.type);
 
-    jsText += `\nexports.default = require("${getRelativePath(
+    jsText += `\nmodule.exports.default = require("${getRelativePath(
         dirPath,
         outputs.runtime.path
     )}").default;`;

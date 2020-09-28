@@ -3,6 +3,7 @@ import {WindowManager} from "./windowManager/WindowManager";
 import Path from "path";
 import hmr from "@launchmenu/hmr";
 
+console.log("detect");
 // Only run this code if we are in the main electron process
 if (app) {
     global.DEV = process.env.NODE_ENV == "dev";

@@ -112,26 +112,26 @@ export class FieldsFile<F extends IFieldsTree<T>, T extends IJSONDeserializer = 
         // If the data isn't loading currently, reload it
         return this.loading.addAction(
             new Promise((res, rej) => {
-                try {
-                    FS.readFile(this.filePath, "utf8", (err, data) => {
-                        if (err) rej(err);
-                        else if (data) {
-                            this.loadTime = Date.now();
-                            try {
-                                this.setData(JSON.parse(data));
-                                res();
-                            } catch (e) {
-                                rej(e);
-                            }
-                        } else res();
-                    });
-                } catch (e) {
-                    if (!allowFileNotFound) rej(e);
+                if (!FS.existsSync(this.filePath)) {
+                    const err = Error(`File "${this.filePath}" doesn't exist`);
+                    if (!allowFileNotFound) rej(err);
                     else {
-                        console.error(e);
+                        console.warn(err);
                         res();
                     }
                 }
+                FS.readFile(this.filePath, "utf8", (err, data) => {
+                    if (err) rej(err);
+                    else if (data) {
+                        this.loadTime = Date.now();
+                        try {
+                            this.setData(JSON.parse(data));
+                            res();
+                        } catch (e) {
+                            rej(e);
+                        }
+                    } else res();
+                });
             })
         );
     }

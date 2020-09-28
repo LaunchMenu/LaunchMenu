@@ -22,10 +22,11 @@ async function getFileExports(config, path, target) {
             if (t != config.noExportText) {
                 if (isType) {
                     if (!typeExports[t]) typeExports[t] = [];
-                    typeExports[t].push(exportProp);
+                    if (!typeExports[t].includes(exportProp))
+                        typeExports[t].push(exportProp);
                 } else {
                     if (!exports[t]) exports[t] = [];
-                    exports[t].push(exportProp);
+                    if (!exports[t].includes(exportProp)) exports[t].push(exportProp);
                 }
             }
         },

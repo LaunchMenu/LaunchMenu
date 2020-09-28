@@ -1,5 +1,5 @@
 {
-    "name": "@launchmenu/test-applet",
+    "name": "@launchmenu/applet-test",
     "version": "0.0.0",
     "private": true,
     "description": "A test applet for LaunchMenu",

@@ -9,17 +9,16 @@
     ],
     "scripts": {
         "postinstall": "npm build",
-        "build": "lm-build-tools --build --production",
-        "watch": "lm-build-tools --watch",
-        "dev": "lm-build-tools --build --launch --watch",
-        "start": "lm-build-tools --launch --production",
-        "start:dev": "lm-build-tools --launch",
+        "build": "lm-build-tools --build --production --reexport",
+        "watch": "lm-build-tools --watch --reexport",
+        "dev": "lm-build-tools --build --launch --watch --reexport --entry startup.js",
+        "start": "lm-build-tools --launch --production --entry startup.js",
+        "start:dev": "lm-build-tools --launch --entry startup.js",
         "clean": "lm-build-tools --cleanup",
         "dist": "electron-builder",
         "test": "jest -i",
         "test-watch": "jest --watch -i",
-        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\"",
-        "export": "lm-build-tools --reexport"
+        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\""
     },
     "repository": {
         "type": "git",

@@ -28,7 +28,7 @@ async function onFileChange(config, outputs, path) {
         testPath = Path.dirname(testPath);
         const exportNamePath = Path.join(testPath, config.exportToFileName);
         if (FS.existsSync(exportNamePath)) {
-            const fTarget = await promisify(FS.readFile)(exportNamePath, "utf8");
+            let fTarget = await promisify(FS.readFile)(exportNamePath, "utf8");
             if (fTarget.length == 0) continue;
             if (fTarget.substr(0, 2) == "./") fTarget = fTarget.substr(2);
             target = fTarget;
@@ -71,57 +71,58 @@ async function onFileChange(config, outputs, path) {
  */
 async function updatePath(config, outputs, path, target) {
     const changes = {runtime: {}, type: {}};
-    if (FS.existsSync(path)) {
-        const isDir = FS.statSync(path).isDirectory();
-        if (isDir) {
-            // Update the target
-            const exportNamePath = Path.join(path, config.exportToFileName);
-            if (FS.existsSync(exportNamePath)) {
-                const fTarget = await promisify(FS.readFile)(exportNamePath, "utf8");
-                if (fTarget.substr(0, 2) == "./") fTarget = fTarget.substr(2);
-                if (fTarget.length > 0) target = fTarget;
-            }
+    const exists = FS.existsSync(path);
+    const isDir = exists && FS.statSync(path).isDirectory();
+    if (isDir) {
+        // Update the target
+        const exportNamePath = Path.join(path, config.exportToFileName);
+        if (FS.existsSync(exportNamePath)) {
+            let fTarget = await promisify(FS.readFile)(exportNamePath, "utf8");
+            if (fTarget.substr(0, 2) == "./") fTarget = fTarget.substr(2);
+            if (fTarget.length > 0) target = fTarget;
+        }
 
-            // Loop through the children and update them
-            const children = await promisify(FS.readdir)(path);
-            (
-                await Promise.all(
-                    children.map(child =>
-                        updatePath(config, outputs, `${path}/${child}`, target)
-                    )
+        // Loop through the children and update them
+        const children = await promisify(FS.readdir)(path);
+        (
+            await Promise.all(
+                children.map(child =>
+                    updatePath(config, outputs, `${path}/${child}`, target)
                 )
-            ).forEach(childChanges => {
-                Object.values(childChanges.runtime).forEach(changed => {
-                    changes.runtime[changed.path] = changed;
-                });
-                Object.values(childChanges.type).forEach(changed => {
-                    changes.type[changed.path] = changed;
-                });
+            )
+        ).forEach(childChanges => {
+            Object.values(childChanges.runtime).forEach(changed => {
+                changes.runtime[changed.path] = changed;
             });
-        } else {
-            const isTSFile = Path.extname(path) == ".ts";
-            const isTSXFile = Path.extname(path) == ".tsx";
-            if (isTSFile || isTSXFile) {
-                // Remove the old exports
-                const extlessPath = path.substring(0, path.length - (isTSFile ? 3 : 4));
-                const prevExports = outputs.fileExports[extlessPath];
-                if (prevExports) {
-                    prevExports.forEach(xport => {
-                        if (xport.isType) {
-                            const dirs = removeFromExportDir(outputs.type, xport);
-                            dirs.forEach(dir => {
-                                changes.type[dir.path] = dir;
-                            });
-                        } else {
-                            const dirs = removeFromExportDir(outputs.runtime, xport);
-                            dirs.forEach(dir => {
-                                changes.runtime[dir.path] = dir;
-                            });
-                        }
-                    });
-                }
-                outputs.fileExports[extlessPath] = [];
+            Object.values(childChanges.type).forEach(changed => {
+                changes.type[changed.path] = changed;
+            });
+        });
+    } else {
+        const isTSFile = Path.extname(path) == ".ts";
+        const isTSXFile = Path.extname(path) == ".tsx";
+        if (isTSFile || isTSXFile) {
+            // Remove the old exports
+            const extlessPath = path.substring(0, path.length - (isTSFile ? 3 : 4));
+            const prevExports = outputs.fileExports[extlessPath];
+            if (prevExports) {
+                prevExports.forEach(xport => {
+                    if (xport.isType) {
+                        const dirs = removeFromExportDir(outputs.type, xport);
+                        dirs.forEach(dir => {
+                            changes.type[dir.path] = dir;
+                        });
+                    } else {
+                        const dirs = removeFromExportDir(outputs.runtime, xport);
+                        dirs.forEach(dir => {
+                            changes.runtime[dir.path] = dir;
+                        });
+                    }
+                });
+            }
+            outputs.fileExports[extlessPath] = [];
 
+            if (exists) {
                 // Add the new exports
                 const buildPath =
                     config.buildDir +
@@ -182,16 +183,20 @@ async function watch(config, outputs) {
 
     if (config.indexPath) {
         const onChange = async (skip, only, type, path) => {
-            // Add some buffer time to prevent infinite loops
-            const now = Date.now();
-            if (skip.c - now < 0) {
-                skip.c = now + 1000;
-                await writeExportsToIndex(
-                    `${config.buildDir}/${config.indexPath}`,
-                    outputs,
-                    only
-                );
-                skip.c = now + 200;
+            try {
+                // Add some buffer time to prevent infinite loops
+                const now = Date.now();
+                if (skip.c - now < 0) {
+                    skip.c = now + 1000;
+                    await writeExportsToIndex(
+                        `${config.buildDir}/${config.indexPath}`,
+                        outputs,
+                        only
+                    );
+                    skip.c = now + 200;
+                }
+            } catch (e) {
+                console.error(e);
             }
         };
         chokidar

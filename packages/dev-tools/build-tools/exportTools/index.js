@@ -30,7 +30,7 @@ async function buildTree(config, outputs, path, target) {
             // Update the target
             const exportNamePath = Path.join(path, config.exportToFileName);
             if (FS.existsSync(exportNamePath)) {
-                const fTarget = await promisify(FS.readFile)(exportNamePath, "utf8");
+                let fTarget = await promisify(FS.readFile)(exportNamePath, "utf8");
                 if (fTarget.substr(0, 2) == "./") fTarget = fTarget.substr(2);
                 if (fTarget.length > 0) target = fTarget;
             }

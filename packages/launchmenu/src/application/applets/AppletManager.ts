@@ -59,7 +59,7 @@ export class AppletManager {
         try {
             const applet = this.initApplet(source);
             this.updateApplet(applet);
-            if (applet.development?.liveReload != false)
+            if (applet.development?.liveReload != false && DEV)
                 this.setupAppletWatcher(source, applet);
         } catch (e) {
             console.error(e);

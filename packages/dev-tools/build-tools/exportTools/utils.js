@@ -10,9 +10,10 @@ const {promisify} = require("util");
  */
 function stripPathStart(path, strip) {
     let i = 0;
-    while (path[i] == strip[i] && i < path.length) i++;
-    let rem = path.substr(i);
-    if (rem[0] == "/") rem = rem.substr(1);
+    pathParts = path.split("/");
+    stripParts = strip.split("/");
+    while (pathParts[i] == stripParts[i] && i < stripParts.length) i++;
+    let rem = pathParts.slice(i).join("/");
     if (rem.substr(0, 2) == "./") rem = rem.substr(2);
     return rem;
 }
@@ -25,10 +26,11 @@ function stripPathStart(path, strip) {
  */
 function getRelativePath(from, to) {
     let i = 0;
-    while (to[i] == from[i] && i < to.length) i++;
-    if (to[i] == "/") i++;
-    let toPath = to.substr(i);
-    const fromPath = from.substr(i);
+    fromParts = from.split("/");
+    toParts = to.split("/");
+    while (toParts[i] == fromParts[i] && i < toParts.length) i++;
+    let toPath = toParts.slice(i).join("/");
+    const fromPath = fromParts.slice(i).join("/");
     let relative =
         fromPath
             .split(/[/\\]/g)

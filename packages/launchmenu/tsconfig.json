@@ -15,8 +15,7 @@
         "strictNullChecks": true,
         "skipLibCheck": true,
         "noImplicitAny": true,
-        "incremental": true,
-        "composite": true
+        "incremental": true
     },
     "types": ["node"],
     "exclude": ["node_modules", "**/node_modules/*", "build", "demo", "examples"]

@@ -7,6 +7,7 @@ import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings"
  * @param bindings The bindings to be augmented, either a plain array, of subscribable bindings
  * @param extendBindings The function to transform the action bindings
  * @returns The new subscribable action bindings
+ * @exportTo ./menus/helpers
  */
 export function adjustBindings(
     bindings: ISubscribableActionBindings,

@@ -79,8 +79,10 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
         return this.loading.addAction(
             new Promise(async (res, rej) => {
                 try {
-                    if (!FS.existsSync(this.filePath))
-                        await mkdirp(Path.dirname(this.filePath));
+                    if (!FS.existsSync(this.filePath)) {
+                        res();
+                        return;
+                    }
                     FS.readFile(this.filePath, this.encoding, (err, data) => {
                         res = rej = () => {};
                         if (err) rej(err);

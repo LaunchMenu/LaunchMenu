@@ -1,6 +1,6 @@
 import {declare} from "@launchmenu/launchmenu/build/application/applets/declare";
 import {createSettings} from "@launchmenu/launchmenu/build/settings/createSettings";
-import {createSettingsCategory} from "@launchmenu/launchmenu/build/settings/inputs/createSettingsCategory";
+import {createSettingsFolder} from "@launchmenu/launchmenu/build/settings/inputs/createSettingsFolder";
 import {createNumberSetting} from "@launchmenu/launchmenu/build/settings/inputs/createNumberSetting";
 import {createStandardMenuItem} from "@launchmenu/launchmenu/build/menus/items/createStandardMenuItem";
 import {searchAction} from "@launchmenu/launchmenu/build/menus/actions/types/search/searchAction";
@@ -16,7 +16,7 @@ export const info = {
 export const settings = createSettings({
     version: "0.0.0",
     settings: () =>
-        createSettingsCategory({
+        createSettingsFolder({
             ...info,
             children: {
                 someNumber: createNumberSetting({
