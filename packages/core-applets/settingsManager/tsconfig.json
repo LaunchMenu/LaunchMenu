@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "moduleResolution": "node",
-        "rootDir": "src/",
-        "outDir": "build/",
+        "outDir": "./build/",
+        "rootDir": "./src/",
         "inlineSourceMap": true,
         "declaration": true,
         "declarationMap": true,
@@ -14,9 +14,7 @@
         "preserveSymlinks": true,
         "strictNullChecks": true,
         "skipLibCheck": true,
-        "noImplicitAny": true,
-        "incremental": true
+        "noImplicitAny": true
     },
-    "types": ["node"],
-    "exclude": ["node_modules", "**/node_modules/*", "build", "trash"]
+    "types": ["node"]
 }

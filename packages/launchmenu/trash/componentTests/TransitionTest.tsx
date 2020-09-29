@@ -1,9 +1,9 @@
 import React, {FC, useState, useRef, useCallback} from "react";
-import {Box} from "../styling/box/Box";
-import {FillBox} from "../components/FillBox";
-import {SlideOpenTransition} from "../components/stacks/transitions/open/SlideOpenTransition";
-import {Transition} from "../components/stacks/transitions/Transition";
-import {IOpenTransition} from "../components/stacks/transitions/open/_types/IOpenTransition";
+import {Box} from "../../src/styling/box/Box";
+import {FillBox} from "../../src/components/FillBox";
+import {SlideOpenTransition} from "../../src/components/stacks/transitions/open/SlideOpenTransition";
+import {Transition} from "../../src/components/stacks/transitions/Transition";
+import {IOpenTransition} from "../../src/components/stacks/transitions/open/_types/IOpenTransition";
 
 const OpenDown: IOpenTransition = props => (
     <SlideOpenTransition direction="down" {...props} />

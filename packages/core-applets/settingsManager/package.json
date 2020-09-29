@@ -1,5 +1,5 @@
 {
-    "name": "@launchmenu/applet-settings",
+    "name": "@launchmenu/applet-settings-manager",
     "version": "0.0.0",
     "description": "An applet to manage",
     "types": "build/index.d.ts",

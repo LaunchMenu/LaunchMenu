@@ -32,7 +32,7 @@ export class AppletManager {
      */
     public constructor(
         LM: LaunchMenu,
-        sources: IAppletSource[],
+        sources: IAppletSource[] = [],
         reloadOnChanges: boolean = DEV
     ) {
         this.LM = LM;

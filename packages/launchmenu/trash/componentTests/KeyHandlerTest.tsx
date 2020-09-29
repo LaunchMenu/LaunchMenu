@@ -1,6 +1,6 @@
 import React, {FC, useEffect} from "react";
-import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
-import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
+import {KeyHandler} from "../../src/stacks/keyHandlerStack/KeyHandler";
+import {KeyHandlerStack} from "../../src/stacks/keyHandlerStack/KeyHandlerStack";
 
 export const KeyHandlerTest: FC = () => {
     useEffect(() => {

@@ -41,6 +41,7 @@ export class LaunchMenu {
      * Disposes of all runtime data
      */
     public destroy() {
+        if (!this.keyHandler) console.log("===================== weirdness");
         this.keyHandler?.destroy();
         this.appletManager?.destroy();
         this.sessionManager?.destroy();
@@ -54,19 +55,20 @@ export class LaunchMenu {
         if (this.keyHandler as any) throw Error("Instance has already been set up");
         this.setupKeyHandler();
         this.setupTheme();
-        await this.setupApplets();
+        this.setupAppletsManager();
         this.setupSettings();
         this.setupView();
         this.setupSessions();
+        await this.setupApplets();
 
-        // TODO: remove session switch test code
-        this.sessionManager.addSession();
-        this.keyHandler.listen(key => {
-            if (key.is(["ctrl", "b"])) {
-                const bottom = this.sessionManager.getSessions()[0];
-                this.sessionManager.selectSession(bottom);
-            }
-        });
+        // // TODO: remove session switch test code
+        // this.sessionManager.addSession();
+        // this.keyHandler.listen(key => {
+        //     if (key.is(["ctrl", "b"])) {
+        //         const bottom = this.sessionManager.getSessions()[0];
+        //         this.sessionManager.selectSession(bottom);
+        //     }
+        // });
     }
 
     /**
@@ -82,9 +84,16 @@ export class LaunchMenu {
      */
     protected setupKeyHandler(): void {
         this.keyHandler = new KeyHandler(window).listen(key => {
-            const top = this.sessionManager.getSelectedSession();
+            const top = this.sessionManager?.getSelectedSession();
             return top?.emit(key);
         });
+    }
+
+    /**
+     * Initializes the available applets
+     */
+    protected setupAppletsManager(): void {
+        this.appletManager = new AppletManager(this);
     }
 
     /**
@@ -115,7 +124,9 @@ export class LaunchMenu {
      */
     protected async setupApplets(): Promise<void> {
         const appletSources = await this.getAppletSources();
-        this.appletManager = new AppletManager(this, appletSources);
+        appletSources.forEach(source => {
+            this.appletManager.addApplet(source);
+        });
     }
 
     /**

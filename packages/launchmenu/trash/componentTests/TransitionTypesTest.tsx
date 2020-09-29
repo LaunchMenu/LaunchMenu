@@ -1,9 +1,9 @@
 import React, {FC, useState} from "react";
-import {Box} from "../styling/box/Box";
-import {SlideChangeTransition} from "../components/stacks/transitions/change/SlideChangeTransition";
-import {FillBox} from "../components/FillBox";
-import {SlideCloseTransition} from "../components/stacks/transitions/close/SlideCloseTransition";
-import {SlideOpenTransition} from "../components/stacks/transitions/open/SlideOpenTransition";
+import {Box} from "../../src/styling/box/Box";
+import {SlideChangeTransition} from "../../src/components/stacks/transitions/change/SlideChangeTransition";
+import {FillBox} from "../../src/components/FillBox";
+import {SlideCloseTransition} from "../../src/components/stacks/transitions/close/SlideCloseTransition";
+import {SlideOpenTransition} from "../../src/components/stacks/transitions/open/SlideOpenTransition";
 
 export const TransitionTypeTest: FC = () => {
     const [children, setChildren] = useState([

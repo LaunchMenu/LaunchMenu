@@ -8,4 +8,5 @@ export type IAppletInfo = {
     description: string;
     version: string;
     icon: string | ReactElement;
+    tags?: string[];
 };

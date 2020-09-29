@@ -1,16 +1,16 @@
 import React, {FC, useState, useEffect} from "react";
-import {TextField} from "../textFields/TextField";
-import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
-import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
-import {createTextFieldKeyHandler} from "../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
-import {useDataHook} from "../utils/modelReact/useDataHook";
-import {TextFieldView} from "../components/fields/TextFieldView";
-import {Box} from "../styling/box/Box";
-import {FillBox} from "../components/FillBox";
-import {useTheme} from "../styling/theming/ThemeContext";
-import {Transition} from "../components/stacks/transitions/Transition";
-import {MathParser} from "../textFields/syntax/_tests/MathInterpreter.helper";
-import {dummyContext} from "../_tests/context.helper";
+import {TextField} from "../../src/textFields/TextField";
+import {KeyHandlerStack} from "../../src/stacks/keyHandlerStack/KeyHandlerStack";
+import {KeyHandler} from "../../src/stacks/keyHandlerStack/KeyHandler";
+import {createTextFieldKeyHandler} from "../../src/textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
+import {useDataHook} from "../../src/utils/modelReact/useDataHook";
+import {TextFieldView} from "../../src/components/fields/TextFieldView";
+import {Box} from "../../src/styling/box/Box";
+import {FillBox} from "../../src/components/FillBox";
+import {useTheme} from "../../src/styling/theming/ThemeContext";
+import {Transition} from "../../src/components/stacks/transitions/Transition";
+import {MathParser} from "../../src/textFields/syntax/_tests/MathInterpreter.helper";
+import {dummyContext} from "../../src/_tests/context.helper";
 
 const parser = new MathParser();
 const inputStack = new KeyHandlerStack(new KeyHandler(window));

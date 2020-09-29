@@ -1,11 +1,11 @@
 import React, {FC} from "react";
-import {TextField} from "../textFields/TextField";
-import {EditorField} from "../components/fields/editorField/EditorField";
-import {KeyHandlerStack} from "../stacks/keyHandlerStack/KeyHandlerStack";
-import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
-import {createTextFieldKeyHandler} from "../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
-import {FillBox} from "../components/FillBox";
-import {dummyContext} from "../_tests/context.helper";
+import {TextField} from "../../src/textFields/TextField";
+import {EditorField} from "../../src/components/fields/editorField/EditorField";
+import {KeyHandlerStack} from "../../src/stacks/keyHandlerStack/KeyHandlerStack";
+import {KeyHandler} from "../../src/stacks/keyHandlerStack/KeyHandler";
+import {createTextFieldKeyHandler} from "../../src/textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
+import {FillBox} from "../../src/components/FillBox";
+import {dummyContext} from "../../src/_tests/context.helper";
 
 const inputStack = new KeyHandlerStack(new KeyHandler(window));
 const textField = new TextField("I like trains.");

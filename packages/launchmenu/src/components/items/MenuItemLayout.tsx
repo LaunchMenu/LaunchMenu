@@ -10,7 +10,11 @@ export const MenuItemLayout: LFC<{icon?: ReactNode; content: ReactNode}> = ({
     content,
 }) => (
     <Box display="flex" padding="medium">
-        {icon && <Box width={50}>{icon}</Box>}
+        {icon && (
+            <Box minWidth={40} marginRight="medium">
+                {icon}
+            </Box>
+        )}
         <Box flexGrow={1}>{content}</Box>
     </Box>
 );

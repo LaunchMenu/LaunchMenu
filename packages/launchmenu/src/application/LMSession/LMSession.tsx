@@ -20,6 +20,7 @@ import {ApplicationLayout} from "../components/ApplicationLayout";
 import {LaunchMenu} from "../LaunchMenu";
 import {v4 as uuid} from "uuid";
 import {IApplet} from "../applets/_types/IApplet";
+import {LMSessionMenu} from "./LMSessionMenu";
 
 /**
  * An application session
@@ -38,7 +39,7 @@ export class LMSession {
     /** The main search field of this session */
     public searchField: TextField;
     /** The main results menu of this session */
-    public menu: PrioritizedMenu;
+    public menu: LMSessionMenu;
 
     /** The searchable sources */
     public searchables = new Field([] as IMenuSearchable[]);
@@ -158,10 +159,10 @@ export class LMSession {
      * Initializes the menu to be displayed
      */
     protected setupMenu(): void {
-        const menu = new PrioritizedMenu(this.context);
+        this.menu = new LMSessionMenu(this.context);
         // TODO: make the prioritized menu specify a highlight function
         this.context.openUI({
-            menu,
+            menu: this.menu,
             searchable: false,
         });
 
@@ -173,8 +174,8 @@ export class LMSession {
                     children: this.searchables.get(hook),
                 }),
             },
-            onAdd: item => menu.addItem(item),
-            onRemove: item => menu.removeItem(item),
+            onAdd: item => this.menu.addItem(item),
+            onRemove: item => this.menu.removeItem(item),
         });
     }
 
@@ -189,6 +190,7 @@ export class LMSession {
             search => {
                 const query = {search};
                 this.searchExecuter.setQuery(query);
+                this.menu?.setQuery(query);
             }
         );
         const highlighter = createHighlighterWithSearchPattern(h =>

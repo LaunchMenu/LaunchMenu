@@ -1,4 +1,4 @@
-import {IKeyEventListener} from "./_types/IKeyEventListener";
+import {IKeyEventListener, IKeyEventListenerFunction} from "./_types/IKeyEventListener";
 import {IKeyHandlerTarget} from "./_types/IKeyHandlerTarget";
 import {IKey} from "./_types/IKey";
 import {KeyEvent} from "./KeyEvent";
@@ -16,6 +16,7 @@ export class KeyHandler {
     protected keyListener: (event: KeyboardEvent) => void;
     protected blurListener: () => void;
     protected target: IKeyHandlerTarget;
+    protected id = Math.random(); // TODO: remove after testing
 
     /**
      * Creates a new key handler for the specified target
@@ -104,13 +105,14 @@ export class KeyHandler {
      */
     protected callListeners(event: KeyEvent): void {
         this.listeners.forEach(async listener => {
-            if (!(listener instanceof Function)) listener = listener.emit;
-            if (await listener(event)) {
-                event.original?.stopImmediatePropagation();
-                event.original?.stopPropagation();
-                event.original?.preventDefault();
-            }
+            if (!(listener instanceof Function))
+                listener = listener.emit.bind(listener) as IKeyEventListenerFunction;
+            listener(event);
         });
+
+        event.original?.stopImmediatePropagation();
+        event.original?.stopPropagation();
+        event.original?.preventDefault();
     }
 
     /**

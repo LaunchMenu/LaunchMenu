@@ -1,13 +1,13 @@
 import React, {FC, useState, useCallback} from "react";
-import {IIdentifiedItem} from "../stacks/_types/IIdentifiedItem";
-import {StackView} from "../components/stacks/StackView";
-import {Box} from "../styling/box/Box";
+import {IIdentifiedItem} from "../../src/stacks/_types/IIdentifiedItem";
+import {StackView} from "../../src/components/stacks/StackView";
+import {Box} from "../../src/styling/box/Box";
 import {v4 as uuid} from "uuid";
-import {FillBox} from "../components/FillBox";
-import {ViewStack} from "../stacks/viewStack/ViewStack";
-import {InstantOpenTransition} from "../components/stacks/transitions/open/InstantOpenTransition";
-import {InstantCloseTransition} from "../components/stacks/transitions/close/InstantCloseTransition";
-import {InstantChangeTransition} from "../components/stacks/transitions/change/InstantChangeTransition";
+import {FillBox} from "../../src/components/FillBox";
+import {ViewStack} from "../../src/stacks/viewStack/ViewStack";
+import {InstantOpenTransition} from "../../src/components/stacks/transitions/open/InstantOpenTransition";
+import {InstantCloseTransition} from "../../src/components/stacks/transitions/close/InstantCloseTransition";
+import {InstantChangeTransition} from "../../src/components/stacks/transitions/change/InstantChangeTransition";
 
 const urls = [
     "https://images.unsplash.com/photo-1542261777448-23d2a287091c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1000&q=80",

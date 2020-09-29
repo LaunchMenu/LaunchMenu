@@ -1,5 +1,5 @@
 import React, {FC} from "react";
-import {Box} from "../styling/box/Box";
+import {Box} from "../../src/styling/box/Box";
 
 export const ThemeTest: FC = () => (
     <div>

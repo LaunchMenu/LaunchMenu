@@ -7,7 +7,7 @@ import {
 } from "@launchmenu/launchmenu";
 
 export const info = {
-    name: "Settings",
+    name: "Settings manager",
     description: "An applet to manage all settings within LaunchMenu",
     version: "0.0.0",
     icon: "search", // TODO: add some kind of cog icon
