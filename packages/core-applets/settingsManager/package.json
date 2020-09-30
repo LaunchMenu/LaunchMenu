@@ -37,6 +37,7 @@
     "dependencies": {},
     "peerDependencies": {
         "@launchmenu/launchmenu": "^0.0.0",
+        "model-react": "^3.0.3",
         "react": "^16.13.0"
     },
     "devDependencies": {

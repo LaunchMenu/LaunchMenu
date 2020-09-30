@@ -7,6 +7,8 @@ import FS from "fs";
 import {IApplet} from "./_types/IApplet";
 import {LaunchMenu} from "../LaunchMenu";
 import {IUUID} from "../../_types/IUUID";
+import {ICategory} from "../../menus/actions/types/category/_types/ICategory";
+import {createAppletResultCategory} from "./createAppletResultCategory";
 
 /**
  * A manager of applets, takes care of loading applets given their locations
@@ -17,6 +19,7 @@ export class AppletManager {
     protected reloadOnChanges: boolean;
 
     protected watchers = {} as {[key: string]: HMRWatcher};
+    protected appletCategories = new Field([] as ICategory[]); // A menu category per applet
     protected applets = new Field([] as IApplet[]);
     protected appletDestroyers = {} as {
         [ID: string]: () => void;
@@ -106,6 +109,34 @@ export class AppletManager {
     }
 
     /**
+     * Retrieves the applet and categories that items for them can be listed in
+     * @param hook The hook to subscribe to changes
+     * @returns The applets and categories
+     */
+    public getAppletCategories(
+        hook: IDataHook = null
+    ): {applet: IApplet; category: ICategory}[] {
+        const categories = this.appletCategories.get(hook);
+        return this.applets
+            .get(hook)
+            .map((applet, i) => ({applet, category: categories[i]}));
+    }
+
+    /**
+     * Retrieves the category for the given applet
+     * @param applet The applet to get the category of
+     * @param hook The hook to subscribe to changes
+     * @returns The category
+     */
+    public getAppletCategory(
+        applet: IApplet,
+        hook: IDataHook = null
+    ): ICategory | undefined {
+        const index = this.applets.get(hook).findIndex(({ID}) => ID == applet.ID);
+        if (index != -1) return this.appletCategories.get(hook)[index];
+    }
+
+    /**
      * Initializes the applet
      */
     protected initApplets(): void {
@@ -175,15 +206,27 @@ export class AppletManager {
      * @param applet The applet to update
      */
     protected updateApplet(applet: IApplet): void {
+        // Update the applets list
         const applets = this.applets.get(null);
         let newApplets;
-        if (applets.find(({ID: OID}) => OID == applet.ID))
+        const index = applets.findIndex(({ID: OID}) => OID == applet.ID);
+        if (index != -1)
             newApplets = applets.map(oApplet =>
                 oApplet.ID == applet.ID ? applet : oApplet
             );
         else newApplets = [...applets, applet];
         this.applets.set(newApplets);
 
+        // Update the categories list
+        const categories = this.appletCategories.get(null);
+        const newCategory = createAppletResultCategory(applet);
+        let newCategories;
+        if (index != -1)
+            newCategories = categories.map((c, i) => (i == index ? newCategory : c));
+        else newCategories = [...categories, newCategory];
+        this.appletCategories.set(newCategories);
+
+        // Handle initialization and disposing of applet
         const disposer = applet.onInit?.(this.LM);
         if (disposer) this.addAppletDisposer(applet.ID, disposer);
     }

@@ -3,7 +3,7 @@ import {IKeyHandlerStack} from "../../stacks/keyHandlerStack/_types/IKeyHandlerS
 import {IUndoRedoFacility} from "../../undoRedo/_types/IUndoRedoFacility";
 import {SettingsContext} from "../../settings/SettingsContext";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
-import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
+import {IContextMenuItemGetter} from "../../menus/actions/contextAction/_types/IContextMenuItemGetter";
 
 /**
  * A context to get general IO utilities from
@@ -22,7 +22,7 @@ export type IIOContext = {
     /** The application settings */
     readonly settings: SettingsContext;
     /** The default context menu items to add to all context menus */
-    readonly contextMenuItems: ISubscribable<IPrioritizedMenuItem[]>;
+    readonly contextMenuItems: ISubscribable<IContextMenuItemGetter[]>;
 };
 
 /**
@@ -33,7 +33,7 @@ export type IPartialIOContext = {
     readonly keyHandler?: IKeyHandlerStack;
     readonly undoRedo?: IUndoRedoFacility;
     readonly settings?: SettingsContext;
-    readonly contextMenuItems?: ISubscribable<IPrioritizedMenuItem[]>;
+    readonly contextMenuItems?: ISubscribable<IContextMenuItemGetter[]>;
 };
 
 /**

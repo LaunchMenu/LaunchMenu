@@ -1,10 +1,15 @@
 import {
+    adjustSearchable,
     createSettings,
     createSettingsFolder,
     createStandardMenuItem,
     declare,
+    IMenuItem,
+    Menu,
+    Observer,
     searchAction,
 } from "@launchmenu/launchmenu";
+import {Field} from "model-react";
 
 export const info = {
     name: "Settings manager",
@@ -22,29 +27,36 @@ export const settings = createSettings({
         }),
 });
 
-const item = createStandardMenuItem({
-    name: "hoi",
-    onExecute({context}) {
-        console.log("hoi");
-    },
-});
-const item2 = createStandardMenuItem({
-    name: "bye",
-    onExecute({context}) {
-        console.log("bye");
-    },
-});
+export const settingsFolders = new Field([] as IMenuItem[]);
 export default declare({
     info,
     settings,
-    async search(query) {
+    onInit(lm) {
+        const manager = lm.getSettingsManager();
+        const settingsObserver = new Observer(h => manager.getAllSettingsData(h)).listen(
+            settingsSets => {
+                settingsFolders.set(settingsSets.map(settings => settings.file.settings));
+            },
+            true
+        );
+
+        return () => settingsObserver.destroy();
+    },
+    async search(query, h) {
         return {
-            children: searchAction.get([item, item2]),
+            children: searchAction
+                .get(settingsFolders.get(h))
+                // Get rid of the children, making the search not recursive
+                .map(searchable => adjustSearchable(searchable, {children: () => []})),
         };
     },
+    open(context, onClose) {
+        // TODO: add listener for the folders
+        const menu = new Menu(context, settingsFolders.get(null));
+        context.openUI({menu}, onClose);
+    },
+
     development: {
-        onReload(session): void {
-            session.searchField.set("hoi");
-        },
+        onReload(session): void {},
     },
 });

@@ -29,11 +29,6 @@ export const appletItems = new Field([] as IMenuItem[]);
 export default declare({
     info,
     settings,
-    async search(query, h) {
-        return {
-            children: searchAction.get(appletItems.get(h)),
-        };
-    },
     onInit(lm) {
         const manager = lm.getAppletManager();
         const appletsObserver = new Observer(h => manager.getApplets(h)).listen(
@@ -45,10 +40,16 @@ export default declare({
 
         return () => appletsObserver.destroy();
     },
-    open(onClose) {
+    async search(query, h) {
+        return {
+            children: searchAction.get(appletItems.get(h)),
+        };
+    },
+    open(context, onClose) {
         // TODO:
         console.log("detect");
     },
+
     development: {
         onReload(session): void {
             session.searchField.set("applet: ");

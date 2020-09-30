@@ -45,7 +45,7 @@ export default declare({
     info,
     settings,
     globalContextMenuItems(session, hook) {
-        return [{priority: 3, item}];
+        return [() => ({priority: 3, item})];
     },
     async search(query) {
         return {

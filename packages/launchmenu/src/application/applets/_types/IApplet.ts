@@ -9,6 +9,7 @@ import {LaunchMenu} from "../../LaunchMenu";
 import {LMSession} from "../../LMSession/LMSession";
 import {IPrioritizedMenuItem} from "../../../menus/menu/_types/IPrioritizedMenuItem";
 import {IDataHook} from "model-react";
+import {IContextMenuItemGetter} from "../../../menus/actions/contextAction/_types/IContextMenuItemGetter";
 
 /**
  * An applet plugin for LM
@@ -28,8 +29,8 @@ export type IApplet<
     settings: S;
     /** Menu items that should appear in all context menus */
     globalContextMenuItems?:
-        | IPrioritizedMenuItem[]
-        | ((session: LMSession, hook: IDataHook) => IPrioritizedMenuItem[]);
+        | IContextMenuItemGetter[]
+        | ((session: LMSession, hook: IDataHook) => IContextMenuItemGetter[]);
     /** Opens the application */
     open?: (context: IOContext, onClose: () => void) => void;
     /** A search method to find item matches within this applet  */

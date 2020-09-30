@@ -19,12 +19,17 @@ export type ISearchable<Q, I> = {
         query: Q,
         hook: IDataHook,
         executer?: SearchExecuter<Q, I>
-    ): Promise<{
-        /** The item that may have been found */
-        item?: I;
-        /** The child items to search through */
-        children?: ISearchable<Q, I>[];
-        /** A pattern that this item matches, hiding all items that don't match any pattern */
-        patternMatch?: IPatternMatch;
-    }>;
+    ): Promise<ISearchableResult<Q, I>>;
+};
+
+/**
+ * The result of an invocation of a searchable
+ */
+export type ISearchableResult<Q, I> = {
+    /** The item that may have been found */
+    item?: I;
+    /** The child items to search through */
+    children?: ISearchable<Q, I>[];
+    /** A pattern that this item matches, hiding all items that don't match any pattern */
+    patternMatch?: IPatternMatch;
 };

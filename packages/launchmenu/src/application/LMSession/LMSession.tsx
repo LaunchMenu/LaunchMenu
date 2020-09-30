@@ -1,8 +1,7 @@
-import {Field, IDataHook} from "model-react";
+import {Field, IDataHook, Loader} from "model-react";
 import React from "react";
 import {IOContext} from "../../context/IOContext";
 import {IMenuSearchable} from "../../menus/actions/types/search/_types/IMenuSearchable";
-import {PrioritizedMenu} from "../../menus/menu/PrioritizedMenu";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
 import {IQuery} from "../../menus/menu/_types/IQuery";
 import {SettingsContext} from "../../settings/SettingsContext";
@@ -21,6 +20,14 @@ import {LaunchMenu} from "../LaunchMenu";
 import {v4 as uuid} from "uuid";
 import {IApplet} from "../applets/_types/IApplet";
 import {LMSessionMenu} from "./LMSessionMenu";
+import {adjustSearchable} from "../../utils/searchExecuter/adjustSearchable";
+import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
+import {
+    getCategoryAction,
+    getMenuCategory,
+} from "../../menus/actions/types/category/getCategoryAction";
+import {IContextMenuItemGetter} from "../../menus/actions/contextAction/_types/IContextMenuItemGetter";
+import {IMenuItem} from "../../menus/items/_types/IMenuItem";
 
 /**
  * An application session
@@ -46,10 +53,16 @@ export class LMSession {
     /** The search executer responsible for making the searches */
     public searchExecuter: SearchExecuter<IQuery, IPrioritizedMenuItem>;
 
-    // Observers that track changes
-    protected settingsContextObserver: Observer<SettingsContext>;
-    protected appletObserver: Observer<IApplet[]>;
-    protected searchObserver: Observer<string>;
+    /** The applet that's currently selected */
+    public selectedApplet = new Field(null as IApplet | null);
+
+    /* Observers that track changes */
+    public observers: {
+        settingsContext?: Observer<SettingsContext>;
+        applets?: Observer<IApplet[]>;
+        search?: Observer<string>;
+        menuCursor?: Observer<IMenuItem | null>;
+    } = {};
 
     /**
      * Creates a new app session
@@ -68,9 +81,10 @@ export class LMSession {
      * Disposes of all data attached to this session
      */
     public destroy() {
-        this.appletObserver.destroy();
-        this.searchObserver.destroy();
-        this.settingsContextObserver.destroy();
+        this.observers.applets?.destroy();
+        this.observers.search?.destroy();
+        this.observers.settingsContext?.destroy();
+        this.observers.menuCursor?.destroy();
     }
 
     /**
@@ -109,7 +123,7 @@ export class LMSession {
         });
 
         // Retrieve the settings context from LM which includes all base settings data, and listen for changes
-        this.settingsContextObserver = new Observer(h =>
+        this.observers.settingsContext = new Observer(h =>
             this.LM.getSettingsManager().getSettingsContext(h)
         ).listen(settingsContext => {
             this.context.settings = settingsContext;
@@ -120,7 +134,7 @@ export class LMSession {
      * Retrieves the context menu items that should be global in this session
      * @returns The menu items
      */
-    protected getGlobalContextMenuItems(): (hook: IDataHook) => IPrioritizedMenuItem[] {
+    protected getGlobalContextMenuItems(): (hook: IDataHook) => IContextMenuItemGetter[] {
         return hook =>
             this.LM.getAppletManager()
                 .getApplets(hook)
@@ -160,11 +174,26 @@ export class LMSession {
      */
     protected setupMenu(): void {
         this.menu = new LMSessionMenu(this.context);
-        // TODO: make the prioritized menu specify a highlight function
+
         this.context.openUI({
             menu: this.menu,
             searchable: false,
         });
+
+        // Update the selected applet based on what category a given item belongs to
+        const appletManager = this.LM.getAppletManager();
+        this.observers.menuCursor = new Observer(h => this.menu.getCursor(h)).listen(
+            item => {
+                if (item) {
+                    const category = getMenuCategory(item);
+                    const appletData = appletManager
+                        .getAppletCategories()
+                        .find(({category: cat}) => cat == category);
+                    if (appletData) this.selectedApplet.set(appletData.applet);
+                }
+            },
+            true
+        );
 
         // Setup a search executer
         this.searchExecuter = new SearchExecuter({
@@ -186,7 +215,7 @@ export class LMSession {
         // Create a text field and connect it to the search executer
         this.searchField = new TextField();
 
-        this.searchObserver = new Observer(h => this.searchField.get(h)).listen(
+        this.observers.search = new Observer(h => this.searchField.get(h)).listen(
             search => {
                 const query = {search};
                 this.searchExecuter.setQuery(query);
@@ -215,7 +244,15 @@ export class LMSession {
      * Initializes the content to be displayed
      */
     protected setupContent(): void {
-        this.context.openUI({content: <Box padding="large">LM is great m8</Box>});
+        this.context.openUI({
+            content: (
+                <Box padding="large">
+                    <Loader>{h => this.selectedApplet.get(h)?.info.name}</Loader>
+                    <br />
+                    LM is great m8
+                </Box>
+            ),
+        });
     }
 
     // Sets up the applets in this session
@@ -224,40 +261,74 @@ export class LMSession {
      */
     protected setupApplets(): void {
         let first = true;
-        this.appletObserver = new Observer(h =>
-            this.LM.getAppletManager().getApplets(h)
-        ).listen((applets, _, prevApplets) => {
-            const newApplets = first
-                ? applets
-                : applets.filter(applet => !prevApplets.includes(applet));
+        const appletManager = this.LM.getAppletManager();
+        this.observers.applets = new Observer(h => appletManager.getApplets(h)).listen(
+            (applets, _, prevApplets) => {
+                const newApplets = first
+                    ? applets
+                    : applets.filter(applet => !prevApplets.includes(applet));
 
-            // Obtain the new searchables
-            const oldSearchables = this.searchables.get(null);
-            const searchables = applets.flatMap(applet => {
-                if (applet.search) {
-                    // Make sure the id changes if the applet changed, to make the search pick up on it
-                    if (
-                        newApplets.includes(applet) &&
-                        oldSearchables.find(({ID: id}) => id == applet.ID)
-                    ) {
-                        return {
-                            ...applet,
-                            ID: "updated-" + applet.ID,
-                        } as IMenuSearchable;
-                    } else return applet as IMenuSearchable;
-                } else return [];
-            });
-            this.searchables.set(searchables);
-
-            // Initialize the new applets
-            if (DEV)
-                newApplets.forEach(applet => {
-                    const disposer = applet?.development?.onReload?.(this);
-                    if (disposer)
-                        this.LM.getAppletManager().addAppletDisposer(applet.ID, disposer);
+                // Obtain the new searchables
+                const oldSearchables = this.searchables.get(null);
+                const idUpdatedSearchables = applets.flatMap(applet => {
+                    if (applet.search) {
+                        // Make sure the id changes if the applet changed, to make the search pick up on it
+                        if (
+                            newApplets.includes(applet) &&
+                            oldSearchables.find(({ID: id}) => id == applet.ID)
+                        ) {
+                            return {
+                                ...applet,
+                                ID: "updated-" + applet.ID,
+                            };
+                        } else return applet;
+                    } else return [];
                 });
+                const searchables = idUpdatedSearchables.map(applet =>
+                    this.getAppletSearchWithCategory(applet)
+                );
+                this.searchables.set(searchables);
 
-            first = false;
-        }, true);
+                // Initialize the new applets
+                if (DEV)
+                    newApplets.forEach(applet => {
+                        const disposer = applet?.development?.onReload?.(this);
+                        if (disposer)
+                            this.LM.getAppletManager().addAppletDisposer(
+                                applet.ID,
+                                disposer
+                            );
+                    });
+
+                first = false;
+            },
+            true
+        );
+    }
+
+    /**
+     * Wraps the search method of an applet to inject the applets category into the results
+     * @param applet The applet to retrieve the searchable with results for
+     * @returns The menu searchable
+     */
+    protected getAppletSearchWithCategory(applet: IApplet): IMenuSearchable {
+        const category = this.LM.getAppletManager().getAppletCategory(applet);
+        if (!category) return applet as IMenuSearchable;
+        const categoryBinding = getCategoryAction.createBinding(category);
+        return adjustSearchable(applet as IMenuSearchable, {
+            item: result =>
+                result
+                    ? {
+                          ...result,
+                          item: {
+                              ...result.item,
+                              actionBindings: adjustSubscribable(
+                                  result.item.actionBindings,
+                                  bindings => [categoryBinding, ...bindings]
+                              ),
+                          },
+                      }
+                    : result,
+        });
     }
 }
