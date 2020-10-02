@@ -1,7 +1,7 @@
 {
     "private": true,
     "workspaces": [
-        "packages/launchmenu",
+        "packages/core",
         "packages/applets/*",
         "packages/core-applets/*",
         "packages/dev-tools/*"

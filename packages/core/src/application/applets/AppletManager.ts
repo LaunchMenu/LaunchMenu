@@ -9,6 +9,7 @@ import {LaunchMenu} from "../LaunchMenu";
 import {IUUID} from "../../_types/IUUID";
 import {ICategory} from "../../menus/actions/types/category/_types/ICategory";
 import {createAppletResultCategory} from "./createAppletResultCategory";
+import {withLM} from "./declaration/withLM";
 
 /**
  * A manager of applets, takes care of loading applets given their locations
@@ -21,10 +22,6 @@ export class AppletManager {
     protected watchers = {} as {[key: string]: HMRWatcher};
     protected appletCategories = new Field([] as ICategory[]); // A menu category per applet
     protected applets = new Field([] as IApplet[]);
-    protected appletDestroyers = {} as {
-        [ID: string]: () => void;
-        [ID: number]: () => void;
-    };
 
     /**
      * Creates a new applet manager instances with the given sources
@@ -49,8 +46,8 @@ export class AppletManager {
      */
     public destroy(): void {
         Object.values(this.watchers).forEach(watcher => watcher.destroy());
-        Object.values(this.appletDestroyers).forEach(destroy => destroy());
-        this.appletDestroyers = {};
+        this.applets.get(null).forEach(applet => applet.onDispose?.());
+        this.applets.set([]);
     }
 
     // Applet management
@@ -77,26 +74,9 @@ export class AppletManager {
         this.watchers[ID]?.destroy();
         delete this.watchers[ID];
 
+        this.disposeOldApplet(ID);
         const applets = this.applets.get(null);
-        this.appletDestroyers[ID]?.();
         this.applets.set(applets.filter(({ID: aid}) => aid != ID));
-    }
-
-    /**
-     * Adds a new function to the disposers that should be called when an applet is unitialized
-     * @param ID The ID of the applet to add the disposer to
-     * @param disposer The disposer to add
-     */
-    public addAppletDisposer(ID: IUUID, disposer: () => void): void {
-        const curDisposer =
-            this.appletDestroyers[ID] ??
-            (() => {
-                delete this.appletDestroyers[ID];
-            });
-        this.appletDestroyers[ID] = () => {
-            curDisposer();
-            disposer();
-        };
     }
 
     /**
@@ -154,17 +134,26 @@ export class AppletManager {
         const appletExport = require(directory);
         if (appletExport?.default?.info) {
             // Load the applet if valid
-            const applet = appletExport.default as IAppletConfig<any>;
-            return {
-                ...applet,
+            const baseApplet = {
+                ...(appletExport.default as IAppletConfig<any>),
                 ID,
             };
+            return withLM(baseApplet, this.LM);
         } else {
             // Throw an error when the module has no proper applet
             throw Error(
                 `Failed to load applet ${ID}, please make sure it has a proper default export`
             );
         }
+    }
+
+    /**
+     * Calls the dispose function of an applet
+     * @param ID The ID of the applet to call the dispose for
+     */
+    protected disposeOldApplet(ID: IUUID): void {
+        const prevApplet = this.applets.get(null).find(applet => applet.ID == ID);
+        if (prevApplet?.onDispose) prevApplet.onDispose();
     }
 
     /**
@@ -183,7 +172,7 @@ export class AppletManager {
 
         const watcher = hmr(watchDir, () => {
             try {
-                this.appletDestroyers[source.ID]?.();
+                this.disposeOldApplet(source.ID);
 
                 const applet = this.initApplet(source);
                 this.updateApplet(applet);
@@ -206,6 +195,8 @@ export class AppletManager {
      * @param applet The applet to update
      */
     protected updateApplet(applet: IApplet): void {
+        this.disposeOldApplet(applet.ID);
+
         // Update the applets list
         const applets = this.applets.get(null);
         let newApplets;
@@ -225,9 +216,5 @@ export class AppletManager {
             newCategories = categories.map((c, i) => (i == index ? newCategory : c));
         else newCategories = [...categories, newCategory];
         this.appletCategories.set(newCategories);
-
-        // Handle initialization and disposing of applet
-        const disposer = applet.onInit?.(this.LM);
-        if (disposer) this.addAppletDisposer(applet.ID, disposer);
     }
 }

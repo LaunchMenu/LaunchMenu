@@ -1,5 +1,5 @@
 {
-    "name": "@launchmenu/launchmenu",
+    "name": "@launchmenu/core",
     "version": "0.0.0",
     "description": "An environment for visual keyboard controlled applets",
     "types": "build/index.d.ts",

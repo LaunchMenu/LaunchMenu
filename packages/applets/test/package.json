@@ -37,7 +37,7 @@
     "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
     "dependencies": {},
     "peerDependencies": {
-        "@launchmenu/launchmenu": "^0.0.0",
+        "@launchmenu/core": "^0.0.0",
         "react": "^16.13.0"
     },
     "devDependencies": {

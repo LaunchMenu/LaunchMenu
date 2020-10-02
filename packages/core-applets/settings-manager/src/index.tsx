@@ -8,7 +8,7 @@ import {
     Menu,
     Observer,
     searchAction,
-} from "@launchmenu/launchmenu";
+} from "@launchmenu/core";
 import {Field} from "model-react";
 
 export const info = {
@@ -27,36 +27,35 @@ export const settings = createSettings({
         }),
 });
 
-export const settingsFolders = new Field([] as IMenuItem[]);
 export default declare({
     info,
     settings,
-    onInit(lm) {
-        const manager = lm.getSettingsManager();
+    withLM: LM => {
+        const settingsFolders = new Field([] as IMenuItem[]);
+        const manager = LM.getSettingsManager();
         const settingsObserver = new Observer(h => manager.getAllSettingsData(h)).listen(
             settingsSets => {
                 settingsFolders.set(settingsSets.map(settings => settings.file.settings));
             },
             true
         );
-
-        return () => settingsObserver.destroy();
-    },
-    async search(query, h) {
         return {
-            children: searchAction
-                .get(settingsFolders.get(h))
-                // Get rid of the children, making the search not recursive
-                .map(searchable => adjustSearchable(searchable, {children: () => []})),
+            async search(query, h) {
+                return {
+                    children: searchAction
+                        .get(settingsFolders.get(h))
+                        // Get rid of the children, making the search not recursive
+                        .map(searchable =>
+                            adjustSearchable(searchable, {children: () => []})
+                        ),
+                };
+            },
+            open({context, onClose}) {
+                // TODO: add listener for the folders
+                const menu = new Menu(context, settingsFolders.get(null));
+                context.openUI({menu}, onClose);
+            },
+            onDispose: () => settingsObserver.destroy(),
         };
-    },
-    open(context, onClose) {
-        // TODO: add listener for the folders
-        const menu = new Menu(context, settingsFolders.get(null));
-        context.openUI({menu}, onClose);
-    },
-
-    development: {
-        onReload(session): void {},
     },
 });

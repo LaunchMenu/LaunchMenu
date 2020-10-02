@@ -1,4 +1,4 @@
-import {Field, IDataHook, Loader} from "model-react";
+import {DataCacher, Field, IDataHook, Loader} from "model-react";
 import React from "react";
 import {IOContext} from "../../context/IOContext";
 import {IMenuSearchable} from "../../menus/actions/types/search/_types/IMenuSearchable";
@@ -28,6 +28,8 @@ import {
 } from "../../menus/actions/types/category/getCategoryAction";
 import {IContextMenuItemGetter} from "../../menus/actions/contextAction/_types/IContextMenuItemGetter";
 import {IMenuItem} from "../../menus/items/_types/IMenuItem";
+import {IUUID} from "../../_types/IUUID";
+import {withSession} from "../applets/declaration/withSession";
 
 /**
  * An application session
@@ -48,8 +50,11 @@ export class LMSession {
     /** The main results menu of this session */
     public menu: LMSessionMenu;
 
-    /** The searchable sources */
-    public searchables = new Field([] as IMenuSearchable[]);
+    /** Additional applets for this session */
+    public extraApplets = new Field([] as IApplet[]);
+    /** Additional searchable sources for this session */
+    public extraSearchables = new Field([] as IMenuSearchable[]);
+
     /** The search executer responsible for making the searches */
     public searchExecuter: SearchExecuter<IQuery, IPrioritizedMenuItem>;
 
@@ -59,7 +64,6 @@ export class LMSession {
     /* Observers that track changes */
     public observers: {
         settingsContext?: Observer<SettingsContext>;
-        applets?: Observer<IApplet[]>;
         search?: Observer<string>;
         menuCursor?: Observer<IMenuItem | null>;
     } = {};
@@ -74,14 +78,12 @@ export class LMSession {
         this.setupContext();
         this.setupView();
         this.setupUI();
-        this.setupApplets();
     }
 
     /**
      * Disposes of all data attached to this session
      */
     public destroy() {
-        this.observers.applets?.destroy();
         this.observers.search?.destroy();
         this.observers.settingsContext?.destroy();
         this.observers.menuCursor?.destroy();
@@ -140,7 +142,7 @@ export class LMSession {
                 .getApplets(hook)
                 .flatMap(applet =>
                     applet.globalContextMenuItems instanceof Function
-                        ? applet.globalContextMenuItems(this, hook)
+                        ? applet.globalContextMenuItems(hook)
                         : applet.globalContextMenuItems ?? []
                 );
     }
@@ -200,7 +202,7 @@ export class LMSession {
             searchable: {
                 ID: "root",
                 search: async (query, hook) => ({
-                    children: this.searchables.get(hook),
+                    children: this.getSearchables(hook),
                 }),
             },
             onAdd: item => this.menu.addItem(item),
@@ -255,67 +257,104 @@ export class LMSession {
         });
     }
 
-    // Sets up the applets in this session
+    // Applet management
     /**
-     * Initializes the applets within this context
+     * Retrieves the applets initialized with this session data
+     * @param hook The hook to subscribe to changes
+     * @returns The initialized applets
      */
-    protected setupApplets(): void {
-        let first = true;
-        const appletManager = this.LM.getAppletManager();
-        this.observers.applets = new Observer(h => appletManager.getApplets(h)).listen(
-            (applets, _, prevApplets) => {
-                const newApplets = first
-                    ? applets
-                    : applets.filter(applet => !prevApplets.includes(applet));
+    public getApplets(hook: IDataHook = null): IApplet[] {
+        return [
+            ...this.appletData.get(hook).map(({initializedApplet}) => initializedApplet),
+            ...this.extraApplets.get(hook),
+        ];
+    }
 
-                // Obtain the new searchables
-                const oldSearchables = this.searchables.get(null);
-                const idUpdatedSearchables = applets.flatMap(applet => {
-                    if (applet.search) {
-                        // Make sure the id changes if the applet changed, to make the search pick up on it
-                        if (
-                            newApplets.includes(applet) &&
-                            oldSearchables.find(({ID: id}) => id == applet.ID)
-                        ) {
-                            return {
-                                ...applet,
-                                ID: "updated-" + applet.ID,
-                            };
-                        } else return applet;
-                    } else return [];
-                });
-                const searchables = idUpdatedSearchables.map(applet =>
-                    this.getAppletSearchWithCategory(applet)
-                );
-                this.searchables.set(searchables);
+    /**
+     * Retrieves the searchables in this session
+     * @param hook The hook to subscribe to changes
+     * @returns The searchables
+     */
+    public getSearchables(hook: IDataHook = null): IMenuSearchable[] {
+        return [
+            ...this.appletData.get(hook).flatMap(({searchable}) => searchable ?? []),
+            ...this.extraSearchables.get(hook),
+        ];
+    }
 
-                // Initialize the new applets
-                if (DEV)
-                    newApplets.forEach(applet => {
-                        const disposer = applet?.development?.onReload?.(this);
-                        if (disposer)
-                            this.LM.getAppletManager().addAppletDisposer(
-                                applet.ID,
-                                disposer
-                            );
-                    });
+    /**
+     * The applet data obtained from the applet manager
+     */
+    public appletData = new DataCacher<
+        {applet: IApplet; initializedApplet: IApplet; searchable?: IMenuSearchable}[]
+    >((h, currentAppletData = []) => {
+        const managerApplets = this.LM.getAppletManager().getApplets(h);
 
-                first = false;
-            },
-            true
-        );
+        // Dispose the sessions related data for any applet that will no longer exist
+        currentAppletData.map(appletData => {
+            const stillExists = managerApplets.find(
+                applet => applet == appletData.applet
+            );
+            if (!stillExists) appletData.initializedApplet.onCloseSession?.();
+        });
+
+        // Obtain the new applet data list
+        return managerApplets.map(applet => {
+            let updated = false;
+            let searchableID = applet.ID;
+
+            // Find the current data for this applet
+            const current = currentAppletData.find(({applet: {ID}}) => ID == applet.ID);
+            if (current) {
+                // If the applet hasn't updated return the current data
+                const hasUpdated = current.applet != applet;
+                if (!hasUpdated) return current;
+
+                // If it has updated, change the search id
+                updated = true;
+                if (current.searchable?.ID == searchableID)
+                    searchableID = "updated-" + searchableID;
+            }
+
+            // Initialize the new applet
+            const initializedApplet = withSession(applet, this);
+            if (updated && DEV) this.callAppletReload(initializedApplet);
+
+            // Obtain the searchable and return the data
+            const searchable = this.getAppletSearchWithCategory(applet, searchableID);
+            return {initializedApplet, applet, searchable};
+        });
+    });
+
+    /**
+     * Calls the reload of the given applet and sets up the disposers (Modifies the onCloseSession of the applet)
+     * @param applet The applet to call reload on
+     */
+    protected callAppletReload(applet: IApplet) {
+        const disposer = applet?.development?.onReload?.();
+        if (disposer) {
+            const oldOnClose = applet.onCloseSession;
+            applet.onCloseSession = () => {
+                disposer();
+                oldOnClose?.();
+            };
+        }
     }
 
     /**
      * Wraps the search method of an applet to inject the applets category into the results
      * @param applet The applet to retrieve the searchable with results for
+     * @param ID The ID of the searchable
      * @returns The menu searchable
      */
-    protected getAppletSearchWithCategory(applet: IApplet): IMenuSearchable {
+    protected getAppletSearchWithCategory(
+        applet: IApplet,
+        ID: IUUID = applet.ID
+    ): IMenuSearchable {
         const category = this.LM.getAppletManager().getAppletCategory(applet);
-        if (!category) return applet as IMenuSearchable;
+        if (!category) return {...applet, ID} as IMenuSearchable;
         const categoryBinding = getCategoryAction.createBinding(category);
-        return adjustSearchable(applet as IMenuSearchable, {
+        return adjustSearchable({...applet, ID} as IMenuSearchable, {
             item: result =>
                 result
                     ? {

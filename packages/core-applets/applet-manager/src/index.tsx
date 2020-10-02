@@ -1,11 +1,12 @@
 import {
     createSettings,
     createSettingsFolder,
+    createStandardMenuItem,
     declare,
     IMenuItem,
     Observer,
     searchAction,
-} from "@launchmenu/launchmenu";
+} from "@launchmenu/core";
 import {Field} from "model-react";
 import {createAppletMenuItem} from "./createAppletMenuItem";
 
@@ -29,30 +30,34 @@ export const appletItems = new Field([] as IMenuItem[]);
 export default declare({
     info,
     settings,
-    onInit(lm) {
-        const manager = lm.getAppletManager();
-        const appletsObserver = new Observer(h => manager.getApplets(h)).listen(
-            applets => {
-                appletItems.set(applets.map(applet => createAppletMenuItem(applet)));
-            },
-            true
-        );
+    // onInit(lm) {
+    //     const manager = lm.getAppletManager();
+    //     const appletsObserver = new Observer(h => manager.getApplets(h)).listen(
+    //         applets => {
+    //             appletItems.set(applets.map(applet => createAppletMenuItem(applet)));
+    //         },
+    //         true
+    //     );
 
-        return () => appletsObserver.destroy();
-    },
+    //     return () => appletsObserver.destroy();
+    // },
     async search(query, h) {
         return {
-            children: searchAction.get(appletItems.get(h)),
+            children: searchAction.get([
+                ...appletItems.get(h),
+                createStandardMenuItem({name: "oranges"}),
+            ]),
         };
     },
-    open(context, onClose) {
+    open({context, onClose}) {
         // TODO:
         console.log("detect");
     },
-
-    development: {
-        onReload(session): void {
-            session.searchField.set("applet: ");
+    withSession: session => ({
+        development: {
+            onReload(): void {
+                // session.searchField.set("or");
+            },
         },
-    },
+    }),
 });

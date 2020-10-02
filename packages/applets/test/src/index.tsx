@@ -1,10 +1,10 @@
-import {declare} from "@launchmenu/launchmenu/build/application/applets/declare";
-import {createSettings} from "@launchmenu/launchmenu/build/settings/createSettings";
-import {createSettingsFolder} from "@launchmenu/launchmenu/build/settings/inputs/createSettingsFolder";
-import {createNumberSetting} from "@launchmenu/launchmenu/build/settings/inputs/createNumberSetting";
-import {createStandardMenuItem} from "@launchmenu/launchmenu/build/menus/items/createStandardMenuItem";
-import {searchAction} from "@launchmenu/launchmenu/build/menus/actions/types/search/searchAction";
-import {IKeyEventListenerFunction} from "@launchmenu/launchmenu/build/stacks/keyHandlerStack/_types/IKeyEventListener";
+import {declare} from "@launchmenu/core/build/application/applets/declare";
+import {createSettings} from "@launchmenu/core/build/settings/createSettings";
+import {createSettingsFolder} from "@launchmenu/core/build/settings/inputs/createSettingsFolder";
+import {createNumberSetting} from "@launchmenu/core/build/settings/inputs/createNumberSetting";
+import {createStandardMenuItem} from "@launchmenu/core/build/menus/items/createStandardMenuItem";
+import {searchAction} from "@launchmenu/core/build/menus/actions/types/search/searchAction";
+import {IKeyEventListenerFunction} from "@launchmenu/core/build/stacks/keyHandlerStack/_types/IKeyEventListener";
 
 export const info = {
     name: "Test",
@@ -44,7 +44,7 @@ const item2 = createStandardMenuItem({
 export default declare({
     info,
     settings,
-    globalContextMenuItems(session, hook) {
+    globalContextMenuItems(hook) {
         return [() => ({priority: 3, item})];
     },
     async search(query) {
@@ -53,24 +53,26 @@ export default declare({
         };
     },
 
-    development: {
-        onReload(session) {
-            session.searchField.set("orange");
-            const listener: IKeyEventListenerFunction = event => {
-                if (event.is(["ctrl", "s"])) {
-                    session.LM.getSettingsManager().saveAll();
-                    return true;
-                }
-                if (event.is(["ctrl", "m"])) {
-                    console.log(session.LM.getSettingsManager());
-                    return true;
-                }
-            };
-            session.context.keyHandler.push(listener);
+    withSession: session => ({
+        development: {
+            onReload() {
+                session.searchField.set("orange");
+                const listener: IKeyEventListenerFunction = event => {
+                    if (event.is(["ctrl", "s"])) {
+                        session.LM.getSettingsManager().saveAll();
+                        return true;
+                    }
+                    if (event.is(["ctrl", "m"])) {
+                        console.log(session.LM.getSettingsManager());
+                        return true;
+                    }
+                };
+                session.context.keyHandler.push(listener);
 
-            return () => {
-                session.context.keyHandler.remove(listener);
-            };
+                return () => {
+                    session.context.keyHandler.remove(listener);
+                };
+            },
         },
-    },
+    }),
 });

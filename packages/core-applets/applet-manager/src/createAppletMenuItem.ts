@@ -4,7 +4,7 @@ import {
     IMenuItem,
     IOContext,
     LMSession,
-} from "@launchmenu/launchmenu";
+} from "@launchmenu/core";
 import {appletManagerPatternMatcher} from "./appletManagerPatternMatcher";
 
 /**
@@ -21,10 +21,11 @@ export function createAppletMenuItem(applet: IApplet, session?: LMSession): IMen
         onExecute: ({context}) => {
             return new Promise((res, rej) => {
                 session?.selectedApplet.set(applet);
-                applet.open?.(
-                    context instanceof IOContext ? context : new IOContext(context),
-                    () => res()
-                );
+                applet.open?.({
+                    context:
+                        context instanceof IOContext ? context : new IOContext(context),
+                    onClose: () => res(),
+                });
             });
         },
     });

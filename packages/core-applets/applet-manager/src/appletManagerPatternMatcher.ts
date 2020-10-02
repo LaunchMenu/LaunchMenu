@@ -1,4 +1,4 @@
-import {ISimpleSearchPatternMatcher} from "@launchmenu/launchmenu";
+import {ISimpleSearchPatternMatcher} from "@launchmenu/core";
 
 /**
  * The prefix pattern that indicates a given search is a applet search
