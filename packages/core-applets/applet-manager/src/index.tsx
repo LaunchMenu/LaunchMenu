@@ -7,7 +7,7 @@ import {
     Observer,
     searchAction,
 } from "@launchmenu/core";
-import {Field} from "model-react";
+import {DataCacher, Field} from "model-react";
 import {createAppletMenuItem} from "./createAppletMenuItem";
 
 export const info = {
@@ -26,38 +26,29 @@ export const settings = createSettings({
         }),
 });
 
-export const appletItems = new Field([] as IMenuItem[]);
 export default declare({
     info,
     settings,
-    // onInit(lm) {
-    //     const manager = lm.getAppletManager();
-    //     const appletsObserver = new Observer(h => manager.getApplets(h)).listen(
-    //         applets => {
-    //             appletItems.set(applets.map(applet => createAppletMenuItem(applet)));
-    //         },
-    //         true
-    //     );
+    withSession: session => {
+        const appletItems = new DataCacher(h =>
+            session.getApplets(h).map(applet => createAppletMenuItem(applet, session))
+        );
 
-    //     return () => appletsObserver.destroy();
-    // },
-    async search(query, h) {
         return {
-            children: searchAction.get([
-                ...appletItems.get(h),
-                createStandardMenuItem({name: "oranges"}),
-            ]),
+            async search(query, h) {
+                return {
+                    children: searchAction.get(appletItems.get(h)),
+                };
+            },
+            open({context, onClose}) {
+                // TODO:
+                console.log("detect");
+            },
+            development: {
+                onReload(): void {
+                    // session.searchField.set("or");
+                },
+            },
         };
     },
-    open({context, onClose}) {
-        // TODO:
-        console.log("detect");
-    },
-    withSession: session => ({
-        development: {
-            onReload(): void {
-                // session.searchField.set("or");
-            },
-        },
-    }),
 });

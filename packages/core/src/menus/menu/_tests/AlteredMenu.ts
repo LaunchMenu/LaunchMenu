@@ -1,4 +1,4 @@
-import {createMenuItem} from "./MenuItem.helper";
+import {createDummyMenuItem} from "./MenuItem.helper";
 import {Menu} from "../Menu";
 import {AlteredMenu} from "../AlteredMenu";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
@@ -8,18 +8,18 @@ import {dummyContext} from "../../../_tests/context.helper";
 const someCategory: ICategory = {
     name: "Bob",
     description: "some category for Bob",
-    item: createMenuItem(),
+    item: createDummyMenuItem(),
 };
 const someCategory2: ICategory = {
     name: "John",
     description: "some category for John",
-    item: createMenuItem(),
+    item: createDummyMenuItem(),
 };
 const items = [
-    createMenuItem(),
-    createMenuItem(),
-    createMenuItem({category: someCategory}),
-    createMenuItem({category: someCategory2}),
+    createDummyMenuItem(),
+    createDummyMenuItem(),
+    createDummyMenuItem({category: someCategory}),
+    createDummyMenuItem({category: someCategory2}),
 ];
 const parentMenu = new Menu(dummyContext, items);
 
@@ -48,7 +48,7 @@ describe("AlteredMenu", () => {
             ]);
         });
         it("Allows for adding items before contents of the parent menu", () => {
-            let someItem = createMenuItem();
+            let someItem = createDummyMenuItem();
             const menu = new AlteredMenu(parentMenu, {
                 addBefore: [someItem],
             });
@@ -63,7 +63,7 @@ describe("AlteredMenu", () => {
             ]);
         });
         it("Allows for adding items after contents of the parent menu", () => {
-            let someItem = createMenuItem();
+            let someItem = createDummyMenuItem();
             const menu = new AlteredMenu(parentMenu, {
                 addAfter: [someItem],
             });
@@ -80,7 +80,7 @@ describe("AlteredMenu", () => {
     });
     describe("AlteredMenu.addItem / addItems", () => {
         it("Correctly adds one item to the end", () => {
-            let someItem = createMenuItem();
+            let someItem = createDummyMenuItem();
             const menu = new AlteredMenu(parentMenu);
             menu.addItem(someItem);
             expect(menu.getItems()).toEqual([
@@ -94,8 +94,8 @@ describe("AlteredMenu", () => {
             ]);
         });
         it("Correctly adds multiple items to the end", () => {
-            let someItem = createMenuItem();
-            let someItem2 = createMenuItem();
+            let someItem = createDummyMenuItem();
+            let someItem2 = createDummyMenuItem();
             const menu = new AlteredMenu(parentMenu);
             menu.addItems([someItem, someItem2]);
             expect(menu.getItems()).toEqual([
@@ -112,7 +112,7 @@ describe("AlteredMenu", () => {
     });
     describe("AlteredMenu.insertItem / insertItems", () => {
         it("Correctly adds one item to the start", () => {
-            let someItem = createMenuItem();
+            let someItem = createDummyMenuItem();
             const menu = new AlteredMenu(parentMenu);
             menu.insertItem(someItem);
             expect(menu.getItems()).toEqual([
@@ -126,8 +126,8 @@ describe("AlteredMenu", () => {
             ]);
         });
         it("Correctly adds multiple items to the start", () => {
-            let someItem = createMenuItem();
-            let someItem2 = createMenuItem();
+            let someItem = createDummyMenuItem();
+            let someItem2 = createDummyMenuItem();
             const menu = new AlteredMenu(parentMenu);
             menu.insertItems([someItem, someItem2]);
             expect(menu.getItems()).toEqual([
@@ -144,8 +144,8 @@ describe("AlteredMenu", () => {
     });
     describe("AlteredMenu.removeItem / removeItems", () => {
         it("Correctly removes one item in this menu", () => {
-            let someItem = createMenuItem();
-            let someItem2 = createMenuItem();
+            let someItem = createDummyMenuItem();
+            let someItem2 = createDummyMenuItem();
             const menu = new AlteredMenu(parentMenu);
             menu.insertItem(someItem);
             menu.addItem(someItem2);
@@ -182,8 +182,8 @@ describe("AlteredMenu", () => {
             ]);
         });
         it("Correctly indicates whether the item was removed", () => {
-            let someItem = createMenuItem();
-            let someItem2 = createMenuItem();
+            let someItem = createDummyMenuItem();
+            let someItem2 = createDummyMenuItem();
             const menu = new AlteredMenu(parentMenu);
             menu.addItem(someItem);
 
@@ -191,8 +191,8 @@ describe("AlteredMenu", () => {
             expect(menu.removeItem(someItem)).toBeTruthy();
         });
         it("Correctly removes multiple items in this menu", () => {
-            let someItem = createMenuItem();
-            let someItem2 = createMenuItem();
+            let someItem = createDummyMenuItem();
+            let someItem2 = createDummyMenuItem();
             const menu = new AlteredMenu(parentMenu);
             menu.insertItem(someItem);
             menu.addItem(someItem2);
@@ -218,8 +218,8 @@ describe("AlteredMenu", () => {
             ]);
         });
         it("Doesn't remove items of the parent menu", () => {
-            let someItem = createMenuItem();
-            let someItem2 = createMenuItem();
+            let someItem = createDummyMenuItem();
+            let someItem2 = createDummyMenuItem();
             const menu = new AlteredMenu(parentMenu);
             menu.insertItem(someItem);
             menu.addItem(someItem2);
@@ -251,9 +251,9 @@ describe("AlteredMenu", () => {
         it("Correctly reflects changes of the parent menu", async () => {
             const parentMenu = new Menu(dummyContext, items);
 
-            let someItem = createMenuItem();
-            let someItem2 = createMenuItem();
-            let someItem3 = createMenuItem();
+            let someItem = createDummyMenuItem();
+            let someItem2 = createDummyMenuItem();
+            let someItem3 = createDummyMenuItem();
 
             const menu = new AlteredMenu(parentMenu);
             menu.insertItem(someItem);

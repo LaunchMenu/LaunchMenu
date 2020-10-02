@@ -9,7 +9,8 @@ import {
     Observer,
     searchAction,
 } from "@launchmenu/core";
-import {Field} from "model-react";
+import {DataCacher, Field} from "model-react";
+import {createSettingsContextMenuItem} from "./createSettingsContextMenuItem";
 
 export const info = {
     name: "Settings manager",
@@ -31,31 +32,45 @@ export default declare({
     info,
     settings,
     withLM: LM => {
-        const settingsFolders = new Field([] as IMenuItem[]);
+        // Get data from the settings manager
         const manager = LM.getSettingsManager();
-        const settingsObserver = new Observer(h => manager.getAllSettingsData(h)).listen(
-            settingsSets => {
-                settingsFolders.set(settingsSets.map(settings => settings.file.settings));
-            },
-            true
-        );
+        const settingsFolders = new DataCacher(h => {
+            return manager.getAllSettingsData(h).map(settings => settings.file.settings);
+        });
+        const rootSearchables = new DataCacher(h => ({
+            children: searchAction
+                .get(settingsFolders.get(h))
+                // Get rid of the children, making the search not recursive
+                .map(searchable => adjustSearchable(searchable, {children: () => []})),
+        }));
+
+        // Return the search, opening and context items data
         return {
             async search(query, h) {
-                return {
-                    children: searchAction
-                        .get(settingsFolders.get(h))
-                        // Get rid of the children, making the search not recursive
-                        .map(searchable =>
-                            adjustSearchable(searchable, {children: () => []})
-                        ),
-                };
+                return rootSearchables.get(h);
             },
             open({context, onClose}) {
-                // TODO: add listener for the folders
+                // TODO: add listener for the folders to update menu on changes
                 const menu = new Menu(context, settingsFolders.get(null));
                 context.openUI({menu}, onClose);
             },
-            onDispose: () => settingsObserver.destroy(),
+            withSession: session => ({
+                // Retrieve a prioritized menu item to open global and selected applet setting
+                globalContextMenuItems: (h = null) => {
+                    const selectedApplet = session.selectedApplet.get(h);
+                    const settingsData =
+                        selectedApplet && manager.getSettingsData(selectedApplet.ID);
+                    return [
+                        () => ({
+                            priority: 1,
+                            item: createSettingsContextMenuItem({
+                                settings: settingsFolders.get(h),
+                                appletSettings: settingsData?.file.settings,
+                            }),
+                        }),
+                    ];
+                },
+            }),
         };
     },
 });

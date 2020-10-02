@@ -9,7 +9,7 @@ import {wait} from "../../../_tests/wait.helper";
 import {adjustBindings} from "../../items/adjustBindings";
 import {ISubscribableActionBindings} from "../../items/_types/ISubscribableActionBindings";
 
-export function createMenuItem({
+export function createDummyMenuItem({
     category,
     noSelect = false,
     actionBindings,
@@ -28,7 +28,7 @@ export function createMenuItem({
     };
 }
 
-export function createSearchableMenuItem({
+export function createDummySearchableMenuItem({
     noSelect = false,
     category,
     searchPriorities = {},

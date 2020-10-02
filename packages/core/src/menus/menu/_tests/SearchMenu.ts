@@ -1,5 +1,5 @@
 import {SearchMenu} from "../SearchMenu";
-import {createSearchableMenuItem} from "./MenuItem.helper";
+import {createDummySearchableMenuItem} from "./MenuItem.helper";
 import {wait} from "../../../_tests/wait.helper";
 import {dummyContext} from "../../../_tests/context.helper";
 import {Observer} from "../../../utils/modelReact/Observer";
@@ -22,29 +22,29 @@ describe("SearchMenu", () => {
         });
 
         it("Only includes non 0 priority search results", async () => {
-            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
+            const item = createDummySearchableMenuItem({searchPriorities: {something: 1}});
             menu.addSearchItem(item);
-            const item2 = createSearchableMenuItem({searchPriorities: {poop: 1}});
+            const item2 = createDummySearchableMenuItem({searchPriorities: {poop: 1}});
             menu.addSearchItem(item2);
             await menu.setSearch("something");
             menu.flushBatch();
             expect(menu.getItems()).toEqual([item]);
         });
         it("Properly sorts search results", async () => {
-            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
+            const item = createDummySearchableMenuItem({searchPriorities: {something: 1}});
             menu.addSearchItem(item);
-            const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
+            const item2 = createDummySearchableMenuItem({searchPriorities: {something: 2}});
             menu.addSearchItem(item2);
             await menu.setSearch("something");
             menu.flushBatch();
             expect(menu.getItems()).toEqual([item2, item]);
         });
         it("Properly filters old items", async () => {
-            const item = createSearchableMenuItem({
+            const item = createDummySearchableMenuItem({
                 searchPriorities: {something: 1, oranges: 1},
             });
             menu.addSearchItem(item);
-            const item2 = createSearchableMenuItem({
+            const item2 = createDummySearchableMenuItem({
                 searchPriorities: {something: 2},
             });
             menu.addSearchItem(item2);
@@ -58,12 +58,12 @@ describe("SearchMenu", () => {
             expect(menu.getItems()).toEqual([item]);
         });
         it("Properly stops previous searches", async () => {
-            const item = createSearchableMenuItem({
+            const item = createDummySearchableMenuItem({
                 searchDelay: 50,
                 searchPriorities: {something: 1},
             });
             menu.addSearchItem(item);
-            const item2 = createSearchableMenuItem({
+            const item2 = createDummySearchableMenuItem({
                 searchDelay: 50,
                 searchPriorities: {something: 2, stuff: 3},
             });
@@ -87,11 +87,11 @@ describe("SearchMenu", () => {
     describe("SearchMenu.removeSearchItem -> SearchMenu.setSearch", () => {
         it("Doesn't include removed items in new search results", async () => {
             const menu = new SearchMenu(dummyContext);
-            const item = createSearchableMenuItem({
+            const item = createDummySearchableMenuItem({
                 searchPriorities: {something: 1},
             });
             menu.addSearchItem(item);
-            const item2 = createSearchableMenuItem({
+            const item2 = createDummySearchableMenuItem({
                 searchPriorities: {something: 1},
             });
             menu.addSearchItem(item2);
@@ -107,9 +107,9 @@ describe("SearchMenu", () => {
             const menu = new SearchMenu(dummyContext);
             await menu.setSearch("something");
 
-            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
+            const item = createDummySearchableMenuItem({searchPriorities: {something: 1}});
             menu.addSearchItem(item);
-            const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
+            const item2 = createDummySearchableMenuItem({searchPriorities: {something: 2}});
             menu.addSearchItem(item2);
             await wait(1);
             menu.flushBatch();
@@ -119,9 +119,9 @@ describe("SearchMenu", () => {
     describe("SearchMenu.setSearch -> SearchMenu.removeSearchItem", () => {
         it("Cleans up previous search results", async () => {
             const menu = new SearchMenu(dummyContext);
-            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
+            const item = createDummySearchableMenuItem({searchPriorities: {something: 1}});
             menu.addSearchItem(item);
-            const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
+            const item2 = createDummySearchableMenuItem({searchPriorities: {something: 2}});
             menu.addSearchItem(item2);
             await menu.setSearch("something");
             menu.flushBatch();
@@ -136,10 +136,10 @@ describe("SearchMenu", () => {
     describe("SearchMenu.setSearchItems", () => {
         it("Correctly adds items", async () => {
             const menu = new SearchMenu(dummyContext);
-            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
-            const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
-            const item3 = createSearchableMenuItem({searchPriorities: {something: 4}});
-            const item4 = createSearchableMenuItem({searchPriorities: {something: 3}});
+            const item = createDummySearchableMenuItem({searchPriorities: {something: 1}});
+            const item2 = createDummySearchableMenuItem({searchPriorities: {something: 2}});
+            const item3 = createDummySearchableMenuItem({searchPriorities: {something: 4}});
+            const item4 = createDummySearchableMenuItem({searchPriorities: {something: 3}});
 
             menu.setSearchItems([item, item2]);
             await menu.setSearch("something");
@@ -153,10 +153,10 @@ describe("SearchMenu", () => {
         });
         it("Correctly removes items", async () => {
             const menu = new SearchMenu(dummyContext);
-            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
-            const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
-            const item3 = createSearchableMenuItem({searchPriorities: {something: 4}});
-            const item4 = createSearchableMenuItem({searchPriorities: {something: 3}});
+            const item = createDummySearchableMenuItem({searchPriorities: {something: 1}});
+            const item2 = createDummySearchableMenuItem({searchPriorities: {something: 2}});
+            const item3 = createDummySearchableMenuItem({searchPriorities: {something: 4}});
+            const item4 = createDummySearchableMenuItem({searchPriorities: {something: 3}});
 
             menu.setSearchItems([item3, item, item2, item4]);
             await menu.setSearch("something");
@@ -211,8 +211,8 @@ describe("SearchMenu", () => {
         it("When set to true, shows the search items when the search is empty", async () => {
             const menu = new SearchMenu(dummyContext, {showAllOnEmptySearch: true});
 
-            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
-            const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
+            const item = createDummySearchableMenuItem({searchPriorities: {something: 1}});
+            const item2 = createDummySearchableMenuItem({searchPriorities: {something: 2}});
             menu.setSearchItems([item, item2]);
 
             menu.flushBatch();
@@ -221,8 +221,8 @@ describe("SearchMenu", () => {
         it("When set to true, removes the search items when the search is not empty", async () => {
             const menu = new SearchMenu(dummyContext, {showAllOnEmptySearch: true});
 
-            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
-            const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
+            const item = createDummySearchableMenuItem({searchPriorities: {something: 1}});
+            const item2 = createDummySearchableMenuItem({searchPriorities: {something: 2}});
             menu.setSearchItems([item, item2]);
 
             menu.flushBatch();
@@ -239,8 +239,8 @@ describe("SearchMenu", () => {
         it("When set to false, does not show anything when search is empty", async () => {
             const menu = new SearchMenu(dummyContext, {showAllOnEmptySearch: false});
 
-            const item = createSearchableMenuItem({searchPriorities: {something: 1}});
-            const item2 = createSearchableMenuItem({searchPriorities: {something: 2}});
+            const item = createDummySearchableMenuItem({searchPriorities: {something: 1}});
+            const item2 = createDummySearchableMenuItem({searchPriorities: {something: 2}});
             menu.setSearchItems([item, item2]);
 
             menu.flushBatch();

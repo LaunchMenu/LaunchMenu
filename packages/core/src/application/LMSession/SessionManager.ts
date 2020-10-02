@@ -46,11 +46,11 @@ export class SessionManager {
 
     // Management
     /**
-     * Creates a new session
+     * Either adds or creates and adds a session
+     * @param session The session to be added
      * @returns The created and added session
      */
-    public addSession(): LMSession {
-        const session = new LMSession(this.LM);
+    public addSession(session: LMSession = new LMSession(this.LM)): LMSession {
         this.sessions.set([...this.sessions.get(null), session]);
         return session;
     }

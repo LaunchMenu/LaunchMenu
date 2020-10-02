@@ -3,7 +3,7 @@ import {createPrioritizedMenuItem} from "./PrioritizedMenuItem.helper";
 import {wait} from "../../../_tests/wait.helper";
 import {Observer} from "../../../utils/modelReact/Observer";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
-import {createMenuItem} from "./MenuItem.helper";
+import {createDummyMenuItem} from "./MenuItem.helper";
 import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
@@ -104,12 +104,12 @@ describe("PrioritizedMenu", () => {
             const someCategory: ICategory = {
                 name: "Bob",
                 description: "some category for Bob",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
             const someCategory2: ICategory = {
                 name: "John",
                 description: "some category for John",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
             const items = [
                 createPrioritizedMenuItem({priority: 5}),
@@ -215,12 +215,12 @@ describe("PrioritizedMenu", () => {
         const someCategory: ICategory = {
             name: "Bob",
             description: "some category for Bob",
-            item: createMenuItem(),
+            item: createDummyMenuItem(),
         };
         const someCategory2: ICategory = {
             name: "John",
             description: "some category for John",
-            item: createMenuItem(),
+            item: createDummyMenuItem(),
         };
         const items = [
             createPrioritizedMenuItem({priority: 5}),
@@ -348,12 +348,12 @@ describe("PrioritizedMenu", () => {
             const someCategory: ICategory = {
                 name: "Bob",
                 description: "some category for Bob",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
             const someCategory2: ICategory = {
                 name: "John",
                 description: "some category for John",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
             const items = [
                 createPrioritizedMenuItem({priority: 5, generateID: true}),
@@ -498,7 +498,7 @@ describe("PrioritizedMenu", () => {
         });
         it("Can't select items that aren't in the menu", () => {
             const menu = createMenu(items);
-            const item = createMenuItem();
+            const item = createDummyMenuItem();
             menu.setSelected(item, true);
             expect(menu.getSelected()).toEqual([]);
         });
@@ -517,7 +517,7 @@ describe("PrioritizedMenu", () => {
         const someCategory: ICategory = {
             name: "Bob",
             description: "some category for Bob",
-            item: createMenuItem(),
+            item: createDummyMenuItem(),
         };
         const items = [
             createPrioritizedMenuItem({noSelect: true, generateID: true}),
@@ -617,7 +617,7 @@ describe("PrioritizedMenu", () => {
         const someCategory: ICategory = {
             name: "Bob",
             description: "some category for Bob",
-            item: createMenuItem(),
+            item: createDummyMenuItem(),
         };
         const items = [
             createPrioritizedMenuItem({}),
@@ -857,7 +857,7 @@ describe("PrioritizedMenu", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
-                    item: createMenuItem(),
+                    item: createDummyMenuItem(),
                 };
                 const menu = new PrioritizedMenu(dummyContext, {maxCategoryItemCount: 2});
 
@@ -924,7 +924,7 @@ describe("PrioritizedMenu", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
-                    item: createMenuItem(),
+                    item: createDummyMenuItem(),
                 };
                 const menu = new PrioritizedMenu(dummyContext, {
                     getCategory: () => undefined,
@@ -951,7 +951,7 @@ describe("PrioritizedMenu", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
-                    item: createMenuItem(),
+                    item: createDummyMenuItem(),
                 };
                 const menu = new PrioritizedMenu(dummyContext, {
                     getCategory: () => someCategory,
@@ -982,7 +982,7 @@ describe("PrioritizedMenu", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
-                    item: createMenuItem(),
+                    item: createDummyMenuItem(),
                 };
                 const menu = new PrioritizedMenu(dummyContext, {
                     sortCategories: categories =>
@@ -1011,7 +1011,7 @@ describe("PrioritizedMenu", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
-                    item: createMenuItem(),
+                    item: createDummyMenuItem(),
                 };
                 const menu = new PrioritizedMenu(dummyContext, {
                     sortCategories: () => [undefined],

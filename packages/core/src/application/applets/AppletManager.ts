@@ -50,35 +50,7 @@ export class AppletManager {
         this.applets.set([]);
     }
 
-    // Applet management
-    /**
-     * Adds an applet with the given source
-     * @param source The source of the applet
-     */
-    public addApplet(source: IAppletSource): void {
-        try {
-            const applet = this.initApplet(source);
-            this.updateApplet(applet);
-            if (applet.development?.liveReload != false && DEV)
-                this.setupAppletWatcher(source, applet);
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    /**
-     * Removes an applet from the manager
-     * @param ID The id of the applet to remove
-     */
-    public removeApplet(ID: IUUID): void {
-        this.watchers[ID]?.destroy();
-        delete this.watchers[ID];
-
-        this.disposeOldApplet(ID);
-        const applets = this.applets.get(null);
-        this.applets.set(applets.filter(({ID: aid}) => aid != ID));
-    }
-
+    // Getters
     /**
      * Retrieves the loaded applets
      * @param hook The hook to subscribe to changes
@@ -86,6 +58,16 @@ export class AppletManager {
      */
     public getApplets(hook: IDataHook = null): IApplet[] {
         return this.applets.get(hook);
+    }
+
+    /**
+     * Retrieves the loaded applet with the given ID
+     * @param ID The ID of the applet to retrieve
+     * @param hook The hook to subscribe to changes
+     * @returns The applet if found
+     */
+    public getApplet(ID: IUUID, hook: IDataHook = null): IApplet | null {
+        return this.applets.get(hook).find(applet => applet.ID == ID) || null;
     }
 
     /**
@@ -114,6 +96,35 @@ export class AppletManager {
     ): ICategory | undefined {
         const index = this.applets.get(hook).findIndex(({ID}) => ID == applet.ID);
         if (index != -1) return this.appletCategories.get(hook)[index];
+    }
+
+    // Applet management
+    /**
+     * Adds an applet with the given source
+     * @param source The source of the applet
+     */
+    public addApplet(source: IAppletSource): void {
+        try {
+            const applet = this.initApplet(source);
+            this.updateApplet(applet);
+            if (applet.development?.liveReload != false && DEV)
+                this.setupAppletWatcher(source, applet);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    /**
+     * Removes an applet from the manager
+     * @param ID The id of the applet to remove
+     */
+    public removeApplet(ID: IUUID): void {
+        this.watchers[ID]?.destroy();
+        delete this.watchers[ID];
+
+        this.disposeOldApplet(ID);
+        const applets = this.applets.get(null);
+        this.applets.set(applets.filter(({ID: aid}) => aid != ID));
     }
 
     /**
@@ -197,16 +208,8 @@ export class AppletManager {
     protected updateApplet(applet: IApplet): void {
         this.disposeOldApplet(applet.ID);
 
-        // Update the applets list
         const applets = this.applets.get(null);
-        let newApplets;
         const index = applets.findIndex(({ID: OID}) => OID == applet.ID);
-        if (index != -1)
-            newApplets = applets.map(oApplet =>
-                oApplet.ID == applet.ID ? applet : oApplet
-            );
-        else newApplets = [...applets, applet];
-        this.applets.set(newApplets);
 
         // Update the categories list
         const categories = this.appletCategories.get(null);
@@ -216,5 +219,14 @@ export class AppletManager {
             newCategories = categories.map((c, i) => (i == index ? newCategory : c));
         else newCategories = [...categories, newCategory];
         this.appletCategories.set(newCategories);
+
+        // Update the applets list
+        let newApplets;
+        if (index != -1)
+            newApplets = applets.map(oApplet =>
+                oApplet.ID == applet.ID ? applet : oApplet
+            );
+        else newApplets = [...applets, applet];
+        this.applets.set(newApplets);
     }
 }

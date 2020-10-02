@@ -1,5 +1,5 @@
 import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
-import {createMenuItem} from "./MenuItem.helper";
+import {createDummyMenuItem} from "./MenuItem.helper";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {v4 as uuid} from "uuid";
 import {ISubscribableActionBindings} from "../../items/_types/ISubscribableActionBindings";
@@ -21,7 +21,7 @@ export function createPrioritizedMenuItem<
 }: T): IPrioritizedMenuItem & (T extends {generateID: true} ? {id: string} : unknown) {
     return {
         priority,
-        item: createMenuItem({category, noSelect, actionBindings}),
+        item: createDummyMenuItem({category, noSelect, actionBindings}),
         id: generateID ? uuid() : undefined,
     } as any;
 }

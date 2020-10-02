@@ -138,13 +138,11 @@ export class LMSession {
      */
     protected getGlobalContextMenuItems(): (hook: IDataHook) => IContextMenuItemGetter[] {
         return hook =>
-            this.LM.getAppletManager()
-                .getApplets(hook)
-                .flatMap(applet =>
-                    applet.globalContextMenuItems instanceof Function
-                        ? applet.globalContextMenuItems(hook)
-                        : applet.globalContextMenuItems ?? []
-                );
+            this.getApplets(hook).flatMap(applet =>
+                applet.globalContextMenuItems instanceof Function
+                    ? applet.globalContextMenuItems(hook)
+                    : applet.globalContextMenuItems ?? []
+            );
     }
 
     /**
@@ -191,6 +189,7 @@ export class LMSession {
                     const appletData = appletManager
                         .getAppletCategories()
                         .find(({category: cat}) => cat == category);
+
                     if (appletData) this.selectedApplet.set(appletData.applet);
                 }
             },
@@ -321,7 +320,9 @@ export class LMSession {
             if (updated && DEV) this.callAppletReload(initializedApplet);
 
             // Obtain the searchable and return the data
-            const searchable = this.getAppletSearchWithCategory(applet, searchableID);
+            const searchable =
+                initializedApplet.search &&
+                this.getAppletSearchWithCategory(initializedApplet, searchableID);
             return {initializedApplet, applet, searchable};
         });
     });
@@ -353,6 +354,7 @@ export class LMSession {
     ): IMenuSearchable {
         const category = this.LM.getAppletManager().getAppletCategory(applet);
         if (!category) return {...applet, ID} as IMenuSearchable;
+
         const categoryBinding = getCategoryAction.createBinding(category);
         return adjustSearchable({...applet, ID} as IMenuSearchable, {
             item: result =>

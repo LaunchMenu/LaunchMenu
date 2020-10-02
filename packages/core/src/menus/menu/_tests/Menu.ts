@@ -1,4 +1,4 @@
-import {createMenuItem} from "./MenuItem.helper";
+import {createDummyMenuItem} from "./MenuItem.helper";
 import {Menu} from "../Menu";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
@@ -16,7 +16,7 @@ describe("Menu", () => {
             new Menu(dummyContext);
         });
         it("Can be initialized with an item array", () => {
-            const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+            const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
             const menu = new Menu(dummyContext, items);
             expect(menu.getItems().length).toBe(3);
             expect(menu.getItems()).toEqual(items);
@@ -25,18 +25,18 @@ describe("Menu", () => {
 
     describe("Menu.addItem / Menu.getItems", () => {
         let menu: Menu;
-        const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+        const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
         beforeEach(() => {
             menu = new Menu(dummyContext, items);
         });
 
         it("Can add an item", () => {
-            const item = createMenuItem();
+            const item = createDummyMenuItem();
             menu.addItem(item);
             expect(menu.getItems()).toEqual([...items, item]);
         });
         it("Can add an item at the specified index", () => {
-            const item = createMenuItem();
+            const item = createDummyMenuItem();
             menu.addItem(item, 1);
             expect(menu.getItems()).toEqual([items[0], item, items[1], items[2]]);
         });
@@ -44,18 +44,18 @@ describe("Menu", () => {
             const someCategory: ICategory = {
                 name: "Bob",
                 description: "some category for Bob",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
             const someCategory2: ICategory = {
                 name: "John",
                 description: "some category for John",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
             const items = [
-                createMenuItem(),
-                createMenuItem(),
-                createMenuItem({category: someCategory}),
-                createMenuItem({category: someCategory2}),
+                createDummyMenuItem(),
+                createDummyMenuItem(),
+                createDummyMenuItem({category: someCategory}),
+                createDummyMenuItem({category: someCategory2}),
             ];
 
             it("Inserts the correct category in the menu", () => {
@@ -113,7 +113,7 @@ describe("Menu", () => {
         });
         it("Calls onMenuChange actions", () => {
             const onMenuChange = jest.fn();
-            const item = createMenuItem({
+            const item = createDummyMenuItem({
                 actionBindings: [
                     onMenuChangeAction.createBinding({
                         onMenuChange,
@@ -126,7 +126,7 @@ describe("Menu", () => {
             expect(onMenuChange.mock.calls[0]).toEqual([menu, true]);
 
             const onMenuChange2 = jest.fn();
-            const item2 = createMenuItem({
+            const item2 = createDummyMenuItem({
                 actionBindings: [
                     onMenuChangeAction.createBinding({
                         onMenuChange: onMenuChange2,
@@ -143,18 +143,18 @@ describe("Menu", () => {
         const someCategory: ICategory = {
             name: "Bob",
             description: "some category for Bob",
-            item: createMenuItem(),
+            item: createDummyMenuItem(),
         };
         const someCategory2: ICategory = {
             name: "John",
             description: "some category for John",
-            item: createMenuItem(),
+            item: createDummyMenuItem(),
         };
         const items = [
-            createMenuItem(),
-            createMenuItem(),
-            createMenuItem({category: someCategory}),
-            createMenuItem({category: someCategory2}),
+            createDummyMenuItem(),
+            createDummyMenuItem(),
+            createDummyMenuItem({category: someCategory}),
+            createDummyMenuItem({category: someCategory2}),
         ];
         it("Correctly retrieves the categories", () => {
             const menu = new Menu(dummyContext);
@@ -178,7 +178,7 @@ describe("Menu", () => {
             const cb = jest.fn();
             new Observer(h => menu.getCategories(h)).listen(cb);
 
-            const newItem = createMenuItem({category: someCategory2});
+            const newItem = createDummyMenuItem({category: someCategory2});
             menu.addItem(newItem);
             await wait(0);
             expect(cb.mock.calls.length).toBe(1);
@@ -192,10 +192,10 @@ describe("Menu", () => {
 
     describe("Menu.addItems", () => {
         it("Can add items", () => {
-            const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+            const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
             const menu = new Menu(dummyContext, items);
-            const item = createMenuItem();
-            const item2 = createMenuItem();
+            const item = createDummyMenuItem();
+            const item2 = createDummyMenuItem();
             menu.addItems([item, item2]);
             expect(menu.getItems()).toEqual([...items, item, item2]);
         });
@@ -203,18 +203,18 @@ describe("Menu", () => {
             const someCategory: ICategory = {
                 name: "Bob",
                 description: "some category for Bob",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
             const someCategory2: ICategory = {
                 name: "John",
                 description: "some category for John",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
             const items = [
-                createMenuItem(),
-                createMenuItem(),
-                createMenuItem({category: someCategory}),
-                createMenuItem({category: someCategory2}),
+                createDummyMenuItem(),
+                createDummyMenuItem(),
+                createDummyMenuItem({category: someCategory}),
+                createDummyMenuItem({category: someCategory2}),
             ];
 
             it("Inserts the correct category in the menu", () => {
@@ -262,7 +262,7 @@ describe("Menu", () => {
             it("Moves items to their new category when its category changes", async () => {
                 const menu = new Menu(dummyContext);
                 const category = new Field(someCategory);
-                const item = createMenuItem({
+                const item = createDummyMenuItem({
                     actionBindings: h => [
                         getCategoryAction.createBinding(category.get(h ?? null)),
                     ],
@@ -303,7 +303,7 @@ describe("Menu", () => {
         });
         it("Calls onMenuChange actions", () => {
             const onMenuChange = jest.fn();
-            const item = createMenuItem({
+            const item = createDummyMenuItem({
                 actionBindings: [
                     onMenuChangeAction.createBinding({
                         onMenuChange,
@@ -311,7 +311,7 @@ describe("Menu", () => {
                 ],
             });
             const onMenuChange2 = jest.fn();
-            const item2 = createMenuItem({
+            const item2 = createDummyMenuItem({
                 actionBindings: [
                     onMenuChangeAction.createBinding({
                         onMenuChange: onMenuChange2,
@@ -329,7 +329,7 @@ describe("Menu", () => {
     });
 
     describe("Menu.removeItem", () => {
-        const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+        const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
         let menu: Menu;
         beforeEach(() => {
             menu = new Menu(dummyContext, items);
@@ -342,23 +342,23 @@ describe("Menu", () => {
 
         it("Correctly informs whether the item was removed", () => {
             expect(menu.removeItem(items[1])).toBeTruthy();
-            expect(menu.removeItem(createMenuItem())).toBeFalsy();
+            expect(menu.removeItem(createDummyMenuItem())).toBeFalsy();
             expect(menu.getItems()).toEqual([items[0], items[2]]);
         });
         describe("Considers categories", () => {
             const someCategory: ICategory = {
                 name: "Bob",
                 description: "some category for Bob",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
             const someCategory2: ICategory = {
                 name: "John",
                 description: "some category for John",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
-            const item = createMenuItem({category: someCategory});
-            const item2 = createMenuItem({category: someCategory2});
-            const item3 = createMenuItem({category: someCategory2});
+            const item = createDummyMenuItem({category: someCategory});
+            const item2 = createDummyMenuItem({category: someCategory2});
+            const item3 = createDummyMenuItem({category: someCategory2});
 
             it("Removes items from their category", () => {
                 menu.addItems([item, item3, item2]);
@@ -396,7 +396,7 @@ describe("Menu", () => {
         });
         it("Calls onMenuChange actions", () => {
             const onMenuChange = jest.fn();
-            const item = createMenuItem({
+            const item = createDummyMenuItem({
                 actionBindings: [
                     onMenuChangeAction.createBinding({
                         onMenuChange,
@@ -413,7 +413,7 @@ describe("Menu", () => {
     });
 
     describe("Menu.removeItems", () => {
-        const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+        const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
         let menu: Menu;
         beforeEach(() => {
             menu = new Menu(dummyContext, items);
@@ -425,24 +425,24 @@ describe("Menu", () => {
         });
 
         it("Correctly informs whether any of the items were removed", () => {
-            expect(menu.removeItems([items[1], createMenuItem()])).toBeTruthy();
-            expect(menu.removeItems([createMenuItem(), createMenuItem()])).toBeFalsy();
+            expect(menu.removeItems([items[1], createDummyMenuItem()])).toBeTruthy();
+            expect(menu.removeItems([createDummyMenuItem(), createDummyMenuItem()])).toBeFalsy();
             expect(menu.getItems()).toEqual([items[0], items[2]]);
         });
         describe("Considers categories", () => {
             const someCategory: ICategory = {
                 name: "Bob",
                 description: "some category for Bob",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
             const someCategory2: ICategory = {
                 name: "John",
                 description: "some category for John",
-                item: createMenuItem(),
+                item: createDummyMenuItem(),
             };
-            const item = createMenuItem({category: someCategory});
-            const item2 = createMenuItem({category: someCategory2});
-            const item3 = createMenuItem({category: someCategory2});
+            const item = createDummyMenuItem({category: someCategory});
+            const item2 = createDummyMenuItem({category: someCategory2});
+            const item3 = createDummyMenuItem({category: someCategory2});
 
             it("Removes items from their category", () => {
                 menu.addItems([item, item3, item2]);
@@ -473,14 +473,14 @@ describe("Menu", () => {
         });
         it("Calls onMenuChange actions", () => {
             const onMenuChange = jest.fn();
-            const item = createMenuItem({
+            const item = createDummyMenuItem({
                 actionBindings: [
                     onMenuChangeAction.createBinding({
                         onMenuChange,
                     }),
                 ],
             });
-            const item2 = createMenuItem();
+            const item2 = createDummyMenuItem();
             const menu = new Menu(dummyContext, [...items, item, item2]);
             expect(onMenuChange.mock.calls.length).toBe(1);
             menu.removeItems([item, item2]);
@@ -494,18 +494,18 @@ describe("Menu", () => {
         const someCategory: ICategory = {
             name: "Bob",
             description: "some category for Bob",
-            item: createMenuItem(),
+            item: createDummyMenuItem(),
         };
         const someCategory2: ICategory = {
             name: "John",
             description: "some category for John",
-            item: createMenuItem(),
+            item: createDummyMenuItem(),
         };
         const items = [
-            createMenuItem(),
-            createMenuItem(),
-            createMenuItem({category: someCategory}),
-            createMenuItem({category: someCategory2}),
+            createDummyMenuItem(),
+            createDummyMenuItem(),
+            createDummyMenuItem({category: someCategory}),
+            createDummyMenuItem({category: someCategory2}),
         ];
         it("Can select items", () => {
             const menu = new Menu(dummyContext, items);
@@ -527,7 +527,7 @@ describe("Menu", () => {
         it("Calls onSelect actions", () => {
             let selectCount = 0;
             let deselectCount = 0;
-            const item = createMenuItem({
+            const item = createDummyMenuItem({
                 actionBindings: [
                     onSelectAction.createBinding({
                         onSelect: selected => {
@@ -549,12 +549,12 @@ describe("Menu", () => {
         });
         it("Can't select items that aren't in the menu", () => {
             const menu = new Menu(dummyContext, items);
-            const item = createMenuItem();
+            const item = createDummyMenuItem();
             menu.setSelected(item, true);
             expect(menu.getSelected()).toEqual([]);
         });
         it("Automatically deselects items when removed", () => {
-            const item = createMenuItem();
+            const item = createDummyMenuItem();
             const menu = new Menu(dummyContext, [...items, item]);
             menu.setSelected(item, true);
             expect(menu.getSelected()).toEqual([item]);
@@ -567,12 +567,12 @@ describe("Menu", () => {
         const someCategory: ICategory = {
             name: "Bob",
             description: "some category for Bob",
-            item: createMenuItem(),
+            item: createDummyMenuItem(),
         };
         const items = [
-            createMenuItem({noSelect: true}),
-            createMenuItem(),
-            createMenuItem({category: someCategory}),
+            createDummyMenuItem({noSelect: true}),
+            createDummyMenuItem(),
+            createDummyMenuItem({category: someCategory}),
         ];
         it("Has the correct initial cursor", () => {
             expect(new Menu(dummyContext).getCursor()).toEqual(null);
@@ -587,7 +587,7 @@ describe("Menu", () => {
         it("Calls onCursor actions", () => {
             let selectCount = 0;
             let deselectCount = 0;
-            const item = createMenuItem({
+            const item = createDummyMenuItem({
                 actionBindings: [
                     onCursorAction.createBinding({
                         onCursor: (selected, m) => {
@@ -610,12 +610,12 @@ describe("Menu", () => {
         });
         it("Can't set item as cursor if not in the menu", () => {
             const menu = new Menu(dummyContext, items);
-            const item = createMenuItem();
+            const item = createDummyMenuItem();
             menu.setCursor(item);
             expect(menu.getCursor()).not.toEqual(item);
         });
         it("Automatically selects another cursor when cursor is removed", () => {
-            const item = createMenuItem();
+            const item = createDummyMenuItem();
             const menu = new Menu(dummyContext, [...items, item]);
             menu.setCursor(item);
             expect(menu.getCursor()).toEqual(item);
@@ -628,10 +628,10 @@ describe("Menu", () => {
         });
     });
     describe("Menu.getAllSelected", () => {
-        const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+        const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
         it("Combines the selection and cursor if present", () => {
-            const item = createMenuItem();
-            const item2 = createMenuItem();
+            const item = createDummyMenuItem();
+            const item2 = createDummyMenuItem();
             const menu = new Menu(dummyContext, [...items, item, item2]);
             menu.setCursor(item);
             expect(menu.getAllSelected()).toEqual([item]);
@@ -639,16 +639,16 @@ describe("Menu", () => {
             expect(menu.getAllSelected()).toEqual([item2, item]);
         });
         it("Returns the selection if no cursor is present", () => {
-            const item = createMenuItem();
-            const item2 = createMenuItem();
+            const item = createDummyMenuItem();
+            const item2 = createDummyMenuItem();
             const menu = new Menu(dummyContext, [...items, item, item2]);
             menu.setCursor(null);
             menu.setSelected(item2);
             expect(menu.getAllSelected()).toEqual([item2]);
         });
         it("Only includes items once", () => {
-            const item = createMenuItem();
-            const item2 = createMenuItem();
+            const item = createDummyMenuItem();
+            const item2 = createDummyMenuItem();
             const menu = new Menu(dummyContext, [...items, item, item2]);
             menu.setCursor(item);
             expect(menu.getAllSelected()).toEqual([item]);
@@ -660,12 +660,12 @@ describe("Menu", () => {
         const someCategory: ICategory = {
             name: "Bob",
             description: "some category for Bob",
-            item: createMenuItem(),
+            item: createDummyMenuItem(),
         };
         const items = [
-            createMenuItem(),
-            createMenuItem(),
-            createMenuItem({category: someCategory}),
+            createDummyMenuItem(),
+            createDummyMenuItem(),
+            createDummyMenuItem({category: someCategory}),
         ];
         let menu: Menu;
         beforeEach(() => {
@@ -673,7 +673,7 @@ describe("Menu", () => {
         });
         it("Deselects all items", () => {
             let deselectCount = 0;
-            const item = createMenuItem({
+            const item = createDummyMenuItem({
                 actionBindings: [
                     onSelectAction.createBinding({
                         onSelect: (selected, m) => {
@@ -693,7 +693,7 @@ describe("Menu", () => {
         });
         it("Deselects the cursor", () => {
             let deselectCount = 0;
-            const item = createMenuItem({
+            const item = createDummyMenuItem({
                 actionBindings: [
                     onCursorAction.createBinding({
                         onCursor: (selected, m) => {
@@ -723,7 +723,7 @@ describe("Menu", () => {
         });
         it("Blocks changing the cursor", () => {
             let selectCount = 0;
-            const item = createMenuItem({
+            const item = createDummyMenuItem({
                 actionBindings: [
                     onCursorAction.createBinding({
                         onCursor: (selected, m) => {
@@ -742,7 +742,7 @@ describe("Menu", () => {
         });
         it("Blocks selecting of items", () => {
             let selectCount = 0;
-            const item = createMenuItem({
+            const item = createDummyMenuItem({
                 actionBindings: [
                     onSelectAction.createBinding({
                         onSelect: (selected, m) => {
@@ -761,14 +761,14 @@ describe("Menu", () => {
     });
     describe("Getters can be subscribed to", () => {
         let menu: Menu;
-        const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+        const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
         beforeEach(() => {
             menu = new Menu(dummyContext, items);
         });
         describe("Menu.getItems", () => {
             it("Correctly subscribes to changes", () => {
-                const item = createMenuItem();
-                const item2 = createMenuItem();
+                const item = createDummyMenuItem();
+                const item2 = createDummyMenuItem();
                 const callback = jest.fn(() => {});
                 expect(
                     menu.getItems({call: callback, registerRemover: () => {}})
@@ -818,7 +818,7 @@ describe("Menu", () => {
     describe("categoryConfig", () => {
         describe("categoryConfig.maxCategoryItemCount", () => {
             let menu: Menu;
-            const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+            const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
             beforeEach(() => {
                 menu = new Menu(dummyContext, {maxCategoryItemCount: 2});
             });
@@ -830,12 +830,12 @@ describe("Menu", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
-                    item: createMenuItem(),
+                    item: createDummyMenuItem(),
                 };
                 const items2 = [
-                    createMenuItem({category: someCategory}),
-                    createMenuItem({category: someCategory}),
-                    createMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
                 ];
                 menu.addItems(items);
                 menu.addItems(items2);
@@ -849,7 +849,7 @@ describe("Menu", () => {
             it("Doesn't call onMenuChange if the item wasn't added", () => {
                 menu.addItems(items);
                 const onMenuChange = jest.fn();
-                const item = createMenuItem({
+                const item = createDummyMenuItem({
                     actionBindings: [
                         onMenuChangeAction.createBinding({
                             onMenuChange,
@@ -866,14 +866,14 @@ describe("Menu", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
-                    item: createMenuItem(),
+                    item: createDummyMenuItem(),
                 };
                 const menu = new Menu(dummyContext, {getCategory: () => undefined});
-                const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+                const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
                 const items2 = [
-                    createMenuItem({category: someCategory}),
-                    createMenuItem({category: someCategory}),
-                    createMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
                 ];
                 menu.addItems(items);
                 menu.addItems(items2);
@@ -883,14 +883,14 @@ describe("Menu", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
-                    item: createMenuItem(),
+                    item: createDummyMenuItem(),
                 };
                 const menu = new Menu(dummyContext, {getCategory: () => someCategory});
-                const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+                const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
                 const items2 = [
-                    createMenuItem({category: someCategory}),
-                    createMenuItem({category: someCategory}),
-                    createMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
                 ];
                 menu.addItems(items);
                 menu.addItems(items2);
@@ -903,17 +903,17 @@ describe("Menu", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
-                    item: createMenuItem(),
+                    item: createDummyMenuItem(),
                 };
                 const menu = new Menu(dummyContext, {
                     sortCategories: categories =>
                         categories.map(({category}) => category).reverse(),
                 });
-                const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+                const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
                 const items2 = [
-                    createMenuItem({category: someCategory}),
-                    createMenuItem({category: someCategory}),
-                    createMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
                 ];
                 menu.addItems(items);
                 menu.addItems(items2);
@@ -923,14 +923,14 @@ describe("Menu", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
-                    item: createMenuItem(),
+                    item: createDummyMenuItem(),
                 };
                 const menu = new Menu(dummyContext, {sortCategories: () => [undefined]});
-                const items = [createMenuItem(), createMenuItem(), createMenuItem()];
+                const items = [createDummyMenuItem(), createDummyMenuItem(), createDummyMenuItem()];
                 const items2 = [
-                    createMenuItem({category: someCategory}),
-                    createMenuItem({category: someCategory}),
-                    createMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
+                    createDummyMenuItem({category: someCategory}),
                 ];
                 menu.addItems(items);
                 menu.addItems(items2);

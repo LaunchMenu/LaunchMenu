@@ -11,5 +11,4 @@ export type IAppletLMInitializer = (
     lm: LaunchMenu
 ) =>
     | IAppletSessionInitializer
-    | ({withSession: IAppletSessionInitializer} & IAppletDisposer)
-    | (IAppletExecutionConfig & IAppletDisposer);
+    | ({withSession?: IAppletSessionInitializer} & IAppletExecutionConfig & IAppletDisposer);
