@@ -17,6 +17,7 @@ import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {adjustBindings} from "./adjustBindings";
 import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings";
 import {getHooked} from "../../utils/subscribables/getHooked";
+import {openMenuItemContentHandler} from "../actions/types/onCursor/openMenuItemContentHandler";
 
 /**
  * Creates a new standard menu item
@@ -28,13 +29,15 @@ export function createStandardMenuItem({
     description,
     tags,
     icon,
+    category,
+    shortcut, // TODO:
+    content,
+    searchPattern,
+    actionBindings,
     onExecute,
     onSelect,
     onCursor,
     onMenuChange,
-    category,
-    searchPattern,
-    actionBindings,
 }: IStandardMenuItemData): IMenuItem {
     const generatedBindings: IActionBinding<any>[] = [
         createSimpleSearchBinding({
@@ -51,6 +54,8 @@ export function createStandardMenuItem({
     if (onMenuChange)
         generatedBindings.push(onMenuChangeAction.createBinding({onMenuChange}));
     if (category) generatedBindings.push(getCategoryAction.createBinding(category));
+    if (content)
+        generatedBindings.push(openMenuItemContentHandler.createBinding(content));
 
     // Combine the input action bindings with the created ones
     let bindings = generatedBindings as ISubscribableActionBindings;
@@ -91,9 +96,11 @@ export function createStandardMenuItem({
             );
         }),
         actionBindings: bindings,
-        toString: () =>
-            `StandardMenuItem: ${
-                getHooked(name) + (getHooked(description) ? getHooked(description) : "")
-            }`,
+        get debugID(): string {
+            return `StandardMenuItem: ${
+                getHooked(name) +
+                (getHooked(description) ? ", " + getHooked(description) : "")
+            }`;
+        },
     } as IMenuItem;
 }

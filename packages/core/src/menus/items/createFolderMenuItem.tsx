@@ -17,6 +17,7 @@ import {createSimpleSearchBinding} from "../actions/types/search/simpleSearch/si
 import {openMenuExecuteHandler} from "../actions/types/execute/openMenuExecuteHandler";
 import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings";
 import {adjustBindings} from "./adjustBindings";
+import {openMenuItemContentHandler} from "../actions/types/onCursor/openMenuItemContentHandler";
 
 const get = <T extends unknown>(f: T, h?: IDataHook) =>
     f instanceof Function ? f(h) : f;
@@ -31,14 +32,16 @@ export function createFolderMenuItem<T extends {[key: string]: IMenuItem} | IMen
     description,
     tags,
     icon,
-    onSelect,
-    onCursor,
-    onMenuChange,
+    content,
+    shortcut, //TODO:
     category,
     actionBindings,
     children,
     searchPattern,
     searchChildren = children,
+    onSelect,
+    onCursor,
+    onMenuChange,
 }: IFolderMenuItemData<T>): IMenuItem & {children: T} {
     const generatedBindings: IActionBinding<any>[] = [
         createSimpleSearchBinding({
@@ -57,6 +60,8 @@ export function createFolderMenuItem<T extends {[key: string]: IMenuItem} | IMen
     if (onMenuChange)
         generatedBindings.push(onMenuChangeAction.createBinding({onMenuChange}));
     if (category) generatedBindings.push(getCategoryAction.createBinding(category));
+    if (content)
+        generatedBindings.push(openMenuItemContentHandler.createBinding(content));
 
     // Combine the input action bindings with the created ones
     let bindings = generatedBindings as ISubscribableActionBindings;

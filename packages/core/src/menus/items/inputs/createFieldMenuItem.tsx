@@ -20,6 +20,7 @@ import {resetFieldAction} from "./resetFieldAction";
 import {ISubscribableActionBindings} from "../_types/ISubscribableActionBindings";
 import {adjustBindings} from "../adjustBindings";
 import {getHooked} from "../../../utils/subscribables/getHooked";
+import {openMenuItemContentHandler} from "../../actions/types/onCursor/openMenuItemContentHandler";
 
 // TODO: reuse standard menu item to reduce code duplication
 
@@ -39,6 +40,8 @@ export function createFieldMenuItem<T>({
         icon,
         description,
         tags,
+        content,
+        shortcut, // TODO:
         onExecute,
         onSelect,
         onCursor,
@@ -65,6 +68,8 @@ export function createFieldMenuItem<T>({
     if (onMenuChange)
         generatedBindings.push(onMenuChangeAction.createBinding({onMenuChange}));
     if (category) generatedBindings.push(getCategoryAction.createBinding(category));
+    if (content)
+        generatedBindings.push(openMenuItemContentHandler.createBinding(content));
     if (resetable)
         generatedBindings.push(
             resetFieldAction.createBinding({

@@ -1,5 +1,6 @@
 import React, {useLayoutEffect, useRef, useState} from "react";
 import {StackView} from "../../components/stacks/StackView";
+import {InstantChangeTransition} from "../../components/stacks/transitions/change/InstantChangeTransition";
 import {Box} from "../../styling/box/Box";
 import {LFC} from "../../_types/LFC";
 import {usePaneIsVisible} from "../hooks/usePaneIsVisible";
@@ -123,7 +124,10 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                     </Box>
                     <Box position="relative" flexGrow={1} flexShrink={1}>
                         <Box width={size.width * (1 - menuWidthFraction)} height="100%">
-                            <StackView stack={contentStack} />
+                            <StackView
+                                ChangeTransitionComp={InstantChangeTransition}
+                                stack={contentStack}
+                            />
                         </Box>
                     </Box>
                 </Box>

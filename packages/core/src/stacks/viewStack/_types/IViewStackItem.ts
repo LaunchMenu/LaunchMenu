@@ -28,9 +28,5 @@ export type IViewStackItemView = LFC<IViewStackItemProps> | JSX.Element;
  * @returns Whether the item is a view
  */
 export function isView(item: any): item is IViewStackItem {
-    return (
-        (item.view && item.transparent) ||
-        item instanceof Function ||
-        isValidElement(item)
-    );
+    return item.close || item.view || item instanceof Function || isValidElement(item);
 }

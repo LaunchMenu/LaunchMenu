@@ -1,6 +1,7 @@
 import {SortedList} from "../../utils/SortedList";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
 import {ICategory} from "../actions/types/category/_types/ICategory";
+import {hasHigherOrEqualPriority} from "./priority/hasHigherOrEqualPriority";
 
 /**
  * Sorts the given categories based on the top priority of each of the categories
@@ -19,6 +20,6 @@ export function sortPrioritizedCategories(
             category,
             priority: items.get()[0]?.priority || 0,
         }));
-    categoryData.sort((a, b) => b.priority - a.priority);
+    categoryData.sort((a, b) => -hasHigherOrEqualPriority(a.priority, b.priority));
     return [undefined, ...categoryData.map(({category}) => category)];
 }

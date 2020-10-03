@@ -7,7 +7,7 @@ import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventLi
 export type IOpenableContent =
     | {content?: IViewStackItem}
     | {
-          content: string; // TODO: replace with content interface
+          content: IViewStackItem; // TODO: replace with content interface
           contentView?: IViewStackItem;
           contentHandler?: IKeyEventListener;
       };

@@ -5,6 +5,9 @@ import {IExecutable} from "../../actions/types/execute/_types/IExecutable";
 import {IDataHook} from "model-react";
 import {ISubscribableActionBindings} from "./ISubscribableActionBindings";
 import {ISimpleSearchPatternMatcher} from "../../actions/types/search/simpleSearch/_types/ISimpleSearchData";
+import {IMenuItemContent} from "../../actions/types/onCursor/_types/IMenuItemContent";
+import {KeyPattern} from "../inputs/handlers/keyPattern/KeyPattern";
+import {IIOContext} from "../../../context/_types/IIOContext";
 
 /**
  * A type for the data passed to a standard menu item
@@ -22,9 +25,22 @@ export type IStandardMenuItemData = {
     /** Any tags that can be used for searching */
     tags?: string[] | ((h?: IDataHook) => string[]);
 
+    /** A shortcut that will activate this menu item */
+    shortcut?: KeyPattern | ((context: IIOContext) => KeyPattern);
+
+    /** Content to show when this item is selected */
+    content?: IMenuItemContent;
+
+    /** The category to put the item under in the menu */
+    category?: ICategory;
+
+    /** Bindings to additional actions */
+    actionBindings?: ISubscribableActionBindings;
+
     /** A pattern matcher that can be used to capture patterns in a search and highlight them */
     searchPattern?: ISimpleSearchPatternMatcher;
 
+    // Event listeners
     /** The function to execute when executing the menu item's default action */
     onExecute?: IExecutable["execute"];
 
@@ -36,10 +52,4 @@ export type IStandardMenuItemData = {
 
     /** A listener to track what menus an item is added to */
     onMenuChange?: (menu: IMenu, added: boolean) => void;
-
-    /** The category to put the item under in the menu */
-    category?: ICategory;
-
-    /** Bindings to additional actions */
-    actionBindings?: ISubscribableActionBindings;
 };

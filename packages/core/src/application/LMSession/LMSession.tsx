@@ -245,14 +245,17 @@ export class LMSession {
      * Initializes the content to be displayed
      */
     protected setupContent(): void {
+        // this.context.openUI({
+        //     content: (
+        //         <Box padding="large">
+        //             <Loader>{h => this.selectedApplet.get(h)?.info.name}</Loader>
+        //             <br />
+        //             LM is great m8
+        //         </Box>
+        //     ),
+        // });
         this.context.openUI({
-            content: (
-                <Box padding="large">
-                    <Loader>{h => this.selectedApplet.get(h)?.info.name}</Loader>
-                    <br />
-                    LM is great m8
-                </Box>
-            ),
+            content: {close: true},
         });
     }
 

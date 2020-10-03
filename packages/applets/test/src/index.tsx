@@ -1,3 +1,5 @@
+import React from "React";
+import {openMenuExecuteHandler} from "@launchmenu/core";
 import {declare} from "@launchmenu/core/build/application/applets/declare";
 import {createSettings} from "@launchmenu/core/build/settings/createSettings";
 import {createSettingsFolder} from "@launchmenu/core/build/settings/inputs/createSettingsFolder";
@@ -27,18 +29,22 @@ export const settings = createSettings({
         }),
 });
 
-const item = createStandardMenuItem({
-    name: "oofy",
-    onExecute({context}) {
-        context.settings.get(settings).someNumber.set(20);
-    },
-});
 const item2 = createStandardMenuItem({
     name: "orange",
+    content: <div style={{backgroundColor: "orange"}}>hoi</div>,
     onExecute({context}) {
         const a = context.settings.get(settings).someNumber.get();
         console.log(context.settings, a);
     },
+});
+
+const item = createStandardMenuItem({
+    name: "oofy",
+    content: <div style={{backgroundColor: "purple"}}>No</div>,
+    onExecute({context}) {
+        context.settings.get(settings).someNumber.set(20);
+    },
+    actionBindings: [openMenuExecuteHandler.createBinding([item2])],
 });
 
 export default declare({
