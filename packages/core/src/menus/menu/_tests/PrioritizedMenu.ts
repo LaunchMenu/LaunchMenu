@@ -1,5 +1,5 @@
 import {PrioritizedMenu} from "../PrioritizedMenu";
-import {createPrioritizedMenuItem} from "./PrioritizedMenuItem.helper";
+import {createDummyPrioritizedMenuItem} from "./PrioritizedMenuItem.helper";
 import {wait} from "../../../_tests/wait.helper";
 import {Observer} from "../../../utils/modelReact/Observer";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
@@ -11,6 +11,7 @@ import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangeA
 import {dummyContext} from "../../../_tests/context.helper";
 import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {Field} from "model-react";
+import {Priority} from "../priority/Priority";
 
 const createMenu = (items?: IPrioritizedMenuItem[]) => {
     const menu = new PrioritizedMenu(dummyContext, {
@@ -37,55 +38,91 @@ describe("PrioritizedMenu", () => {
     describe("PrioritizedMenu.addItem(s) / PrioritizedMenu.getItems", () => {
         it("Can add an item", async () => {
             const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1});
+            const item = createDummyPrioritizedMenuItem({priority: 1});
             menu.addItem(item);
             await wait(20);
             expect(menu.getItems()).toEqual([item.item]);
         });
         it("Can add multiple items at once", async () => {
             const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1});
-            const item2 = createPrioritizedMenuItem({priority: 1});
+            const item = createDummyPrioritizedMenuItem({priority: 1});
+            const item2 = createDummyPrioritizedMenuItem({priority: 1});
             menu.addItems([item, item2]);
             await wait(20);
             expect(menu.getItems()).toEqual([item.item, item2.item]);
         });
-        it("Orders the items by priority", async () => {
-            const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1});
-            const item2 = createPrioritizedMenuItem({priority: 4});
-            const item3 = createPrioritizedMenuItem({priority: 3});
-            menu.addItem(item);
-            menu.addItem(item2);
-            menu.addItem(item3);
-            await wait(20);
-            expect(menu.getItems()).toEqual([item2.item, item3.item, item.item]);
-        });
-        it("Orders items with equivalent priority in addition order", async () => {
-            const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1});
-            const item2 = createPrioritizedMenuItem({priority: 3});
-            const item3 = createPrioritizedMenuItem({priority: 3});
-            menu.addItem(item);
-            menu.addItem(item2);
-            menu.addItem(item3);
-            await wait(20);
-            expect(menu.getItems()).toEqual([item2.item, item3.item, item.item]);
-        });
-        it("Doesn't add items with priority 0", async () => {
-            const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1});
-            const item2 = createPrioritizedMenuItem({priority: 0});
-            menu.addItem(item);
-            menu.addItem(item2);
-            await wait(20);
-            expect(menu.getItems()).toEqual([item.item]);
+        describe("Handles priorities properly", () => {
+            it("Orders the items by priority", async () => {
+                const menu = createMenu();
+                const item = createDummyPrioritizedMenuItem({priority: 1});
+                const item2 = createDummyPrioritizedMenuItem({priority: 4});
+                const item3 = createDummyPrioritizedMenuItem({priority: 3});
+                menu.addItem(item);
+                menu.addItem(item2);
+                menu.addItem(item3);
+                await wait(20);
+                expect(menu.getItems()).toEqual([item2.item, item3.item, item.item]);
+            });
+            it("Considers nested 'nested' priorities", async () => {
+                const menu = createMenu();
+                const item = createDummyPrioritizedMenuItem({
+                    priority: [Priority.MEDIUM, Priority.HIGH],
+                });
+                const item2 = createDummyPrioritizedMenuItem({
+                    priority: [Priority.MEDIUM, Priority.MEDIUM],
+                });
+                const item3 = createDummyPrioritizedMenuItem({
+                    priority: [Priority.MEDIUM, Priority.MEDIUM],
+                });
+                const item4 = createDummyPrioritizedMenuItem({
+                    priority: [Priority.MEDIUM, Priority.LOW],
+                });
+                const item5 = createDummyPrioritizedMenuItem({priority: Priority.HIGH});
+                const item6 = createDummyPrioritizedMenuItem({
+                    priority: [Priority.HIGH, Priority.HIGH],
+                });
+                menu.addItem(item);
+                menu.addItem(item2);
+                menu.addItem(item3);
+                menu.addItem(item4);
+                menu.addItem(item5);
+                menu.addItem(item6);
+                await wait(20);
+                expect(menu.getItems()).toEqual([
+                    item6.item,
+                    item5.item,
+                    item.item,
+                    item2.item,
+                    item3.item,
+                    item4.item,
+                ]);
+            });
+            it("Orders items with equivalent priority in addition order", async () => {
+                const menu = createMenu();
+                const item = createDummyPrioritizedMenuItem({priority: 1});
+                const item2 = createDummyPrioritizedMenuItem({priority: 3});
+                const item3 = createDummyPrioritizedMenuItem({priority: 3});
+                menu.addItem(item);
+                menu.addItem(item2);
+                menu.addItem(item3);
+                await wait(20);
+                expect(menu.getItems()).toEqual([item2.item, item3.item, item.item]);
+            });
+            it("Doesn't add items with priority 0", async () => {
+                const menu = createMenu();
+                const item = createDummyPrioritizedMenuItem({priority: 1});
+                const item2 = createDummyPrioritizedMenuItem({priority: 0});
+                menu.addItem(item);
+                menu.addItem(item2);
+                await wait(20);
+                expect(menu.getItems()).toEqual([item.item]);
+            });
         });
         it("Batches additions", async () => {
             const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1});
-            const item2 = createPrioritizedMenuItem({priority: 4});
-            const item3 = createPrioritizedMenuItem({priority: 3});
+            const item = createDummyPrioritizedMenuItem({priority: 1});
+            const item2 = createDummyPrioritizedMenuItem({priority: 4});
+            const item3 = createDummyPrioritizedMenuItem({priority: 3});
             menu.addItem(item);
             menu.addItem(item2);
             menu.addItem(item3);
@@ -104,19 +141,31 @@ describe("PrioritizedMenu", () => {
             const someCategory: ICategory = {
                 name: "Bob",
                 description: "some category for Bob",
-                item: createDummyMenuItem(),
+                item: createDummyMenuItem({name: "c1"}),
             };
             const someCategory2: ICategory = {
                 name: "John",
                 description: "some category for John",
-                item: createDummyMenuItem(),
+                item: createDummyMenuItem({name: "c2"}),
             };
             const items = [
-                createPrioritizedMenuItem({priority: 5}),
-                createPrioritizedMenuItem({priority: 1}),
-                createPrioritizedMenuItem({priority: 3, category: someCategory}),
-                createPrioritizedMenuItem({priority: 5, category: someCategory}),
-                createPrioritizedMenuItem({priority: 6, category: someCategory2}),
+                createDummyPrioritizedMenuItem({priority: 5, name: "0"}),
+                createDummyPrioritizedMenuItem({priority: 1, name: "1"}),
+                createDummyPrioritizedMenuItem({
+                    priority: 3,
+                    category: someCategory,
+                    name: "2",
+                }),
+                createDummyPrioritizedMenuItem({
+                    priority: 5,
+                    category: someCategory,
+                    name: "3",
+                }),
+                createDummyPrioritizedMenuItem({
+                    priority: 6,
+                    category: someCategory2,
+                    name: "4",
+                }),
             ];
 
             it("Inserts the correct category in the menu", async () => {
@@ -149,11 +198,12 @@ describe("PrioritizedMenu", () => {
                 const menu = createMenu();
                 const category = new Field(someCategory);
 
-                const item = createPrioritizedMenuItem({
+                const item = createDummyPrioritizedMenuItem({
                     generateID: true,
-                    actionBindings: h => [
-                        getCategoryAction.createBinding(category.get(h ?? null)),
-                    ],
+                    actionBindings: h => {
+                        return [getCategoryAction.createBinding(category.get(h ?? null))];
+                    },
+                    name: "item",
                 });
                 items.forEach(item => menu.addItem(item));
                 menu.addItem(item);
@@ -196,7 +246,7 @@ describe("PrioritizedMenu", () => {
         });
         it("Calls onMenuChange actions", async () => {
             const onMenuChange = jest.fn();
-            const item = createPrioritizedMenuItem({
+            const item = createDummyPrioritizedMenuItem({
                 priority: 1,
                 actionBindings: [
                     onMenuChangeAction.createBinding({
@@ -223,11 +273,11 @@ describe("PrioritizedMenu", () => {
             item: createDummyMenuItem(),
         };
         const items = [
-            createPrioritizedMenuItem({priority: 5}),
-            createPrioritizedMenuItem({priority: 1}),
-            createPrioritizedMenuItem({priority: 3, category: someCategory}),
-            createPrioritizedMenuItem({priority: 5, category: someCategory}),
-            createPrioritizedMenuItem({priority: 6, category: someCategory2}),
+            createDummyPrioritizedMenuItem({priority: 5}),
+            createDummyPrioritizedMenuItem({priority: 1}),
+            createDummyPrioritizedMenuItem({priority: 3, category: someCategory}),
+            createDummyPrioritizedMenuItem({priority: 5, category: someCategory}),
+            createDummyPrioritizedMenuItem({priority: 6, category: someCategory2}),
         ];
         it("Correctly retrieves the categories", async () => {
             const menu = createMenu();
@@ -247,7 +297,7 @@ describe("PrioritizedMenu", () => {
             const cb = jest.fn();
             new Observer(h => menu.getCategories(h)).listen(cb);
 
-            const newItem = createPrioritizedMenuItem({
+            const newItem = createDummyPrioritizedMenuItem({
                 priority: 4,
                 category: someCategory2,
             });
@@ -264,10 +314,13 @@ describe("PrioritizedMenu", () => {
     describe("PrioritizedMenu.removeItem(s)", () => {
         it("Removes the specified items, based on id", async () => {
             const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1});
-            const item2 = createPrioritizedMenuItem({priority: 4, generateID: true});
-            const item3 = createPrioritizedMenuItem({priority: 3, generateID: true});
-            const item4 = {...createPrioritizedMenuItem({priority: 6}), id: item3.ID};
+            const item = createDummyPrioritizedMenuItem({priority: 1});
+            const item2 = createDummyPrioritizedMenuItem({priority: 4, generateID: true});
+            const item3 = createDummyPrioritizedMenuItem({priority: 3, generateID: true});
+            const item4 = {
+                ...createDummyPrioritizedMenuItem({priority: 6}),
+                ID: item3.ID,
+            } as IPrioritizedMenuItem;
             menu.addItem(item);
             menu.addItem(item2);
             menu.addItem(item3);
@@ -283,9 +336,9 @@ describe("PrioritizedMenu", () => {
         });
         it("Removes the specified items, based on item equivalence (slower)", async () => {
             const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1});
-            const item2 = createPrioritizedMenuItem({priority: 4});
-            const item3 = createPrioritizedMenuItem({priority: 3});
+            const item = createDummyPrioritizedMenuItem({priority: 1});
+            const item2 = createDummyPrioritizedMenuItem({priority: 4});
+            const item3 = createDummyPrioritizedMenuItem({priority: 3});
             menu.addItem(item);
             menu.addItem(item2);
             menu.addItem(item3);
@@ -297,9 +350,9 @@ describe("PrioritizedMenu", () => {
         });
         it("Removes multiple items", async () => {
             const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1});
-            const item2 = createPrioritizedMenuItem({priority: 4});
-            const item3 = createPrioritizedMenuItem({priority: 3});
+            const item = createDummyPrioritizedMenuItem({priority: 1});
+            const item2 = createDummyPrioritizedMenuItem({priority: 4});
+            const item3 = createDummyPrioritizedMenuItem({priority: 3});
             menu.addItem(item);
             menu.addItem(item2);
             menu.addItem(item3);
@@ -311,9 +364,9 @@ describe("PrioritizedMenu", () => {
         });
         it("Batches item removals", async () => {
             const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1, generateID: true});
-            const item2 = createPrioritizedMenuItem({priority: 4, generateID: true});
-            const item3 = createPrioritizedMenuItem({priority: 3, generateID: true});
+            const item = createDummyPrioritizedMenuItem({priority: 1, generateID: true});
+            const item2 = createDummyPrioritizedMenuItem({priority: 4, generateID: true});
+            const item3 = createDummyPrioritizedMenuItem({priority: 3, generateID: true});
             menu.addItem(item);
             menu.addItem(item2);
             menu.addItem(item3);
@@ -334,9 +387,9 @@ describe("PrioritizedMenu", () => {
         });
         it("Removes the specified items, even if added in the same batch", async () => {
             const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1});
-            const item2 = createPrioritizedMenuItem({priority: 4, generateID: true});
-            const item3 = createPrioritizedMenuItem({priority: 3});
+            const item = createDummyPrioritizedMenuItem({priority: 1});
+            const item2 = createDummyPrioritizedMenuItem({priority: 4, generateID: true});
+            const item3 = createDummyPrioritizedMenuItem({priority: 3});
             menu.addItem(item);
             menu.addItem(item2);
             menu.addItem(item3);
@@ -356,19 +409,19 @@ describe("PrioritizedMenu", () => {
                 item: createDummyMenuItem(),
             };
             const items = [
-                createPrioritizedMenuItem({priority: 5, generateID: true}),
-                createPrioritizedMenuItem({priority: 1, generateID: true}),
-                createPrioritizedMenuItem({
+                createDummyPrioritizedMenuItem({priority: 5, generateID: true}),
+                createDummyPrioritizedMenuItem({priority: 1, generateID: true}),
+                createDummyPrioritizedMenuItem({
                     priority: 3,
                     category: someCategory,
                     generateID: true,
                 }),
-                createPrioritizedMenuItem({
+                createDummyPrioritizedMenuItem({
                     priority: 5,
                     category: someCategory,
                     generateID: true,
                 }),
-                createPrioritizedMenuItem({
+                createDummyPrioritizedMenuItem({
                     priority: 6,
                     category: someCategory2,
                     generateID: true,
@@ -399,7 +452,7 @@ describe("PrioritizedMenu", () => {
         });
         it("Calls onMenuChange actions", async () => {
             const onMenuChange = jest.fn();
-            const item = createPrioritizedMenuItem({
+            const item = createDummyPrioritizedMenuItem({
                 priority: 1,
                 generateID: true,
                 actionBindings: [
@@ -422,9 +475,9 @@ describe("PrioritizedMenu", () => {
     describe("PrioritizedMenu.flushBatch", () => {
         it("Synchronously flushes item addition changes", () => {
             const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1, generateID: true});
-            const item2 = createPrioritizedMenuItem({priority: 4, generateID: true});
-            const item3 = createPrioritizedMenuItem({priority: 3, generateID: true});
+            const item = createDummyPrioritizedMenuItem({priority: 1, generateID: true});
+            const item2 = createDummyPrioritizedMenuItem({priority: 4, generateID: true});
+            const item3 = createDummyPrioritizedMenuItem({priority: 3, generateID: true});
             menu.addItem(item);
             menu.addItem(item2);
             menu.addItem(item3);
@@ -433,9 +486,9 @@ describe("PrioritizedMenu", () => {
         });
         it("Synchronously flushes item removal changes", async () => {
             const menu = createMenu();
-            const item = createPrioritizedMenuItem({priority: 1, generateID: true});
-            const item2 = createPrioritizedMenuItem({priority: 4, generateID: true});
-            const item3 = createPrioritizedMenuItem({priority: 3, generateID: true});
+            const item = createDummyPrioritizedMenuItem({priority: 1, generateID: true});
+            const item2 = createDummyPrioritizedMenuItem({priority: 4, generateID: true});
+            const item3 = createDummyPrioritizedMenuItem({priority: 3, generateID: true});
             menu.addItem(item);
             menu.addItem(item2);
             menu.addItem(item3);
@@ -450,10 +503,10 @@ describe("PrioritizedMenu", () => {
 
     describe("PrioritizedMenu.setSelected / PrioritizedMenu.getSelected", () => {
         const items = [
-            createPrioritizedMenuItem({priority: 3}),
-            createPrioritizedMenuItem({priority: 1}),
-            createPrioritizedMenuItem({priority: 5}),
-            createPrioritizedMenuItem({priority: 2}),
+            createDummyPrioritizedMenuItem({priority: 3}),
+            createDummyPrioritizedMenuItem({priority: 1}),
+            createDummyPrioritizedMenuItem({priority: 5}),
+            createDummyPrioritizedMenuItem({priority: 2}),
         ];
         it("Can select items", () => {
             const menu = createMenu(items);
@@ -475,7 +528,7 @@ describe("PrioritizedMenu", () => {
         it("Calls onSelect actions", () => {
             let selectCount = 0;
             let deselectCount = 0;
-            const item = createPrioritizedMenuItem({
+            const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
                     onSelectAction.createBinding({
                         onSelect: (selected, m) => {
@@ -503,7 +556,7 @@ describe("PrioritizedMenu", () => {
             expect(menu.getSelected()).toEqual([]);
         });
         it("Automatically deselects items when removed", () => {
-            const item = createPrioritizedMenuItem({generateID: true});
+            const item = createDummyPrioritizedMenuItem({generateID: true});
             const menu = createMenu([...items, item]);
             menu.setSelected(item.item, true);
             expect(menu.getSelected()).toEqual([item.item]);
@@ -520,9 +573,9 @@ describe("PrioritizedMenu", () => {
             item: createDummyMenuItem(),
         };
         const items = [
-            createPrioritizedMenuItem({noSelect: true, generateID: true}),
-            createPrioritizedMenuItem({generateID: true}),
-            createPrioritizedMenuItem({category: someCategory, generateID: true}),
+            createDummyPrioritizedMenuItem({noSelect: true, generateID: true}),
+            createDummyPrioritizedMenuItem({generateID: true}),
+            createDummyPrioritizedMenuItem({category: someCategory, generateID: true}),
         ];
         it("Has the correct initial cursor", () => {
             expect(createMenu().getCursor()).toEqual(null);
@@ -537,7 +590,7 @@ describe("PrioritizedMenu", () => {
         it("Calls onCursor actions", () => {
             let selectCount = 0;
             let deselectCount = 0;
-            const item = createPrioritizedMenuItem({
+            const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
                     onCursorAction.createBinding({
                         onCursor: (selected, m) => {
@@ -560,12 +613,12 @@ describe("PrioritizedMenu", () => {
         });
         it("Can't set item as cursor if not in the menu", () => {
             const menu = createMenu(items);
-            const item = createPrioritizedMenuItem({});
+            const item = createDummyPrioritizedMenuItem({});
             menu.setCursor(item.item);
             expect(menu.getCursor()).not.toEqual(item.item);
         });
         it("Automatically selects another cursor when cursor is removed", () => {
-            const item = createPrioritizedMenuItem({generateID: true});
+            const item = createDummyPrioritizedMenuItem({generateID: true});
             const menu = createMenu([...items, item]);
             menu.setCursor(item.item);
             expect(menu.getCursor()).toEqual(item.item);
@@ -582,13 +635,13 @@ describe("PrioritizedMenu", () => {
     });
     describe("PrioritizedMenu.getAllSelected", () => {
         const items = [
-            createPrioritizedMenuItem({}),
-            createPrioritizedMenuItem({}),
-            createPrioritizedMenuItem({}),
+            createDummyPrioritizedMenuItem({}),
+            createDummyPrioritizedMenuItem({}),
+            createDummyPrioritizedMenuItem({}),
         ];
         it("Combines the selection and cursor if present", () => {
-            const item = createPrioritizedMenuItem({});
-            const item2 = createPrioritizedMenuItem({});
+            const item = createDummyPrioritizedMenuItem({});
+            const item2 = createDummyPrioritizedMenuItem({});
             const menu = createMenu([...items, item, item2]);
             menu.setCursor(item.item);
             expect(menu.getAllSelected()).toEqual([item.item]);
@@ -596,16 +649,16 @@ describe("PrioritizedMenu", () => {
             expect(menu.getAllSelected()).toEqual([item2.item, item.item]);
         });
         it("Returns the selection if no cursor is present", () => {
-            const item = createPrioritizedMenuItem({});
-            const item2 = createPrioritizedMenuItem({});
+            const item = createDummyPrioritizedMenuItem({});
+            const item2 = createDummyPrioritizedMenuItem({});
             const menu = createMenu([...items, item, item2]);
             menu.setCursor(null);
             menu.setSelected(item2.item);
             expect(menu.getAllSelected()).toEqual([item2.item]);
         });
         it("Only includes items once", () => {
-            const item = createPrioritizedMenuItem({});
-            const item2 = createPrioritizedMenuItem({});
+            const item = createDummyPrioritizedMenuItem({});
+            const item2 = createDummyPrioritizedMenuItem({});
             const menu = createMenu([...items, item, item2]);
             menu.setCursor(item.item);
             expect(menu.getAllSelected()).toEqual([item.item]);
@@ -620,9 +673,9 @@ describe("PrioritizedMenu", () => {
             item: createDummyMenuItem(),
         };
         const items = [
-            createPrioritizedMenuItem({}),
-            createPrioritizedMenuItem({}),
-            createPrioritizedMenuItem({category: someCategory}),
+            createDummyPrioritizedMenuItem({}),
+            createDummyPrioritizedMenuItem({}),
+            createDummyPrioritizedMenuItem({category: someCategory}),
         ];
         let menu: PrioritizedMenu;
         beforeEach(() => {
@@ -630,7 +683,7 @@ describe("PrioritizedMenu", () => {
         });
         it("Deselects all items", () => {
             let deselectCount = 0;
-            const item = createPrioritizedMenuItem({
+            const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
                     onSelectAction.createBinding({
                         onSelect: (selected, m) => {
@@ -651,7 +704,7 @@ describe("PrioritizedMenu", () => {
         });
         it("Deselects the cursor", () => {
             let deselectCount = 0;
-            const item = createPrioritizedMenuItem({
+            const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
                     onCursorAction.createBinding({
                         onCursor: (selected, m) => {
@@ -682,7 +735,7 @@ describe("PrioritizedMenu", () => {
         });
         it("Blocks changing the cursor", () => {
             let selectCount = 0;
-            const item = createPrioritizedMenuItem({
+            const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
                     onCursorAction.createBinding({
                         onCursor: (selected, m) => {
@@ -702,7 +755,7 @@ describe("PrioritizedMenu", () => {
         });
         it("Blocks selecting of items", () => {
             let selectCount = 0;
-            const item = createPrioritizedMenuItem({
+            const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
                     onSelectAction.createBinding({
                         onSelect: (selected, m) => {
@@ -723,17 +776,17 @@ describe("PrioritizedMenu", () => {
     describe("Getters can be subscribed to", () => {
         let menu: PrioritizedMenu;
         const items = [
-            createPrioritizedMenuItem({}),
-            createPrioritizedMenuItem({}),
-            createPrioritizedMenuItem({}),
+            createDummyPrioritizedMenuItem({}),
+            createDummyPrioritizedMenuItem({}),
+            createDummyPrioritizedMenuItem({}),
         ];
         beforeEach(() => {
             menu = createMenu(items);
         });
         describe("Menu.getItems", () => {
             it("Correctly subscribes to changes", () => {
-                const item = createPrioritizedMenuItem({});
-                const item2 = createPrioritizedMenuItem({});
+                const item = createDummyPrioritizedMenuItem({});
+                const item2 = createDummyPrioritizedMenuItem({});
                 const callback = jest.fn(() => {});
                 expect(
                     menu.getItems({call: callback, registerRemover: () => {}})
@@ -840,9 +893,9 @@ describe("PrioritizedMenu", () => {
     describe("categoryConfig", () => {
         describe("categoryConfig.maxCategoryItemCount", () => {
             const items = [
-                createPrioritizedMenuItem({priority: 2}),
-                createPrioritizedMenuItem({priority: 1}),
-                createPrioritizedMenuItem({priority: 3}),
+                createDummyPrioritizedMenuItem({priority: 2}),
+                createDummyPrioritizedMenuItem({priority: 1}),
+                createDummyPrioritizedMenuItem({priority: 3}),
             ];
             let menu: PrioritizedMenu;
             beforeEach(() => {
@@ -862,9 +915,9 @@ describe("PrioritizedMenu", () => {
                 const menu = new PrioritizedMenu(dummyContext, {maxCategoryItemCount: 2});
 
                 const items2 = [
-                    createPrioritizedMenuItem({category: someCategory}),
-                    createPrioritizedMenuItem({category: someCategory}),
-                    createPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
                 ];
                 items.forEach(item => menu.addItem(item));
                 items2.forEach(item => menu.addItem(item));
@@ -880,7 +933,7 @@ describe("PrioritizedMenu", () => {
                 it("Doesn't call onMenuChange to inform about addition if the item wasn't added", () => {
                     items.forEach(item => menu.addItem(item));
                     const onMenuChange = jest.fn();
-                    const item = createPrioritizedMenuItem({
+                    const item = createDummyPrioritizedMenuItem({
                         priority: 1,
                         generateID: true,
                         actionBindings: [
@@ -895,7 +948,7 @@ describe("PrioritizedMenu", () => {
                 });
                 it("Does call onMenuChange to inform about removal if an item got pushed off the list", () => {
                     const onMenuChange = jest.fn();
-                    const item = createPrioritizedMenuItem({
+                    const item = createDummyPrioritizedMenuItem({
                         priority: 1,
                         generateID: true,
                         actionBindings: [
@@ -930,14 +983,14 @@ describe("PrioritizedMenu", () => {
                     getCategory: () => undefined,
                 });
                 const items = [
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
                 ];
                 const items2 = [
-                    createPrioritizedMenuItem({category: someCategory}),
-                    createPrioritizedMenuItem({category: someCategory}),
-                    createPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
                 ];
                 items.forEach(item => menu.addItem(item));
                 items2.forEach(item => menu.addItem(item));
@@ -957,14 +1010,14 @@ describe("PrioritizedMenu", () => {
                     getCategory: () => someCategory,
                 });
                 const items = [
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
                 ];
                 const items2 = [
-                    createPrioritizedMenuItem({category: someCategory}),
-                    createPrioritizedMenuItem({category: someCategory}),
-                    createPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
                 ];
                 items.forEach(item => menu.addItem(item));
                 items2.forEach(item => menu.addItem(item));
@@ -989,14 +1042,14 @@ describe("PrioritizedMenu", () => {
                         categories.map(({category}) => category).reverse(),
                 });
                 const items = [
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
                 ];
                 const items2 = [
-                    createPrioritizedMenuItem({category: someCategory}),
-                    createPrioritizedMenuItem({category: someCategory}),
-                    createPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
                 ];
                 items.forEach(item => menu.addItem(item));
                 items2.forEach(item => menu.addItem(item));
@@ -1017,14 +1070,14 @@ describe("PrioritizedMenu", () => {
                     sortCategories: () => [undefined],
                 });
                 const items = [
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
                 ];
                 const items2 = [
-                    createPrioritizedMenuItem({category: someCategory}),
-                    createPrioritizedMenuItem({category: someCategory}),
-                    createPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory}),
                 ];
                 items.forEach(item => menu.addItem(item));
                 items2.forEach(item => menu.addItem(item));
@@ -1039,11 +1092,11 @@ describe("PrioritizedMenu", () => {
                     batchInterval: 200,
                 });
                 const items = [
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
-                    createPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
+                    createDummyPrioritizedMenuItem({}),
                 ];
                 items.forEach(item => menu.addItem(item));
 

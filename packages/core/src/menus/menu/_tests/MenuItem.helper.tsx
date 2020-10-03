@@ -13,10 +13,12 @@ export function createDummyMenuItem({
     category,
     noSelect = false,
     actionBindings,
+    name = uuid(),
 }: {
     category?: ICategory;
     noSelect?: boolean;
     actionBindings?: ISubscribableActionBindings;
+    name?: string;
 } = {}): IMenuItem {
     return {
         view: () => <div>hoi</div>,
@@ -25,7 +27,8 @@ export function createDummyMenuItem({
             ...(category ? [getCategoryAction.createBinding(category)] : []),
             ...(noSelect ? [] : [executeAction.createBinding({execute: () => {}})]),
         ]),
-    };
+        name,
+    } as IMenuItem;
 }
 
 export function createDummySearchableMenuItem({
@@ -33,11 +36,13 @@ export function createDummySearchableMenuItem({
     category,
     searchPriorities = {},
     searchDelay = 0,
+    name = uuid(),
 }: {
     category?: ICategory;
     noSelect?: boolean;
     searchDelay?: number;
     searchPriorities?: {[search: string]: number};
+    name?: string;
 }): IMenuItem {
     const id = uuid();
     const item: IMenuItem = {
@@ -60,6 +65,7 @@ export function createDummySearchableMenuItem({
                 },
             ]),
         ],
-    };
+        name,
+    } as IMenuItem;
     return item;
 }

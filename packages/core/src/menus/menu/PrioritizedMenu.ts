@@ -15,6 +15,7 @@ import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 import {AbstractMenu} from "./AbstractMenu";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
+import {hasHigherOrEqualPriority} from "./priority/hasHigherOrEqualPriority";
 
 type CategoryData = {
     items: SortedList<IPrioritizedMenuItem>;
@@ -31,7 +32,7 @@ const createSortedList = (changeList: {
     removed: IMenuItem[];
 }): SortedList<IPrioritizedMenuItem> =>
     new SortedList({
-        condition: (a, b) => a.priority >= b.priority,
+        condition: (a, b) => hasHigherOrEqualPriority(a.priority, b.priority),
         onAdd: ({item}) => changeList.added.push(item),
         onRemove: ({item}) => changeList.removed.push(item),
     });

@@ -91,5 +91,9 @@ export function createStandardMenuItem({
             );
         }),
         actionBindings: bindings,
-    };
+        toString: () =>
+            `StandardMenuItem: ${
+                getHooked(name) + (getHooked(description) ? getHooked(description) : "")
+            }`,
+    } as IMenuItem;
 }
