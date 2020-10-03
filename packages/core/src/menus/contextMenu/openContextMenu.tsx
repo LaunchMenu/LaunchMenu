@@ -18,9 +18,9 @@ export function openContextMenu(
     onClose?: () => void
 ): () => void {
     let close = () => {}; // placeholder
-    const contextMenuItems = getContextMenuItems(menu.getAllSelected(), ioContext, () =>
-        close()
-    );
+    const contextMenuItems = getContextMenuItems(menu.getAllSelected(), ioContext, () => {
+        close();
+    });
     if (contextMenuItems.length > 0)
         close = openUI(
             ioContext,

@@ -11,6 +11,7 @@ import {IIOContext} from "../../context/_types/IIOContext";
 
 /**
  * A menu class that can be used to copy a menu and add items to it, or remove items from it
+ * @deprecated
  */
 export class AlteredMenu extends Menu {
     protected menuObserver: Observer<IMenuCategoryData[]>;

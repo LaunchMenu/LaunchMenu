@@ -41,7 +41,6 @@ export class LaunchMenu {
      * Disposes of all runtime data
      */
     public destroy() {
-        if (!this.keyHandler) console.log("===================== weirdness");
         this.keyHandler?.destroy();
         this.appletManager?.destroy();
         this.sessionManager?.destroy();
@@ -60,15 +59,6 @@ export class LaunchMenu {
         this.setupView();
         this.setupSessions();
         await this.setupApplets();
-
-        // // TODO: remove session switch test code
-        // this.sessionManager.addSession();
-        // this.keyHandler.listen(key => {
-        //     if (key.is(["ctrl", "b"])) {
-        //         const bottom = this.sessionManager.getSessions()[0];
-        //         this.sessionManager.selectSession(bottom);
-        //     }
-        // });
     }
 
     /**

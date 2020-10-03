@@ -8,7 +8,7 @@ export class ManualSourceHelper {
     protected listeners: IDataListener[] = [];
 
     // Exceptions to pass to new listeners
-    protected exceptions: any[] = [];
+    protected exceptions: readonly any[] = [];
 
     // Whether to pass the loading state to new listeners
     protected loading: boolean = false;
@@ -29,7 +29,10 @@ export class ManualSourceHelper {
      * @param exceptions The exceptions to pass to listeners
      * @param suppressUpdate Whether to suppress calling the listeners
      */
-    public setExceptions(exceptions: any[], suppressUpdate?: boolean): void {
+    public setExceptions(
+        exceptions: any[] | readonly any[],
+        suppressUpdate: boolean = this.exceptions == exceptions
+    ): void {
         this.exceptions = exceptions;
         if (!suppressUpdate) this.callListeners();
     }
@@ -38,7 +41,7 @@ export class ManualSourceHelper {
      * Retrieves the exceptions that the source currently indicate to have
      * @returns The exceptions
      */
-    public getException(): any[] {
+    public getExceptions(): readonly any[] {
         return this.exceptions;
     }
 
@@ -47,7 +50,10 @@ export class ManualSourceHelper {
      * @param loading Whether the source is loading
      * @param suppressUpdate Whether to suppress calling the listeners
      */
-    public setLoading(loading: boolean, suppressUpdate?: boolean): void {
+    public setLoading(
+        loading: boolean,
+        suppressUpdate: boolean = this.loading == loading
+    ): void {
         this.loading = loading;
         if (!suppressUpdate) this.callListeners();
     }

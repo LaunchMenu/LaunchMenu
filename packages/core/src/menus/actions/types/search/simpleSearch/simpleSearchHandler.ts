@@ -32,23 +32,25 @@ export function getSimplePriority(
         description,
         tags,
     }: {
-        name?: string | ((hook?: IDataHook) => string);
-        description?: string | ((hook?: IDataHook) => string);
-        tags?: string[] | ((hook?: IDataHook) => string[]);
+        name?: string | ((hook?: IDataHook) => string | undefined);
+        description?: string | ((hook?: IDataHook) => string | undefined);
+        tags?: string[] | ((hook?: IDataHook) => string[] | undefined);
     },
     hook?: IDataHook
 ): number {
     const matcher = getSimpleSearchMatcher(query);
     let priority = 0;
 
-    if (name) priority += matcher.match(getHooked(name, hook)) * simpleSearchWeights.name;
+    if (name)
+        priority += matcher.match(getHooked(name, hook) ?? "") * simpleSearchWeights.name;
 
     if (description)
         priority +=
-            matcher.match(getHooked(description, hook)) * simpleSearchWeights.description;
+            matcher.match(getHooked(description, hook) ?? "") *
+            simpleSearchWeights.description;
 
     if (tags)
-        getHooked(tags, hook).forEach(
+        (getHooked(tags, hook) ?? []).forEach(
             tag => (priority += matcher.match(tag) * simpleSearchWeights.tags)
         );
     return priority;

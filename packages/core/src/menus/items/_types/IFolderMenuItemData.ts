@@ -9,4 +9,4 @@ export type IFolderMenuItemData<T extends {[key: string]: IMenuItem} | IMenuItem
     children: T;
     /** The children that should be included in searches, defaults to the value of children */
     searchChildren?: Partial<T>;
-} & Omit<IStandardMenuItemData, "onExecute">;
+} & IStandardMenuItemData;

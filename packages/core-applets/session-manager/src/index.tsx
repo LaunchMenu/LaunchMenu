@@ -1,0 +1,96 @@
+import {
+    createFolderMenuItem,
+    createSettings,
+    createSettingsFolder,
+    createStandardCategory,
+    createStandardMenuItem,
+    declare,
+    ProxiedMenu,
+    Priority,
+} from "@launchmenu/core";
+import {DataCacher, Field, IDataHook} from "model-react";
+import {SessionData} from "./SessionData";
+
+export const info = {
+    name: "Session manager",
+    description: "An applet to manage all sessions within LaunchMenu",
+    version: "0.0.0",
+    icon: "search", // TODO: add some kind of management icon
+};
+
+export const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {},
+        }),
+});
+
+export default declare({
+    info,
+    settings,
+    withLM: LM => {
+        const sessionManager = LM.getSessionManager();
+        /** Keep track of the sessions with some extra interface data the user can attach */
+        const sessionsData = new DataCacher<SessionData[]>((h, curSessionData = []) => {
+            // Find the currently highest session ID (in name)
+            let highestSessionID = curSessionData.reduce((cur, sessionData) => {
+                const match = sessionData.name.get(null).match(/session-(\d+)/);
+                return match ? Math.max(Number(match[1]), cur) : cur;
+            }, 1);
+
+            // Retrieve the updated session data
+            return sessionManager.getSessions(h).map(newSession => {
+                // If the session already exists, return it
+                const current = curSessionData.find(({session}) => session == newSession);
+                if (current) return current;
+
+                // Create new session data for new sessions
+                return new SessionData(newSession, `session-${++highestSessionID}`);
+            });
+        });
+
+        // Setup the menu controls
+        const sessionsControlsCategory = createStandardCategory({
+            name: "Session controls",
+        });
+        const addSessionItem = createStandardMenuItem({
+            name: "Add session",
+            category: sessionsControlsCategory,
+            onExecute: () => {
+                const session = sessionManager.addSession();
+            },
+        });
+
+        // Collect the items for in the menu
+        const getSessionMenuItems = (h: IDataHook = null) => [
+            ...sessionsData.get(h).map(({sessionInterface}) => sessionInterface),
+            addSessionItem,
+        ];
+
+        return {
+            open({context, onClose}) {
+                context.openUI(
+                    {menu: new ProxiedMenu(context, getSessionMenuItems)},
+                    onClose
+                );
+            },
+            globalContextMenuItems: h => [
+                (context, close) => ({
+                    priority: [Priority.LOW, Priority.LOW],
+                    item: createFolderMenuItem({
+                        name: "Switch session",
+                        children: getSessionMenuItems(h),
+                        onExecute: close,
+                    }),
+                }),
+            ],
+            development: {
+                onReload(): void {
+                    // session.searchField.set("or");
+                },
+            },
+        };
+    },
+});

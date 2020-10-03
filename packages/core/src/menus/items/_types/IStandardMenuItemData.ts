@@ -17,10 +17,10 @@ export type IStandardMenuItemData = {
     name: string | ((h?: IDataHook) => string);
 
     /** The icon of the menu item */
-    icon?: string | ReactNode | ((h?: IDataHook) => string | ReactNode);
+    icon?: string | ReactNode | ((h?: IDataHook) => string | ReactNode | undefined);
 
     /** The description of the menu item */
-    description?: string | ((h?: IDataHook) => string);
+    description?: string | ((h?: IDataHook) => string | undefined);
 
     /** Any tags that can be used for searching */
     tags?: string[] | ((h?: IDataHook) => string[]);

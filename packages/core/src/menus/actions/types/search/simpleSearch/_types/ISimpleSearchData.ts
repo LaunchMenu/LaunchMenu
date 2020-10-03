@@ -9,11 +9,11 @@ import {IQuery} from "../../../../../menu/_types/IQuery";
  */
 export type ISimpleSearchData = {
     /** The name of the item */
-    name?: string | ((hook: IDataHook) => string);
+    name?: string | ((hook: IDataHook) => string | undefined);
     /** The description of the item */
-    description?: string | ((hook: IDataHook) => string);
+    description?: string | ((hook: IDataHook) => string | undefined);
     /** The tags of the item */
-    tags?: string[] | ((hook: IDataHook) => string[]);
+    tags?: string[] | ((hook: IDataHook) => string[] | undefined);
     /** Any number of children that can be matched */
     children?: IMenuItem[];
     /** A possible pattern matcher to recognize search types */

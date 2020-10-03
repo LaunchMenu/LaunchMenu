@@ -2,6 +2,7 @@ import React, {memo} from "react";
 import {IFolderMenuItemData} from "./_types/IFolderMenuItemData";
 import {IMenuItem} from "./_types/IMenuItem";
 import {IActionBinding} from "../actions/_types/IActionBinding";
+import {executeAction} from "../actions/types/execute/executeAction";
 import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
@@ -39,6 +40,7 @@ export function createFolderMenuItem<T extends {[key: string]: IMenuItem} | IMen
     children,
     searchPattern,
     searchChildren = children,
+    onExecute,
     onSelect,
     onCursor,
     onMenuChange,
@@ -55,6 +57,8 @@ export function createFolderMenuItem<T extends {[key: string]: IMenuItem} | IMen
     const childList = Object.values(children);
     if (childList.length > 0)
         generatedBindings.push(openMenuExecuteHandler.createBinding(childList));
+    if (onExecute)
+        generatedBindings.push(executeAction.createBinding({execute: onExecute}));
     if (onSelect) generatedBindings.push(onSelectAction.createBinding({onSelect}));
     if (onCursor) generatedBindings.push(onCursorAction.createBinding({onCursor}));
     if (onMenuChange)

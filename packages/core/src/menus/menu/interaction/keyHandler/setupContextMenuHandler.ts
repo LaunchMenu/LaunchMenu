@@ -66,7 +66,7 @@ export function setupContextMenuHandler(
                         contextData.items = getContextMenuItems(
                             menu.getAllSelected(hook),
                             ioContext,
-                            () => contextData?.close?.(),
+                            () => void contextData?.close?.(),
                             hook
                         );
 

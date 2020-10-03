@@ -56,6 +56,7 @@ function getFileExportsRecursive(report, fullText, node) {
                     exports.push(declaration.name.escapedText);
                 });
         }
+        case ts.SyntaxKind.EnumDeclaration:
         case ts.SyntaxKind.ClassDeclaration:
         case ts.SyntaxKind.FunctionDeclaration: {
             if (
