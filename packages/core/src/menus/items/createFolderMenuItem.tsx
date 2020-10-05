@@ -20,6 +20,10 @@ import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings"
 import {adjustBindings} from "./adjustBindings";
 import {openMenuItemContentHandler} from "../actions/types/onCursor/openMenuItemContentHandler";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
+import {shortcutHandler} from "../actions/types/keyHandler/shortcutHandler";
+import {keyHandlerAction} from "../actions/types/keyHandler/keyHandlerAction";
+import {forwardKeyEventHandler} from "../actions/types/keyHandler/forwardKeyEventHandler";
+import {getHooked} from "../../utils/subscribables/getHooked";
 
 /**
  * Retrieves the children in (subscribable) list form
@@ -51,11 +55,12 @@ export function createFolderMenuItem<
     tags,
     icon,
     content,
-    shortcut, //TODO:
+    shortcut,
     category,
     actionBindings,
     children,
     closeOnExecute = false,
+    forwardKeyEvents = false,
     searchPattern,
     searchChildren = (children as any) as S,
     onExecute,
@@ -63,6 +68,7 @@ export function createFolderMenuItem<
     onCursor,
     onMenuChange,
 }: IFolderMenuItemData<T, S>): IMenuItem & {children: T} {
+    const childList = getChildList(children);
     const generatedBindings: IActionBinding<any>[] = [
         createSimpleSearchBinding({
             name,
@@ -72,9 +78,10 @@ export function createFolderMenuItem<
             children: getChildList(searchChildren),
         }),
     ];
-    const childList = getChildList(children);
     if (childList.length > 0 || childList instanceof Function)
-        generatedBindings.push(openMenuExecuteHandler.createBinding({items: childList, closeOnExecute}));
+        generatedBindings.push(
+            openMenuExecuteHandler.createBinding({items: childList, closeOnExecute})
+        );
     if (onExecute)
         generatedBindings.push(executeAction.createBinding({execute: onExecute}));
     if (onSelect) generatedBindings.push(onSelectAction.createBinding({onSelect}));
@@ -84,6 +91,13 @@ export function createFolderMenuItem<
     if (category) generatedBindings.push(getCategoryAction.createBinding(category));
     if (content)
         generatedBindings.push(openMenuItemContentHandler.createBinding(content));
+    if (shortcut) generatedBindings.push(shortcutHandler.createBinding({shortcut}));
+    if (forwardKeyEvents)
+        generatedBindings.push(
+            forwardKeyEventHandler.createBinding(h => ({
+                targets: getHooked(childList, h),
+            }))
+        );
 
     // Combine the input action bindings with the created ones
     let bindings = generatedBindings as ISubscribableActionBindings;

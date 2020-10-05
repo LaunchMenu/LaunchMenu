@@ -1,5 +1,6 @@
 import {IIOContext} from "../../../../../context/_types/IIOContext";
 import {KeyEvent} from "../../../../../stacks/keyHandlerStack/KeyEvent";
+import {IMenu} from "../../../../menu/_types/IMenu";
 
 /** The possible responses for key handlers of an item */
 export type ISyncItemKeyHandlerResponse =
@@ -20,11 +21,13 @@ export type IItemKeyHandler = {
     /**
      * Informs about key events and returns whether it was caught
      * @param event The event to be executed
-     * @param context The IO context that can be used
+     * @param menu The menu that the item is in that forwarded this event
+     * @param onExecute The item execution listener for the menu
      * @returns Whether the event was caught
      */
     onKey(
         event: KeyEvent,
-        context: IIOContext
+        menu: IMenu,
+        onExecute?: () => void
     ): ISyncItemKeyHandlerResponse | Promise<ISyncItemKeyHandlerResponse>;
 };

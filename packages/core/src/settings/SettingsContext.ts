@@ -39,6 +39,7 @@ export class SettingsContext {
     public get<F extends ISettingsFolderMenuItem, D extends IJSONDeserializer>(
         config: IIdentifiedSettingsConfig<any, F, D>
     ): TSettingsTree<F["children"], D> {
+        if (!config) throw Error("No config was provided");
         return extractSettings(this.getUI(config));
     }
 

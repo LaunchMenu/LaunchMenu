@@ -3,7 +3,7 @@ import {isView} from "../../stacks/viewStack/_types/IViewStackItem";
 import {withRemoveError} from "../withRemoveError";
 import {IIOContext} from "../_types/IIOContext";
 import {IOpenableContent} from "../_types/IOpenableContent";
-import {getViewWithContext} from "./getViewWithContext";
+import {getViewWithContext} from "./uiWrappers/getViewWithContext";
 
 /**
  * Opens the given content within the given ui context

@@ -6,6 +6,7 @@ import {isItemSelectable} from "../../menus/items/isItemSelectable";
 import {useIOContext} from "../../context/react/useIOContext";
 import {executeAction} from "../../menus/actions/types/execute/executeAction";
 import {KeyEvent} from "../../stacks/keyHandlerStack/KeyEvent";
+import {executeItems} from "../../menus/menu/interaction/executeItems";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution
@@ -13,9 +14,10 @@ import {KeyEvent} from "../../stacks/keyHandlerStack/KeyEvent";
 export const MenuItemFrame: FC<{
     isSelected: boolean;
     isCursor: boolean;
+    onExecute?: () => void;
     menu?: IMenu;
     item?: IMenuItem;
-}> = ({isCursor, isSelected, menu, item, children}) => {
+}> = ({isCursor, isSelected, menu, onExecute, item, children}) => {
     const ioContext = useIOContext();
     return (
         <Box background={isSelected ? "secondary" : "bgPrimary"} paddingLeft="medium">
@@ -24,14 +26,9 @@ export const MenuItemFrame: FC<{
                 onClick={useCallback(async () => {
                     if (!menu || !item) return;
                     if (menu.getCursor() == item) {
-                        if (ioContext) {
-                            const cmd = await executeAction
-                                .get([item])
-                                .execute({context: menu.getContext()});
-                            if (cmd) ioContext.undoRedo.execute(cmd);
-                        }
+                        executeItems(menu.getContext(), [item], onExecute);
                     } else if (isItemSelectable(item)) menu.setCursor(item);
-                }, [ioContext, menu, item])}
+                }, [menu, item])}
                 // Open the context menu on right click
                 onContextMenu={() => {
                     if (!menu || !item) return;

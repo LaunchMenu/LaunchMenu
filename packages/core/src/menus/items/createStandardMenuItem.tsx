@@ -19,6 +19,9 @@ import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings"
 import {getHooked} from "../../utils/subscribables/getHooked";
 import {openMenuItemContentHandler} from "../actions/types/onCursor/openMenuItemContentHandler";
 import {keyHandlerAction} from "../actions/types/keyHandler/keyHandlerAction";
+import {shortcutHandler} from "../actions/types/keyHandler/shortcutHandler";
+import {useIOContext} from "../../context/react/useIOContext";
+import {Box} from "../../styling/box/Box";
 
 /**
  * Creates a new standard menu item
@@ -31,7 +34,7 @@ export function createStandardMenuItem({
     tags,
     icon,
     category,
-    shortcut, // TODO:
+    shortcut,
     content,
     searchPattern,
     actionBindings,
@@ -60,10 +63,7 @@ export function createStandardMenuItem({
     if (category) generatedBindings.push(getCategoryAction.createBinding(category));
     if (content)
         generatedBindings.push(openMenuItemContentHandler.createBinding(content));
-    // TODO: implement once shortcut handler exists
-    // if(shortcut) generatedBindings.push(keyHandlerAction.createBinding({onKey: (key, context)=>{
-
-    // }}))
+    if (shortcut) generatedBindings.push(shortcutHandler.createBinding({shortcut}));
 
     // Combine the input action bindings with the created ones
     let bindings = generatedBindings as ISubscribableActionBindings;
@@ -76,6 +76,7 @@ export function createStandardMenuItem({
     return {
         view: memo(({highlight, ...props}) => {
             const [h] = useDataHook();
+            const ioContext = useIOContext();
             const ico = getHooked(icon, h);
             const desc = getHooked(description, h);
             return (
@@ -90,6 +91,19 @@ export function createStandardMenuItem({
                                 <SimpleSearchHighlight query={highlight}>
                                     {getHooked(name, h)}
                                 </SimpleSearchHighlight>
+
+                                {/* TODO: make some proper UI, also make that UI for other std menu items */}
+                                {shortcut && (
+                                    <Box marginLeft="large" display="inline">
+                                        {(shortcut instanceof Function
+                                            ? ioContext
+                                                ? shortcut(ioContext)
+                                                : ""
+                                            : shortcut
+                                        ).toString()}
+                                    </Box>
+                                )}
+
                                 {desc && (
                                     <Truncated title={desc}>
                                         <SimpleSearchHighlight query={highlight}>

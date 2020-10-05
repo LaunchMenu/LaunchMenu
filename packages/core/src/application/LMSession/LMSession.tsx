@@ -95,16 +95,6 @@ export class LMSession {
      * @returns Whether the event was caught
      */
     public emit(event: KeyEvent): Promise<boolean> {
-        // TODO: remove this debug/testing code
-        if (event.is(["ctrl", "n"])) {
-            this.context.openUI({
-                content: (
-                    <Box padding="large">
-                        LM is great m8 {this.context.panes.content.get().length}
-                    </Box>
-                ),
-            });
-        }
         return this.context.keyHandler.emit(event);
     }
 

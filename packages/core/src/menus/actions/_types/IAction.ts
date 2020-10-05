@@ -63,7 +63,8 @@ export type IAction<I extends INonFunction, O> = {
      * Retrieves the action data for the given input data
      * @param data The data to run the core on
      * @param items The item array that the data was retrieved from, indices correspond to data indices
+     * @param hook The data hook to subscribe to changes
      * @returns The action execution functions or other data
      */
-    get(data: I[], items: IMenuItem[][]): O;
+    get(data: I[], items: IMenuItem[][], hook?: IDataHook): O;
 };

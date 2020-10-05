@@ -17,6 +17,6 @@ export type IMenuItemView = LFC<{
     highlight: IQuery | null;
     /** The menu this item view is rendered for */
     menu: IMenu;
-    /** Views won't have any children */
-    children?: never;
+    /** A callback for when this item is executed (by mouse) */
+    onExecute?: () => void;
 }>;

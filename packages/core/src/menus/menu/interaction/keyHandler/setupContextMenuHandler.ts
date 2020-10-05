@@ -22,12 +22,15 @@ import {getHooked} from "../../../../utils/subscribables/getHooked";
 export function setupContextMenuHandler(
     menu: IMenu,
     {
+        onExecute,
         useContextItemKeyHandlers = true,
         pattern = menu
             .getContext()
             .settings.get(baseSettings)
             .controls.menu.openContextMenu.get(),
     }: {
+        /* A callback for when an item gets executed (may be suppressed/delayed by an executable) */
+        onExecute?: () => void;
         /** Whether to forward key events to context menu items (can be costly for large selections or context menus), defaults to true */
         useContextItemKeyHandlers?: boolean;
         /** A pattern to detect whether to handle the keyboard opening */
@@ -36,7 +39,9 @@ export function setupContextMenuHandler(
 ): IKeyEventListenerObject {
     const ioContext = menu.getContext();
     let contextData: {
-        emitter?: {emit(event: KeyEvent, context: IIOContext): Promise<boolean>};
+        emitter?: {
+            emit(event: KeyEvent, menu: IMenu, onExecute?: () => void): Promise<boolean>;
+        };
         items?: IPrioritizedMenuItem[];
         menu?: PrioritizedMenu;
         close?: () => void;
@@ -85,7 +90,7 @@ export function setupContextMenuHandler(
             // Forward events to context items
             if (
                 useContextItemKeyHandlers &&
-                (await contextData.emitter?.emit(e, ioContext))
+                (await contextData.emitter?.emit(e, menu, onExecute))
             )
                 return true;
 

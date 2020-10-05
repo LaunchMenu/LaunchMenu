@@ -233,12 +233,14 @@ export class Action<I extends INonFunction, O extends INonFunction>
      * Retrieves the action data for the given input data
      * @param data The data to run the core on
      * @param items The item array that the data was retrieved from, indices correspond to data indices
+     * @param hook The data hook to subscribe to changes
      * @returns The action execution functions or other data
      */
     public get(data: I[], items: IMenuItem[][]): O;
     public get(
         items: (IMenuItem | IMenuItemActionBindings)[] | I[],
-        sourceItems?: IMenuItem[][] | IDataHook
+        sourceItems?: IMenuItem[][] | IDataHook,
+        hook?: IDataHook
     ): O {
         // Obtain the input data from all the items
         if (this.isItemArray(items)) {
@@ -292,7 +294,7 @@ export class Action<I extends INonFunction, O extends INonFunction>
                 for (let i = 0; i < actionsData.length; i++) {
                     const {action, data, items: sourceItems} = actionsData[i];
                     if (action.ancestors.length == d) {
-                        const output = action.get(data, sourceItems);
+                        const output = action.get(data, sourceItems, hook);
                         this.addActionResult(actionsData, action, output, sourceItems);
                     }
                 }
@@ -310,6 +312,6 @@ export class Action<I extends INonFunction, O extends INonFunction>
         }
 
         // Retrieve the result of this action core
-        return this.core(items, sourceItems as IMenuItem[][]);
+        return this.core(items, sourceItems as IMenuItem[][], hook);
     }
 }

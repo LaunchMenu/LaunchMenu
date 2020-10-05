@@ -7,8 +7,11 @@ import {
     declare,
     ProxiedMenu,
     Priority,
+    KeyPattern,
+    createKeyPatternSetting,
+    createContextFolderMenuItem,
 } from "@launchmenu/core";
-import {DataCacher, Field, IDataHook} from "model-react";
+import {DataCacher, IDataHook} from "model-react";
 import {SessionData} from "./SessionData";
 
 export const info = {
@@ -23,7 +26,16 @@ export const settings = createSettings({
     settings: () =>
         createSettingsFolder({
             ...info,
-            children: {},
+            children: {
+                openMenu: createKeyPatternSetting({
+                    name: "Open session switcher",
+                    init: new KeyPattern("ctrl+q"),
+                }),
+                newSession: createKeyPatternSetting({
+                    name: "Create a new session",
+                    init: new KeyPattern("ctrl+n"),
+                }),
+            },
         }),
 });
 
@@ -38,7 +50,7 @@ export default declare({
             let highestSessionID = curSessionData.reduce((cur, sessionData) => {
                 const match = sessionData.name.get(null).match(/session-(\d+)/);
                 return match ? Math.max(Number(match[1]), cur) : cur;
-            }, 1);
+            }, 0);
 
             // Sort the new sessions to be in the same order as the old
             const newSessions = [...sessionManager.getSessions(h)];
@@ -68,6 +80,7 @@ export default declare({
         const addSessionItem = createStandardMenuItem({
             name: "Add session",
             category: sessionsControlsCategory,
+            shortcut: context => context.settings.get(settings).newSession.get(),
             onExecute: () => {
                 const session = sessionManager.addSession();
             },
@@ -86,13 +99,14 @@ export default declare({
                     onClose
                 );
             },
-            globalContextMenuItems: h => [
+            globalContextMenuItems: [
                 {
                     priority: [Priority.LOW, Priority.LOW],
-                    item: createFolderMenuItem({
+                    item: createContextFolderMenuItem({
                         name: "Switch session",
                         children: getSessionMenuItems,
-                        closeOnExecute: true,
+                        shortcut: context =>
+                            context.settings.get(settings).openMenu.get(),
                     }),
                 },
             ],

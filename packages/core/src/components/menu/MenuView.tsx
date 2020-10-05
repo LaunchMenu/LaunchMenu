@@ -11,7 +11,8 @@ import {LFC} from "../../_types/LFC";
  */
 export const MenuView: LFC<IMenuViewProps> = ({
     menu,
-    cursorItemScrollPadding = 30,
+    onExecute,
+    cursorItemScrollPadding = 50,
     cursorItemScrollDuration = {far: 200, near: 70},
     smoothScrollDuration,
 }) => {
@@ -72,6 +73,7 @@ export const MenuView: LFC<IMenuViewProps> = ({
                     <div key={i} ref={isCursor ? cursorRef : undefined}>
                         <menuItem.view
                             isSelected={selectedItems.includes(menuItem)}
+                            onExecute={onExecute}
                             isCursor={isCursor}
                             highlight={highlight}
                             menu={menu}

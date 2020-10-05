@@ -8,8 +8,8 @@ import {withRemoveError} from "../withRemoveError";
 import {openTextField} from "./openTextField";
 import {SearchField} from "../../textFields/types/searchField/SearchField";
 import {isIOContext, IIOContext} from "../_types/IIOContext";
-import {getViewWithContext} from "./getViewWithContext";
-import {IMenu} from "../../menus/menu/_types/IMenu";
+import {getViewWithContext} from "./uiWrappers/getViewWithContext";
+import {getViewWithOnExecute} from "./uiWrappers/getViewWithOnExecute";
 
 /**
  * Opens the given content within the given ui context
@@ -40,9 +40,24 @@ export function openMenu(
             // Handle creating of menu components
             let view: IViewStackItem;
             if ("menuView" in content && content.menuView)
-                view = getViewWithContext(content.menuView, context);
+                view = getViewWithContext(
+                    "onExecute" in content
+                        ? getViewWithOnExecute(content.menuView, content.onExecute)
+                        : content.menuView,
+                    context
+                );
             else
-                view = getViewWithContext(menu.view ?? <MenuView menu={menu} />, context);
+                view = getViewWithContext(
+                    menu.view ?? (
+                        <MenuView
+                            menu={menu}
+                            onExecute={
+                                "onExecute" in content ? content.onExecute : undefined
+                            }
+                        />
+                    ),
+                    context
+                );
 
             let keyHandler: IKeyEventListener | undefined;
             if ("menuHandler" in content && content.menuHandler)

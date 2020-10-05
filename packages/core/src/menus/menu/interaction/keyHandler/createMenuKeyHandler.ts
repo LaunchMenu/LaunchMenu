@@ -41,7 +41,7 @@ export function createMenuKeyHandler(
 
     // Setup handlers
     let handleItemKeyListeners = useItemKeyHandlers
-        ? setupItemKeyListenerHandler(menu)
+        ? setupItemKeyListenerHandler(menu, onExecute)
         : undefined;
     const contextHandler = setupContextMenuHandler(menu, {
         useContextItemKeyHandlers,

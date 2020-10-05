@@ -4,6 +4,7 @@ import {executeAction} from "../../actions/types/execute/executeAction";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {IExecutable} from "../../actions/types/execute/_types/IExecutable";
 import {IOContext} from "../../../context/IOContext";
+import {IMenuItemActionBindings} from "../../actions/_types/IMenuItemActionBindings";
 
 /**
  * Executes the default actions of the selected items of the menu
@@ -20,12 +21,12 @@ export async function executeItems(menu: IMenu, onExecute?: () => void): Promise
  */
 export async function executeItems(
     context: IIOContext,
-    items: IMenuItem[],
+    items: (IMenuItem | IMenuItemActionBindings)[],
     onExecute?: () => void
 ): Promise<void>;
 export async function executeItems(
     context: IMenu | IIOContext,
-    items?: IMenuItem[] | (() => void),
+    items?: (IMenuItem | IMenuItemActionBindings)[] | (() => void),
     onExecute?: () => void
 ): Promise<void> {
     // Setup function to handle closing of the parent menu

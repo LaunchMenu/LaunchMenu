@@ -15,4 +15,6 @@ export type IFolderMenuItemData<
     searchChildren?: S;
     /** Whether to close the menu when an active item is executed (defaults to false) */
     closeOnExecute?: boolean;
+    /** Whether to forward the key events passed to this item to the item's children (defaults to false) */
+    forwardKeyEvents?: boolean;
 } & IStandardMenuItemData;

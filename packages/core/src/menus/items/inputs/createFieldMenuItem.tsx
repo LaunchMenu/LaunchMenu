@@ -21,6 +21,7 @@ import {ISubscribableActionBindings} from "../_types/ISubscribableActionBindings
 import {adjustBindings} from "../adjustBindings";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {openMenuItemContentHandler} from "../../actions/types/onCursor/openMenuItemContentHandler";
+import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
 
 // TODO: reuse standard menu item to reduce code duplication
 
@@ -41,7 +42,7 @@ export function createFieldMenuItem<T>({
         description,
         tags,
         content,
-        shortcut, // TODO:
+        shortcut,
         onExecute,
         onSelect,
         onCursor,
@@ -78,6 +79,7 @@ export function createFieldMenuItem<T>({
                 undoable: resetUndoable,
             })
         );
+    if (shortcut) generatedBindings.push(shortcutHandler.createBinding({shortcut}));
 
     // Combine the input action bindings with the created ones
     let bindings = generatedBindings as ISubscribableActionBindings;

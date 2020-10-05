@@ -6,8 +6,8 @@ import {IOpenableField} from "../_types/IOpenableField";
 import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
 import {TextFieldView} from "../../components/fields/TextFieldView";
 import {IIOContext} from "../_types/IIOContext";
-import {getViewWithContext} from "./getViewWithContext";
-import {getViewWithHighlighter} from "./getViewWithHighlighter";
+import {getViewWithContext} from "./uiWrappers/getViewWithContext";
+import {getViewWithHighlighter} from "./uiWrappers/getViewWithHighlighter";
 
 /**
  * Opens the given content within the given ui context

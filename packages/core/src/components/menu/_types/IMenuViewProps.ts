@@ -3,6 +3,10 @@ import {IMenu} from "../../../menus/menu/_types/IMenu";
 export type IMenuViewProps = {
     /** The menu to visualize */
     menu: IMenu;
+
+    /** A callback for when an item of this menu is executed (by mouse) */
+    onExecute?: () => void;
+
     /** The amount of padding around the menu such that cursor items are scrolled to be outside said padding */
     cursorItemScrollPadding?: number;
 

@@ -3,17 +3,19 @@ import {Observer} from "../../../../utils/modelReact/Observer";
 import {IKeyEventListenerObject} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
 import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
 import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
-import {IIOContext} from "../../../../context/_types/IIOContext";
 
 /**
  * Sets up a key event handler that emits events to the items in a menu
  * @param menu The menu for which to add item key event handlers
+ * @param onExecute The callback function for when an item is actively executed
  * @returns An object with an event emit function and a destroy function
  */
-export function setupItemKeyListenerHandler(menu: IMenu): IKeyEventListenerObject {
-    const ioContext = menu.getContext();
+export function setupItemKeyListenerHandler(
+    menu: IMenu,
+    onExecute?: () => void
+): IKeyEventListenerObject {
     let emitter: {
-        emit(event: KeyEvent, context: IIOContext): Promise<boolean>;
+        emit(event: KeyEvent, menu: IMenu, onExecute?: () => void): Promise<boolean>;
     } | null = null;
     let itemObserver: Observer<void> | undefined;
 
@@ -34,7 +36,7 @@ export function setupItemKeyListenerHandler(menu: IMenu): IKeyEventListenerObjec
                 );
             }
 
-            if (emitter) return await emitter.emit(e, ioContext);
+            if (emitter) return await emitter.emit(e, menu, onExecute);
         },
 
         /**
