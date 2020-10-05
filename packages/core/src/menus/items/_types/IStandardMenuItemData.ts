@@ -44,6 +44,9 @@ export type IStandardMenuItemData = {
     /** The function to execute when executing the menu item's default action */
     onExecute?: IExecutable["execute"];
 
+    /** Whether to not invoke the menus execution callback if only onExecute gets executed (defaults to false) */
+    executePassively?: boolean;
+
     /** A listener to execute side effects when the item is selected or deselected */
     onSelect?: (selected: boolean) => void;
 

@@ -18,6 +18,7 @@ import {adjustBindings} from "./adjustBindings";
 import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings";
 import {getHooked} from "../../utils/subscribables/getHooked";
 import {openMenuItemContentHandler} from "../actions/types/onCursor/openMenuItemContentHandler";
+import {keyHandlerAction} from "../actions/types/keyHandler/keyHandlerAction";
 
 /**
  * Creates a new standard menu item
@@ -35,6 +36,7 @@ export function createStandardMenuItem({
     searchPattern,
     actionBindings,
     onExecute,
+    executePassively = false,
     onSelect,
     onCursor,
     onMenuChange,
@@ -48,7 +50,9 @@ export function createStandardMenuItem({
         }),
     ];
     if (onExecute)
-        generatedBindings.push(executeAction.createBinding({execute: onExecute}));
+        generatedBindings.push(
+            executeAction.createBinding({execute: onExecute, passive: executePassively})
+        );
     if (onSelect) generatedBindings.push(onSelectAction.createBinding({onSelect}));
     if (onCursor) generatedBindings.push(onCursorAction.createBinding({onCursor}));
     if (onMenuChange)
@@ -56,6 +60,10 @@ export function createStandardMenuItem({
     if (category) generatedBindings.push(getCategoryAction.createBinding(category));
     if (content)
         generatedBindings.push(openMenuItemContentHandler.createBinding(content));
+    // TODO: implement once shortcut handler exists
+    // if(shortcut) generatedBindings.push(keyHandlerAction.createBinding({onKey: (key, context)=>{
+
+    // }}))
 
     // Combine the input action bindings with the created ones
     let bindings = generatedBindings as ISubscribableActionBindings;

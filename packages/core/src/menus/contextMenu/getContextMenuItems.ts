@@ -14,7 +14,6 @@ import {IPrioritizedMenuItem} from "../menu/_types/IPrioritizedMenuItem";
  * Retrieves the context items for a context menu for a given item selection
  * @param items The item selection to get the menu for
  * @param ioContext The context that context items can use
- * @param close A function that can be used to close the menu that will be created
  * @param hook The data hook to subscribe to changes
  * @param includeAction The function to determine whether or not to include an action in the menu, defaults to actions with the tag "context"
  * @returns The items
@@ -22,7 +21,6 @@ import {IPrioritizedMenuItem} from "../menu/_types/IPrioritizedMenuItem";
 export function getContextMenuItems(
     items: IMenuItem[],
     ioContext: IIOContext,
-    close: () => void,
     hook?: IDataHook,
     includeAction: (binding: IActionBinding<any>) => boolean = binding =>
         binding.tags.includes("context")
@@ -62,11 +60,16 @@ export function getContextMenuItems(
     // Get all the menu items
     const foundActionsWithData = foundActions.flatMap(foundAction => {
         // Retrieve the prioritized action item(s) from the action
-        let prioritizedActionItems = (foundAction.action.get(foundAction.items)
-            ?.getMenuItem as IContextMenuItemGetter | undefined)?.(ioContext, close) as
-            | IPrioritizedMenuItem
-            | IPrioritizedMenuItem[]
+        let actionResult = foundAction.action.get(foundAction.items)?.getMenuItem as
+            | IContextMenuItemGetter
             | undefined;
+        let prioritizedActionItems =
+            actionResult instanceof Function
+                ? actionResult?.(ioContext)
+                : (actionResult as
+                      | IPrioritizedMenuItem
+                      | IPrioritizedMenuItem[]
+                      | undefined);
         if (!prioritizedActionItems) return [];
         if (!(prioritizedActionItems instanceof Array))
             prioritizedActionItems = [prioritizedActionItems];
@@ -124,8 +127,8 @@ export function getContextMenuItems(
     // Augment the items with context items
     return [
         ...actionItems,
-        ...getHooked(ioContext.contextMenuItems, hook).flatMap(getter =>
-            getter(ioContext, close)
+        ...getHooked(ioContext.contextMenuItems, hook).flatMap(menuItems =>
+            menuItems instanceof Function ? menuItems(ioContext) : menuItems
         ),
     ];
 }

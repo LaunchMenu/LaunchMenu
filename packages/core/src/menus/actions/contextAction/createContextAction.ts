@@ -9,6 +9,7 @@ import {TGetActionCoreInput} from "./_types/TGetActionCoreInput";
 import {IActionCore} from "../_types/IActionCore";
 import {IContextActionResult} from "./_types/IContextActionResult";
 import {IPrioritizedMenuItem} from "../../menu/_types/IPrioritizedMenuItem";
+import {Priority} from "../../menu/priority/Priority";
 import {v4 as uuid} from "uuid";
 
 /**
@@ -30,8 +31,8 @@ export function createContextAction<
         icon,
         description,
         tags,
-        closeOnExecute,
-        priority = 1,
+        closeOnExecute = true,
+        priority = Priority.MEDIUM,
     }: IContextActionConfig
 ): IContextActionCore<
     TGetActionCoreInput<G>,
@@ -44,16 +45,12 @@ export function createContextAction<
         // Retrieve the original result as well as a menu item getter
         return {
             ...actionGetterResult,
-            getMenuItem: ((context, closeMenu) => {
+            getMenuItem: (context => {
                 //  Create an execute method that closes the menu when called
-                const executeItem = () => {
-                    const result = actionGetterResult.execute({
+                const executeItem = () =>
+                    actionGetterResult.execute({
                         context,
-                        close: closeMenu,
                     });
-                    if (closeOnExecute != false && closeMenu) closeMenu();
-                    return result;
-                };
 
                 // Create shortcut bindings if requested
                 const shortcutBinding =
@@ -75,6 +72,7 @@ export function createContextAction<
                         icon,
                         tags,
                         onExecute: executeItem,
+                        executePassively: !closeOnExecute,
                         actionBindings: shortcutBinding
                             ? actionBindings
                                 ? [shortcutBinding, ...actionBindings]

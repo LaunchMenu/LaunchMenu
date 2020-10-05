@@ -19,6 +19,20 @@ import {openMenuExecuteHandler} from "../actions/types/execute/openMenuExecuteHa
 import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings";
 import {adjustBindings} from "./adjustBindings";
 import {openMenuItemContentHandler} from "../actions/types/onCursor/openMenuItemContentHandler";
+import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
+
+/**
+ * Retrieves the children in (subscribable) list form
+ * @param children The children to get
+ * @returns The children list
+ */
+export function getChildList<
+    S extends {[key: string]: IMenuItem} | ISubscribable<IMenuItem[]>
+>(children: S): ISubscribable<IMenuItem[]> {
+    return children instanceof Function || children instanceof Array
+        ? (children as ISubscribable<IMenuItem[]>)
+        : Object.values(children);
+}
 
 const get = <T extends unknown>(f: T, h?: IDataHook) =>
     f instanceof Function ? f(h) : f;
@@ -28,7 +42,10 @@ const get = <T extends unknown>(f: T, h?: IDataHook) =>
  * @param data The data to create the menu item from
  * @returns The folder menu item, including the children
  */
-export function createFolderMenuItem<T extends {[key: string]: IMenuItem} | IMenuItem[]>({
+export function createFolderMenuItem<
+    T extends {[key: string]: IMenuItem} | ISubscribable<IMenuItem[]>,
+    S extends {[key: string]: IMenuItem} | ISubscribable<IMenuItem[]> = T
+>({
     name,
     description,
     tags,
@@ -38,25 +55,26 @@ export function createFolderMenuItem<T extends {[key: string]: IMenuItem} | IMen
     category,
     actionBindings,
     children,
+    closeOnExecute = false,
     searchPattern,
-    searchChildren = children,
+    searchChildren = (children as any) as S,
     onExecute,
     onSelect,
     onCursor,
     onMenuChange,
-}: IFolderMenuItemData<T>): IMenuItem & {children: T} {
+}: IFolderMenuItemData<T, S>): IMenuItem & {children: T} {
     const generatedBindings: IActionBinding<any>[] = [
         createSimpleSearchBinding({
             name,
             description,
             tags,
             patternMatcher: searchPattern,
-            children: Object.values(searchChildren),
+            children: getChildList(searchChildren),
         }),
     ];
-    const childList = Object.values(children);
-    if (childList.length > 0)
-        generatedBindings.push(openMenuExecuteHandler.createBinding(childList));
+    const childList = getChildList(children);
+    if (childList.length > 0 || childList instanceof Function)
+        generatedBindings.push(openMenuExecuteHandler.createBinding({items: childList, closeOnExecute}));
     if (onExecute)
         generatedBindings.push(executeAction.createBinding({execute: onExecute}));
     if (onSelect) generatedBindings.push(onSelectAction.createBinding({onSelect}));

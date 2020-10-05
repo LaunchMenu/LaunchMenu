@@ -18,6 +18,8 @@ export type IOpenableMenu =
           menuView?: IViewStackItem;
           /** The key handler of the menu, will be generated if left out */
           menuHandler?: IKeyEventListener;
+          /** A onExecute callback that will be forwarded to the created menuHandler (doesn't work if menuHandler is specified) */
+          onExecute?: () => void;
           /** Whether the UI should close on escape */
           closable?: boolean;
           /** Whether to create a search field for this menu, defaults to true. Only generates search fields if no other field is specified */

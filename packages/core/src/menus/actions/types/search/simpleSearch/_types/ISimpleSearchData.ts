@@ -1,5 +1,6 @@
 import {IDataHook} from "model-react";
 import {IPatternMatch} from "../../../../../../utils/searchExecuter/_types/IPatternMatch";
+import {ISubscribable} from "../../../../../../utils/subscribables/_types/ISubscribable";
 import {IUUID} from "../../../../../../_types/IUUID";
 import {IMenuItem} from "../../../../../items/_types/IMenuItem";
 import {IQuery} from "../../../../../menu/_types/IQuery";
@@ -9,13 +10,13 @@ import {IQuery} from "../../../../../menu/_types/IQuery";
  */
 export type ISimpleSearchData = {
     /** The name of the item */
-    name?: string | ((hook: IDataHook) => string | undefined);
+    name?: ISubscribable<string | undefined>;
     /** The description of the item */
-    description?: string | ((hook: IDataHook) => string | undefined);
+    description?: ISubscribable<string | undefined>;
     /** The tags of the item */
-    tags?: string[] | ((hook: IDataHook) => string[] | undefined);
+    tags?: ISubscribable<string[] | undefined>;
     /** Any number of children that can be matched */
-    children?: IMenuItem[];
+    children?: ISubscribable<IMenuItem[]>;
     /** A possible pattern matcher to recognize search types */
     patternMatcher?: ISimpleSearchPatternMatcher;
     /** An identifier for the searchable */

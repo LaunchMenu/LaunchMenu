@@ -51,6 +51,7 @@ export function openMenu(
                 keyHandler = createMenuKeyHandler(menu, {
                     onExit:
                         !("closable" in content) || content.closable ? close : undefined,
+                    onExecute: "onExecute" in content ? content.onExecute : undefined,
                 });
 
             // Handle opening of menu components

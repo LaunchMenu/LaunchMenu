@@ -40,8 +40,18 @@ export default declare({
                 return match ? Math.max(Number(match[1]), cur) : cur;
             }, 1);
 
+            // Sort the new sessions to be in the same order as the old
+            const newSessions = [...sessionManager.getSessions(h)];
+            newSessions.sort((a, b) => {
+                const indexA = curSessionData.findIndex(({session}) => session == a);
+                const indexB = curSessionData.findIndex(({session}) => session == b);
+                if (indexA == -1) return 1;
+                if (indexB == -1) return -1;
+                return indexA - indexB;
+            });
+
             // Retrieve the updated session data
-            return sessionManager.getSessions(h).map(newSession => {
+            return newSessions.map(newSession => {
                 // If the session already exists, return it
                 const current = curSessionData.find(({session}) => session == newSession);
                 if (current) return current;
@@ -77,14 +87,14 @@ export default declare({
                 );
             },
             globalContextMenuItems: h => [
-                (context, close) => ({
+                {
                     priority: [Priority.LOW, Priority.LOW],
                     item: createFolderMenuItem({
                         name: "Switch session",
-                        children: getSessionMenuItems(h),
-                        onExecute: close,
+                        children: getSessionMenuItems,
+                        closeOnExecute: true,
                     }),
-                }),
+                },
             ],
             development: {
                 onReload(): void {

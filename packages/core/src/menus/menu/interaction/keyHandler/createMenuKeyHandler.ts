@@ -21,11 +21,14 @@ export function createMenuKeyHandler(
     menu: IMenu,
     {
         onExit,
+        onExecute,
         useItemKeyHandlers = true,
         useContextItemKeyHandlers = true,
     }: {
         /** The code to execute when trying to exit the menu */
         onExit?: () => void;
+        /* A callback for when an item gets executed (may be suppressed/delayed by an executable) */
+        onExecute?: () => void;
         /** Whether to forward events to item key handlers (can be slow for menus with many items), defaults to true*/
         useItemKeyHandlers?: boolean;
         /** Whether to forward key events to context menu items (can be costly for large selections or context menus), defaults to true */
@@ -51,7 +54,8 @@ export function createMenuKeyHandler(
         async emit(e: KeyEvent): Promise<boolean | void> {
             if (await handleItemKeyListeners?.emit(e)) return true;
             if (await contextHandler.emit(e)) return true;
-            if (handleExecuteInput(e, menu, fieldSettings.execute.get())) return true;
+            if (handleExecuteInput(e, menu, onExecute, fieldSettings.execute.get()))
+                return true;
             if (await cursorMovementHandler.emit(e)) return true;
             if (handleDeselectInput(e, menu, settings.back.get())) return true;
             if (onExit && settings.back.get().matches(e)) {

@@ -2,7 +2,6 @@ import {Action} from "../../Action";
 import {CompoundCommand} from "../../../../undoRedo/commands/CompoundCommand";
 import {ICommand} from "../../../../undoRedo/_types/ICommand";
 import {createContextAction} from "../../contextAction/createContextAction";
-import {IIOContext} from "../../../../context/_types/IIOContext";
 import {IContextActionResult} from "../../contextAction/_types/IContextActionResult";
 import {IDeletable} from "./_types/IDeletable";
 import {IContextExecuteData} from "../../../../context/_types/IContextExecuteData";

@@ -66,7 +66,6 @@ export function setupContextMenuHandler(
                         contextData.items = getContextMenuItems(
                             menu.getAllSelected(hook),
                             ioContext,
-                            () => void contextData?.close?.(),
                             hook
                         );
 
@@ -98,10 +97,14 @@ export function setupContextMenuHandler(
                         sortCategories: sortContextCategories,
                     }));
                     menu.addItems(items);
-                    contextData.close = openUI(ioContext, {menu}, () => {
-                        contextData.close = undefined;
-                        contextData.menu = undefined;
-                    });
+                    contextData.close = openUI(
+                        ioContext,
+                        {menu, onExecute: () => contextData?.close?.()},
+                        () => {
+                            contextData.close = undefined;
+                            contextData.menu = undefined;
+                        }
+                    );
                 }
                 return true;
             }

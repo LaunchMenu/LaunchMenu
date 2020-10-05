@@ -18,9 +18,7 @@ export function openContextMenu(
     onClose?: () => void
 ): () => void {
     let close = () => {}; // placeholder
-    const contextMenuItems = getContextMenuItems(menu.getAllSelected(), ioContext, () => {
-        close();
-    });
+    const contextMenuItems = getContextMenuItems(menu.getAllSelected(), ioContext);
     if (contextMenuItems.length > 0)
         close = openUI(
             ioContext,
@@ -28,6 +26,7 @@ export function openContextMenu(
                 menu: new PrioritizedMenu(ioContext, contextMenuItems, {
                     sortCategories: sortContextCategories,
                 }),
+                onExecute: close,
             },
             onClose
         );

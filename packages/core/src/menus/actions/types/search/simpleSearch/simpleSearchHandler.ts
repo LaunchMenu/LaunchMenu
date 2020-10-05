@@ -63,7 +63,7 @@ export function getSimplePriority(
 export const simpleSearchHandler = searchAction.createHandler(
     (data: ISimpleSearchData[], dataItems) => {
         // Map all the search data
-        return data.flatMap(({children: childItems, id, ...data}, i):
+        return data.flatMap(({children: childItemsGetter, id, ...data}, i):
             | IMenuSearchable
             | IMenuSearchable[] => {
             const item = dataItems[i][0];
@@ -74,9 +74,8 @@ export const simpleSearchHandler = searchAction.createHandler(
                     hook: IDataHook
                 ) => {
                     const priority = getSimplePriority(query, data, hook);
-                    const children = childItems
-                        ? searchAction.get(childItems)
-                        : undefined;
+                    const childItems = getHooked(childItemsGetter, hook);
+                    const children = childItems && searchAction.get(childItems);
                     const patternMatch = data.patternMatcher?.(query, hook);
                     return {
                         item: priority > 0 ? {priority, ID: id, item} : undefined,

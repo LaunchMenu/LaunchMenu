@@ -44,7 +44,9 @@ const item = createStandardMenuItem({
     onExecute({context}) {
         context.settings.get(settings).someNumber.set(20);
     },
-    actionBindings: [openMenuExecuteHandler.createBinding([item2])],
+    actionBindings: [
+        openMenuExecuteHandler.createBinding({items: [item2], closeOnExecute: true}),
+    ],
 });
 
 export default declare({
