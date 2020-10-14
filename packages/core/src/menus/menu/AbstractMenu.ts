@@ -1,4 +1,3 @@
-import {AbstractUIModel} from "../../context/AbstractUIModel";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {IMenu} from "./_types/IMenu";
 import {Field, IDataHook} from "model-react";
@@ -11,7 +10,7 @@ import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
 /**
  * An abstract menu class that doesn't deal with item management itself
  */
-export abstract class AbstractMenu extends AbstractUIModel implements IMenu {
+export abstract class AbstractMenu implements IMenu {
     protected context: IIOContext;
     protected destroyed = new Field(false);
     protected cursor = new Field(null as IMenuItem | null);
@@ -22,7 +21,6 @@ export abstract class AbstractMenu extends AbstractUIModel implements IMenu {
      * @param context The context that menu items can use
      */
     public constructor(context: IIOContext) {
-        super();
         this.context = context;
     }
 
@@ -130,7 +128,6 @@ export abstract class AbstractMenu extends AbstractUIModel implements IMenu {
      */
     public destroy(): boolean {
         if (this.destroyed.get(null) == true) return false;
-        super.destroy();
         this.destroyed.set(true);
         return true;
     }

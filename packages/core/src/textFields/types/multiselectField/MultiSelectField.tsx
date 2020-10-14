@@ -15,7 +15,6 @@ import {v4 as uuid} from "uuid";
 import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {IHighlighter} from "../../syntax/_types/IHighlighter";
 import {IInputFieldError} from "../inputField/_types/IInputFieldError";
-import {openUI} from "../../../context/openUI/openUI";
 import {createFinishMenuItem} from "../../../menus/items/createFinishMenuItem";
 import {getCategoryAction} from "../../../menus/actions/types/category/getCategoryAction";
 import {controlsCategory} from "../../../menus/categories/types/controlsCategory";
@@ -25,9 +24,9 @@ import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {createContentError} from "../../../components/content/error/createContentError";
 import {MenuView} from "../../../components/menu/MenuView";
-import {IViewStackItem} from "../../../stacks/viewStack/_types/IViewStackItem";
 import {adjustBindings} from "../../../menus/items/adjustBindings";
 import {getHooked} from "../../../utils/subscribables/getHooked";
+import {IViewStackItem} from "../../../uiLayers/_types/IViewStackItem";
 
 function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -100,19 +99,18 @@ export class MultiSelectField<T> extends TextField {
     // Life cycle
     /** @override */
     public addViewCount(): void {
-        if (this.context && !this.closeMenu)
-            this.closeMenu = openUI(this.context, {
-                menu: this.menu,
-                menuView: <MenuView menu={this.menu} />,
-                searchable: false,
-                closable: false,
-            });
-        super.addViewCount();
+        // TODO: refactor to be a UILayer
+        // if (this.context && !this.closeMenu)
+        //     this.closeMenu = openUI(this.context, {
+        //         menu: this.menu,
+        //         menuView: <MenuView menu={this.menu} />,
+        //         searchable: false,
+        //         closable: false,
+        //     });
     }
 
     /** @override */
     public destroy(): void {
-        super.destroy();
         this.closeError?.();
         this.closeMenu?.();
         this.menuCursorObserver.destroy();
@@ -429,7 +427,8 @@ export class MultiSelectField<T> extends TextField {
             if ("view" in error) errorView = error.view;
             else errorView = createContentError(error.message);
 
-            this.closeError = openUI(this.context, {content: errorView});
+            // TODO: refactor to work with UILayers
+            // this.closeError = openUI(this.context, {content: errorView});
         }
         return error;
     }

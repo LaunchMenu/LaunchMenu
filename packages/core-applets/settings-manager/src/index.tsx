@@ -8,6 +8,7 @@ import {
     Menu,
     Observer,
     searchAction,
+    UILayer,
 } from "@launchmenu/core";
 import {DataCacher, Field} from "model-react";
 import {createSettingsContextMenuItem} from "./createSettingsContextMenuItem";
@@ -52,7 +53,7 @@ export default declare({
             open({context, onClose}) {
                 // TODO: add listener for the folders to update menu on changes
                 const menu = new Menu(context, settingsFolders.get(null));
-                context.openUI({menu}, onClose);
+                context.open(new UILayer(() => ({menu, onClose})));
             },
             withSession: session => ({
                 // Retrieve a prioritized menu item to open global and selected applet setting

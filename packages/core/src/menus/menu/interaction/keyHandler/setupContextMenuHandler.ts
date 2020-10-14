@@ -1,10 +1,9 @@
 import {IMenu} from "../../_types/IMenu";
 import {Observer} from "../../../../utils/modelReact/Observer";
-import {IKeyEventListenerObject} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
-import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
+import {IKeyEventListenerObject} from "../../../../keyHandler/_types/IKeyEventListener";
+import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
 import {getContextMenuItems} from "../../../contextMenu/getContextMenuItems";
-import {openUI} from "../../../../context/openUI/openUI";
 import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
 import {PrioritizedMenu} from "../../PrioritizedMenu";
 import {sortContextCategories} from "../../../contextMenu/sortContextCategories";
@@ -12,6 +11,8 @@ import {IIOContext} from "../../../../context/_types/IIOContext";
 import {KeyPattern} from "../../../items/inputs/handlers/keyPattern/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {getHooked} from "../../../../utils/subscribables/getHooked";
+import {UILayer} from "../../../../uiLayers/standardUILayer/UILayer";
+import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
@@ -30,7 +31,7 @@ export function setupContextMenuHandler(
             .controls.menu.openContextMenu.get(),
     }: {
         /* A callback for when an item gets executed (may be suppressed/delayed by an executable) */
-        onExecute?: () => void;
+        onExecute?: IMenuItemExecuteCallback;
         /** Whether to forward key events to context menu items (can be costly for large selections or context menus), defaults to true */
         useContextItemKeyHandlers?: boolean;
         /** A pattern to detect whether to handle the keyboard opening */
@@ -40,7 +41,11 @@ export function setupContextMenuHandler(
     const ioContext = menu.getContext();
     let contextData: {
         emitter?: {
-            emit(event: KeyEvent, menu: IMenu, onExecute?: () => void): Promise<boolean>;
+            emit(
+                event: KeyEvent,
+                menu: IMenu,
+                onExecute?: IMenuItemExecuteCallback
+            ): Promise<boolean>;
         };
         items?: IPrioritizedMenuItem[];
         menu?: PrioritizedMenu;
@@ -102,13 +107,16 @@ export function setupContextMenuHandler(
                         sortCategories: sortContextCategories,
                     }));
                     menu.addItems(items);
-                    contextData.close = openUI(
-                        ioContext,
-                        {menu, onExecute: () => contextData?.close?.()},
-                        () => {
-                            contextData.close = undefined;
-                            contextData.menu = undefined;
-                        }
+
+                    contextData.close = await ioContext.open(
+                        new UILayer(() => ({
+                            menu,
+                            onExecute: () => contextData?.close?.(),
+                            onClose: () => {
+                                contextData.close = undefined;
+                                contextData.menu = undefined;
+                            },
+                        }))
                     );
                 }
                 return true;

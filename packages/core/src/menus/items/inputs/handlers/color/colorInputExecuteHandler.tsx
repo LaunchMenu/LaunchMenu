@@ -6,7 +6,6 @@ import {IInputFieldExecuteData} from "../../../../../textFields/types/inputField
 import {results} from "../../../../actions/Action";
 import {TextField} from "../../../../../textFields/TextField";
 import {ColorTextFieldView} from "../../../../../components/settings/inputs/ColorTextFieldView";
-import {openUI} from "../../../../../context/openUI/openUI";
 
 //TODO: make a more advanced color input editor in accordance to the planning file
 /**
@@ -32,24 +31,27 @@ export const colorInputExecuteHandler = inputFieldExecuteHandler.createHandler(
                     },
                 },
                 // Use the color text field for the visualization
-                openUI: (context, ui, onClose) =>
-                    openUI(
-                        context,
-                        "highlighter" in ui &&
-                            "field" in ui &&
-                            ui.field instanceof TextField
-                            ? {
-                                  ...ui,
-                                  fieldView: (
-                                      <ColorTextFieldView
-                                          highlighter={ui.highlighter}
-                                          field={ui.field}
-                                      />
-                                  ),
-                              }
-                            : ui,
-                        onClose
-                    ),
+                openUI: (context, ui, onClose) => {
+                    // TODO: fix with new context
+                    // openUI(
+                    //     context,
+                    //     "highlighter" in ui &&
+                    //         "field" in ui &&
+                    //         ui.field instanceof TextField
+                    //         ? {
+                    //               ...ui,
+                    //               fieldView: (
+                    //                   <ColorTextFieldView
+                    //                       highlighter={ui.highlighter}
+                    //                       field={ui.field}
+                    //                   />
+                    //               ),
+                    //           }
+                    //         : ui,
+                    //     onClose
+                    // ),
+                    return () => {};
+                },
             })
         ),
     })

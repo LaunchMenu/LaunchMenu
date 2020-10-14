@@ -1,9 +1,9 @@
-import {IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
-import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {IKeyEventListener} from "../../keyHandler/_types/IKeyEventListener";
 import {ITextField} from "../../textFields/_types/ITextField";
 import {ReactElement} from "react";
 import {IHighlighter} from "../../textFields/syntax/_types/IHighlighter";
 import {IThemeIcon} from "../../styling/theming/_types/IBaseTheme";
+import {IViewStackItem} from "../../uiLayers/_types/IViewStackItem";
 
 /**
  * Field data that can be opened

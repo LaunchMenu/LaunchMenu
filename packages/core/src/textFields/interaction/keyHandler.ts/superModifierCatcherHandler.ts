@@ -2,7 +2,7 @@ import {KeyPattern} from "../../../menus/items/inputs/handlers/keyPattern/KeyPat
 import {
     IKeyEventListener,
     IKeyEventListenerObject,
-} from "../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+} from "../../../keyHandler/_types/IKeyEventListener";
 
 /**
  * A handler that catches keyboard up event for modifiers if any other key was pressed since the modifier was activated.

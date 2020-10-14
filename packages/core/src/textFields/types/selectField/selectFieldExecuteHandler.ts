@@ -1,7 +1,6 @@
 import {sequentialExecuteHandler} from "../../../menus/actions/types/execute/sequentialExecuteHandler";
 import {results} from "../../../menus/actions/Action";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
-import {openUI} from "../../../context/openUI/openUI";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {IActionBinding} from "../../../menus/actions/_types/IActionBinding";
 import {ITagsOverride} from "../../../menus/actions/_types/ITagsOverride";
@@ -61,17 +60,18 @@ export const selectFieldExecuteHandler = sequentialExecuteHandler.createHandler(
                         };
 
                         // Open the field
-                        closeUI = (customOpenUI ?? openUI)(
-                            context,
-                            {
-                                field: dropdownField,
-                                // TODO: add field with input styling
-                                highlighter: dropdownField.getHighlighterWithError(
-                                    highlighter
-                                ),
-                            },
-                            onClose
-                        );
+                        // TODO: refactor to work with UILayers
+                        // closeUI = (customOpenUI ?? openUI)(
+                        //     context,
+                        //     {
+                        //         field: dropdownField,
+                        //         // TODO: add field with input styling
+                        //         highlighter: dropdownField.getHighlighterWithError(
+                        //             highlighter
+                        //         ),
+                        //     },
+                        //     onClose
+                        // );
                     }),
             })
         ),

@@ -1,48 +1,56 @@
 import {sequentialExecuteHandler} from "./sequentialExecuteHandler";
 import {IMenuItem} from "../../../items/_types/IMenuItem";
-import {Menu} from "../../../menu/Menu";
-import {openUI} from "../../../../context/openUI/openUI";
-import {ISubscribable} from "../../../../utils/subscribables/_types/ISubscribable";
 import {ProxiedMenu} from "../../../menu/ProxiedMenu";
 import {getHooked} from "../../../../utils/subscribables/getHooked";
 import {IDataHook} from "model-react";
+import {UILayer} from "../../../../uiLayers/standardUILayer/UILayer";
+import {IOpenMenuExecuteData} from "./_types/IOpenMenuExecuteData";
+
+/**
+ * Determines whether one of the passed item comes from a set of items that indicates to be closed on execute
+ * @param data The sets of items
+ * @param items The items to test for
+ * @returns Whether any items are from a closing set
+ */
+const containsClosingItem = (data: IOpenMenuExecuteData[], items: IMenuItem[]) => {
+    return data.reduce((cur, d) => {
+        if (cur) return true;
+        if ("closeOnExecute" in d && d.closeOnExecute) {
+            const containsItems = items.reduce(
+                (cur, item) => getHooked(d.items).includes(item),
+                false
+            );
+            if (containsItems) return true;
+        }
+        return false;
+    }, false);
+};
 
 /**
  * An execution handler to open menus
  */
 export const openMenuExecuteHandler = sequentialExecuteHandler.createHandler(
-    (
-        data: (
-            | ISubscribable<IMenuItem[]>
-            | {items: ISubscribable<IMenuItem[]>; closeOnExecute: boolean}
-        )[]
-    ) => ({
+    (data: IOpenMenuExecuteData[]) => ({
         execute: async ({context, preventCallback}) => {
             const callback = preventCallback?.();
             return new Promise(res => {
-                const closeOnExecute = data.reduce(
-                    (cur, d) => cur || ("closeOnExecute" in d && d.closeOnExecute),
-                    false
-                );
                 const childrenGetter = (h: IDataHook) =>
                     data
                         .map(d =>
                             "items" in d ? getHooked(d.items, h) : getHooked(d, h)
                         )
                         .flat();
+
                 const menu = new ProxiedMenu(context, childrenGetter);
-                const close = openUI(
-                    context,
-                    {
+                context.open(
+                    new UILayer((context, close) => ({
                         menu,
-                        onExecute: closeOnExecute
-                            ? () => {
-                                  close();
-                                  callback?.();
-                              }
-                            : callback,
-                    },
-                    res
+                        onExecute: items => {
+                            if (containsClosingItem(data, items)) close();
+                            callback?.();
+                        },
+                        onClose: res,
+                    }))
                 );
             });
         },

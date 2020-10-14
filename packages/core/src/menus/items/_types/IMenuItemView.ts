@@ -2,6 +2,7 @@ import {IMenuItem} from "./IMenuItem";
 import {IMenu} from "../../menu/_types/IMenu";
 import {IQuery} from "../../menu/_types/IQuery";
 import {LFC} from "../../../_types/LFC";
+import {IMenuItemExecuteCallback} from "../../menu/_types/IMenuItemExecuteCallback";
 
 /**
  * The visualization of an item on the menu
@@ -18,5 +19,5 @@ export type IMenuItemView = LFC<{
     /** The menu this item view is rendered for */
     menu: IMenu;
     /** A callback for when this item is executed (by mouse) */
-    onExecute?: () => void;
+    onExecute?: IMenuItemExecuteCallback;
 }>;

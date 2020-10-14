@@ -2,7 +2,7 @@ import {ITextField} from "../../_types/ITextField";
 import {pasteText} from "../pasteText";
 import {copyText} from "../copyText";
 import {insertText} from "../insertText";
-import {KeyEvent} from "../../../stacks/keyHandlerStack/KeyEvent";
+import {KeyEvent} from "../../../keyHandler/KeyEvent";
 import {KeyPattern} from "../../../menus/items/inputs/handlers/keyPattern/KeyPattern";
 import {TSettingsFromFactory} from "../../../settings/_types/TSettingsFromFactory";
 import {createFieldControlsSettingsFolder} from "../../../application/settings/baseSettings/controls/createFieldControlsSettingsFolder";

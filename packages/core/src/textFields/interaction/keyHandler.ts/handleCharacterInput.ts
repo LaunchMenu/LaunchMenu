@@ -1,6 +1,6 @@
 import {ITextField} from "../../_types/ITextField";
 import {insertText} from "../insertText";
-import {KeyEvent} from "../../../stacks/keyHandlerStack/KeyEvent";
+import {KeyEvent} from "../../../keyHandler/KeyEvent";
 
 /**
  * Handles typing of characters

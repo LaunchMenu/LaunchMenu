@@ -1,15 +1,16 @@
 import {
     IKeyEventListener,
     IKeyEventListenerObject,
-} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+} from "../../../../keyHandler/_types/IKeyEventListener";
 import {IMenu} from "../../_types/IMenu";
 import {handleExecuteInput} from "./handleExecuteInput";
 import {setupMoveInputHandler} from "./setupMoveInputHandler";
 import {handleDeselectInput} from "./handleDeselectInput";
 import {setupItemKeyListenerHandler} from "./setupItemKeyListenerHandler";
 import {setupContextMenuHandler} from "./setupContextMenuHandler";
-import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
+import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
+import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
 
 /**
  * Creates a standard menu key handler
@@ -28,7 +29,7 @@ export function createMenuKeyHandler(
         /** The code to execute when trying to exit the menu */
         onExit?: () => void;
         /* A callback for when an item gets executed (may be suppressed/delayed by an executable) */
-        onExecute?: () => void;
+        onExecute?: IMenuItemExecuteCallback;
         /** Whether to forward events to item key handlers (can be slow for menus with many items), defaults to true*/
         useItemKeyHandlers?: boolean;
         /** Whether to forward key events to context menu items (can be costly for large selections or context menus), defaults to true */

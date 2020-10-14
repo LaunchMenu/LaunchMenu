@@ -1,7 +1,8 @@
 import {Action} from "../../Action";
 import {IItemKeyHandler} from "./_types/IItemKeyHandler";
-import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
+import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {IMenu} from "../../../menu/_types/IMenu";
+import {IMenuItemExecuteCallback} from "../../../menu/_types/IMenuItemExecuteCallback";
 
 /**
  * An action to invoke key events on actions
@@ -18,7 +19,7 @@ export const keyHandlerAction = new Action((listeners: IItemKeyHandler[]) => {
         async emit(
             event: KeyEvent,
             menu: IMenu,
-            onExecute?: () => void
+            onExecute?: IMenuItemExecuteCallback
         ): Promise<boolean> {
             let caught = false;
             for (let {onKey} of listeners) {

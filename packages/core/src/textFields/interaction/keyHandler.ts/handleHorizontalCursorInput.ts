@@ -1,6 +1,6 @@
 import {ITextField} from "../../_types/ITextField";
 import {moveCursorHorizontal} from "../moveCursorHorizontal";
-import {KeyEvent} from "../../../stacks/keyHandlerStack/KeyEvent";
+import {KeyEvent} from "../../../keyHandler/KeyEvent";
 import {TSettingsFromFactory} from "../../../settings/_types/TSettingsFromFactory";
 import {createFieldControlsSettingsFolder} from "../../../application/settings/baseSettings/controls/createFieldControlsSettingsFolder";
 import {KeyPattern} from "../../../menus/items/inputs/handlers/keyPattern/KeyPattern";

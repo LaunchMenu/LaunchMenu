@@ -1,5 +1,5 @@
 import {KeyPattern} from "./KeyPattern";
-import {IKeyEventListener} from "../../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {IKeyEventListener} from "../../../../../keyHandler/_types/IKeyEventListener";
 import {ITextField} from "../../../../../textFields/_types/ITextField";
 
 /**

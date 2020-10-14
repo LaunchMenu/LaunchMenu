@@ -1,4 +1,4 @@
-import {IKeyMatcher} from "../../../../stacks/keyHandlerStack/keyIdentifiers/keys";
+import {IKeyMatcher} from "../../../../keyHandler/keyIdentifiers/keys";
 import {IActionBinding} from "../../_types/IActionBinding";
 import {ReactNode} from "react";
 

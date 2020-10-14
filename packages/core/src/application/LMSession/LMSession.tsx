@@ -1,14 +1,11 @@
-import {DataCacher, Field, IDataHook, Loader} from "model-react";
+import {DataCacher, Field, IDataHook} from "model-react";
 import React from "react";
 import {IOContext} from "../../context/IOContext";
 import {IMenuSearchable} from "../../menus/actions/types/search/_types/IMenuSearchable";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
 import {IQuery} from "../../menus/menu/_types/IQuery";
 import {SettingsContext} from "../../settings/SettingsContext";
-import {KeyEvent} from "../../stacks/keyHandlerStack/KeyEvent";
-import {KeyHandlerStack} from "../../stacks/keyHandlerStack/KeyHandlerStack";
-import {ViewStack} from "../../stacks/viewStack/ViewStack";
-import {Box} from "../../styling/box/Box";
+import {KeyEvent} from "../../keyHandler/KeyEvent";
 import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
 import {TextField} from "../../textFields/TextField";
 import {createHighlighterWithSearchPattern} from "../../textFields/types/searchField/createHighlighterWithSearchPattern";
@@ -30,6 +27,11 @@ import {IContextMenuItemGetter} from "../../menus/actions/contextAction/_types/I
 import {IMenuItem} from "../../menus/items/_types/IMenuItem";
 import {IUUID} from "../../_types/IUUID";
 import {withSession} from "../applets/declaration/withSession";
+import {UILayer} from "../../uiLayers/standardUILayer/UILayer";
+import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
+import {Input} from "../../uiLayers/types/input/Input";
+import {checkTextNumberConstraints} from "../../menus/items/inputs/handlers/number/checkTextNumberConstraints";
+import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 
 /**
  * An application session
@@ -95,7 +97,7 @@ export class LMSession {
      * @returns Whether the event was caught
      */
     public emit(event: KeyEvent): Promise<boolean> {
-        return this.context.keyHandler.emit(event);
+        return emitContextEvent(this.context, event);
     }
 
     /**
@@ -103,12 +105,6 @@ export class LMSession {
      */
     protected setupContext(): void {
         this.context = new IOContext({
-            panes: {
-                menu: new ViewStack(),
-                content: new ViewStack(),
-                field: new ViewStack(),
-            },
-            keyHandler: new KeyHandlerStack(),
             undoRedo: new UndoRedoFacility(),
             settings: new SettingsContext(),
             contextMenuItems: this.getGlobalContextMenuItems(),
@@ -139,36 +135,36 @@ export class LMSession {
      * Initializes the view for this session
      */
     protected setupView(): void {
-        this.view = (
-            <ApplicationLayout
-                key={this.id}
-                fieldStack={this.context.panes.field}
-                menuStack={this.context.panes.menu}
-                contentStack={this.context.panes.content}
-            />
-        );
+        this.view = <ApplicationLayout key={this.id} context={this.context} />;
     }
 
     // Sets up the interface
     /**
      * Initializes all the UI
      */
-    protected setupUI(): void {
-        this.setupMenu();
-        this.setupField();
-        this.setupContent();
+    protected async setupUI(): Promise<void> {
+        await this.setupMenu();
+        await this.setupField();
+        await this.setupContent();
     }
 
     /**
      * Initializes the menu to be displayed
      */
-    protected setupMenu(): void {
+    protected async setupMenu(): Promise<void> {
         this.menu = new LMSessionMenu(this.context);
 
-        this.context.openUI({
-            menu: this.menu,
-            searchable: false,
-        });
+        await this.context.open(
+            new UILayer({
+                menu: this.menu,
+                searchable: false,
+                menuHandler: createMenuKeyHandler(this.menu, {
+                    onExit: () => {
+                        console.log("detect");
+                    },
+                }),
+            })
+        );
 
         // Update the selected applet based on what category a given item belongs to
         const appletManager = this.LM.getAppletManager();
@@ -202,7 +198,7 @@ export class LMSession {
     /**
      * Initializes the field to be displayed
      */
-    protected setupField(): void {
+    protected async setupField(): Promise<void> {
         // Create a text field and connect it to the search executer
         this.searchField = new TextField();
 
@@ -217,36 +213,20 @@ export class LMSession {
             this.searchExecuter.getPatternMatches(h)
         );
 
-        this.context.openUI({
-            field: this.searchField,
-            highlighter,
-            icon: "search",
-            fieldHandler: createTextFieldKeyHandler(
-                this.searchField,
-                this.context,
-                () => {
-                    console.log("detect");
-                }
-            ),
-        });
+        await this.context.open(
+            new UILayer({
+                field: this.searchField,
+                highlighter,
+                icon: "search",
+            })
+        );
     }
 
     /**
      * Initializes the content to be displayed
      */
-    protected setupContent(): void {
-        // this.context.openUI({
-        //     content: (
-        //         <Box padding="large">
-        //             <Loader>{h => this.selectedApplet.get(h)?.info.name}</Loader>
-        //             <br />
-        //             LM is great m8
-        //         </Box>
-        //     ),
-        // });
-        this.context.openUI({
-            content: {close: true},
-        });
+    protected async setupContent(): Promise<void> {
+        await this.context.open(new UILayer({contentView: {close: true}}));
     }
 
     // Applet management

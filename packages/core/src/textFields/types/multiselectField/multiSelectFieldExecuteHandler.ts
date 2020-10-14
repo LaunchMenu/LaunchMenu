@@ -11,7 +11,6 @@ import {results} from "../../../menus/actions/Action";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {MultiSelectField} from "./MultiSelectField";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
-import {openUI} from "../../../context/openUI/openUI";
 import {createTextFieldKeyHandler} from "../../interaction/keyHandler.ts/createTextFieldKeyHandler";
 import {INonFunction} from "../../../_types/INonFunction";
 
@@ -60,26 +59,27 @@ export const multiSelectFieldExecuteHandler = sequentialExecuteHandler.createHan
                         };
 
                         // Open the field
-                        closeUI = (customOpenUI ?? openUI)(
-                            context,
-                            {
-                                field: dropdownField,
-                                keyHandler: createTextFieldKeyHandler(
-                                    dropdownField,
-                                    context,
-                                    () => {
-                                        if (dropdownField.get().length > 0)
-                                            dropdownField.set("");
-                                        else closeUI();
-                                    }
-                                ),
-                                // TODO: add field with input styling
-                                highlighter: dropdownField.getHighlighterWithError(
-                                    highlighter
-                                ),
-                            },
-                            onClose
-                        );
+                        // TODO: refactor to work with UILayers
+                        // closeUI = (customOpenUI ?? openUI)(
+                        //     context,
+                        //     {
+                        //         field: dropdownField,
+                        //         keyHandler: createTextFieldKeyHandler(
+                        //             dropdownField,
+                        //             context,
+                        //             () => {
+                        //                 if (dropdownField.get().length > 0)
+                        //                     dropdownField.set("");
+                        //                 else closeUI();
+                        //             }
+                        //         ),
+                        //         // TODO: add field with input styling
+                        //         highlighter: dropdownField.getHighlighterWithError(
+                        //             highlighter
+                        //         ),
+                        //     },
+                        //     onClose
+                        // );
                     }),
             })
         ),

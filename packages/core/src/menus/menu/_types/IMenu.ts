@@ -2,17 +2,12 @@ import {IDataHook} from "model-react";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 import {IQuery} from "./IQuery";
 import {IMenuCategoryData} from "./IMenuCategoryData";
-import {IUIModel} from "../../../context/_types/IUIModel";
 import {IIOContext} from "../../../context/_types/IIOContext";
-import {IViewStackItem} from "../../../stacks/viewStack/_types/IViewStackItem";
 
 /**
  * An interface for common menu interactions
  */
 export type IMenu = {
-    /** A possible default view for the menu */
-    readonly view?: IViewStackItem;
-
     /**
      * Retrieves the context associated to the menu
      * @returns The context
@@ -73,4 +68,4 @@ export type IMenu = {
      * @returns The highlight data
      */
     getHighlight?: (hook?: IDataHook) => IQuery | null;
-} & IUIModel;
+};

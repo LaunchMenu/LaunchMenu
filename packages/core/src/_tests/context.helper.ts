@@ -6,8 +6,9 @@ import {UndoRedoFacility} from "../undoRedo/UndoRedoFacility";
  * A dummy context
  */
 export const dummyContext: IIOContext = {
-    keyHandler: null as any,
-    panes: {content: null as any, field: null as any, menu: null as any},
+    close: () => Promise.resolve(),
+    getUI: () => [],
+    open: () => Promise.resolve(() => {}),
     undoRedo: new UndoRedoFacility(),
     settings: new SettingsContext(),
     contextMenuItems: [],

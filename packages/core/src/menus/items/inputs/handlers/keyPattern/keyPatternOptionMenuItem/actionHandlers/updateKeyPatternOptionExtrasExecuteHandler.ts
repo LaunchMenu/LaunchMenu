@@ -5,10 +5,7 @@ import {IUpdateKeyPatternOptionExtrasExecuteData} from "../_types/IUpdateKeyPatt
 import {results} from "../../../../../../actions/Action";
 import {multiSelectFieldExecuteHandler} from "../../../../../../../textFields/types/multiselectField/multiSelectFieldExecuteHandler";
 import {IMultiSelectFieldExecuteData} from "../../../../../../../textFields/types/multiselectField/_types/IMultiSelectFieldExecuteData";
-import {
-    IKeyName,
-    keyNames,
-} from "../../../../../../../stacks/keyHandlerStack/keyIdentifiers/names";
+import {IKeyName, keyNames} from "../../../../../../../keyHandler/keyIdentifiers/names";
 import {createMultiSelectMenuItem} from "../../../../../../../textFields/types/multiselectField/createMultiSelectMenuItem";
 
 /**

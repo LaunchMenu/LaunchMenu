@@ -9,7 +9,6 @@ import {IField} from "../../../../../_types/IField";
 import {Menu} from "../../../../menu/Menu";
 import {Observer} from "../../../../../utils/modelReact/Observer";
 import {IIOContext} from "../../../../../context/_types/IIOContext";
-import {openUI} from "../../../../../context/openUI/openUI";
 import {createStandardMenuItem} from "../../../createStandardMenuItem";
 import {createFinishMenuItem} from "../../../createFinishMenuItem";
 import {getCategoryAction} from "../../../../actions/types/category/getCategoryAction";
@@ -49,9 +48,10 @@ export class AdvancedKeyPatternMenu extends Menu {
      * Opens the summary of the key pattern
      */
     protected openContent(): void {
-        this.closeContent = openUI(this.context, {
-            content: <AdvancedKeyPatternContent pattern={h => this.field.get(h)} />,
-        });
+        // TODO: fix with new context
+        // this.closeContent = openUI(this.context, {
+        //     content: <AdvancedKeyPatternContent pattern={h => this.field.get(h)} />,
+        // });
     }
 
     /**

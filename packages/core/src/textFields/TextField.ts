@@ -1,12 +1,11 @@
 import {Field, IDataHook} from "model-react";
 import {ITextSelection} from "./_types/ITextSelection";
 import {ITextField} from "./_types/ITextField";
-import {AbstractUIModel} from "../context/AbstractUIModel";
 
 /**
  * A mutable field to contain a text input as well as the selected range
  */
-export class TextField extends AbstractUIModel implements ITextField {
+export class TextField implements ITextField {
     protected selection = new Field({start: 0, end: 0});
     protected text: Field<string>;
 
@@ -16,7 +15,6 @@ export class TextField extends AbstractUIModel implements ITextField {
      * @param selection The selected text
      */
     public constructor(text: string = "", selection?: ITextSelection) {
-        super();
         this.text = new Field(text);
         if (selection) this.selection.set(selection);
     }

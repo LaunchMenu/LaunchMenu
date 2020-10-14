@@ -1,6 +1,5 @@
 import {IMenu} from "../menu/_types/IMenu";
 import {getContextMenuItems} from "./getContextMenuItems";
-import {openUI} from "../../context/openUI/openUI";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {PrioritizedMenu} from "../menu/PrioritizedMenu";
 import {sortContextCategories} from "./sortContextCategories";
@@ -19,16 +18,18 @@ export function openContextMenu(
 ): () => void {
     let close = () => {}; // placeholder
     const contextMenuItems = getContextMenuItems(menu.getAllSelected(), ioContext);
-    if (contextMenuItems.length > 0)
-        close = openUI(
-            ioContext,
-            {
-                menu: new PrioritizedMenu(ioContext, contextMenuItems, {
-                    sortCategories: sortContextCategories,
-                }),
-                onExecute: close,
-            },
-            onClose
-        );
+    if (contextMenuItems.length > 0) {
+        // TODO: fix with new context
+        // close = openUI(
+        //     ioContext,
+        //     {
+        //         menu: new PrioritizedMenu(ioContext, contextMenuItems, {
+        //             sortCategories: sortContextCategories,
+        //         }),
+        //         onExecute: close,
+        //     },
+        //     onClose
+        // );
+    }
     return close;
 }

@@ -1,22 +1,20 @@
 import React, {memo, useRef, useState} from "react";
 import {IStackViewProps} from "./_types/IStackViewProps";
-import {findStackChanges} from "../../stacks/findStackChanges";
-import {IIdentifiedItem} from "../../stacks/_types/IIdentifiedItem";
-import {
-    IViewStackItem,
-    IViewStackItemView,
-} from "../../stacks/viewStack/_types/IViewStackItem";
+import {IIdentifiedItem} from "../../_types/IIdentifiedItem";
 import {defaultTransitions, Transition} from "./transitions/Transition";
 import {getViewStackItemElement} from "./getViewStackItemElement";
-import {IViewTransitions} from "../../stacks/viewStack/_types/IViewTransitions";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {LFC} from "../../_types/LFC";
+import {IUUID} from "../../_types/IUUID";
+import {IViewStackItem, IViewStackItemView} from "../../uiLayers/_types/IViewStackItem";
+import {IViewTransitions} from "../../uiLayers/_types/IViewTransitions";
+import {findStackChanges} from "../../context/findStackChanges";
 
 type IStackViewChild = {
     /** A key for this specific transition element */
-    key: string;
+    key: IUUID;
     /** The ID of the item contained in this transition */
-    id: string;
+    id: IUUID;
     /** The element that's currently shown */
     element: IViewStackItemView | undefined;
     /** Whether the transition element is currently closing */
@@ -50,7 +48,7 @@ function updateChildren(
 ): void {
     const {added, removed} = findStackChanges(prevItems, items);
     removed.forEach(({item}) => {
-        const child = children.find(({id}) => id == item.id);
+        const child = children.find(({id}) => id == item.ID);
         if (child) child.element = undefined;
     });
     added.forEach(({index, item}) => {
@@ -60,7 +58,7 @@ function updateChildren(
         let childIndex: number;
         if (index > 0) {
             const itemBefore = items[index - 1];
-            childIndex = children.findIndex(({id}) => id == itemBefore.id) + 1;
+            childIndex = children.findIndex(({id}) => id == itemBefore.ID) + 1;
         } else {
             childIndex = 0;
         }
@@ -78,15 +76,15 @@ function updateChildren(
         const currentChild = children[childIndex];
         if (currentChild && currentChild.element == undefined && !currentChild.closing) {
             currentChild.element = view;
-            currentChild.id = item.id;
+            currentChild.id = item.ID;
             currentChild.wasTransparent =
                 currentChild.wasTransparent || currentChild.transparent;
             currentChild.transparent = transparent ?? false;
             currentChild.transitions = {...defaultTransitions, ...transitions};
         } else {
             children.splice(childIndex, 0, {
-                key: item.id,
-                id: item.id,
+                key: item.ID,
+                id: item.ID,
                 element: view,
                 closing: false,
                 opening: skipOpening ? false : true,
@@ -98,7 +96,7 @@ function updateChildren(
         }
     });
     removed.forEach(({item}) => {
-        const child = children.find(({id}) => id == item.id);
+        const child = children.find(({id}) => id == item.ID);
         if (child && !child.element) child.closing = true;
     });
 }
@@ -108,7 +106,7 @@ function updateChildren(
  */
 export const StackView: LFC<IStackViewProps> = memo(
     ({
-        stack,
+        stackGetter,
         smartHide = true,
         ChangeTransitionComp,
         CloseTransitionComp,
@@ -116,7 +114,7 @@ export const StackView: LFC<IStackViewProps> = memo(
     }) => {
         // Retrieve the items
         const [h] = useDataHook();
-        const items = stack.get(h);
+        const items = stackGetter(h);
         const prevItems = useRef<readonly IIdentifiedItem<IViewStackItem>[]>();
 
         // Keep track of the children to render
@@ -141,7 +139,7 @@ export const StackView: LFC<IStackViewProps> = memo(
         // Handle transition changes
         const [_, _forceUpdate] = useState(false);
         const forceUpdate = () => _forceUpdate(a => !a);
-        const onClose = (key: string) => {
+        const onClose = (key: IUUID) => {
             const children = childrenRef.current;
             const index = children.findIndex(({key: k}) => k == key);
             if (index != -1) {
@@ -149,7 +147,7 @@ export const StackView: LFC<IStackViewProps> = memo(
                 forceUpdate();
             }
         };
-        const onOpen = (key: string) => {
+        const onOpen = (key: IUUID) => {
             const children = childrenRef.current;
             const child = children.find(({key: k}) => k == key);
             if (child) {
@@ -157,7 +155,7 @@ export const StackView: LFC<IStackViewProps> = memo(
                 forceUpdate();
             }
         };
-        const onChange = (key: string) => {
+        const onChange = (key: IUUID) => {
             const children = childrenRef.current;
             const child = children.find(({key: k}) => k == key);
             if (child) {
@@ -187,7 +185,7 @@ export const StackView: LFC<IStackViewProps> = memo(
                         const props = {
                             key: id,
                             onTop: index == childrenRef.current.length,
-                            stack,
+                            stack: items,
                             index,
                         };
                         const el = element && getViewStackItemElement(element, props);

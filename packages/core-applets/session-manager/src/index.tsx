@@ -10,6 +10,7 @@ import {
     KeyPattern,
     createKeyPatternSetting,
     createContextFolderMenuItem,
+    UILayer,
 } from "@launchmenu/core";
 import {DataCacher, IDataHook} from "model-react";
 import {SessionData} from "./SessionData";
@@ -94,9 +95,11 @@ export default declare({
 
         return {
             open({context, onClose}) {
-                context.openUI(
-                    {menu: new ProxiedMenu(context, getSessionMenuItems)},
-                    onClose
+                context.open(
+                    new UILayer(() => ({
+                        menu: new ProxiedMenu(context, getSessionMenuItems),
+                        onClose,
+                    }))
                 );
             },
             globalContextMenuItems: [

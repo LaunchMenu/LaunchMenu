@@ -1,6 +1,6 @@
-import {IViewStackItemProps} from "../../stacks/viewStack/_types/IViewStackItemProps";
-import {IViewStackItemView} from "../../stacks/viewStack/_types/IViewStackItem";
 import {cloneElement, createElement} from "react";
+import {IViewStackItemView} from "../../uiLayers/_types/IViewStackItem";
+import {IViewStackItemProps} from "../../uiLayers/_types/IViewStackItemProps";
 
 /**
  * Obtains the view stack item element for the given props

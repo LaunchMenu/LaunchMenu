@@ -15,7 +15,7 @@ export function checkTextNumberConstraints(
     if (!/^(\-?\d*\.)?\d+$/.exec(text)) {
         const res = /(\-?\d*\.)?\d+/.exec(text);
         return {
-            message: "Value must be an integer",
+            message: "Value must be a number",
             ranges: res
                 ? [
                       ...(res.index > 0 ? [{start: 0, end: res.index}] : []),

@@ -3,7 +3,6 @@ import {TextField} from "../../TextField";
 import {ITextSelection} from "../../_types/ITextSelection";
 import {SearchMenu} from "../../../menus/menu/SearchMenu";
 import {IPrioritizedMenuCategoryConfig} from "../../../menus/menu/_types/IAsyncMenuCategoryConfig";
-import {openUI} from "../../../context/openUI/openUI";
 import {IMenu} from "../../../menus/menu/_types/IMenu";
 import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
 import {Observer} from "../../../utils/modelReact/Observer";
@@ -12,6 +11,7 @@ import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {IHighlighter} from "../../syntax/_types/IHighlighter";
 import {createHighlighterWithSearchPattern} from "./createHighlighterWithSearchPattern";
+import {UILayer} from "../../../uiLayers/standardUILayer/UILayer";
 
 /**
  * A search field that manages the search menu
@@ -23,7 +23,7 @@ export class SearchField extends TextField {
     protected targetObserver: Observer<IMenuItem[]>;
 
     public readonly menu: SearchMenu;
-    protected closeMenu: (() => void) | null;
+    protected closeMenu: Promise<() => void> | null;
 
     /**
      * Creates a new SearchField which can be used to search within a menu
@@ -74,19 +74,17 @@ export class SearchField extends TextField {
         // Open or close the menu
         if (search.length == 0) {
             if (this.closeMenu) {
-                this.closeMenu();
+                this.closeMenu.then(close => close());
                 this.closeMenu = null;
             }
         } else {
             if (!this.closeMenu) {
-                this.closeMenu = openUI(
-                    this.context,
-                    {
+                this.closeMenu = this.context.open(
+                    new UILayer(() => ({
                         menu: this.menu,
                         searchable: false,
-                        destroyOnClose: false,
-                    },
-                    () => this.set("")
+                        onClose: () => this.set(""),
+                    }))
                 );
             }
         }
@@ -96,7 +94,7 @@ export class SearchField extends TextField {
      * Destroys the search field, making sure that all listeners are removed
      */
     public destroy() {
-        this.closeMenu?.();
+        this.closeMenu?.then(close => close());
         this.menu.destroy();
         this.targetObserver.destroy();
     }

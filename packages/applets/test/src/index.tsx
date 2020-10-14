@@ -1,12 +1,14 @@
 import React from "React";
-import {openMenuExecuteHandler} from "@launchmenu/core";
-import {declare} from "@launchmenu/core/build/application/applets/declare";
+import {
+    declare,
+    IKeyEventListenerFunction,
+    openMenuExecuteHandler,
+} from "@launchmenu/core";
 import {createSettings} from "@launchmenu/core/build/settings/createSettings";
 import {createSettingsFolder} from "@launchmenu/core/build/settings/inputs/createSettingsFolder";
 import {createNumberSetting} from "@launchmenu/core/build/settings/inputs/createNumberSetting";
 import {createStandardMenuItem} from "@launchmenu/core/build/menus/items/createStandardMenuItem";
 import {searchAction} from "@launchmenu/core/build/menus/actions/types/search/searchAction";
-import {IKeyEventListenerFunction} from "@launchmenu/core/build/stacks/keyHandlerStack/_types/IKeyEventListener";
 
 export const info = {
     name: "Test",
@@ -75,11 +77,12 @@ export default declare({
                         return true;
                     }
                 };
-                session.context.keyHandler.push(listener);
 
-                return () => {
-                    session.context.keyHandler.remove(listener);
-                };
+                // TODO: refactor to use new stack
+                // session.context.keyHandler.push(listener);
+                // return () => {
+                //     session.context.keyHandler.remove(listener);
+                // };
             },
         },
     }),

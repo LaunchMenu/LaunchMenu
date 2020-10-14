@@ -1,8 +1,8 @@
-import {useLayoutEffect, useRef} from "react";
-import {IViewStack} from "../../stacks/viewStack/_types/IViewStack";
-import {IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
-import {IIdentifiedItem} from "../../stacks/_types/IIdentifiedItem";
+import {IDataHook} from "model-react";
+import {useRef} from "react";
+import {IIdentifiedItem} from "../../_types/IIdentifiedItem";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
+import {IViewStackItem} from "../../uiLayers/_types/IViewStackItem";
 
 /**
  * Checks whether the pane for a viewstack should be visible
@@ -11,7 +11,7 @@ import {useDataHook} from "../../utils/modelReact/useDataHook";
  * @returns WHether the pane should be open, and possible transition durations
  */
 export function usePaneIsVisible(
-    stack: IViewStack,
+    stack: (hook?: IDataHook) => IIdentifiedItem<IViewStackItem>[],
     defaultTransitionDuration = 150
 ): {open: boolean; prevOpen: boolean; duration: number} {
     const state = useRef({
@@ -21,7 +21,8 @@ export function usePaneIsVisible(
         prevTop: undefined as IIdentifiedItem<IViewStackItem> | undefined,
     });
     const [h] = useDataHook();
-    const top = stack.getTop(h);
+    const items = stack(h);
+    const top = items[items.length - 1];
     state.current.prevOpen = state.current.open;
     if (state.current.prevTop != top) {
         state.current.prevTop = top;

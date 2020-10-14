@@ -1,6 +1,11 @@
+import {IDataHook} from "model-react";
 import React, {useLayoutEffect, useRef, useState} from "react";
 import {StackView} from "../../components/stacks/StackView";
 import {InstantChangeTransition} from "../../components/stacks/transitions/change/InstantChangeTransition";
+import {IOContextProvider} from "../../context/react/IOContextContext";
+import {getContextContentStack} from "../../context/uiExtracters/getContextContentStack";
+import {getContextFieldStack} from "../../context/uiExtracters/getContextFieldStack";
+import {getContextMenuStack} from "../../context/uiExtracters/getContextMenuStack";
 import {Box} from "../../styling/box/Box";
 import {LFC} from "../../_types/LFC";
 import {usePaneIsVisible} from "../hooks/usePaneIsVisible";
@@ -10,16 +15,17 @@ import {IApplicationLayoutProps} from "./_types/IApplicationLayoutProps";
  * A component to make up the application layout and handle opening an closing of panes
  */
 export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
-    contentStack,
-    fieldStack,
-    menuStack,
+    context,
     menuWidthFraction = 0.4,
     fieldHeight = 60,
     defaultTransitionDuration = 150,
 }) => {
-    const fieldState = usePaneIsVisible(fieldStack, defaultTransitionDuration);
-    const menuState = usePaneIsVisible(menuStack, defaultTransitionDuration);
-    const contentState = usePaneIsVisible(contentStack, defaultTransitionDuration);
+    const fieldStackGetter = (h?: IDataHook) => getContextFieldStack(context, h);
+    const fieldState = usePaneIsVisible(fieldStackGetter, defaultTransitionDuration);
+    const menuStackGetter = (h?: IDataHook) => getContextMenuStack(context, h);
+    const menuState = usePaneIsVisible(menuStackGetter, defaultTransitionDuration);
+    const contentStackGetter = (h?: IDataHook) => getContextContentStack(context, h);
+    const contentState = usePaneIsVisible(contentStackGetter, defaultTransitionDuration);
 
     // Combine the menu and content states
     const bottomDivisionState = useRef({
@@ -82,56 +88,62 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                 : 1
             : 0) * size.width;
     return (
-        <Box elRef={layoutRef} display="flex" flexDirection="column" height="100%">
-            <Box
-                position="relative"
-                height={fieldState.open ? fieldHeight : 0}
-                transition={`${fieldState.duration}ms height`}>
-                <StackView stack={fieldStack} />
-            </Box>
-            <Box
-                position="relative"
-                overflow="hidden"
-                flexGrow={bottomSectionState.open ? 1 : 0}
-                transition={
-                    animating ? `${bottomSectionState.duration}ms flex-grow` : undefined
-                }>
+        <IOContextProvider value={context}>
+            <Box elRef={layoutRef} display="flex" flexDirection="column" height="100%">
                 <Box
-                    position="absolute"
-                    bottom="none"
-                    height="100%"
-                    minHeight={size.height - fieldHeight}
-                    display="flex">
+                    position="relative"
+                    height={fieldState.open ? fieldHeight : 0}
+                    transition={`${fieldState.duration}ms height`}>
+                    <StackView stackGetter={fieldStackGetter} />
+                </Box>
+                <Box
+                    position="relative"
+                    overflow="hidden"
+                    flexGrow={bottomSectionState.open ? 1 : 0}
+                    transition={
+                        animating
+                            ? `${bottomSectionState.duration}ms flex-grow`
+                            : undefined
+                    }>
                     <Box
-                        position="relative"
-                        flexShrink={0}
-                        onAnimationStart={() => (bottomSectionState.animating = true)}
-                        onAnimationEnd={() => (bottomSectionState.animating = false)}
-                        transition={
-                            animating
-                                ? `${bottomDivisionState.duration}ms width`
-                                : undefined
-                        }
-                        width={horizontalDivision}>
+                        position="absolute"
+                        bottom="none"
+                        height="100%"
+                        minHeight={size.height - fieldHeight}
+                        display="flex">
                         <Box
-                            minWidth={size.width * menuWidthFraction}
-                            width="100%"
-                            height="100%"
-                            right="none"
-                            position="absolute">
-                            <StackView stack={menuStack} />
+                            position="relative"
+                            flexShrink={0}
+                            onAnimationStart={() => (bottomSectionState.animating = true)}
+                            onAnimationEnd={() => (bottomSectionState.animating = false)}
+                            transition={
+                                animating
+                                    ? `${bottomDivisionState.duration}ms width`
+                                    : undefined
+                            }
+                            width={horizontalDivision}>
+                            <Box
+                                minWidth={size.width * menuWidthFraction}
+                                width="100%"
+                                height="100%"
+                                right="none"
+                                position="absolute">
+                                <StackView stackGetter={menuStackGetter} />
+                            </Box>
                         </Box>
-                    </Box>
-                    <Box position="relative" flexGrow={1} flexShrink={1}>
-                        <Box width={size.width * (1 - menuWidthFraction)} height="100%">
-                            <StackView
-                                ChangeTransitionComp={InstantChangeTransition}
-                                stack={contentStack}
-                            />
+                        <Box position="relative" flexGrow={1} flexShrink={1}>
+                            <Box
+                                width={size.width * (1 - menuWidthFraction)}
+                                height="100%">
+                                <StackView
+                                    ChangeTransitionComp={InstantChangeTransition}
+                                    stackGetter={contentStackGetter}
+                                />
+                            </Box>
                         </Box>
                     </Box>
                 </Box>
             </Box>
-        </Box>
+        </IOContextProvider>
     );
 };

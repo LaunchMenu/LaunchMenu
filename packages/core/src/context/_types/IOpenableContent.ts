@@ -1,5 +1,5 @@
-import {IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
-import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {IKeyEventListener} from "../../keyHandler/_types/IKeyEventListener";
+import {IViewStackItem} from "../../uiLayers/_types/IViewStackItem";
 
 /**
  * Content data that can be opened

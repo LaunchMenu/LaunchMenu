@@ -1,7 +1,8 @@
-import {IViewStackItem} from "../../stacks/viewStack/_types/IViewStackItem";
 import {IMenu} from "../../menus/menu/_types/IMenu";
-import {IKeyEventListener} from "../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {IKeyEventListener} from "../../keyHandler/_types/IKeyEventListener";
 import {IHighlighter} from "../../textFields/syntax/_types/IHighlighter";
+import {IViewStackItem} from "../../uiLayers/_types/IViewStackItem";
+import {IMenuItemExecuteCallback} from "../../menus/menu/_types/IMenuItemExecuteCallback";
 
 /**
  * Menu data that can be opened
@@ -19,7 +20,7 @@ export type IOpenableMenu =
           /** The key handler of the menu, will be generated if left out */
           menuHandler?: IKeyEventListener;
           /** A onExecute callback that will be forwarded to the created menuHandler (doesn't work if menuHandler is specified) */
-          onExecute?: () => void;
+          onExecute?: IMenuItemExecuteCallback;
           /** Whether the UI should close on escape */
           closable?: boolean;
           /** Whether to create a search field for this menu, defaults to true. Only generates search fields if no other field is specified */

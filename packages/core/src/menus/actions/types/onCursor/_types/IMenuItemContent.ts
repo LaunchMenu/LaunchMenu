@@ -1,4 +1,4 @@
-import {IViewStackItem} from "../../../../../stacks/viewStack/_types/IViewStackItem";
+import {IViewStackItem} from "../../../../../uiLayers/_types/IViewStackItem";
 
 /**
  * Data that can represent the content of a menu item

@@ -2,16 +2,18 @@ import {IMenu} from "../_types/IMenu";
 import {IMenuItem} from "../../items/_types/IMenuItem";
 import {executeAction} from "../../actions/types/execute/executeAction";
 import {IIOContext} from "../../../context/_types/IIOContext";
-import {IExecutable} from "../../actions/types/execute/_types/IExecutable";
-import {IOContext} from "../../../context/IOContext";
 import {IMenuItemActionBindings} from "../../actions/_types/IMenuItemActionBindings";
+import {IMenuItemExecuteCallback} from "../_types/IMenuItemExecuteCallback";
 
 /**
  * Executes the default actions of the selected items of the menu
  * @param menu The menu for which to execute the items
  * @param onExecute A callback to perform when an item executed (may be suppressed/delayed by an executable)
  */
-export async function executeItems(menu: IMenu, onExecute?: () => void): Promise<void>;
+export async function executeItems(
+    menu: IMenu,
+    onExecute?: IMenuItemExecuteCallback
+): Promise<void>;
 
 /**
  * Executes the default actions of specified items
@@ -22,19 +24,20 @@ export async function executeItems(menu: IMenu, onExecute?: () => void): Promise
 export async function executeItems(
     context: IIOContext,
     items: (IMenuItem | IMenuItemActionBindings)[],
-    onExecute?: () => void
+    onExecute?: IMenuItemExecuteCallback
 ): Promise<void>;
 export async function executeItems(
     context: IMenu | IIOContext,
-    items?: (IMenuItem | IMenuItemActionBindings)[] | (() => void),
-    onExecute?: () => void
+    items?: (IMenuItem | IMenuItemActionBindings)[] | IMenuItemExecuteCallback,
+    onExecute?: IMenuItemExecuteCallback
 ): Promise<void> {
     // Setup function to handle closing of the parent menu
     let blockCallback = false;
+    let exItems: IMenuItem[];
     const executeCallback = () => {
         if (!blockCallback) {
-            if (items instanceof Function) items?.();
-            else onExecute?.();
+            if (items instanceof Function) items?.(exItems);
+            else onExecute?.(exItems);
         }
         blockCallback = true; // Make sure to not perform the callback twice
     };
@@ -49,15 +52,15 @@ export async function executeItems(
     };
 
     // Execute the command
-    let executable: IExecutable;
     let c: IIOContext;
     if ("getAllSelected" in context) {
         c = context.getContext();
-        executable = executeAction.get(context.getAllSelected());
+        exItems = context.getAllSelected();
     } else {
         c = context;
-        executable = executeAction.get(items as IMenuItem[]);
+        exItems = items as IMenuItem[];
     }
+    const executable = executeAction.get(exItems);
     blockCallback = executable.passive || false; // Block the callback if the executor is passive
     const cmd = await executable.execute({context: c, preventCallback});
     if (cmd) c.undoRedo.execute(cmd);

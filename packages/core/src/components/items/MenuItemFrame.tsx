@@ -4,9 +4,10 @@ import {IMenu} from "../../menus/menu/_types/IMenu";
 import {IMenuItem} from "../../menus/items/_types/IMenuItem";
 import {isItemSelectable} from "../../menus/items/isItemSelectable";
 import {useIOContext} from "../../context/react/useIOContext";
-import {executeAction} from "../../menus/actions/types/execute/executeAction";
-import {KeyEvent} from "../../stacks/keyHandlerStack/KeyEvent";
+import {KeyEvent} from "../../keyHandler/KeyEvent";
 import {executeItems} from "../../menus/menu/interaction/executeItems";
+import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
+import {IMenuItemExecuteCallback} from "../../menus/menu/_types/IMenuItemExecuteCallback";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution
@@ -14,7 +15,7 @@ import {executeItems} from "../../menus/menu/interaction/executeItems";
 export const MenuItemFrame: FC<{
     isSelected: boolean;
     isCursor: boolean;
-    onExecute?: () => void;
+    onExecute?: IMenuItemExecuteCallback;
     menu?: IMenu;
     item?: IMenuItem;
 }> = ({isCursor, isSelected, menu, onExecute, item, children}) => {
@@ -36,12 +37,19 @@ export const MenuItemFrame: FC<{
                         menu.setCursor(item);
 
                         // Use the context menu keyboard shortcut to open the menu
-                        ioContext?.keyHandler.emit(
-                            new KeyEvent({key: {id: "tab", name: "tab"}, type: "down"})
-                        );
-                        ioContext?.keyHandler.emit(
-                            new KeyEvent({key: {id: "tab", name: "tab"}, type: "up"})
-                        );
+                        if (ioContext) {
+                            emitContextEvent(
+                                ioContext,
+                                new KeyEvent({
+                                    key: {id: "tab", name: "tab"},
+                                    type: "down",
+                                })
+                            );
+                            emitContextEvent(
+                                ioContext,
+                                new KeyEvent({key: {id: "tab", name: "tab"}, type: "up"})
+                            );
+                        }
                     }
                 }}
                 background={isCursor ? "primary" : "bgPrimary"}>

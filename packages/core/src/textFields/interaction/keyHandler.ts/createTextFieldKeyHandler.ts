@@ -1,5 +1,5 @@
 import {ITextField} from "../../_types/ITextField";
-import {IKeyEventListener} from "../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
 import {handleHorizontalCursorInput} from "./handleHorizontalCursorInput";
 import {handleVerticalCursorInput} from "./handleVerticalCursorInput";
 import {handleCharacterInput} from "./handleCharacterInput";

@@ -1,7 +1,7 @@
 import React from "react";
 import Path from "path";
 import {getAsync, Loader} from "model-react";
-import {KeyHandler} from "../stacks/keyHandlerStack/KeyHandler";
+import {KeyHandler} from "../keyHandler/KeyHandler";
 import {ThemeProvider} from "../styling/theming/ThemeContext";
 import {loadTheme} from "../styling/theming/loadTheme";
 import {defaultTheme} from "../styling/theming/defaultTheme";

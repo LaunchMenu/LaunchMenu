@@ -1,8 +1,9 @@
 import {IMenu} from "../../_types/IMenu";
-import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
+import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {executeItems} from "../executeItems";
 import {KeyPattern} from "../../../items/inputs/handlers/keyPattern/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
+import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
 
 /**
  * Handles execute input events
@@ -15,7 +16,7 @@ import {baseSettings} from "../../../../application/settings/baseSettings/baseSe
 export function handleExecuteInput(
     event: KeyEvent,
     menu: IMenu,
-    onExecute?: () => void,
+    onExecute?: IMenuItemExecuteCallback,
     pattern: KeyPattern = menu
         .getContext()
         .settings.get(baseSettings)

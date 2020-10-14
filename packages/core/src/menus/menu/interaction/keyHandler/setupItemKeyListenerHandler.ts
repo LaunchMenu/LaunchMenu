@@ -1,8 +1,9 @@
 import {IMenu} from "../../_types/IMenu";
 import {Observer} from "../../../../utils/modelReact/Observer";
-import {IKeyEventListenerObject} from "../../../../stacks/keyHandlerStack/_types/IKeyEventListener";
+import {IKeyEventListenerObject} from "../../../../keyHandler/_types/IKeyEventListener";
 import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
-import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
+import {KeyEvent} from "../../../../keyHandler/KeyEvent";
+import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
 
 /**
  * Sets up a key event handler that emits events to the items in a menu
@@ -12,10 +13,14 @@ import {KeyEvent} from "../../../../stacks/keyHandlerStack/KeyEvent";
  */
 export function setupItemKeyListenerHandler(
     menu: IMenu,
-    onExecute?: () => void
+    onExecute?: IMenuItemExecuteCallback
 ): IKeyEventListenerObject {
     let emitter: {
-        emit(event: KeyEvent, menu: IMenu, onExecute?: () => void): Promise<boolean>;
+        emit(
+            event: KeyEvent,
+            menu: IMenu,
+            onExecute?: IMenuItemExecuteCallback
+        ): Promise<boolean>;
     } | null = null;
     let itemObserver: Observer<void> | undefined;
 

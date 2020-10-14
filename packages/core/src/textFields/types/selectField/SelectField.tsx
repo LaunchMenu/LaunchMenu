@@ -8,7 +8,6 @@ import {createStandardMenuItem} from "../../../menus/items/createStandardMenuIte
 import {IInputFieldError} from "../inputField/_types/IInputFieldError";
 import {IDataHook} from "model-react";
 import {SearchMenu} from "../../../menus/menu/SearchMenu";
-import {openUI} from "../../../context/openUI/openUI";
 import {searchAction} from "../../../menus/actions/types/search/searchAction";
 import {v4 as uuid} from "uuid";
 import {ISelectOption} from "./_types/ISelectOption";
@@ -82,14 +81,15 @@ export class SelectField<T> extends InputField<T> {
     // Life cycle
     /** @override */
     public addViewCount(): void {
-        if (this.context && !this.closeMenu)
-            this.closeMenu = openUI(this.context, {
-                menu: this.menu,
-                menuView: <MenuView menu={this.menu} />,
-                searchable: false,
-                closable: false,
-            });
-        super.addViewCount();
+        // TODO: refactor to be a UILayer
+        // if (this.context && !this.closeMenu)
+        //     this.closeMenu = openUI(this.context, {
+        //         menu: this.menu,
+        //         menuView: <MenuView menu={this.menu} />,
+        //         searchable: false,
+        //         closable: false,
+        //     });
+        // super.addViewCount();
     }
 
     /** @override */
