@@ -1,8 +1,8 @@
-import {IInputFieldError} from "../../inputField/_types/IInputFieldError";
 import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
 import {IPrioritizedMenuCategoryConfig} from "../../../../menus/menu/_types/IAsyncMenuCategoryConfig";
 import {IMultiSelectOption} from "./IMultiSelectOption";
 import {IDataHook} from "model-react";
+import {IInputError} from "../../../../uiLayers/types/input/_types/IInputError";
 
 export type IMultiSelectFieldConfig<T> = {
     /** The options for the dropdown */
@@ -35,7 +35,7 @@ export type IMultiSelectFieldConfig<T> = {
           /** Whether to allow custom user inputs */
           allowCustomInput: true;
           /** Checks whether the given input is valid */
-          checkValidity?: (v: string) => IInputFieldError | undefined;
+          checkValidity?: (v: string) => IInputError | undefined;
           /** The function to transform the field value into a string */
           serialize?: (v: T) => string;
           /** The function to transform the input string to a valid field value (if the input is valid) */

@@ -68,11 +68,8 @@ export class Input<T> extends AbstractUILayer {
         if (this.fieldData.get(null))
             throw Error("An input can only be opened in 1 context");
 
-        // Obtain the initial value
-        const rawValue = this.target.get(null);
-        const value = this.config.serialize?.(rawValue) ?? ((rawValue as any) as string);
-
         // Create the field data model
+        const value = this.getInitialTextValue();
         const field = new TextField(value, {start: value.length, end: value.length});
 
         // Obtain the field data
@@ -98,6 +95,15 @@ export class Input<T> extends AbstractUILayer {
             this.fieldData.set(null);
             this.contentData.set(null);
         };
+    }
+
+    /**
+     * Retrieves the initial textual value of the field
+     * @returns The initial text field value
+     */
+    protected getInitialTextValue(): string {
+        const rawValue = this.target.get(null);
+        return this.config.serialize?.(rawValue) ?? ((rawValue as any) as string);
     }
 
     /**
@@ -136,27 +142,32 @@ export class Input<T> extends AbstractUILayer {
                         .controls.menu.execute.get()
                         .matches(key)
                 ) {
-                    // Check whether exiting is allowed
-                    if (this.config?.allowSubmitExitOnError == false && this.checkError())
-                        return true;
-
-                    // Set the new value
-                    if (this.config && !this.checkError()) {
-                        const value = this.getValue() as T;
-                        if (this.config.onSubmit) this.config.onSubmit(value);
-                        else if (this.config.undoable)
-                            context.undoRedo.execute(
-                                new SetFieldCommand(this.target, value)
-                            );
-                        else this.target.set(value);
-                    }
-
-                    // Close the UI
-                    close?.();
+                    this.submit(context);
                     return true;
                 }
             }
         );
+    }
+
+    /**
+     * Submits the current value
+     * @param context The context to execute the command with (if specified in config)
+     */
+    protected submit(context: IIOContext): void {
+        // Check whether exiting is allowed
+        if (this.config?.allowSubmitExitOnError == false && this.checkError()) return;
+
+        // Set the new value
+        if (this.config && !this.checkError()) {
+            const value = this.getValue() as T;
+            if (this.config.onSubmit) this.config.onSubmit(value);
+            else if (this.config.undoable)
+                context.undoRedo.execute(new SetFieldCommand(this.target, value));
+            else this.target.set(value);
+        }
+
+        // Close the UI
+        this.closeAll();
     }
 
     // Value helpers

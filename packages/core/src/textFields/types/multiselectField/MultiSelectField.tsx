@@ -14,7 +14,6 @@ import {createStandardMenuItem} from "../../../menus/items/createStandardMenuIte
 import {v4 as uuid} from "uuid";
 import {plaintextLexer} from "../../syntax/plaintextLexer";
 import {IHighlighter} from "../../syntax/_types/IHighlighter";
-import {IInputFieldError} from "../inputField/_types/IInputFieldError";
 import {createFinishMenuItem} from "../../../menus/items/createFinishMenuItem";
 import {getCategoryAction} from "../../../menus/actions/types/category/getCategoryAction";
 import {controlsCategory} from "../../../menus/categories/types/controlsCategory";
@@ -27,6 +26,7 @@ import {MenuView} from "../../../components/menu/MenuView";
 import {adjustBindings} from "../../../menus/items/adjustBindings";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {IViewStackItem} from "../../../uiLayers/_types/IViewStackItem";
+import {IInputError} from "../../../uiLayers/types/input/_types/IInputError";
 
 function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -41,7 +41,7 @@ function getMultiSelectOptionValue<T>(option: IMultiSelectOption<T>): T {
 export class MultiSelectField<T> extends TextField {
     protected field: IField<T[]>;
 
-    protected error = new Field(null as null | IInputFieldError);
+    protected error = new Field(null as null | IInputError);
     protected closeError?: () => void;
     protected errorListeners = new ManualSourceHelper();
 
@@ -408,7 +408,7 @@ export class MultiSelectField<T> extends TextField {
      * @param text The text to retrieve the error for
      * @returns The error
      */
-    protected checkError(text?: string): IInputFieldError | null {
+    protected checkError(text?: string): IInputError | null {
         if (!this.isCustomSelected()) return null;
         return this.config.checkValidity?.(text ?? this.get()) || null;
     }
@@ -417,7 +417,7 @@ export class MultiSelectField<T> extends TextField {
      * Updates the error and shows the UI
      * @returns The new error if any
      */
-    protected updateError(): IInputFieldError | null {
+    protected updateError(): IInputError | null {
         const error = this.checkError();
         this.error.set(error);
 

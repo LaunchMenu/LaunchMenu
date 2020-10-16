@@ -1,5 +1,3 @@
-import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
-
 /**
  * Options for the select input
  */

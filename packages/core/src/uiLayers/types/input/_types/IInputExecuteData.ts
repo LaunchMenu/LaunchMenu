@@ -7,6 +7,4 @@ import {IInputConfig} from "./IInputConfig";
 export type IInputExecuteData<T> = {
     /** The field to be altered */
     field: IField<T>;
-    /** The input field configuration */
-    config?: IInputConfig<T>;
-} & (T extends string ? unknown : {config: unknown});
+} & IInputConfig<T>;

@@ -1,34 +1,34 @@
-import {sequentialExecuteHandler} from "../../../menus/actions/types/execute/sequentialExecuteHandler";
 import {results} from "../../../menus/actions/Action";
-import {IInputExecuteData} from "./_types/IInputExecuteData";
-import {ICommand} from "../../../undoRedo/_types/ICommand";
-import {IActionBinding} from "../../../menus/actions/_types/IActionBinding";
-import {ITagsOverride} from "../../../menus/actions/_types/ITagsOverride";
+import {sequentialExecuteHandler} from "../../../menus/actions/types/execute/sequentialExecuteHandler";
 import {IExecutable} from "../../../menus/actions/types/execute/_types/IExecutable";
 import {IAction} from "../../../menus/actions/_types/IAction";
-import {IActionMultiResult} from "../../../menus/actions/_types/IActionMultiResult";
-import {TReplace} from "../../../_types/TReplace";
+import {IActionBinding} from "../../../menus/actions/_types/IActionBinding";
 import {IActionCore} from "../../../menus/actions/_types/IActionCore";
+import {IActionMultiResult} from "../../../menus/actions/_types/IActionMultiResult";
+import {ITagsOverride} from "../../../menus/actions/_types/ITagsOverride";
+import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {INonFunction} from "../../../_types/INonFunction";
-import {Input} from "./Input";
+import {TReplace} from "../../../_types/TReplace";
+import {Select} from "./Select";
+import {ISelectExecuteData} from "./_types/ISelectExecuteData";
 
 /**
- * A handler to let users alter a field
+ * A handler to let users alter a field given a selection of options
  */
-export const inputExecuteHandler = sequentialExecuteHandler.createHandler(
-    (data: IInputExecuteData<unknown>[]) => ({
+export const selectExecuteHandler = sequentialExecuteHandler.createHandler(
+    (data: ISelectExecuteData<unknown>[]) => ({
         [results]: data.map(
             ({field, ...config}): IExecutable => ({
                 execute: ({context}) =>
                     new Promise<ICommand | void>(res => {
-                        context.open(new Input(field, config), res);
+                        context.open(new Select(field, config), res);
                     }),
             })
         ),
     })
 ) as TReplace<
     // Cast to get improved error checking with template parameter
-    IAction<IInputExecuteData<unknown>, IActionMultiResult<IExecutable>>,
+    IAction<ISelectExecuteData<unknown>, IActionMultiResult<IExecutable>>,
     {
         /**
          * Creates a new handler for this action, specifying how this action can be executed
@@ -36,10 +36,10 @@ export const inputExecuteHandler = sequentialExecuteHandler.createHandler(
          * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
          * @returns The created action handler
          */
-        createHandler<T extends INonFunction, K>(
-            handlerCore: IActionCore<T, IInputExecuteData<K>>,
+        createHandler<T extends INonFunction, K, C extends Boolean = false>(
+            handlerCore: IActionCore<T, ISelectExecuteData<K, C>>,
             defaultTags?: ITagsOverride
-        ): IAction<T, IInputExecuteData<K>>;
+        ): IAction<T, ISelectExecuteData<K, C>>;
 
         /**
          * Creates a new handler for this action, specifying how this action can be executed
@@ -47,10 +47,10 @@ export const inputExecuteHandler = sequentialExecuteHandler.createHandler(
          * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
          * @returns The created action handler
          */
-        createHandler<T extends INonFunction, K>(
-            handlerCore: IActionCore<T, IActionMultiResult<IInputExecuteData<K>>>,
+        createHandler<T extends INonFunction, K, C extends Boolean = false>(
+            handlerCore: IActionCore<T, IActionMultiResult<ISelectExecuteData<K, C>>>,
             defaultTags?: ITagsOverride
-        ): IAction<T, IActionMultiResult<IInputExecuteData<K>>>;
+        ): IAction<T, IActionMultiResult<ISelectExecuteData<K, C>>>;
 
         /**
          * Creates a binding for this action handler
@@ -58,9 +58,9 @@ export const inputExecuteHandler = sequentialExecuteHandler.createHandler(
          * @param tags The tags to include in the binding
          * @returns The action binding
          */
-        createBinding<T>(
-            data: IInputExecuteData<T>,
+        createBinding<T, C extends Boolean = false>(
+            data: ISelectExecuteData<T, C>,
             tags?: ITagsOverride
-        ): IActionBinding<IInputExecuteData<T>>;
+        ): IActionBinding<ISelectExecuteData<T, C>>;
     }
 >;

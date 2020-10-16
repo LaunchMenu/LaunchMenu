@@ -6,7 +6,6 @@ import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem
 import {IQuery} from "../../menus/menu/_types/IQuery";
 import {SettingsContext} from "../../settings/SettingsContext";
 import {KeyEvent} from "../../keyHandler/KeyEvent";
-import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
 import {TextField} from "../../textFields/TextField";
 import {createHighlighterWithSearchPattern} from "../../textFields/types/searchField/createHighlighterWithSearchPattern";
 import {UndoRedoFacility} from "../../undoRedo/UndoRedoFacility";
@@ -29,8 +28,6 @@ import {IUUID} from "../../_types/IUUID";
 import {withSession} from "../applets/declaration/withSession";
 import {UILayer} from "../../uiLayers/standardUILayer/UILayer";
 import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
-import {Input} from "../../uiLayers/types/input/Input";
-import {checkTextNumberConstraints} from "../../menus/items/inputs/handlers/number/checkTextNumberConstraints";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 
 /**

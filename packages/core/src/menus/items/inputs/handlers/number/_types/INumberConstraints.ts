@@ -1,4 +1,4 @@
-import {IInputFieldError} from "../../../../../../textFields/types/inputField/_types/IInputFieldError";
+import {IInputError} from "../../../../../../uiLayers/types/input/_types/IInputError";
 
 /**
  * The constraints on a number
@@ -13,5 +13,5 @@ export type INumberConstraints = {
     /** The base value to take the increments relative to */
     baseValue?: number;
     /** Checks whether the given input is valid */
-    checkValidity?: (text: string) => IInputFieldError | undefined;
+    checkValidity?: (text: string) => IInputError | undefined;
 };

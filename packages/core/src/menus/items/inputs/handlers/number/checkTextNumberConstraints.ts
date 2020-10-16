@@ -1,5 +1,5 @@
+import {IInputError} from "../../../../../uiLayers/types/input/_types/IInputError";
 import {INumberConstraints} from "./_types/INumberConstraints";
-import {IInputFieldError} from "../../../../../textFields/types/inputField/_types/IInputFieldError";
 
 /**
  * Checks whether a given text matches the numeric constraints specified
@@ -10,7 +10,7 @@ import {IInputFieldError} from "../../../../../textFields/types/inputField/_type
 export function checkTextNumberConstraints(
     text: string,
     {min, max, increment, baseValue, checkValidity}: INumberConstraints
-): IInputFieldError | undefined {
+): IInputError | undefined {
     // Make sure the text is numeric
     if (!/^(\-?\d*\.)?\d+$/.exec(text)) {
         const res = /(\-?\d*\.)?\d+/.exec(text);

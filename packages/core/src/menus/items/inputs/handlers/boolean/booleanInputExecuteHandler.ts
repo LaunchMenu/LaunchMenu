@@ -1,23 +1,21 @@
 import {IBooleanInputExecuteData} from "./_types/IBooleanInputExecuteData";
 import {createStandardMenuItem} from "../../../createStandardMenuItem";
 import {results} from "../../../../actions/Action";
-import {selectFieldExecuteHandler} from "../../../../../textFields/types/selectField/selectFieldExecuteHandler";
-import {ISelectFieldExecuteData} from "../../../../../textFields/types/selectField/_types/ISelectFieldExecuteData";
+import {selectExecuteHandler} from "../../../../../uiLayers/types/select/selectExecuteHandler";
+import {ISelectExecuteData} from "../../../../../uiLayers/types/select/_types/ISelectExecuteData";
 
 /**
  * A simple execute handler for updating boolean fields
  */
-export const booleanInputExecuteHandler = selectFieldExecuteHandler.createHandler(
+export const booleanInputExecuteHandler = selectExecuteHandler.createHandler(
     (data: IBooleanInputExecuteData[]) => ({
         [results]: data.map(
-            ({field, liveUpdate, undoable}): ISelectFieldExecuteData<boolean> => ({
+            ({field, liveUpdate, undoable}): ISelectExecuteData<boolean> => ({
                 field,
-                undoable: undoable as any, // Cast to ignore relation between liveUpdate and undoable
-                config: {
-                    liveUpdate,
-                    options: [true, false],
-                    createOptionView: v => createStandardMenuItem({name: v.toString()}),
-                },
+                undoable,
+                liveUpdate,
+                options: [true, false],
+                createOptionView: v => createStandardMenuItem({name: v.toString()}),
             })
         ),
     })

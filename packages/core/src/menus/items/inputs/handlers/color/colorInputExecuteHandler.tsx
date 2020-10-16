@@ -1,57 +1,39 @@
-import React from "react";
 import {IColorInputExecuteData} from "./_types/IColorInputExecuteData";
 import Color from "color";
-import {inputFieldExecuteHandler} from "../../../../../textFields/types/inputField/InputFieldExecuteHandler";
-import {IInputFieldExecuteData} from "../../../../../textFields/types/inputField/_types/IInputFieldExecuteData";
 import {results} from "../../../../actions/Action";
-import {TextField} from "../../../../../textFields/TextField";
-import {ColorTextFieldView} from "../../../../../components/settings/inputs/ColorTextFieldView";
+import {ColorInput} from "./ColorInput";
+import {ICommand} from "../../../../../undoRedo/_types/ICommand";
+import {IExecutable} from "../../../../actions/types/execute/_types/IExecutable";
+import {sequentialExecuteHandler} from "../../../../actions/types/execute/sequentialExecuteHandler";
 
 //TODO: make a more advanced color input editor in accordance to the planning file
 /**
  * A simple execute handler for updating color fields
  */
-export const colorInputExecuteHandler = inputFieldExecuteHandler.createHandler(
+export const colorInputExecuteHandler = sequentialExecuteHandler.createHandler(
     (data: IColorInputExecuteData[]) => ({
         [results]: data.map(
-            ({field, liveUpdate, undoable}): IInputFieldExecuteData<string> => ({
-                field,
-                undoable,
-                config: {
-                    liveUpdate: liveUpdate as any,
-                    checkValidity: text => {
-                        try {
-                            new Color(text);
-                        } catch {
-                            return {
-                                message: `'${text}' is not a valid color`,
-                                ranges: [{start: 0, end: text.length}],
-                            };
-                        }
-                    },
-                },
-                // Use the color text field for the visualization
-                openUI: (context, ui, onClose) => {
-                    // TODO: fix with new context
-                    // openUI(
-                    //     context,
-                    //     "highlighter" in ui &&
-                    //         "field" in ui &&
-                    //         ui.field instanceof TextField
-                    //         ? {
-                    //               ...ui,
-                    //               fieldView: (
-                    //                   <ColorTextFieldView
-                    //                       highlighter={ui.highlighter}
-                    //                       field={ui.field}
-                    //                   />
-                    //               ),
-                    //           }
-                    //         : ui,
-                    //     onClose
-                    // ),
-                    return () => {};
-                },
+            ({field, liveUpdate, undoable}): IExecutable => ({
+                execute: ({context}) =>
+                    new Promise<ICommand | void>(res => {
+                        context.open(
+                            new ColorInput(field, {
+                                undoable,
+                                liveUpdate: liveUpdate as any,
+                                checkValidity: text => {
+                                    try {
+                                        new Color(text);
+                                    } catch {
+                                        return {
+                                            message: `'${text}' is not a valid color`,
+                                            ranges: [{start: 0, end: text.length}],
+                                        };
+                                    }
+                                },
+                            }),
+                            res
+                        );
+                    }),
             })
         ),
     })

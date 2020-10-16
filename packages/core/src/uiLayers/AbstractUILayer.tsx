@@ -51,6 +51,13 @@ export abstract class AbstractUILayer implements IUILayer {
         };
     }
 
+    /**
+     * Closes this UILayer from all contexts it's opened in
+     */
+    protected closeAll(): void {
+        this.closers.forEach(closer => closer());
+    }
+
     // Path management
     /**
      * Retrieves the path to show to the user representing this layer

@@ -1,14 +1,14 @@
 import {checkTextNumberConstraints} from "./checkTextNumberConstraints";
 import {INumberInputSelectExecuteData} from "./_types/INumberInputSelectExecuteData";
 import {results} from "../../../../actions/Action";
-import {selectFieldExecuteHandler} from "../../../../../textFields/types/selectField/selectFieldExecuteHandler";
-import {ISelectFieldExecuteData} from "../../../../../textFields/types/selectField/_types/ISelectFieldExecuteData";
 import {createStandardMenuItem} from "../../../createStandardMenuItem";
+import {selectExecuteHandler} from "../../../../../uiLayers/types/select/selectExecuteHandler";
+import {ISelectExecuteData} from "../../../../../uiLayers/types/select/_types/ISelectExecuteData";
 
 /**
  * A simple execute handler for updating numeric fields, allowing the choice of multiple options
  */
-export const numberInputSelectExecuteHandler = selectFieldExecuteHandler.createHandler(
+export const numberInputSelectExecuteHandler = selectExecuteHandler.createHandler(
     (data: INumberInputSelectExecuteData[]) => ({
         [results]: data.map(
             ({
@@ -18,18 +18,16 @@ export const numberInputSelectExecuteHandler = selectFieldExecuteHandler.createH
                 options,
                 allowCustomInput,
                 ...rest
-            }): ISelectFieldExecuteData<number> => ({
+            }): ISelectExecuteData<number, boolean> => ({
                 field,
-                undoable: undoable as any, // Cast to ignore relation between liveUpdate and undoable
-                config: {
-                    options,
-                    liveUpdate,
-                    allowCustomInput: allowCustomInput as any,
-                    serialize: number => number.toString(),
-                    deserialize: text => Number(text),
-                    checkValidity: text => checkTextNumberConstraints(text, rest),
-                    createOptionView: v => createStandardMenuItem({name: v.toString()}),
-                },
+                undoable,
+                options,
+                liveUpdate,
+                allowCustomInput,
+                serialize: number => number.toString(),
+                deserialize: text => Number(text),
+                checkValidity: text => checkTextNumberConstraints(text, rest),
+                createOptionView: v => createStandardMenuItem({name: v.toString()}),
             })
         ),
     })

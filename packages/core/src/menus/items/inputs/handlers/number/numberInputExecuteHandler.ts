@@ -1,24 +1,22 @@
 import {INumberInputExecuteData} from "./_types/INumberInputExecuteData";
 import {checkTextNumberConstraints} from "./checkTextNumberConstraints";
-import {inputFieldExecuteHandler} from "../../../../../textFields/types/inputField/InputFieldExecuteHandler";
 import {results} from "../../../../actions/Action";
-import {IInputFieldExecuteData} from "../../../../../textFields/types/inputField/_types/IInputFieldExecuteData";
+import {IInputExecuteData} from "../../../../../uiLayers/types/input/_types/IInputExecuteData";
+import {inputExecuteHandler} from "../../../../../uiLayers/types/input/inputExecuteHandler";
 
 /**
  * A simple execute handler for updating numeric fields
  */
-export const numberInputExecuteHandler = inputFieldExecuteHandler.createHandler(
+export const numberInputExecuteHandler = inputExecuteHandler.createHandler(
     (data: INumberInputExecuteData[]) => ({
         [results]: data.map(
-            ({field, liveUpdate, undoable, ...rest}): IInputFieldExecuteData<number> => ({
+            ({field, liveUpdate, undoable, ...rest}): IInputExecuteData<number> => ({
                 field,
-                undoable: undoable as any, // Cast to ignore relation between liveUpdate and undoable
-                config: {
-                    liveUpdate,
-                    serialize: number => number.toString(),
-                    deserialize: text => Number(text),
-                    checkValidity: text => checkTextNumberConstraints(text, rest),
-                },
+                undoable,
+                liveUpdate,
+                serialize: number => number.toString(),
+                deserialize: text => Number(text),
+                checkValidity: text => checkTextNumberConstraints(text, rest),
             })
         ),
     })
