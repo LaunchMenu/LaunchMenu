@@ -1,6 +1,5 @@
 import {IStandardMenuItemData} from "../../../menus/items/_types/IStandardMenuItemData";
 import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
-import {IMultiSelectFieldConfig} from "./_types/IMultiselectFieldConfig";
 import {IDataHook} from "model-react";
 import {createStandardMenuItem} from "../../../menus/items/createStandardMenuItem";
 

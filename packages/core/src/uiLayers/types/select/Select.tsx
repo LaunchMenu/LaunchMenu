@@ -21,7 +21,7 @@ import {MenuView} from "../../../components/menu/MenuView";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
 import {createMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {ISelectOption} from "./_types/ISelectOption";
-import {IMultiSelectOptionData} from "../../../textFields/types/multiselectField/_types/IMultiSelectOptionData";
+import {ISelectOptionData} from "./_types/ISelectOptionData";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -35,7 +35,7 @@ export class Select<T> extends Input<T> {
     protected config: IInputConfig<T> & ISelectConfig<T>;
 
     protected menu: SearchMenu;
-    protected options: IMultiSelectOptionData<T>[] = [];
+    protected options: ISelectOptionData<T>[] = [];
     protected customItem?: IMenuItem;
 
     /**
@@ -44,7 +44,19 @@ export class Select<T> extends Input<T> {
      * @param config The configuration for the UI
      */
     public constructor(field: IField<T>, config: ISelectConfig<T>) {
-        super(field, config as IInputConfig<T>);
+        super(field, {allowSubmitExitOnError: false, ...config} as IInputConfig<T>);
+    }
+
+    /** @override */
+    protected validateConfig() {
+        if (
+            typeof this.target.get(null) != "string" &&
+            this.config.allowCustomInput &&
+            (!this.config.serialize || !this.config.serialize)
+        )
+            throw Error(
+                "Non-string fields with custom input require a serializer and deserializer to be configured"
+            );
     }
 
     /** @override */
@@ -102,7 +114,7 @@ export class Select<T> extends Input<T> {
             if (search !== undefined) this.menu.setSearch(search);
         });
 
-        // Open the field UI
+        // Open the UI
         this.menuData.set(menuData);
 
         // Return a disposer
@@ -203,7 +215,7 @@ export class Select<T> extends Input<T> {
      * @returns The item with execute handler
      */
     protected setupCustomView(customView: IMenuItem): IMenuItem {
-        const n = {
+        return {
             view: customView.view,
             actionBindings: adjustBindings(customView.actionBindings, bindings => [
                 ...bindings,
@@ -212,7 +224,6 @@ export class Select<T> extends Input<T> {
                 }),
             ]),
         };
-        return n;
     }
 
     /**

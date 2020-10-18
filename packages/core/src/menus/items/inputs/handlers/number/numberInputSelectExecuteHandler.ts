@@ -18,7 +18,7 @@ export const numberInputSelectExecuteHandler = selectExecuteHandler.createHandle
                 options,
                 allowCustomInput,
                 ...rest
-            }): ISelectExecuteData<number, boolean> => ({
+            }): ISelectExecuteData<number> => ({
                 field,
                 undoable,
                 options,

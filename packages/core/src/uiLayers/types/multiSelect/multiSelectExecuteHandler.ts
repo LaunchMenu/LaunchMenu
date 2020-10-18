@@ -1,30 +1,30 @@
-import {sequentialExecuteHandler} from "../../../menus/actions/types/execute/sequentialExecuteHandler";
 import {results} from "../../../menus/actions/Action";
-import {IInputExecuteData} from "./_types/IInputExecuteData";
-import {ICommand} from "../../../undoRedo/_types/ICommand";
-import {IActionBinding} from "../../../menus/actions/_types/IActionBinding";
-import {ITagsOverride} from "../../../menus/actions/_types/ITagsOverride";
+import {sequentialExecuteHandler} from "../../../menus/actions/types/execute/sequentialExecuteHandler";
 import {IExecutable} from "../../../menus/actions/types/execute/_types/IExecutable";
 import {IAction} from "../../../menus/actions/_types/IAction";
-import {IActionMultiResult} from "../../../menus/actions/_types/IActionMultiResult";
-import {TReplace} from "../../../_types/TReplace";
+import {IActionBinding} from "../../../menus/actions/_types/IActionBinding";
 import {IActionCore} from "../../../menus/actions/_types/IActionCore";
-import {INonFunction} from "../../../_types/INonFunction";
-import {Input} from "./Input";
+import {IActionMultiResult} from "../../../menus/actions/_types/IActionMultiResult";
+import {ITagsOverride} from "../../../menus/actions/_types/ITagsOverride";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
+import {ICommand} from "../../../undoRedo/_types/ICommand";
+import {INonFunction} from "../../../_types/INonFunction";
+import {TReplace} from "../../../_types/TReplace";
+import {MultiSelect} from "./MultiSelect";
+import {IMultiSelectExecuteData} from "./_types/IMultiSelectExecuteData";
 
 /**
- * A handler to let users alter a field
+ * A handler to let users alter a field with multiple values given a selection of options
  */
-export const inputExecuteHandler = sequentialExecuteHandler.createHandler(
-    (data: IInputExecuteData<unknown>[]) => ({
+export const multiSelectExecuteHandler = sequentialExecuteHandler.createHandler(
+    (data: IMultiSelectExecuteData<unknown>[]) => ({
         [results]: data.map(
             ({field, undoable, ...config}): IExecutable => ({
                 execute: ({context}) =>
                     new Promise<ICommand | void>(res => {
                         let cmd: ICommand | undefined;
                         context.open(
-                            new Input(field, {
+                            new MultiSelect(field, {
                                 ...config,
                                 onSubmit: undoable
                                     ? result => {
@@ -42,7 +42,7 @@ export const inputExecuteHandler = sequentialExecuteHandler.createHandler(
     })
 ) as TReplace<
     // Cast to get improved error checking with template parameter
-    IAction<IInputExecuteData<unknown>, IActionMultiResult<IExecutable>>,
+    IAction<IMultiSelectExecuteData<unknown>, IActionMultiResult<IExecutable>>,
     {
         /**
          * Creates a new handler for this action, specifying how this action can be executed
@@ -51,9 +51,9 @@ export const inputExecuteHandler = sequentialExecuteHandler.createHandler(
          * @returns The created action handler
          */
         createHandler<T extends INonFunction, K>(
-            handlerCore: IActionCore<T, IInputExecuteData<K>>,
+            handlerCore: IActionCore<T, IMultiSelectExecuteData<K>>,
             defaultTags?: ITagsOverride
-        ): IAction<T, IInputExecuteData<K>>;
+        ): IAction<T, IMultiSelectExecuteData<K>>;
 
         /**
          * Creates a new handler for this action, specifying how this action can be executed
@@ -62,9 +62,9 @@ export const inputExecuteHandler = sequentialExecuteHandler.createHandler(
          * @returns The created action handler
          */
         createHandler<T extends INonFunction, K>(
-            handlerCore: IActionCore<T, IActionMultiResult<IInputExecuteData<K>>>,
+            handlerCore: IActionCore<T, IActionMultiResult<IMultiSelectExecuteData<K>>>,
             defaultTags?: ITagsOverride
-        ): IAction<T, IActionMultiResult<IInputExecuteData<K>>>;
+        ): IAction<T, IActionMultiResult<IMultiSelectExecuteData<K>>>;
 
         /**
          * Creates a binding for this action handler
@@ -73,8 +73,8 @@ export const inputExecuteHandler = sequentialExecuteHandler.createHandler(
          * @returns The action binding
          */
         createBinding<T>(
-            data: IInputExecuteData<T>,
+            data: IMultiSelectExecuteData<T>,
             tags?: ITagsOverride
-        ): IActionBinding<IInputExecuteData<T>>;
+        ): IActionBinding<IMultiSelectExecuteData<T>>;
     }
 >;

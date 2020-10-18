@@ -1,6 +1,6 @@
 import {IFieldMenuItem} from "../../menus/items/inputs/_types/IFieldMenuItem";
 import {IKeyPatternMenuItemData} from "../../menus/items/inputs/types/_types/IKeyPatternMenuItemData";
-import {KeyPattern} from "../../menus/items/inputs/handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../keyHandler/KeyPattern";
 import {createKeyPatternMenuItem} from "../../menus/items/inputs/types/createKeyPatternMenuItem";
 import {settingPatternMatcher} from "./settingPatternMatcher";
 

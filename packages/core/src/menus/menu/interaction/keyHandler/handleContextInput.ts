@@ -2,7 +2,7 @@ import {IMenu} from "../../_types/IMenu";
 import {openContextMenu} from "../../../contextMenu/openContextMenu";
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {IIOContext} from "../../../../context/_types/IIOContext";
-import {KeyPattern} from "../../../items/inputs/handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 
 /**

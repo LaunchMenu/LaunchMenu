@@ -3,7 +3,7 @@ import {moveCursor} from "../moveCursor";
 import {toggleItemSelection} from "../toggleItemSelection";
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {IKeyEventListenerObject} from "../../../../keyHandler/_types/IKeyEventListener";
-import {KeyPattern} from "../../../items/inputs/handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {createMenuControlsSettingsFolder} from "../../../../application/settings/baseSettings/controls/createMenuControlsSettingsFolder";
 import {TSettingsFromFactory} from "../../../../settings/_types/TSettingsFromFactory";
 import {isMenuControlsSettingsFolder} from "./isMenuControlsSettingsFolder";

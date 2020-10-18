@@ -1,12 +1,27 @@
-import {ReactElement, ReactNode} from "react";
+import {IDataHook} from "model-react";
+import {ReactElement} from "react";
+import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
+import {IPrioritizedMenuCategoryConfig} from "../../../../menus/menu/_types/IAsyncMenuCategoryConfig";
 import {IThemeIcon} from "../../../../styling/theming/_types/IBaseTheme";
 import {IHighlighter} from "../../../../textFields/syntax/_types/IHighlighter";
-import {IInputError} from "./IInputError";
+import {IInputError} from "../../input/_types/IInputError";
+import {IMultiSelectOption} from "./IMultiSelectOption";
 
-/**
- * A config object for input fields
- */
-export type IInputConfig<T> = {
+export type IMultiSelectConfig<T> = {
+    /** The options for the dropdown */
+    options: IMultiSelectOption<T>[];
+    /** A method to retrieve the UI for an option */
+    createOptionView: (
+        value: T,
+        isSelected: (hook?: IDataHook) => boolean,
+        isDisabled: boolean
+    ) => IMenuItem;
+    /** A check whether two values are equal, used to highlight the currently selected option */
+    equals?: (a: T, b: T) => boolean;
+    /** Menu category configuration for the search results */
+    categoryConfig?: IPrioritizedMenuCategoryConfig;
+    /** The item to use for custom input */
+    createCustomView?: (getText: (hook?: IDataHook) => string | null) => IMenuItem;
     /** Checks whether the given input is valid */
     checkValidity?: (v: string) => IInputError | undefined;
     /** The function to transform the field value into a string */
@@ -24,5 +39,7 @@ export type IInputConfig<T> = {
     /** Whether to allow usage of submit to exit the input, even if the input isn't valid (defaults to true) */
     allowSubmitExitOnError?: boolean;
     /** A callback for when the value was submitted, and UI was closed (note that invalid inputs aren't submitted, defaults to a function that updates the input field)*/
-    onSubmit?: (value: T) => void;
+    onSubmit?: (value: T[]) => void;
+    /** Whether to allow custom user inputs (certain config fields are ignored if disabled, defaults to false) */
+    allowCustomInput?: boolean;
 };

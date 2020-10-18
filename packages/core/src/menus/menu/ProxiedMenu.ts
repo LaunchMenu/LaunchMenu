@@ -1,70 +1,119 @@
 import {IDataHook, IDataRetriever, isDataLoadRequest} from "model-react";
 import {IIOContext} from "../../context/_types/IIOContext";
-import {ManualSourceHelper} from "../../utils/modelReact/ManualSourceHelper";
-import {Observer} from "../../utils/modelReact/Observer";
+import {DataCacher} from "../../utils/modelReact/DataCacher";
+import {TRequired} from "../../_types/TRequired";
+import {getMenuCategory} from "../actions/types/category/getCategoryAction";
+import {isItemSelectable} from "../items/isItemSelectable";
 import {IMenuItem} from "../items/_types/IMenuItem";
-import {Menu} from "./Menu";
+import {AbstractMenu} from "./AbstractMenu";
 import {IMenuCategoryConfig} from "./_types/IMenuCategoryConfig";
+import {IMenuCategoryData} from "./_types/IMenuCategoryData";
+
+// TODO: get rid write test file
 
 /**
  * A menu that wraps around an item source retriever, automatically updating its contents when the source updates.
  * Note that every single update will require O(n^2) time (n being the number of items in the menu), and is thus rather intensive.
  */
-export class ProxiedMenu extends Menu {
+export class ProxiedMenu extends AbstractMenu {
+    protected categoryConfig: TRequired<IMenuCategoryConfig>;
     protected itemSource: IDataRetriever<IMenuItem[]>;
-    protected itemsObserver: Observer<IMenuItem[]>;
-    protected state = new ManualSourceHelper();
 
     /**
      * Creates a new proxied menu
      * @param context The context to be used by menu items
      * @param itemSource The menu items source
-     * @param categoryConfig The configuration for category options
+     * @param config The configuration for category options
      */
     public constructor(
         context: IIOContext,
         itemSource: IDataRetriever<IMenuItem[]>,
-        categoryConfig?: IMenuCategoryConfig
+        config?: IMenuCategoryConfig
     ) {
-        super(context, categoryConfig);
-
+        super(context);
         this.itemSource = itemSource;
-        this.setupListener();
+        this.categoryConfig = {
+            getCategory: config?.getCategory || getMenuCategory,
+            sortCategories:
+                config?.sortCategories ||
+                (categories => categories.map(({category}) => category)),
+            maxCategoryItemCount: config?.maxCategoryItemCount || Infinity,
+        };
     }
 
-    /**
-     * Sets up the listener for the source menu
-     */
-    protected setupListener() {
-        this.itemsObserver = new Observer(h => this.itemSource(h)).listen(
-            (items, state, prevItems) => {
-                this.state.setLoading(state.isLoading);
-                this.state.setExceptions(state.exceptions);
+    /** A data cacher that computes the categories from an item list */
+    protected categories = new DataCacher(hook => {
+        const items = this.itemSource(hook);
+        const categories = [{category: undefined, items: []}] as IMenuCategoryData[];
+        items.forEach(item => {
+            const category = this.categoryConfig.getCategory(item, hook);
+            const categoryData = categories.find(({category: c}) => c == category);
+            if (categoryData) categoryData.items.push(item);
+            else categories.push({category, items: [item]});
+        });
+        return categories;
+    });
 
-                const added = items.filter(item => !prevItems.includes(item));
-                const removed = prevItems.filter(item => !items.includes(item));
+    /** A data cacher that computes the items list with categories from the category data */
+    protected itemsList = new DataCacher(
+        hook => {
+            const rawCategories = this.categories.get(hook);
+            const order = this.categoryConfig.sortCategories(rawCategories);
 
-                added.forEach(item => this.addItem(item));
-                removed.forEach(item => this.removeItem(item));
-            }
-        );
-        this.itemSource(null).forEach(item => this.addItem(item));
-    }
-
-    /** @override */
-    public getItems(hook?: IDataHook): IMenuItem[] {
-        if (isDataLoadRequest(hook)) this.state.addListener(hook);
-        return super.getItems(hook);
-    }
-
-    /**
-     * Destroys the menu, getting rid of any hooks and persistent data
-     */
-    public destroy(): boolean {
-        if (super.destroy()) {
-            this.itemsObserver.destroy();
-            return true;
+            // Combine the items and categories into a single list
+            const items = [] as IMenuItem[];
+            const categories = [] as IMenuCategoryData[];
+            order.forEach(category => {
+                const categoryData = rawCategories.find(({category: c}) => c == category);
+                if (categoryData) {
+                    categories.push({category, items: categoryData.items});
+                    if (category) items.push(category.item, ...categoryData.items);
+                    else items.push(...categoryData.items);
+                }
+            });
+            return items;
+        },
+        {
+            onUpdate: () => {
+                this.deselectRemovedCursor();
+            },
         }
-        return false;
+    );
+
+    /**
+     * Checks whether the cursor item is still present, and deselects it if not
+     */
+    protected deselectRemovedCursor(): void {
+        const items = this.getItems();
+        const cursor = this.cursor.get(null);
+        updateCursor: if (cursor == null || !items.includes(cursor)) {
+            for (let i = 0; i < items.length; i++)
+                if (isItemSelectable(items[i])) {
+                    this.setCursor(items[i]);
+                    break updateCursor;
+                }
+            this.setCursor(null);
+        }
+    }
+
+    // Item retrieval
+    /**
+     * Retrieves the items of the menu
+     * @param hook The hook to subscribe to changes
+     * @returns The menu items
+     */
+    public getItems(hook: IDataHook = null): IMenuItem[] {
+        if (this.isDestroyed(hook)) return [];
+        return this.itemsList.get(hook);
+    }
+
+    /**
+     * Retrieves the item categories of the menu
+     * @param hook The hook to subscribe to changes
+     * @returns The categories and their items
+     */
+    public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
+        if (this.isDestroyed(hook)) return [];
+        return this.categories.get(hook);
     }
 }

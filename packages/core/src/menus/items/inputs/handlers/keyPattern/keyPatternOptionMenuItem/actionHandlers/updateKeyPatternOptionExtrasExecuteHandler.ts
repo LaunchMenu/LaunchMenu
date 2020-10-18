@@ -1,17 +1,17 @@
 import {getKeyPatternOptionIndex} from "../getKeyPatternOptionIndex";
-import {KeyPattern} from "../../KeyPattern";
+import {KeyPattern} from "../../../../../../../keyHandler/KeyPattern";
 import {IDataHook} from "model-react";
 import {IUpdateKeyPatternOptionExtrasExecuteData} from "../_types/IUpdateKeyPatternOptionExtrasExecuteData";
 import {results} from "../../../../../../actions/Action";
-import {multiSelectFieldExecuteHandler} from "../../../../../../../textFields/types/multiselectField/multiSelectFieldExecuteHandler";
-import {IMultiSelectFieldExecuteData} from "../../../../../../../textFields/types/multiselectField/_types/IMultiSelectFieldExecuteData";
 import {IKeyName, keyNames} from "../../../../../../../keyHandler/keyIdentifiers/names";
-import {createMultiSelectMenuItem} from "../../../../../../../textFields/types/multiselectField/createMultiSelectMenuItem";
+import {multiSelectExecuteHandler} from "../../../../../../../uiLayers/types/multiSelect/multiSelectExecuteHandler";
+import {IMultiSelectExecuteData} from "../../../../../../../uiLayers/types/multiSelect/_types/IMultiSelectExecuteData";
+import {createMultiSelectMenuItem} from "../../../../../../../uiLayers/types/multiSelect/createMultiSelectMenuItem";
 
 /**
  * An execute handler that can be used to update the allowed extra keys of a key pattern option
  */
-export const updateKeyPatternOptionExtrasExecuteHandler = multiSelectFieldExecuteHandler.createHandler(
+export const updateKeyPatternOptionExtrasExecuteHandler = multiSelectExecuteHandler.createHandler(
     (data: IUpdateKeyPatternOptionExtrasExecuteData[]) => ({
         [results]: data.map(
             ({option, patternField, liveUpdate, undoable}) =>
@@ -39,14 +39,12 @@ export const updateKeyPatternOptionExtrasExecuteHandler = multiSelectFieldExecut
                             return option.allowExtra || [];
                         },
                     },
-                    undoable: undoable as any,
-                    config: {
-                        liveUpdate,
-                        options: Object.values(keyNames),
-                        createOptionView: (option, isSelected) =>
-                            createMultiSelectMenuItem(isSelected, {name: option}),
-                    },
-                } as IMultiSelectFieldExecuteData<IKeyName>)
+                    undoable,
+                    liveUpdate,
+                    options: Object.values(keyNames),
+                    createOptionView: (option, isSelected) =>
+                        createMultiSelectMenuItem(isSelected, {name: option}),
+                } as IMultiSelectExecuteData<IKeyName>)
         ),
     })
 );

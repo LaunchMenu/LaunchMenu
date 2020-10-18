@@ -6,7 +6,7 @@ import {IDataHook} from "model-react";
 import {ISubscribableActionBindings} from "./ISubscribableActionBindings";
 import {ISimpleSearchPatternMatcher} from "../../actions/types/search/simpleSearch/_types/ISimpleSearchData";
 import {IMenuItemContent} from "../../actions/types/onCursor/_types/IMenuItemContent";
-import {KeyPattern} from "../inputs/handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {IIOContext} from "../../../context/_types/IIOContext";
 
 /**

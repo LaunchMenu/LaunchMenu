@@ -1,6 +1,9 @@
-import {IKeyArrayPatternData, IKeyPatternData} from "./_types/IKeyPatternData";
-import {IKeyMatcher} from "../../../../../keyHandler/keyIdentifiers/keys";
-import {KeyEvent} from "../../../../../keyHandler/KeyEvent";
+import {
+    IKeyArrayPatternData,
+    IKeyPatternData,
+} from "../menus/items/inputs/handlers/keyPattern/_types/IKeyPatternData";
+import {IKeyMatcher} from "./keyIdentifiers/keys";
+import {KeyEvent} from "./KeyEvent";
 
 export class KeyPattern {
     public static keySeparator = "+";

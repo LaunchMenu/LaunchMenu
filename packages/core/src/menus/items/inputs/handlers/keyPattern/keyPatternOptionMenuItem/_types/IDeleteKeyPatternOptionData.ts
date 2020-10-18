@@ -1,4 +1,4 @@
-import {KeyPattern} from "../../KeyPattern";
+import {KeyPattern} from "../../../../../../../keyHandler/KeyPattern";
 import {IKeyArrayPatternData} from "../../_types/IKeyPatternData";
 import {IField} from "../../../../../../../_types/IField";
 

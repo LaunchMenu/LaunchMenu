@@ -1,5 +1,5 @@
 import {createStandardCategory} from "../../../../menus/categories/createStandardCategory";
-import {KeyPattern} from "../../../../menus/items/inputs/handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {createKeyPatternSetting} from "../../../../settings/inputs/createKeyPatternSetting";
 import {createSettingsFolder} from "../../../../settings/inputs/createSettingsFolder";
 

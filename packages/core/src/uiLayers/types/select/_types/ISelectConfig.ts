@@ -6,7 +6,7 @@ import {IHighlighter} from "../../../../textFields/syntax/_types/IHighlighter";
 import {IInputError} from "../../input/_types/IInputError";
 import {ISelectOption} from "./ISelectOption";
 
-export type ISelectConfig<T, C extends Boolean = false> = {
+export type ISelectConfig<T> = {
     /** The options for the dropdown */
     options: ISelectOption<T>[];
     /** A method to retrieve the UI for an option */
@@ -31,19 +31,10 @@ export type ISelectConfig<T, C extends Boolean = false> = {
     icon?: IThemeIcon | ReactElement;
     /** The highlighter to use for the input */
     highlighter?: IHighlighter;
-    /** Whether to allow usage of submit to exit the input, even if the input isn't valid (defaults to true) */
+    /** Whether to allow usage of submit to exit the input, even if the input isn't valid (defaults to false) */
     allowSubmitExitOnError?: boolean;
     /** A callback for when the value was submitted, and UI was closed (note that invalid inputs aren't submitted, defaults to a function that updates the input field)*/
     onSubmit?: (value: T) => void;
     /** Whether to allow custom user inputs (certain config fields are ignored if disabled, defaults to false) */
-    allowCustomInput?: C;
-} & (T extends string
-    ? unknown
-    : C extends true
-    ? {
-          /** The function to transform the field value into a string */
-          serialize: unknown;
-          /** The function to transform the input string to a valid field value (if the input is valid) */
-          deserialize: unknown;
-      }
-    : unknown);
+    allowCustomInput?: boolean;
+};

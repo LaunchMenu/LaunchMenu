@@ -1,5 +1,5 @@
 import {IIOContext} from "../../../../../context/_types/IIOContext";
-import {KeyPattern} from "../../../../items/inputs/handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../../../../keyHandler/KeyPattern";
 import {IActionBinding} from "../../../_types/IActionBinding";
 import {IExecutable} from "../../execute/_types/IExecutable";
 

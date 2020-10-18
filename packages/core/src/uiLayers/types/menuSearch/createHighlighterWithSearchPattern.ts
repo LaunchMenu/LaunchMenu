@@ -1,9 +1,9 @@
 import {IDataHook} from "model-react";
 import {IPatternMatch} from "../../../utils/searchExecuter/_types/IPatternMatch";
-import {plaintextLexer} from "../../syntax/plaintextLexer";
-import {addHighlightNodeTags} from "../../syntax/utils/addHighlightNodeTags";
-import {highlightTags} from "../../syntax/utils/highlightTags";
-import {IHighlighter} from "../../syntax/_types/IHighlighter";
+import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
+import {addHighlightNodeTags} from "../../../textFields/syntax/utils/addHighlightNodeTags";
+import {highlightTags} from "../../../textFields/syntax/utils/highlightTags";
+import {IHighlighter} from "../../../textFields/syntax/_types/IHighlighter";
 
 /**
  * Creates a highlighter that matches search patterns

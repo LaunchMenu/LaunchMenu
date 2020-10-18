@@ -19,6 +19,7 @@ export function startApplication() {
 
     if (DEV) {
         // Reload the contents whenever something changes
+        // TODO: add some 'except path' to hmr, to ignore any changes to the api and types
         hmr(Path.join(__dirname, ".."), (changed, affected) => {
             const p = prevStartup;
             prevStartup = (async () => {

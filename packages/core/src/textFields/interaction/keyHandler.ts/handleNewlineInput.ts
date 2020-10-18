@@ -3,7 +3,7 @@ import {insertText} from "../insertText";
 import {KeyEvent} from "../../../keyHandler/KeyEvent";
 import {TSettingsFromFactory} from "../../../settings/_types/TSettingsFromFactory";
 import {createFieldControlsSettingsFolder} from "../../../application/settings/baseSettings/controls/createFieldControlsSettingsFolder";
-import {KeyPattern} from "../../../menus/items/inputs/handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {isFieldControlsSettingsFolder} from "./isFieldControlsSettingsFolder";
 
 /**

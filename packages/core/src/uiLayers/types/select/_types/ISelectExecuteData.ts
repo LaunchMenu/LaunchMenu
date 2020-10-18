@@ -4,7 +4,7 @@ import {ISelectConfig} from "./ISelectConfig";
 /**
  * The data for a select input
  */
-export type ISelectExecuteData<T, C extends Boolean = false> = {
+export type ISelectExecuteData<T> = {
     /** The field to be altered */
     field: IField<T>;
-} & ISelectConfig<T, C>;
+} & ISelectConfig<T>;

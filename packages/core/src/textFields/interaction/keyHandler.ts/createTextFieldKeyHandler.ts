@@ -10,7 +10,7 @@ import {handleCopyPasteInput} from "./handleCopyPasteInput";
 import {baseSettings} from "../../../application/settings/baseSettings/baseSettings";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {setupModifierCatcherHandler} from "./superModifierCatcherHandler";
-import {KeyPattern} from "../../../menus/items/inputs/handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../../keyHandler/KeyPattern";
 
 /**
  * Creates a standard text field key handler

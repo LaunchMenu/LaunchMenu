@@ -1,4 +1,4 @@
-import {KeyPattern} from "./KeyPattern";
+import {KeyPattern} from "../../../../../keyHandler/KeyPattern";
 import {IKeyEventListener} from "../../../../../keyHandler/_types/IKeyEventListener";
 import {ITextField} from "../../../../../textFields/_types/ITextField";
 

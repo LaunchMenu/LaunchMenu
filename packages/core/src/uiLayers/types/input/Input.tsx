@@ -49,6 +49,20 @@ export class Input<T> extends AbstractUILayer {
         super();
         this.target = field;
         this.config = config ?? ({liveUpdate: true} as any);
+        this.validateConfig();
+    }
+
+    /**
+     * Checks whether the given config fulfills all the requirements
+     */
+    protected validateConfig() {
+        if (
+            typeof this.target.get(null) != "string" &&
+            (!this.config.serialize || !this.config.serialize)
+        )
+            throw Error(
+                "Non-string fields require a serializer and deserializer to be configured"
+            );
     }
 
     /** @override */
@@ -158,7 +172,7 @@ export class Input<T> extends AbstractUILayer {
         if (this.config?.allowSubmitExitOnError == false && this.checkError()) return;
 
         // Set the new value
-        if (this.config && !this.checkError()) {
+        if (!this.checkError()) {
             const value = this.getValue() as T;
             if (this.config.onSubmit) this.config.onSubmit(value);
             else if (this.config.undoable)

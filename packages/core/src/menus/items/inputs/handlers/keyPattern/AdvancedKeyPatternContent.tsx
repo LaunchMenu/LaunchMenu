@@ -1,6 +1,6 @@
 import React from "react";
 import {IDataRetriever, useDataHook} from "model-react";
-import {KeyPattern} from "./KeyPattern";
+import {KeyPattern} from "../../../../../keyHandler/KeyPattern";
 import {Box} from "../../../../../styling/box/Box";
 import {Truncated} from "../../../../../components/Truncated";
 import {LFC} from "../../../../../_types/LFC";

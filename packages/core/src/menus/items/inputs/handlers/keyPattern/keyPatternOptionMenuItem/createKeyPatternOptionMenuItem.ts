@@ -1,4 +1,4 @@
-import {KeyPattern} from "../KeyPattern";
+import {KeyPattern} from "../../../../../../keyHandler/KeyPattern";
 import {IKeyPatternOptionMenuItemData} from "./_types/IKeyPatternOptionMenuItemData";
 import {updateKeyPatternOptionExecuteHandler} from "./actionHandlers/updateKeyPatternOptionExecuteHandler";
 import {deleteKeyPatternOptionHandler} from "./actionHandlers/deleteKeyPatternOptionHandler";

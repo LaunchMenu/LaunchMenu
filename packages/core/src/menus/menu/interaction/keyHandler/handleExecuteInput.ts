@@ -1,7 +1,7 @@
 import {IMenu} from "../../_types/IMenu";
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {executeItems} from "../executeItems";
-import {KeyPattern} from "../../../items/inputs/handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
 

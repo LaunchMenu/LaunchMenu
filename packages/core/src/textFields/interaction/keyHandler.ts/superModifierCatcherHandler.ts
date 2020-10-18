@@ -1,4 +1,4 @@
-import {KeyPattern} from "../../../menus/items/inputs/handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {
     IKeyEventListener,
     IKeyEventListenerObject,

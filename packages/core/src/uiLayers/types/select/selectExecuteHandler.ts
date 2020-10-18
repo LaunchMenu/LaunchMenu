@@ -6,6 +6,7 @@ import {IActionBinding} from "../../../menus/actions/_types/IActionBinding";
 import {IActionCore} from "../../../menus/actions/_types/IActionCore";
 import {IActionMultiResult} from "../../../menus/actions/_types/IActionMultiResult";
 import {ITagsOverride} from "../../../menus/actions/_types/ITagsOverride";
+import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {INonFunction} from "../../../_types/INonFunction";
 import {TReplace} from "../../../_types/TReplace";
@@ -18,10 +19,23 @@ import {ISelectExecuteData} from "./_types/ISelectExecuteData";
 export const selectExecuteHandler = sequentialExecuteHandler.createHandler(
     (data: ISelectExecuteData<unknown>[]) => ({
         [results]: data.map(
-            ({field, ...config}): IExecutable => ({
+            ({field, undoable, ...config}): IExecutable => ({
                 execute: ({context}) =>
                     new Promise<ICommand | void>(res => {
-                        context.open(new Select(field, config), res);
+                        let cmd: ICommand | undefined;
+                        context.open(
+                            new Select(field, {
+                                ...config,
+                                onSubmit: undoable
+                                    ? result => {
+                                          cmd = new SetFieldCommand(field, result);
+                                      }
+                                    : undefined,
+                            }),
+                            () => {
+                                res(cmd);
+                            }
+                        );
                     }),
             })
         ),
@@ -36,10 +50,10 @@ export const selectExecuteHandler = sequentialExecuteHandler.createHandler(
          * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
          * @returns The created action handler
          */
-        createHandler<T extends INonFunction, K, C extends Boolean = false>(
-            handlerCore: IActionCore<T, ISelectExecuteData<K, C>>,
+        createHandler<T extends INonFunction, K>(
+            handlerCore: IActionCore<T, ISelectExecuteData<K>>,
             defaultTags?: ITagsOverride
-        ): IAction<T, ISelectExecuteData<K, C>>;
+        ): IAction<T, ISelectExecuteData<K>>;
 
         /**
          * Creates a new handler for this action, specifying how this action can be executed
@@ -47,10 +61,10 @@ export const selectExecuteHandler = sequentialExecuteHandler.createHandler(
          * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
          * @returns The created action handler
          */
-        createHandler<T extends INonFunction, K, C extends Boolean = false>(
-            handlerCore: IActionCore<T, IActionMultiResult<ISelectExecuteData<K, C>>>,
+        createHandler<T extends INonFunction, K>(
+            handlerCore: IActionCore<T, IActionMultiResult<ISelectExecuteData<K>>>,
             defaultTags?: ITagsOverride
-        ): IAction<T, IActionMultiResult<ISelectExecuteData<K, C>>>;
+        ): IAction<T, IActionMultiResult<ISelectExecuteData<K>>>;
 
         /**
          * Creates a binding for this action handler
@@ -58,9 +72,9 @@ export const selectExecuteHandler = sequentialExecuteHandler.createHandler(
          * @param tags The tags to include in the binding
          * @returns The action binding
          */
-        createBinding<T, C extends Boolean = false>(
-            data: ISelectExecuteData<T, C>,
+        createBinding<T>(
+            data: ISelectExecuteData<T>,
             tags?: ITagsOverride
-        ): IActionBinding<ISelectExecuteData<T, C>>;
+        ): IActionBinding<ISelectExecuteData<T>>;
     }
 >;

@@ -7,7 +7,7 @@ import {IQuery} from "../../menus/menu/_types/IQuery";
 import {SettingsContext} from "../../settings/SettingsContext";
 import {KeyEvent} from "../../keyHandler/KeyEvent";
 import {TextField} from "../../textFields/TextField";
-import {createHighlighterWithSearchPattern} from "../../textFields/types/searchField/createHighlighterWithSearchPattern";
+import {createHighlighterWithSearchPattern} from "../../uiLayers/types/menuSearch/createHighlighterWithSearchPattern";
 import {UndoRedoFacility} from "../../undoRedo/UndoRedoFacility";
 import {Observer} from "../../utils/modelReact/Observer";
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";

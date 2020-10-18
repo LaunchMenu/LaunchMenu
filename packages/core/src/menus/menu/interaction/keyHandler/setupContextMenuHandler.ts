@@ -8,7 +8,7 @@ import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
 import {PrioritizedMenu} from "../../PrioritizedMenu";
 import {sortContextCategories} from "../../../contextMenu/sortContextCategories";
 import {IIOContext} from "../../../../context/_types/IIOContext";
-import {KeyPattern} from "../../../items/inputs/handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {getHooked} from "../../../../utils/subscribables/getHooked";
 import {UILayer} from "../../../../uiLayers/standardUILayer/UILayer";

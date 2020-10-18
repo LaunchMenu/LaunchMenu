@@ -5,7 +5,7 @@ import {IOContext} from "../../../context/IOContext";
 import {SearchMenu} from "../../../menus/menu/SearchMenu";
 import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
 import {TextField} from "../../../textFields/TextField";
-import {createHighlighterWithSearchPattern} from "../../../textFields/types/searchField/createHighlighterWithSearchPattern";
+import {createHighlighterWithSearchPattern} from "./createHighlighterWithSearchPattern";
 import {Observer} from "../../../utils/modelReact/Observer";
 import {AbstractUILayer} from "../../AbstractUILayer";
 import {IUILayerFieldData} from "../../_types/IUILayerFieldData";

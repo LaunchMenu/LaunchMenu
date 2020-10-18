@@ -3,7 +3,7 @@ import {createFieldMenuItem} from "../createFieldMenuItem";
 import {IFieldMenuItem} from "../_types/IFieldMenuItem";
 import {Loader} from "model-react";
 import {IKeyPatternMenuItemData} from "./_types/IKeyPatternMenuItemData";
-import {KeyPattern} from "../handlers/keyPattern/KeyPattern";
+import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {keyInputExecuteHandler} from "../handlers/keyPattern/keyInputExecuteHandler";
 import {advancedKeyInputEditAction} from "../handlers/keyPattern/advancedKeyInputEditAction";
 import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";

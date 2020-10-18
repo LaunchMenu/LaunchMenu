@@ -1,5 +1,5 @@
 import {IKeyArrayPatternData} from "../_types/IKeyPatternData";
-import {KeyPattern} from "../KeyPattern";
+import {KeyPattern} from "../../../../../../keyHandler/KeyPattern";
 import {ExtendedObject} from "../../../../../../utils/ExtendedObject";
 
 /**

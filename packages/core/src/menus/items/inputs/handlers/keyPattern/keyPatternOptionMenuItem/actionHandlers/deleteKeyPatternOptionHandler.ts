@@ -1,5 +1,5 @@
 import {getKeyPatternOptionIndex} from "../getKeyPatternOptionIndex";
-import {KeyPattern} from "../../KeyPattern";
+import {KeyPattern} from "../../../../../../../keyHandler/KeyPattern";
 import {IDeleteKeyPatternOptionData} from "../_types/IDeleteKeyPatternOptionData";
 import {deleteAction} from "../../../../../../actions/types/delete/deleteAction";
 import {results} from "../../../../../../actions/Action";

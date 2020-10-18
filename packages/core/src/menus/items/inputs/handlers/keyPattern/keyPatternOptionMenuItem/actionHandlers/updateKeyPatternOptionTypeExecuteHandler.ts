@@ -1,5 +1,5 @@
 import {getKeyPatternOptionIndex} from "../getKeyPatternOptionIndex";
-import {KeyPattern} from "../../KeyPattern";
+import {KeyPattern} from "../../../../../../../keyHandler/KeyPattern";
 import {IUpdateKeyPatternOptionTypeExecuteData} from "../_types/IUpdateKeyPatternOptionTypeExecuteData";
 import {IKeyPatternEventType} from "../../_types/IKeyPatternEventType";
 import {IDataHook} from "model-react";

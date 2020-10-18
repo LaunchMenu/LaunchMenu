@@ -1,6 +1,6 @@
 import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
 
-export type IMultiSelectOptionData<T> = {
+export type ISelectOptionData<T> = {
     value: T;
     view: IMenuItem;
 };
