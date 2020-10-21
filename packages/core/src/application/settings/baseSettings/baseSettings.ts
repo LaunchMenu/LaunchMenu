@@ -2,6 +2,7 @@ import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {createSettings} from "../../../settings/createSettings";
 import {createKeyPatternSetting} from "../../../settings/inputs/createKeyPatternSetting";
 import {createSettingsFolder} from "../../../settings/inputs/createSettingsFolder";
+import {constGetter} from "../../../utils/constGetter";
 import {
     createFieldControlsSettingsFolder,
     fieldControlsFolderCategories,
@@ -11,9 +12,9 @@ import {createMenuControlsSettingsFolder} from "./controls/createMenuControlsSet
 /**
  * Categories in the base settings
  */
-export const settingsCategories = {
-    field: fieldControlsFolderCategories,
-};
+export const settingsCategories = constGetter(() => ({
+    field: fieldControlsFolderCategories(),
+}));
 
 /**
  * The base settings for the application

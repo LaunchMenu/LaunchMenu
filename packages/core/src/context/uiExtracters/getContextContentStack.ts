@@ -13,10 +13,11 @@ export function getContextContentStack(
     context: IIOContext,
     hook?: IDataHook
 ): IIdentifiedItem<IViewStackItem>[] {
-    return context.getUI(hook).flatMap(layer =>
+    const res = context.getUI(hook).flatMap(layer =>
         layer
             .getContentData(hook)
             .map(({ID, contentView}) => ({ID, value: contentView}))
             .filter((m): m is IIdentifiedItem<IViewStackItem> => !!m.value)
     );
+    return res;
 }

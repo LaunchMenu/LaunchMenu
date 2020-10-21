@@ -1,5 +1,5 @@
 import {useMemo} from "react";
-import {getViewStackItemElement} from "../../components/stacks/getViewStackItemElement";
+import {getViewStackItemElement} from "../../components/context/stacks/getViewStackItemElement";
 import {IViewStackItem} from "../../uiLayers/_types/IViewStackItem";
 import {IViewStackItemProps} from "../../uiLayers/_types/IViewStackItemProps";
 import {IUUID} from "../../_types/IUUID";

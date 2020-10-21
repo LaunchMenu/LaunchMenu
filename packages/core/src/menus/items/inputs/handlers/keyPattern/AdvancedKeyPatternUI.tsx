@@ -20,11 +20,11 @@ import {createKeyPatternOptionMenuItem} from "./keyPatternOptionMenuItem/createK
 import {createStandardMenuItem} from "../../../createStandardMenuItem";
 import {updateKeyPatternOptionExecuteHandler} from "./keyPatternOptionMenuItem/actionHandlers/updateKeyPatternOptionExecuteHandler";
 import {getCategoryAction} from "../../../../actions/types/category/getCategoryAction";
-import {controlsCategory} from "../../../../categories/types/controlsCategory";
 import {createFinishMenuItem} from "../../../createFinishMenuItem";
 import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand";
 import {ProxiedMenu} from "../../../../menu/ProxiedMenu";
 import {AdvancedKeyPatternContent} from "./AdvancedKeyPatternContent";
+import {getControlsCategory} from "../../../../categories/types/getControlsCategory";
 
 export class AdvancedKeyPatternUI extends AbstractUILayer {
     protected target: IField<KeyPattern>;
@@ -162,7 +162,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
                     option: {type: "down", pattern: []},
                     insertIfDeleted: true,
                 }),
-                getCategoryAction.createBinding(controlsCategory),
+                getCategoryAction.createBinding(getControlsCategory()),
             ],
         });
     }
@@ -174,7 +174,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
     protected getSubmitItem(): IMenuItem {
         return createFinishMenuItem({
             onExecute: ({context}) => this.submit(context),
-            actionBindings: [getCategoryAction.createBinding(controlsCategory)],
+            actionBindings: [getCategoryAction.createBinding(getControlsCategory())],
         });
     }
 

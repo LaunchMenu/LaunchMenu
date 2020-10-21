@@ -1,4 +1,4 @@
-import {DataCacher, Field, IDataHook} from "model-react";
+import {DataCacher, Field, IDataHook, Loader} from "model-react";
 import React from "react";
 import {IOContext} from "../../context/IOContext";
 import {IMenuSearchable} from "../../menus/actions/types/search/_types/IMenuSearchable";
@@ -29,6 +29,7 @@ import {withSession} from "../applets/declaration/withSession";
 import {UILayer} from "../../uiLayers/standardUILayer/UILayer";
 import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
+import {Breadcumbs} from "../../components/context/paths/Breadcrumbs";
 
 /**
  * An application session
@@ -223,7 +224,61 @@ export class LMSession {
      * Initializes the content to be displayed
      */
     protected async setupContent(): Promise<void> {
-        await this.context.open(new UILayer({contentView: {close: true}}));
+        // await this.context.open(new UILayer({contentView: {close: true}}));
+
+        const setPath = (d: string[]) =>
+            path.set(
+                d.reduce(
+                    (cur, name) => (cur.length == 0 ? [name] : [...cur, "/", name]),
+                    []
+                )
+            );
+        const path = new Field(["shit", "orange", "bread"]);
+        await this.context.open(
+            new UILayer({
+                contentView: (
+                    <Loader>
+                        {h => (
+                            <div>
+                                <div>
+                                    <button
+                                        onClick={() =>
+                                            setPath(["shit", "orange", "bread"])
+                                        }>
+                                        opt1
+                                    </button>
+                                    <button onClick={() => setPath(["shit", "bread"])}>
+                                        opt2
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            setPath(["shit", "orange", "bread", "shit"])
+                                        }>
+                                        opt3
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            setPath(["shit", "potatoes", "bread"])
+                                        }>
+                                        opt4
+                                    </button>
+                                    <button onClick={() => setPath(["shit", "potatoes"])}>
+                                        opt5
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            setPath(["fuck", "potatoes", "bread"])
+                                        }>
+                                        opt6
+                                    </button>
+                                </div>
+                                <Breadcumbs path={path.get(h)} />
+                            </div>
+                        )}
+                    </Loader>
+                ),
+            })
+        );
     }
 
     // Applet management

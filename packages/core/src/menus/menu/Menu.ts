@@ -4,14 +4,11 @@ import {IMenuCategoryConfig} from "./_types/IMenuCategoryConfig";
 import {TRequired} from "../../_types/TRequired";
 import {ICategory} from "../actions/types/category/_types/ICategory";
 import {getMenuCategory} from "../actions/types/category/getCategoryAction";
-import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
-import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
 import {isItemSelectable} from "../items/isItemSelectable";
 import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 import {AbstractMenu} from "./AbstractMenu";
 import {IIOContext} from "../../context/_types/IIOContext";
-import {Observer} from "../../utils/modelReact/Observer";
 import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
 
 /**
@@ -231,19 +228,6 @@ export class Menu extends AbstractMenu {
                 }
             this.setCursor(null);
         }
-    }
-
-    /**
-     * Destroys the menu, making sure that all items are unselected
-     */
-    public destroy(): boolean {
-        if (super.destroy()) {
-            onSelectAction.get(this.selected.get(null)).onSelect(false, this);
-            const cursor = this.cursor.get(null);
-            if (cursor) onCursorAction.get([cursor]).onCursor(false, this);
-            return true;
-        }
-        return false;
     }
 
     // Item retrieval

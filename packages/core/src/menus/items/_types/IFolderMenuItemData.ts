@@ -11,6 +11,8 @@ export type IFolderMenuItemData<
 > = {
     /** The children to show in this category */
     children: T;
+    /** A name for the path (defaults to the item name)*/
+    pathName?: string;
     /** The children that should be included in searches, defaults to the value of children */
     searchChildren?: S;
     /** Whether to close the menu when an active item is executed (defaults to false) */

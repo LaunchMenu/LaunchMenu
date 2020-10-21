@@ -19,8 +19,8 @@ import {IIOContext} from "../../../context/_types/IIOContext";
 import {createMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {MenuView} from "../../../components/menu/MenuView";
 import {IViewStackItem} from "../../_types/IViewStackItem";
-import {InstantOpenTransition} from "../../../components/stacks/transitions/open/InstantOpenTransition";
-import {InstantCloseTransition} from "../../../components/stacks/transitions/close/InstantCloseTransition";
+import {InstantOpenTransition} from "../../../components/context/stacks/transitions/open/InstantOpenTransition";
+import {InstantCloseTransition} from "../../../components/context/stacks/transitions/close/InstantCloseTransition";
 
 export class MenuSearch extends AbstractUILayer {
     protected data: IMenuSearchConfig;

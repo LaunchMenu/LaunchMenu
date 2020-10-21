@@ -81,9 +81,22 @@ export abstract class AbstractUILayer implements IUILayer {
         const UI = context.getUI();
         const current = UI[UI.length - 1]?.getPath() ?? [];
         return relativePath.split("/").reduce((cur, node) => {
-            if (node == ".") return cur;
-            else if (node == "..") return cur.slice(1);
-            else return [...cur, {name: node, layer: this}];
+            if (node == ".") {
+                // Add itself to the top path
+                const top = cur[cur.length - 1];
+                if (top)
+                    return [
+                        ...cur.slice(0, cur.length - 1),
+                        {name: top.name, layers: [...top.layers, this]},
+                    ];
+                else return cur;
+            } else if (node == "..") {
+                // Remove the top element form the path
+                return cur.slice(0, cur.length - 1);
+            } else {
+                // Add an element to the path
+                return [...cur, {name: node, layers: [this]}];
+            }
         }, current);
     }
 

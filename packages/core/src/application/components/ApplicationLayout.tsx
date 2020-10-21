@@ -1,7 +1,8 @@
 import {IDataHook} from "model-react";
 import React, {useLayoutEffect, useRef, useState} from "react";
-import {StackView} from "../../components/stacks/StackView";
-import {InstantChangeTransition} from "../../components/stacks/transitions/change/InstantChangeTransition";
+import {UIPathView} from "../../components/context/paths/UIPathView";
+import {StackView} from "../../components/context/stacks/StackView";
+import {InstantChangeTransition} from "../../components/context/stacks/transitions/change/InstantChangeTransition";
 import {IOContextProvider} from "../../context/react/IOContextContext";
 import {getContextContentStack} from "../../context/uiExtracters/getContextContentStack";
 import {getContextFieldStack} from "../../context/uiExtracters/getContextFieldStack";
@@ -96,6 +97,13 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                     transition={`${fieldState.duration}ms height`}>
                     <StackView stackGetter={fieldStackGetter} />
                 </Box>
+                <Box>
+                    <UIPathView
+                        context={context}
+                        pathTransitionDuration={defaultTransitionDuration}
+                        heightTransitionDuration={defaultTransitionDuration}
+                    />
+                </Box>
                 <Box
                     position="relative"
                     overflow="hidden"
@@ -109,7 +117,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                         position="absolute"
                         bottom="none"
                         height="100%"
-                        minHeight={size.height - fieldHeight}
+                        // minHeight={size.height - fieldHeight}
                         display="flex">
                         <Box
                             position="relative"

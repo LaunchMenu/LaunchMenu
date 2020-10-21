@@ -41,16 +41,30 @@ export const openMenuExecuteHandler = sequentialExecuteHandler.createHandler(
                         )
                         .flat();
 
+                const pathName =
+                    data.reduce(
+                        (cur, d) =>
+                            "pathName" in d
+                                ? cur
+                                    ? `${cur}/${d.pathName}`
+                                    : d.pathName
+                                : cur,
+                        ""
+                    ) || ".";
+
                 const menu = new ProxiedMenu(context, childrenGetter);
                 context.open(
-                    new UILayer((context, close) => ({
-                        menu,
-                        onExecute: items => {
-                            if (containsClosingItem(data, items)) close();
-                            callback?.();
-                        },
-                        onClose: res,
-                    }))
+                    new UILayer(
+                        (context, close) => ({
+                            menu,
+                            onExecute: items => {
+                                if (containsClosingItem(data, items)) close();
+                                callback?.();
+                            },
+                            onClose: res,
+                        }),
+                        pathName
+                    )
                 );
             });
         },

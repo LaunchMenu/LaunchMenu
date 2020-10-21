@@ -1,11 +1,11 @@
 import React, {useEffect, FC} from "react";
-import {FillBox} from "../../../FillBox";
-import {ICloseTransitionProps} from "./_types/ICloseTransitionProps";
+import {FillBox} from "../../../../FillBox";
+import {IOpenTransitionProps} from "./_types/IOpenTransitionProps";
 
 /**
- * A 'transition' to instantly close the content
+ * A 'transition' to instantly open the content
  */
-export const InstantCloseTransition: FC<ICloseTransitionProps> = ({
+export const InstantOpenTransition: FC<IOpenTransitionProps> = ({
     onComplete,
     children,
     activate = true,

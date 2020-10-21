@@ -5,7 +5,6 @@ import {IUILayerFieldData} from "./IUILayerFieldData";
 import {IUILayerContentData} from "./IUILayerContentData";
 import {IKeyEventListener} from "../../keyHandler/_types/IKeyEventListener";
 import {IIOContext} from "../../context/_types/IIOContext";
-import {IViewStackItem} from "./IViewStackItem";
 
 /**
  * The interface for a UI Layer
@@ -14,7 +13,7 @@ export type IUILayer = {
     /**
      * A override for the view to use to represent this layer's path
      */
-    pathView?: IViewStackItem;
+    pathView?: JSX.Element;
     /**
      * Retrieves the path to show to the user representing this layer
      * @param hook The data hook to subscribe to changes

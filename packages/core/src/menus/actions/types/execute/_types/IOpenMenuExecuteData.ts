@@ -6,4 +6,4 @@ import {IMenuItem} from "../../../../items/_types/IMenuItem";
  */
 export type IOpenMenuExecuteData =
     | ISubscribable<IMenuItem[]>
-    | {items: ISubscribable<IMenuItem[]>; closeOnExecute: boolean};
+    | {items: ISubscribable<IMenuItem[]>; closeOnExecute?: boolean; pathName?: string};

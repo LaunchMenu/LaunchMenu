@@ -6,7 +6,7 @@ import {ThemeProvider} from "../styling/theming/ThemeContext";
 import {loadTheme} from "../styling/theming/loadTheme";
 import {defaultTheme} from "../styling/theming/defaultTheme";
 import {FillBox} from "../components/FillBox";
-import {Transition} from "../components/stacks/transitions/Transition";
+import {Transition} from "../components/context/stacks/transitions/Transition";
 import {AppletManager} from "./applets/AppletManager";
 import {JSONFile} from "../settings/storage/fileTypes/JSONFile";
 import {IAppletSource} from "./applets/_types/IAppletSource";

@@ -1,7 +1,10 @@
 import React from "react";
 import {Field, IDataHook} from "model-react";
 import {IUILayerData} from "./_types/IUILayerData";
-import {IStandardUILayerData} from "./_types/IStandardUILayerData";
+import {
+    IStandardUILayerData,
+    IStandardUILayerDataObject,
+} from "./_types/IStandardUILayerData";
 import {v4 as uuid} from "uuid";
 import {MenuView} from "../../components/menu/MenuView";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
@@ -10,6 +13,7 @@ import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler
 import {IIOContext} from "../../context/_types/IIOContext";
 import {UnifiedAbstractUILayer} from "./UnifiedAbstractUILayer";
 import {MenuSearch} from "../types/menuSearch/MenuSearch";
+import {mergeCallbacks} from "../../utils/mergeCallbacks";
 
 /**
  * The default UILayer class
@@ -72,13 +76,14 @@ export class UILayer extends UnifiedAbstractUILayer {
         if (data instanceof Function) data = data(context, close);
 
         const ID = uuid();
-        const res = {ID, ...data};
+        const res = {ID, ...data} as IStandardUILayerDataObject & {onClose?: () => void};
         let extra: IUILayerData[] = [];
 
         let empty = true;
 
         // Create the standard menu data
         if (data.menu) {
+            const menu = data.menu;
             empty = false;
             if (!data.menuView)
                 res.menuView = <MenuView menu={data.menu} onExecute={data.onExecute} />;
@@ -87,6 +92,8 @@ export class UILayer extends UnifiedAbstractUILayer {
                     onExit: close,
                     onExecute: data.onExecute,
                 });
+            if (data.destroyOnClose != false)
+                res.onClose = mergeCallbacks([res.onClose, () => menu.destroy()]);
             if (data.searchable !== false) extra.push(new MenuSearch({menu: data.menu}));
         }
 
@@ -106,7 +113,7 @@ export class UILayer extends UnifiedAbstractUILayer {
         }
 
         // Create the content data
-        if (empty) res.contentView = undefined;
+        if (empty && !res.contentView) res.contentView = undefined;
 
         // Return the data
         return [res as IUILayerData, ...extra];

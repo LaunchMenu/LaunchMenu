@@ -6,6 +6,7 @@ import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 import {isItemSelectable} from "../items/isItemSelectable";
 import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
+import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 
 /**
  * An abstract menu class that doesn't deal with item management itself
@@ -128,6 +129,17 @@ export abstract class AbstractMenu implements IMenu {
      */
     public destroy(): boolean {
         if (this.destroyed.get(null) == true) return false;
+
+        // Select the selection
+        onSelectAction.get(this.selected.get(null)).onSelect(false, this);
+
+        // Decursor the cursor
+        const cursor = this.cursor.get(null);
+        if (cursor) onCursorAction.get([cursor]).onCursor(false, this);
+
+        // Remove the items from the menu
+        onMenuChangeAction.get(this.getItems()).onMenuChange(this, false);
+
         this.destroyed.set(true);
         return true;
     }

@@ -337,19 +337,6 @@ export class PrioritizedMenu extends AbstractMenu {
         super.setCursor(item);
     }
 
-    /**
-     * Destroys the menu, making sure that all items are unselected
-     */
-    public destroy(): boolean {
-        if (super.destroy()) {
-            onSelectAction.get(this.selected.get(null)).onSelect(false, this);
-            const cursor = this.cursor.get(null);
-            if (cursor) onCursorAction.get([cursor]).onCursor(false, this);
-            return true;
-        }
-        return false;
-    }
-
     // Item retrieval
     /**
      * Retrieves the items of the menu

@@ -18,4 +18,6 @@ export type IUILayerMenuData = {
     onExecute?: IMenuItemExecuteCallback;
     /** Whether a search field should be generated for the passed menu (defaults to true) */
     searchable?: boolean;
+    /** Whether to destroy the menu when closing this layer (defaults to true) */
+    destroyOnClose?: boolean;
 };

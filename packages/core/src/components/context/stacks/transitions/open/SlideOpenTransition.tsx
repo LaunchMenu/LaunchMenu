@@ -1,12 +1,12 @@
-import React, {useEffect, useState, FC, useCallback, useRef, isValidElement} from "react";
-import {Box} from "../../../../styling/box/Box";
-import {ISlideChangeTransitionProps} from "./_types/ISlideChangeTransitionProps";
-import {FillBox} from "../../../FillBox";
+import React, {useEffect, useState, FC, useCallback, useRef} from "react";
+import {Box} from "../../../../../styling/box/Box";
+import {ISlideOpenTransitionProps} from "./_types/ISlideOpenTransition";
+import {FillBox} from "../../../../FillBox";
 
 /**
  * A simple sliding transition
  */
-export const SlideChangeTransition: FC<ISlideChangeTransitionProps> = ({
+export const SlideOpenTransition: FC<ISlideOpenTransitionProps> = ({
     onComplete,
     children,
     duration = 150,
@@ -21,15 +21,17 @@ export const SlideChangeTransition: FC<ISlideChangeTransitionProps> = ({
         setStarted(activate);
     }, [activate]);
     const _onComplete = useCallback((e: React.TransitionEvent) => {
+        if (e.target != transitionEl.current) return;
         onComplete?.();
         e.stopPropagation();
+        e.preventDefault();
     }, []);
 
     const dirProp = {
-        left: "left",
-        right: "right",
-        up: "top",
-        down: "bottom",
+        left: "right",
+        right: "left",
+        up: "bottom",
+        down: "top",
     }[direction];
     const flexDirProp = ({
         left: "row",
@@ -45,26 +47,23 @@ export const SlideChangeTransition: FC<ISlideChangeTransitionProps> = ({
                 elRef={transitionEl}
                 flexDirection={flexDirProp}
                 onTransitionEnd={_onComplete}
-                style={{
+                css={{
                     minWidth: "100%",
                     minHeight: "100%",
-                    transition: `${dirProp} ${duration}ms linear`,
-                    [dirProp]: started ? `-${100 * (children.length - 1)}%` : 0,
+                    transition: started ? `${dirProp} ${duration}ms linear` : "",
+                    [dirProp]: started ? 0 : `-100%`,
                     position: "relative",
                 }}>
-                {children.map((child, i) => (
-                    <Box
-                        css={{
-                            minWidth: "100%",
-                            minHeight: "100%",
-                            maxWidth: "100%",
-                            maxHeight: "100%",
-                        }}
-                        key={(isValidElement(child) && child.key) || i}
-                        position="relative">
-                        {child}
-                    </Box>
-                ))}
+                <Box
+                    css={{
+                        minWidth: "100%",
+                        minHeight: "100%",
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                    }}
+                    position="relative">
+                    {children}
+                </Box>
             </Box>
         </FillBox>
     );

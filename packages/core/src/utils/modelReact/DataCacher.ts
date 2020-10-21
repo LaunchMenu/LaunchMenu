@@ -16,7 +16,7 @@ export class DataCacher<T> extends AbstractDataSource<T> implements IDataSource<
     protected lastLoadTime: number = 0;
 
     // A function to execute when the data is changed, but after it finished computing (and once stored)
-    protected onUpdate?: (value: T) => void;
+    protected onUpdate?: (value: T, previous: T | undefined) => void;
 
     /**
      * Creates a new data cache, used to reduce number of calls to complex data transformers
@@ -34,7 +34,7 @@ export class DataCacher<T> extends AbstractDataSource<T> implements IDataSource<
             onUpdate,
         }: {
             /** A side effect to perform after updating the now newly cached value */
-            onUpdate?: (value: T) => void;
+            onUpdate?: (value: T, previous: T | undefined) => void;
         } = {}
     ) {
         super();
@@ -80,6 +80,7 @@ export class DataCacher<T> extends AbstractDataSource<T> implements IDataSource<
         };
 
         // Retrieve the new value and setup the new listener
+        const prev = this.cached;
         this.cached = this.source(
             {
                 refreshData: true,
@@ -95,11 +96,11 @@ export class DataCacher<T> extends AbstractDataSource<T> implements IDataSource<
                     dependencyRemoves.push(remover);
                 },
             },
-            this.cached
+            prev
         );
 
         // Perform any side effects
-        this.onUpdate?.(this.cached);
+        this.onUpdate?.(this.cached, prev);
     }
 
     /**

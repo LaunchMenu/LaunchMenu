@@ -7,7 +7,6 @@ import {getContextMenuItems} from "../../../contextMenu/getContextMenuItems";
 import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
 import {PrioritizedMenu} from "../../PrioritizedMenu";
 import {sortContextCategories} from "../../../contextMenu/sortContextCategories";
-import {IIOContext} from "../../../../context/_types/IIOContext";
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {getHooked} from "../../../../utils/subscribables/getHooked";
@@ -109,14 +108,17 @@ export function setupContextMenuHandler(
                     menu.addItems(items);
 
                     contextData.close = await ioContext.open(
-                        new UILayer(() => ({
-                            menu,
-                            onExecute: () => contextData?.close?.(),
-                            onClose: () => {
-                                contextData.close = undefined;
-                                contextData.menu = undefined;
-                            },
-                        }))
+                        new UILayer(
+                            () => ({
+                                menu,
+                                onExecute: () => contextData?.close?.(),
+                                onClose: () => {
+                                    contextData.close = undefined;
+                                    contextData.menu = undefined;
+                                },
+                            }),
+                            "context"
+                        )
                     );
                 }
                 return true;

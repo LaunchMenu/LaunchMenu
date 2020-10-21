@@ -66,6 +66,7 @@ export function createFolderMenuItem<
     onExecute,
     onSelect,
     onCursor,
+    pathName = getHooked(name),
     onMenuChange,
 }: IFolderMenuItemData<T, S>): IMenuItem & {children: T} {
     const childList = getChildList(children);
@@ -80,7 +81,11 @@ export function createFolderMenuItem<
     ];
     if (childList.length > 0 || childList instanceof Function)
         generatedBindings.push(
-            openMenuExecuteHandler.createBinding({items: childList, closeOnExecute})
+            openMenuExecuteHandler.createBinding({
+                items: childList,
+                closeOnExecute,
+                pathName,
+            })
         );
     if (onExecute)
         generatedBindings.push(executeAction.createBinding({execute: onExecute}));

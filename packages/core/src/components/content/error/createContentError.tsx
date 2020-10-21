@@ -1,6 +1,6 @@
 import React, {ReactNode} from "react";
 import {IViewStackItem} from "../../../uiLayers/_types/IViewStackItem";
-import {InstantChangeTransition} from "../../stacks/transitions/change/InstantChangeTransition";
+import {InstantChangeTransition} from "../../context/stacks/transitions/change/InstantChangeTransition";
 import {ContentErrorMessage} from "./ContentErrorMessage";
 
 /**

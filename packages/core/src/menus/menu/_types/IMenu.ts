@@ -68,4 +68,10 @@ export type IMenu = {
      * @returns The highlight data
      */
     getHighlight?: (hook?: IDataHook) => IQuery | null;
+
+    /**
+     * Properly destroys the menu
+     * @returns Whether destroyed properly (returns false if it was already destroyed)
+     */
+    destroy(): boolean | Promise<boolean>;
 };

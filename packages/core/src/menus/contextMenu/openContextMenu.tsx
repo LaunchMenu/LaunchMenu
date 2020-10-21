@@ -3,6 +3,7 @@ import {getContextMenuItems} from "./getContextMenuItems";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {PrioritizedMenu} from "../menu/PrioritizedMenu";
 import {sortContextCategories} from "./sortContextCategories";
+import {UILayer} from "../../uiLayers/standardUILayer/UILayer";
 
 /**
  * Opens a context menu for the selection of the given menu
@@ -19,17 +20,18 @@ export function openContextMenu(
     let close = () => {}; // placeholder
     const contextMenuItems = getContextMenuItems(menu.getAllSelected(), ioContext);
     if (contextMenuItems.length > 0) {
-        // TODO: fix with new context
-        // close = openUI(
-        //     ioContext,
-        //     {
-        //         menu: new PrioritizedMenu(ioContext, contextMenuItems, {
-        //             sortCategories: sortContextCategories,
-        //         }),
-        //         onExecute: close,
-        //     },
-        //     onClose
-        // );
+        ioContext.open(
+            new UILayer(
+                {
+                    menu: new PrioritizedMenu(ioContext, contextMenuItems, {
+                        sortCategories: sortContextCategories,
+                    }),
+                    onExecute: close,
+                },
+                "context"
+            ),
+            onClose
+        );
     }
     return close;
 }

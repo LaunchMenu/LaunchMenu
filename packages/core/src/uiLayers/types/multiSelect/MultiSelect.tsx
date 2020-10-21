@@ -14,7 +14,6 @@ import {executeAction} from "../../../menus/actions/types/execute/executeAction"
 import {createStandardMenuItem} from "../../../menus/items/createStandardMenuItem";
 import {searchAction} from "../../../menus/actions/types/search/searchAction";
 import {getCategoryAction} from "../../../menus/actions/types/category/getCategoryAction";
-import {controlsCategory} from "../../../menus/categories/types/controlsCategory";
 import {IViewStackItem} from "../../_types/IViewStackItem";
 import {MenuView} from "../../../components/menu/MenuView";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
@@ -37,6 +36,7 @@ import {createFinishMenuItem} from "../../../menus/items/createFinishMenuItem";
 import {Observer} from "../../../utils/modelReact/Observer";
 import {IMultiSelectOption} from "./_types/IMultiSelectOption";
 import {IMultiSelectOptionData} from "./_types/IMultiSelectOptionData";
+import {getControlsCategory} from "../../../menus/categories/types/getControlsCategory";
 
 export function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -315,7 +315,7 @@ export class MultiSelect<T> extends AbstractUILayer {
     protected getFinishView(): IMenuItem {
         return createFinishMenuItem({
             onExecute: ({context}) => this.submit(context),
-            actionBindings: [getCategoryAction.createBinding(controlsCategory)],
+            actionBindings: [getCategoryAction.createBinding(getControlsCategory())],
         });
     }
 
@@ -596,7 +596,7 @@ export class MultiSelect<T> extends AbstractUILayer {
             actionBindings: adjustBindings(item.actionBindings, bindings => [
                 ...bindings.filter(binding => !searchAction.canBeAppliedTo([binding])),
                 searchBinding,
-                getCategoryAction.createBinding(controlsCategory),
+                getCategoryAction.createBinding(getControlsCategory()),
             ]),
         };
     }

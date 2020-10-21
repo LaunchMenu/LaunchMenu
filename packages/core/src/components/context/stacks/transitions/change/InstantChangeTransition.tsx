@@ -1,5 +1,5 @@
 import React, {useEffect, FC, useRef} from "react";
-import {FillBox} from "../../../FillBox";
+import {FillBox} from "../../../../FillBox";
 import {IChangeTransitionProps} from "./_types/IChangeTransitionProps";
 
 /**

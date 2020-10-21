@@ -3,12 +3,14 @@ import {IIOContext} from "../../context/_types/IIOContext";
 import {DataCacher} from "../../utils/modelReact/DataCacher";
 import {TRequired} from "../../_types/TRequired";
 import {getMenuCategory} from "../actions/types/category/getCategoryAction";
+import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 import {isItemSelectable} from "../items/isItemSelectable";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {AbstractMenu} from "./AbstractMenu";
 import {IMenuCategoryConfig} from "./_types/IMenuCategoryConfig";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 
+// TODO: properly call on menu add and remove hook
 // TODO: get rid write test file
 
 /**
@@ -42,22 +44,36 @@ export class ProxiedMenu extends AbstractMenu {
     }
 
     /** A data cacher that computes the categories from an item list */
-    protected categories = new DataCacher(hook => {
-        const items = this.itemSource(hook);
-        const categories = [{category: undefined, items: []}] as IMenuCategoryData[];
-        items.forEach(item => {
-            const category = this.categoryConfig.getCategory(item, hook);
-            const categoryData = categories.find(({category: c}) => c == category);
-            if (categoryData) categoryData.items.push(item);
-            else categories.push({category, items: [item]});
-        });
-        return categories;
-    });
+    protected categories = new DataCacher(
+        hook => {
+            const items = this.itemSource(hook);
+            const categories = [{category: undefined, items: []}] as IMenuCategoryData[];
+            items.forEach(item => {
+                const category = this.categoryConfig.getCategory(item, hook);
+                const categoryData = categories.find(({category: c}) => c == category);
+                if (categoryData) categoryData.items.push(item);
+                else categories.push({category, items: [item]});
+            });
+            return {categories, rawItems: items};
+        },
+
+        // Call on menu change actions
+        {
+            onUpdate: ({rawItems}, prev) => {
+                const prevRawItems = prev?.rawItems ?? [];
+
+                const removed = prevRawItems.filter(item => !rawItems.includes(item));
+                onMenuChangeAction.get(removed).onMenuChange(this, false);
+                const added = rawItems.filter(item => !prevRawItems.includes(item));
+                onMenuChangeAction.get(added).onMenuChange(this, true);
+            },
+        }
+    );
 
     /** A data cacher that computes the items list with categories from the category data */
     protected itemsList = new DataCacher(
         hook => {
-            const rawCategories = this.categories.get(hook);
+            const rawCategories = this.categories.get(hook).categories;
             const order = this.categoryConfig.sortCategories(rawCategories);
 
             // Combine the items and categories into a single list
@@ -114,6 +130,6 @@ export class ProxiedMenu extends AbstractMenu {
      */
     public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
         if (this.isDestroyed(hook)) return [];
-        return this.categories.get(hook);
+        return this.categories.get(hook).categories;
     }
 }
