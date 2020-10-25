@@ -94,7 +94,7 @@ export class LaunchMenu {
         this.appletSources = new JSONFile(
             Path.join(this.settingsDirectory, "applets.json")
         );
-        // console.log(await this.appletSources.load());
+
         const appletsObject = await getAsync(h => this.appletSources.get(h));
         if (appletsObject instanceof Object && !(appletsObject instanceof Array)) {
             const appletSources = Object.keys(appletsObject).flatMap(ID => {
@@ -105,7 +105,8 @@ export class LaunchMenu {
 
             return appletSources;
         } else {
-            throw Error("No valid applets config was found");
+            console.error("No valid applets config was found");
+            return [];
         }
     }
 
@@ -114,6 +115,7 @@ export class LaunchMenu {
      */
     protected async setupApplets(): Promise<void> {
         const appletSources = await this.getAppletSources();
+
         appletSources.forEach(source => {
             this.appletManager.addApplet(source);
         });

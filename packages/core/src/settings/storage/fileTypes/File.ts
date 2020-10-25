@@ -76,6 +76,7 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
         }
 
         // If the data isn't loading currently, reload it
+        this.loadTime = Date.now();
         return this.loading.addAction(
             new Promise(async (res, rej) => {
                 try {
@@ -85,7 +86,6 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
                     FS.readFile(this.filePath, this.encoding, (err, data) => {
                         if (err) rej(err);
                         else if (data) {
-                            this.loadTime = Date.now();
                             try {
                                 // Calling set automatically resets the loading state
                                 if (isLoading(h => this.loading.get(h)))

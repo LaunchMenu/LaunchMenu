@@ -25,8 +25,8 @@ export const UIPathView: LFC<{
             color="primary"
             position="relative"
             css={{transition: `height ${heightTransitionDuration}ms`}}
-            height={path.length > 0 || top.pathView ? 30 : 0}>
-            <Transition>{top.pathView ? top.pathView : crumbs}</Transition>
+            height={path.length > 0 || top?.pathView ? 30 : 0}>
+            <Transition>{top?.pathView ? top?.pathView : crumbs}</Transition>
         </Box>
     );
 };

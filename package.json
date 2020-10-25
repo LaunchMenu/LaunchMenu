@@ -4,6 +4,7 @@
         "packages/core",
         "packages/applets/*",
         "packages/core-applets/*",
-        "packages/dev-tools/*"
+        "packages/dev-tools/*",
+        "packages/launcher*"
     ]
 }

@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-session-manager",
-    "version": "0.0.0",
+    "version": "0.0.0-alpha.0",
     "description": "An applet to manage",
     "types": "build/index.d.ts",
     "files": [

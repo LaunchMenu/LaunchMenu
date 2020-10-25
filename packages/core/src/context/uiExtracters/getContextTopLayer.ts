@@ -8,7 +8,10 @@ import {IIOContext} from "../_types/IIOContext";
  * @param hook The data hook to subscribe to changes
  * @returns The context's top layer
  */
-export function getContextTopLayer(context: IIOContext, hook?: IDataHook): IUILayer {
+export function getContextTopLayer(
+    context: IIOContext,
+    hook?: IDataHook
+): IUILayer | null {
     const layers = context.getUI(hook);
     return layers[layers.length - 1] ?? null;
 }
