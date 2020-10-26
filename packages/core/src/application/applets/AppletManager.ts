@@ -10,54 +10,79 @@ import {IUUID} from "../../_types/IUUID";
 import {ICategory} from "../../menus/actions/types/category/_types/ICategory";
 import {createAppletResultCategory} from "./createAppletResultCategory";
 import {withLM} from "./declaration/withLM";
+import {JSONFile} from "../../settings/storage/fileTypes/JSONFile";
+import {DataCacher} from "../../utils/modelReact/DataCacher";
+import {IAppletData} from "./_types/IAppletData";
 
 /**
  * A manager of applets, takes care of loading applets given their locations
  */
 export class AppletManager {
     protected LM: LaunchMenu;
-    protected sources: IAppletSource[];
     protected reloadOnChanges: boolean;
 
-    protected watchers = {} as {[key: string]: HMRWatcher};
-    protected appletCategories = new Field([] as ICategory[]); // A menu category per applet
-    protected applets = new Field([] as IApplet[]);
+    protected destroyed = new Field(false);
+    protected sourceFile: JSONFile;
+
+    /** A field that can be used to dynamically add any applets to the manager (does require some manual maintenance) */
+    public extraApplets = new Field([] as IAppletData[]); // TODO: make helper methods to manager the extra applets
+
+    /** Versions numbers of the applets, such that applets are reloaded if their version changes */
+    protected appletVersions = new Field({} as Record<string, number>);
 
     /**
      * Creates a new applet manager instances with the given sources
      * @param LM The LM instance that this applet manager is for
-     * @param sources The sources that specify the applets
-     * @param settingsDirectory The directory to store settings in
+     * @param settingsDirectory The directory to retrieve the installed applets from
      * @param reloadOnChanges Whether to listen for applet code changes and update the applet when such a change occurs
      */
     public constructor(
         LM: LaunchMenu,
-        sources: IAppletSource[] = [],
+        settingsDirectory: string,
         reloadOnChanges: boolean = DEV
     ) {
         this.LM = LM;
-        this.sources = sources;
+
+        this.sourceFile = new JSONFile(Path.join(settingsDirectory, "applets.json"));
         this.reloadOnChanges = reloadOnChanges;
-        this.initApplets();
+    }
+
+    /**
+     * Properly disposes all data associated to this applet
+     * @param appletData The applet data to be disposed
+     */
+    protected disposeAppletData(appletData: IAppletData): void {
+        appletData.applet.onDispose?.();
+        appletData.watcher?.destroy();
     }
 
     /**
      * Disposes of all data
      */
     public destroy(): void {
-        Object.values(this.watchers).forEach(watcher => watcher.destroy());
-        this.applets.get(null).forEach(applet => applet.onDispose?.());
-        this.applets.set([]);
+        this.destroyed.set(true);
+        // Force retrieve the applets to uninitialize old applets
+        this.applets.get(null);
+        this.extraApplets.set([]);
     }
 
     // Getters
+    /**
+     * Retrieves all the applets, including dynamic extra applets
+     * @param hook The hook to subscribe to changes
+     * @returns The applets data
+     */
+    public getAppletsData(hook: IDataHook = null): IAppletData[] {
+        return [...this.applets.get(hook), ...this.extraApplets.get(hook)];
+    }
+
     /**
      * Retrieves the loaded applets
      * @param hook The hook to subscribe to changes
      * @returns The applets
      */
     public getApplets(hook: IDataHook = null): IApplet[] {
-        return this.applets.get(hook);
+        return this.getAppletsData(hook).map(({applet}) => applet);
     }
 
     /**
@@ -67,7 +92,9 @@ export class AppletManager {
      * @returns The applet if found
      */
     public getApplet(ID: IUUID, hook: IDataHook = null): IApplet | null {
-        return this.applets.get(hook).find(applet => applet.ID == ID) || null;
+        return (
+            this.getAppletsData(hook).find(({applet}) => applet.ID == ID)?.applet || null
+        );
     }
 
     /**
@@ -78,10 +105,7 @@ export class AppletManager {
     public getAppletCategories(
         hook: IDataHook = null
     ): {applet: IApplet; category: ICategory}[] {
-        const categories = this.appletCategories.get(hook);
-        return this.applets
-            .get(hook)
-            .map((applet, i) => ({applet, category: categories[i]}));
+        return this.getAppletsData(hook);
     }
 
     /**
@@ -94,46 +118,11 @@ export class AppletManager {
         applet: IApplet,
         hook: IDataHook = null
     ): ICategory | undefined {
-        const index = this.applets.get(hook).findIndex(({ID}) => ID == applet.ID);
-        if (index != -1) return this.appletCategories.get(hook)[index];
+        return this.getAppletsData(hook).find(({applet: {ID}}) => ID == applet.ID)
+            ?.category;
     }
 
     // Applet management
-    /**
-     * Adds an applet with the given source
-     * @param source The source of the applet
-     */
-    public addApplet(source: IAppletSource): void {
-        try {
-            const applet = this.initApplet(source);
-            this.updateApplet(applet);
-            if (applet.development?.liveReload != false && DEV)
-                this.setupAppletWatcher(source, applet);
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    /**
-     * Removes an applet from the manager
-     * @param ID The id of the applet to remove
-     */
-    public removeApplet(ID: IUUID): void {
-        this.watchers[ID]?.destroy();
-        delete this.watchers[ID];
-
-        this.disposeOldApplet(ID);
-        const applets = this.applets.get(null);
-        this.applets.set(applets.filter(({ID: aid}) => aid != ID));
-    }
-
-    /**
-     * Initializes the applet
-     */
-    protected initApplets(): void {
-        this.sources.forEach(source => this.addApplet(source));
-    }
-
     /**
      * Initializes an applet
      * @param source The source data of the applet
@@ -159,15 +148,6 @@ export class AppletManager {
     }
 
     /**
-     * Calls the dispose function of an applet
-     * @param ID The ID of the applet to call the dispose for
-     */
-    protected disposeOldApplet(ID: IUUID): void {
-        const prevApplet = this.applets.get(null).find(applet => applet.ID == ID);
-        if (prevApplet?.onDispose) prevApplet.onDispose();
-    }
-
-    /**
      * Retrieves a file watcher for a given applet
      * @param source The source of the applet
      * @param applet The applet to setup the watcher for
@@ -183,10 +163,13 @@ export class AppletManager {
 
         const watcher = hmr(watchDir, () => {
             try {
-                this.disposeOldApplet(source.ID);
+                // Update the version number in order to force a new instance to be initialized
+                const oldVersions = this.appletVersions.get(null);
+                this.appletVersions.set({
+                    ...oldVersions,
+                    [source.ID]: (oldVersions[source.ID] ?? 0) + 1,
+                });
 
-                const applet = this.initApplet(source);
-                this.updateApplet(applet);
                 console.log(
                     `%cApplet %c${source.ID} %chas been reloaded`,
                     "color: blue;",
@@ -197,36 +180,91 @@ export class AppletManager {
                 console.error(e);
             }
         });
-        this.watchers[source.ID] = watcher;
+
         return watcher;
     }
 
     /**
-     * Updates or adds the applet
-     * @param applet The applet to update
+     * The sources in an array form
      */
-    protected updateApplet(applet: IApplet): void {
-        this.disposeOldApplet(applet.ID);
+    protected sources = new DataCacher(h => {
+        const appletsObject = this.sourceFile.get(h);
+        if (appletsObject instanceof Object && !(appletsObject instanceof Array)) {
+            const appletSources = Object.keys(appletsObject).flatMap(ID => {
+                const data = appletsObject[ID];
+                if (typeof data == "string") return {ID, directory: data};
+                else return [];
+            });
 
-        const applets = this.applets.get(null);
-        const index = applets.findIndex(({ID: OID}) => OID == applet.ID);
+            return appletSources;
+        } else {
+            console.error("No valid applets config was found");
+            return [];
+        }
+    });
 
-        // Update the categories list
-        const categories = this.appletCategories.get(null);
-        const newCategory = createAppletResultCategory(applet);
-        let newCategories;
-        if (index != -1)
-            newCategories = categories.map((c, i) => (i == index ? newCategory : c));
-        else newCategories = [...categories, newCategory];
-        this.appletCategories.set(newCategories);
+    /**
+     * A transformer that obtains applets from the sources, versions and whether this manager is destroyed
+     */
+    protected applets = new DataCacher<IAppletData[]>((h, prevApplets = []) => {
+        const destroyed = this.destroyed.get(h);
+        const sources = destroyed ? [] : this.sources.get(h);
+        const versions = this.appletVersions.get(h);
+        const sourcesWithVersions = sources.map(source => ({
+            ...source,
+            version: versions[source.ID] ?? 0,
+        }));
 
-        // Update the applets list
-        let newApplets;
-        if (index != -1)
-            newApplets = applets.map(oApplet =>
-                oApplet.ID == applet.ID ? applet : oApplet
+        // Dispose of any applets that are no longer used (or of which a new version is requested)
+        prevApplets.forEach(appletData => {
+            const stillUsed = !!sourcesWithVersions.find(
+                source =>
+                    source.ID == appletData.applet.ID &&
+                    source.version == appletData.version
             );
-        else newApplets = [...applets, applet];
-        this.applets.set(newApplets);
-    }
+            if (!stillUsed) this.disposeAppletData(appletData);
+        });
+
+        // Retrieve the new list of applets, using the previously initialized applet if available
+        const applets = sourcesWithVersions.flatMap(source => {
+            const prevApplet = prevApplets.find(
+                ({applet, version}) => applet.ID == source.ID && version == source.version
+            );
+            if (prevApplet) return prevApplet;
+
+            // If no applet exists for this source yet, create it
+            try {
+                const applet = this.initApplet(source);
+
+                return {
+                    applet,
+                    category: createAppletResultCategory(applet),
+                    version: source.version,
+                    watcher:
+                        applet.development?.liveReload != false && this.reloadOnChanges
+                            ? this.setupAppletWatcher(source, applet)
+                            : undefined,
+                };
+            } catch (e) {
+                console.error(e);
+
+                // If the latest version errored while loading, try to reinitialize the previous version
+                const prev = prevApplets.find(({applet}) => applet.ID == source.ID);
+                if (prev) {
+                    return {
+                        ...prev,
+                        watcher:
+                            prev.applet.development?.liveReload != false &&
+                            this.reloadOnChanges
+                                ? this.setupAppletWatcher(source, prev.applet)
+                                : undefined,
+                    };
+                }
+
+                return [];
+            }
+        });
+
+        return applets;
+    });
 }

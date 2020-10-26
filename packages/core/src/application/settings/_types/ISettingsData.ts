@@ -17,4 +17,6 @@ export type ISettingsData<
     file: SettingsFile<T, F, V>;
     /** The applet that these settings are for */
     applet?: IApplet;
+    /** THe runtime version of the applet (used for applet reloading) */
+    appletVersion?: IUUID;
 };

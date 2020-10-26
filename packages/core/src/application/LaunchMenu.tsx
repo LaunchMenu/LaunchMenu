@@ -1,6 +1,6 @@
 import React from "react";
 import Path from "path";
-import {getAsync, Loader} from "model-react";
+import {Loader} from "model-react";
 import {KeyHandler} from "../keyHandler/KeyHandler";
 import {ThemeProvider} from "../styling/theming/ThemeContext";
 import {loadTheme} from "../styling/theming/loadTheme";
@@ -8,13 +8,10 @@ import {defaultTheme} from "../styling/theming/defaultTheme";
 import {FillBox} from "../components/FillBox";
 import {Transition} from "../components/context/stacks/transitions/Transition";
 import {AppletManager} from "./applets/AppletManager";
-import {JSONFile} from "../settings/storage/fileTypes/JSONFile";
-import {IAppletSource} from "./applets/_types/IAppletSource";
 import {SettingsFile} from "../settings/storage/fileTypes/SettingsFile";
 import {baseSettings} from "./settings/baseSettings/baseSettings";
 import {SessionManager} from "./LMSession/SessionManager";
 import {SettingsManager} from "./settings/SettingsManager";
-import {Observer} from "../utils/modelReact/Observer";
 
 /**
  * The main LM class
@@ -25,7 +22,6 @@ export class LaunchMenu {
     public view: JSX.Element;
 
     protected keyHandler: KeyHandler;
-    protected appletSources: JSONFile;
 
     protected appletManager: AppletManager;
     protected sessionManager: SessionManager;
@@ -44,6 +40,7 @@ export class LaunchMenu {
         this.keyHandler?.destroy();
         this.appletManager?.destroy();
         this.sessionManager?.destroy();
+        this.settingsManager?.destroy();
     }
 
     // Initialization
@@ -58,7 +55,6 @@ export class LaunchMenu {
         this.setupSettings();
         this.setupView();
         this.setupSessions();
-        await this.setupApplets();
     }
 
     /**
@@ -83,42 +79,7 @@ export class LaunchMenu {
      * Initializes the available applets
      */
     protected setupAppletsManager(): void {
-        this.appletManager = new AppletManager(this);
-    }
-
-    /**
-     * Retrieves all of the applet sources
-     * @returns The applet sources
-     */
-    protected async getAppletSources(): Promise<IAppletSource[]> {
-        this.appletSources = new JSONFile(
-            Path.join(this.settingsDirectory, "applets.json")
-        );
-
-        const appletsObject = await getAsync(h => this.appletSources.get(h));
-        if (appletsObject instanceof Object && !(appletsObject instanceof Array)) {
-            const appletSources = Object.keys(appletsObject).flatMap(ID => {
-                const data = appletsObject[ID];
-                if (typeof data == "string") return {ID, directory: data};
-                else return [];
-            });
-
-            return appletSources;
-        } else {
-            console.error("No valid applets config was found");
-            return [];
-        }
-    }
-
-    /**
-     * Initializes the available applets
-     */
-    protected async setupApplets(): Promise<void> {
-        const appletSources = await this.getAppletSources();
-
-        appletSources.forEach(source => {
-            this.appletManager.addApplet(source);
-        });
+        this.appletManager = new AppletManager(this, this.settingsDirectory);
     }
 
     /**
@@ -152,40 +113,9 @@ export class LaunchMenu {
      * Initializes the settings
      */
     protected setupSettings(): void {
-        this.settingsManager = new SettingsManager();
-
-        // Listen for any applets being added/changed and mirror changes to the settings manager
-        let init = true;
-        new Observer(h => this.appletManager.getApplets(h)).listen(
-            (applets, _, prevApplets) => {
-                const changedApplets = init
-                    ? applets
-                    : applets.filter(applet => !prevApplets.includes(applet));
-                const removedApplets = prevApplets.filter(
-                    applet => !applets.includes(applet)
-                );
-
-                // Remove any old applets
-                removedApplets.forEach(({ID}) => this.settingsManager.removeSettings(ID));
-
-                // Add any new applet data
-                changedApplets.forEach(applet => {
-                    const settings = applet.settings;
-                    settings.ID = applet.ID;
-
-                    const settingsFile = new SettingsFile({
-                        ...settings,
-                        path: Path.join(
-                            this.settingsDirectory,
-                            "applets",
-                            applet.ID + ".json"
-                        ),
-                    });
-                    this.settingsManager.updateSettings(applet.ID, settingsFile, applet);
-                });
-                init = false;
-            },
-            true
+        this.settingsManager = new SettingsManager(
+            h => this.appletManager.getAppletsData(h),
+            this.settingsDirectory
         );
 
         // Add the base settings
