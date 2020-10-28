@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <!-- https://electronjs.org/docs/tutorial/security#csp-meta-tag -->
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="script-src 'self' 'unsafe-inline';"
+        />
+        <style>
+            html,
+            body,
+            #root {
+                margin: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                box-sizing: border-box;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script>
+            // Some code to allow for app.js to be a node module without erroring
+            exports = {};
+        </script>
+        <script src="./app.js"></script>
+        <script>
+            // Loaded in app.js
+            startApplication();
+        </script>
+    </body>
+</html>

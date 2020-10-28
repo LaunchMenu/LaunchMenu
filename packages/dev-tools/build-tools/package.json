@@ -1,0 +1,28 @@
+{
+    "name": "@launchmenu/build-tools",
+    "version": "0.0.2",
+    "bin": {
+        "lm-build-tools": "./bin/lm-build-tools.js"
+    },
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/LaunchMenu/LaunchMenu.git"
+    },
+    "keywords": [
+        "LaunchMenu",
+        "Build",
+        "tools"
+    ],
+    "author": "Tar van Krieken",
+    "license": "MIT",
+    "dependencies": {
+        "args": "^5.0.1",
+        "cross-spawn-promise": "0.10.2",
+        "typescript": "4.0.2",
+        "cpx": "^1.5.0",
+        "rimraf": "^3.0.2",
+        "chalk": "^4.1.0",
+        "chokidar": "^3.4.2"
+    }
+}

@@ -108,4 +108,4 @@ dist
 build/
 dist/
 
-app/data
+packages/core/data
