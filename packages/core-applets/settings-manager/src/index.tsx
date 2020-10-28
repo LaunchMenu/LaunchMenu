@@ -8,6 +8,7 @@ import {
     Menu,
     Observer,
     searchAction,
+    settingPatternMatcher,
     UILayer,
 } from "@launchmenu/core";
 import {DataCacher, Field} from "model-react";
@@ -38,16 +39,20 @@ export default declare({
         const settingsFolders = new DataCacher(h => {
             return manager.getAllSettingsData(h).map(settings => settings.file.settings);
         });
+        const recursiveRootSearchables = new DataCacher(h => ({
+            children: searchAction.get(settingsFolders.get(h)),
+        }));
         const rootSearchables = new DataCacher(h => ({
-            children: searchAction
-                .get(settingsFolders.get(h))
-                // Get rid of the children, making the search not recursive
+            children: recursiveRootSearchables
+                .get(h)
+                .children// Get rid of the children, making the search not recursive
                 .map(searchable => adjustSearchable(searchable, {children: () => []})),
         }));
 
         // Return the search, opening and context items data
         return {
             async search(query, h) {
+                if (settingPatternMatcher(query)) return recursiveRootSearchables.get(h);
                 return rootSearchables.get(h);
             },
             open({context, onClose}) {

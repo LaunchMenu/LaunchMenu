@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-session-manager",
-    "version": "0.0.0-alpha.0",
+    "version": "0.0.0-alpha.1",
     "description": "An applet to manage",
     "types": "build/index.d.ts",
     "files": [
@@ -8,7 +8,6 @@
     ],
     "main": "build/index.js",
     "scripts": {
-        "postinstall": "npm build",
         "build": "lm-build-tools --build --production",
         "dev": "lm-build-tools --watch",
         "start": "lm-build-tools --launch --production",
