@@ -37,12 +37,14 @@ export function createActionGraph(
     })) as IActionNode[];
 
     // Add all children to the nodes
-    nodes.forEach(actionNode => {
+    for (let i = 0; i < nodes.length; i++) {
+        const actionNode = nodes[i];
         actionNode.action.parents.forEach(p => {
             const parentNode = nodes.find(({action}) => action == p);
             if (parentNode) parentNode.children.push(actionNode);
+            else nodes.push({action: p, bindings: [], children: [actionNode]});
         });
-    });
+    }
 
     return nodes;
 }

@@ -118,5 +118,100 @@ describe("createAction", () => {
             // n should be of type never
             const n = stringActionHandlerHandler.get(targets);
         });
+        it("Should correctly reduce the result of multiple bindings and handlers test 2", () => {
+            /**
+             *    ┍━━━━ listDashHandler
+             *    │
+             *    ∨
+             * list <━━ listBulletPointHandler <━━ specialListItemsHandler
+             *            ∧
+             *            │
+             * names <━━ namesAndBulletPointListHandler
+             */
+
+            const names = createAction({
+                name: "names",
+                core: (names: string[]) => ({result: names}),
+            });
+
+            const list = createAction({
+                name: "list",
+                core: (names: string[]) => {
+                    const namesString = names.join("\n");
+                    return {result: namesString};
+                },
+            });
+
+            const listBulletPointHandler = createAction({
+                name: "listBulletPointHandler",
+                parents: [list],
+                core: (names: string[], indices: number[]) => {
+                    const bulletPointNames = names.map(name => `• ${name}`);
+                    return {
+                        children: bulletPointNames.map(bulletPointName =>
+                            list.createBinding(bulletPointName, indices[0])
+                        ),
+                        result: bulletPointNames,
+                    };
+                },
+            });
+            const listDashHandler = createAction({
+                name: "listDashHandler",
+                parents: [list],
+                core: (names: string[]) => {
+                    const bulletPointNames = names.map(name => `- ${name}`);
+                    return {
+                        children: bulletPointNames.map(bulletPointName =>
+                            list.createBinding(bulletPointName)
+                        ),
+                        result: bulletPointNames,
+                    };
+                },
+            });
+
+            const specialListItemsHandler = createAction({
+                name: "specialListItemsHandler",
+                parents: [listBulletPointHandler], // Notice that we can create handlers, for handlers
+                core: (names: string[]) => {
+                    const bulletPointNames = names.map(name => `  * ${name}`);
+                    const specialList = ["special:", ...bulletPointNames].join("\n");
+                    return {
+                        children: [listBulletPointHandler.createBinding(specialList)],
+                        // Note that we don't return a result, thus specialListItemsHandler.get([...]) on its own is useless
+                    };
+                },
+            });
+
+            const namesAndBulletPointListHandler = createAction({
+                name: "namesAndBulletPointListHandler",
+                parents: [names, listBulletPointHandler],
+                core: (inpNames: string[]) => ({
+                    children: [
+                        ...inpNames.map(name =>
+                            listBulletPointHandler.createBinding(name)
+                        ),
+                        ...inpNames.map(name => names.createBinding(name)),
+                    ],
+                }),
+            });
+
+            const items = [
+                {actionBindings: [listDashHandler.createBinding("item1")]},
+                {actionBindings: [listBulletPointHandler.createBinding("item2")]},
+                {actionBindings: [specialListItemsHandler.createBinding("item3")]},
+                {actionBindings: [namesAndBulletPointListHandler.createBinding("item4")]},
+                {actionBindings: [specialListItemsHandler.createBinding("item5")]},
+                {actionBindings: [listDashHandler.createBinding("item6")]},
+                {actionBindings: [namesAndBulletPointListHandler.createBinding("item7")]},
+            ];
+
+            const listResult = list.get(items);
+            expect(listResult).toEqual(
+                "- item1\n• item2\n• special:\n  * item3\n  * item5\n• item4\n• item7\n- item6"
+            );
+
+            const namesResult = names.get(items);
+            expect(namesResult).toEqual(["item4", "item7"]);
+        });
     });
 });

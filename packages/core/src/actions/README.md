@@ -240,7 +240,7 @@ const specialListItemsHandler = createAction({
         const bulletPointNames = names.map(name => `  * ${name}`);
         const specialList = ["special:", ...bulletPointNames].join("\n");
         return {
-            children: [listBulletPointHandler.createHandler(specialList)],
+            children: [listBulletPointHandler.createBinding(specialList)],
             // Note that we don't return a result, thus specialListItemsHandler.get([...]) on its own is useless
         };
     },
@@ -371,10 +371,10 @@ We can for instance create an action handler that creates bindings for both the 
 const namesAndBulletPointListHandler = createAction({
     name: "namesAndBulletPointListHandler",
     parents: [names, listBulletPointHandler],
-    core: (names: string[]) => ({
+    core: (inpNames: string[]) => ({
         children: [
-            ...names.map(name => listBulletPointHandler.createBinding(name)),
-            ...names.map(name => names.createBinding(name)),
+            ...inpNames.map(name => listBulletPointHandler.createBinding(name)),
+            ...inpNames.map(name => names.createBinding(name)),
         ],
     }),
 });

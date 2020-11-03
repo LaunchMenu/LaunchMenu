@@ -194,18 +194,18 @@ describe("createActionHandlerTree", () => {
         const F = createAction("F", [D, E]);
         const actions = [A, B, C, D, E, F];
 
-        const bindingsA = new Field(actions.slice(0, 4).map(a => createBinding(a)));
+        const bindings = new Field(actions.slice(4).map(a => createBinding(a)));
         const targets: IActionTarget[] = [
+            {actionBindings: actions.slice(0, 4).map(a => createBinding(a))},
             {
-                actionBindings: h => bindingsA.get(h ?? null),
+                actionBindings: h => bindings.get(h ?? null),
             },
-            {actionBindings: actions.slice(4).map(a => createBinding(a))},
         ];
 
         const listener = jest.fn();
         new Observer(h => createActionHandlerTree(A, targets, h)).listen(listener, true);
 
-        bindingsA.set(bindingsA.get(null).slice(0, 3));
+        bindings.set([]);
         await wait();
 
         expect(listener).toBeCalledTimes(2);
@@ -219,8 +219,34 @@ describe("createActionHandlerTree", () => {
 
         const tree2 = listener.mock.calls[1][0];
         expect(getChildren(tree2, [])).toEqual([B, C]);
-        expect(getChildren(tree2, [B])).toEqual([]);
-        expect(getChildren(tree2, [C])).toEqual([E]);
-        expect(getChildren(tree2, [C, E])).toEqual([F]);
+        expect(getChildren(tree2, [B])).toEqual([D]);
+        expect(getChildren(tree2, [C])).toEqual([D]);
+        expect(getChildren(tree2, [B, D])).toEqual([]);
+    });
+    it("Should properly handle absence of parent actions", () => {
+        /**
+         * A -> B ---> D -\
+         *  \-> C -/      -> F
+         *       \---> E -/
+         */
+        const A = createAction("A", []);
+        const B = createAction("B", [A]);
+        const C = createAction("C", [A]);
+        const D = createAction("D", [B, C]);
+        const E = createAction("E", [C]);
+        const F = createAction("F", [D, E]);
+
+        const targets: IActionTarget[] = [
+            {
+                actionBindings: [createBinding(F)],
+            },
+        ];
+
+        const tree = createActionHandlerTree(A, targets);
+        expect(getChildren(tree, [])).toEqual([B, C]);
+        expect(getChildren(tree, [B])).toEqual([D]);
+        expect(getChildren(tree, [C])).toEqual([D, E]);
+        expect(getChildren(tree, [B, D])).toEqual([F]);
+        expect(getChildren(tree, [C, E])).toEqual([F]);
     });
 });
