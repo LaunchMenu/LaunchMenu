@@ -399,7 +399,7 @@ It involves:
 Because of this, the system is relatively slow and has a lot of overhead. In some cases where efficiency is important, this system should be avoided.
 In certain situations where efficiency is important, it could still be used however. If you will make multiple repeated calls, but these calls are all on the same data, the action system can still be used.
 
-And this brings us to another common action patter in LaunchMenu; function factories:
+And this brings us to another common action pattern in LaunchMenu; function factories:
 
 ```ts
 type Func = {
@@ -484,8 +484,8 @@ item1Name.set("bob");
 
 This will result in 2 calls, one initial call because we specified `true` for whether to create an initial call when adding a listener, and one when we change item1's name to "bob":
 
--   `"• item1\n• item2"`
--   `"• bob\n• item2"`
+-   `"- item1\n- item2"`
+-   `"- bob\n- item2"`
 
 ### Adding/removing bindings
 
@@ -509,8 +509,8 @@ item1Bindings.set([]);
 
 This will result in 2 calls, one initial call because we specified `true` for whether to create an initial call when adding a listener, and one when we change item1's bindings change:
 
--   `"• item1\n• item2"`
--   `"• item2"`
+-   `"- item1\n- item2"`
+-   `"- item2"`
 
 # Common usage in LaunchMenu
 
