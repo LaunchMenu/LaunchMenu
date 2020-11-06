@@ -3,13 +3,7 @@ import {actionGetter} from "./actionGraph/actionGetter";
 import {IAction} from "./_types/IAction";
 import {IActionBinding} from "./_types/IActionBinding";
 import {IActionTransformer} from "./_types/IActionTransformer";
-
-/**
- * Extracts purely the action interface of some type that extends the action interface
- */
-type TPureAction<A extends IAction> = A extends IAction<infer I, infer O, infer P>
-    ? IAction<I, O, P>
-    : never;
+import {TPureAction} from "./_types/TPureAction";
 
 /**
  * Creates an action that conforms to all constraints of a proper action
@@ -34,27 +28,33 @@ export function createAction<
          * @returns The created binding
          */
         (data: ISubscribable<I>, index?: number): IActionBinding<IAction<I, O, P>>;
-    }
->(actionInput: {
-    /** The name of the action */
-    name: string;
-    /** The parent actions of this action */
-    parents?: P[];
-    /** The core transformer of the action */
-    core: IActionTransformer<I, O, K>;
-    /** A custom binding creator in case generic types are needed */
-    createBinding?: CB;
-}): /** The action as well as an interface to create bindings for this action with */
+    },
+    /** The remaining functions specified on the object */
+    REST = unknown
+>(
+    actionInput: {
+        /** The name of the action */
+        name: string;
+        /** The parent actions of this action */
+        parents?: P[];
+        /** The core transformer of the action */
+        core: IActionTransformer<I, O, K>;
+        /** A custom binding creator in case generic types are needed */
+        createBinding?: CB;
+    } & REST
+): /** The action as well as an interface to create bindings for this action with */
 IAction<I, O, P> & {
     createBinding: CB;
-} {
+} & Omit<REST, "name" | "parents" | "core" | "createBinding"> {
+    const {name, parents, core, createBinding, ...rest} = actionInput;
+
     return {
-        name: actionInput.name,
-        parents: actionInput.parents || [],
-        transform: actionInput.core as any,
+        name,
+        parents: parents || [],
+        transform: core as any,
         get: actionGetter,
         createBinding:
-            actionInput.createBinding ||
+            createBinding ||
             (function (data: any, index?: number) {
                 return {
                     action: this,
@@ -66,6 +66,7 @@ IAction<I, O, P> & {
                           }),
                 };
             } as any),
+        ...rest,
     };
 }
 
