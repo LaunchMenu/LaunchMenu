@@ -5,18 +5,28 @@ import {getContextCategory} from "../../menus/categories/createContextCategory";
 import {adjustBindings} from "../../menus/items/adjustBindings";
 import {ProxiedPrioritizedMenu} from "../../menus/menu/ProxiedPrioritizedMenu";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
-import {getHooked} from "../../utils/subscribables/getHooked";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
 import {createAction} from "../createAction";
 import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
 import {IActionTarget} from "../_types/IActionTarget";
 import {IContextMenuItemData} from "./_types/IContextMenuItemData";
+import {createActionGraph} from "../actionGraph/createActionHandlerTree";
+import {IActionNodeWithTargets} from "../_types/IActionNode";
+import {IIndexedActionBinding} from "../_types/IIndexedActionBinding";
+import {getLCS} from "../../utils/getLCS";
 
-type IContextItemNode = IContextMenuItemData & {
-    itemCount: number;
-    bindingCount: number;
+type IContextItemNode = Omit<IActionNodeWithTargets, "children"> & {
+    contextItems: IContextMenuItemData[];
     children: IContextItemNode[];
+    descendantBindings?: IIndexedActionBinding[];
+    descendantTargets?: IActionTarget[];
+    descendantContextItems?: WeakMap<IAction, IOverrideContextItem[]>;
+};
+
+type IOverrideContextItem = {
+    node: IContextItemNode;
+    contextItem: IContextMenuItemData;
 };
 
 export const contextMenuAction = createAction({
@@ -37,68 +47,58 @@ export const contextMenuAction = createAction({
     ): IPrioritizedMenuItem[] {
         const totalItemCount = items.length;
         const allTargets = [...items, {actionBindings: extraBindings}];
-        const contextItemsData = contextMenuAction.get(allTargets, hook);
+        const contextItemData = contextMenuAction.get(allTargets, hook);
 
-        // Get the number of items that have a binding for each context item
-        const contextItemsDataWithCounts = contextItemsData.map(contextItem => {
-            const itemsWithBinding = items
-                .map(item =>
-                    getHooked(item.actionBindings, hook).filter(
-                        ({action}) => action == contextItem.action
-                    )
-                )
-                .filter(bindings => bindings.length > 0);
-            const bindings = itemsWithBinding.flat();
-
-            // If the context item has no action, we know it must have been created from at least 1 binding
-            const min = contextItem.action ? 0 : 1;
-
-            return {
-                ...contextItem,
-                itemCount: itemsWithBinding.length || min,
-                bindingCount: bindings.length || min,
-            };
+        // Retrieve the action graph of all bindings, and attach the context items for each action
+        const actionGraph = createActionGraph(allTargets, hook, true);
+        const nodesWithContextItems = actionGraph.map((node: IContextItemNode) => {
+            node.contextItems = contextItemData.filter(
+                ({action}) => action == node.action
+            );
+            return node;
         });
 
-        // Compute the children of each action
-        const contextItemsDataWithChildren: IContextItemNode[] = contextItemsDataWithCounts.map(
-            contextItem => ({...contextItem, children: []})
-        );
-        contextItemsDataWithChildren.forEach(child => {
-            const parent = (child.parent =
-                child.parent !== undefined
-                    ? child.parent
-                    : child.action?.parents.filter(a => a != contextMenuAction)[0]);
-            if (parent) {
-                const parentNode = contextItemsDataWithChildren.find(
-                    ({action}) => parent == action
+        // const rootNodes = nodesWithContextItems.filter(node=>!node.contextItems.find());
+        const actionContextItems = nodesWithContextItems.flatMap(node =>
+            node.contextItems.flatMap(rootCIData => {
+                if (rootCIData.override) return []; // Is not a root item
+
+                // Find the most specialized CI item for this subDAG
+                const commonContextItems = getCommonDescendantContextItems(
+                    node,
+                    node.action
                 );
-                if (parentNode) parentNode.children.push(child);
-            }
-        });
+                const mostSpecializedItem =
+                    commonContextItems[commonContextItems.length - 1];
 
-        // Compute root items (items without parents)
-        const roots = contextItemsDataWithChildren.filter(({parent}) => !parent);
-        const contextItems = roots.map(root => {
-            // Obtain the furthest decent that covers all the bindings
-            let executeBinding = root.execute;
-            let node = root;
-            while (node.children.length == 1 && node.bindingCount == 0) {
-                node = node.children[0];
-                executeBinding = node.execute || executeBinding;
-            }
+                const {contextItem: CI, node: CINode} = mostSpecializedItem;
 
-            // Obtain the prioritized item to display
-            const item =
-                node.item instanceof Function ? node.item(executeBinding) : node.item;
+                // Return the menu item, potentially with category
+                const contextItem =
+                    CI.item instanceof Function ? CI.item(rootCIData.execute) : CI.item;
 
-            // Add the item count category if needed
-            return node.preventCountCategory || node.itemCount >= totalItemCount
-                ? item
-                : getItemWithCountCategory(item, node.itemCount, totalItemCount);
-        });
+                const targetCount = getDescendantTargets(CINode).length;
+                const skipCategory =
+                    CI.preventCountCategory || targetCount == totalItemCount;
+                return skipCategory
+                    ? contextItem
+                    : getItemWithCountCategory(contextItem, targetCount, totalItemCount);
+            })
+        );
 
-        return contextItems;
+        // Retrieve the direct context menu bindings, that don't belong to actions
+        const extraContextItems = contextItemData
+            .filter(({action}) => !action)
+            .map(({item, execute, preventCountCategory}) => {
+                const contextItem = item instanceof Function ? item(execute) : item;
+
+                const skipCategory = preventCountCategory || 1 == totalItemCount;
+                return skipCategory
+                    ? contextItem
+                    : getItemWithCountCategory(contextItem, 1, totalItemCount);
+            });
+
+        return [...actionContextItems, ...extraContextItems];
     },
 
     /**
@@ -143,4 +143,83 @@ function getItemWithCountCategory(
             ),
         },
     };
+}
+
+/**
+ * Retrieves all descendant (self + recursive children) bindings for a given node, and caches them within the node
+ * @param node The node to retrieve the descendant bindings for
+ * @returns All the descendant bindings
+ */
+function getDescendantBindings(node: IContextItemNode): IIndexedActionBinding[] {
+    if (node.descendantBindings) return node.descendantBindings;
+
+    const bindings = [...node.bindings];
+    node.children.forEach(node =>
+        getDescendantBindings(node).forEach(binding => {
+            if (!bindings.includes(binding)) bindings.push(binding);
+        })
+    );
+
+    // Cache results for efficiency
+    node.descendantBindings = bindings;
+    return bindings;
+}
+
+/**
+ * Retrieves all descendant (self + recursive children) targets for a given node, and caches them within the node
+ * @param node The node to retrieve the descendant targets for
+ * @returns All the descendant targets
+ */
+function getDescendantTargets(node: IContextItemNode): IActionTarget[] {
+    if (node.descendantTargets) return node.descendantTargets;
+
+    const targets = [...node.targets];
+    node.children.forEach(node =>
+        getDescendantTargets(node).forEach(target => {
+            if (!targets.includes(target)) targets.push(target);
+        })
+    );
+
+    // Cache results for efficiency
+    node.descendantTargets = targets;
+    return targets;
+}
+
+/**
+ * Retrieves all descendant (self + recursive children) context items (CI) for a given node in the order of furthest up to furthest down the tree, such that a CI is only included if it covers all descendant items.
+ * It also caches the result within the node
+ * @param node The node to retrieve the descendant context items for
+ * @param targetAction The action that the found context items should be overrides for
+ * @returns All the descendant context items
+ */
+function getCommonDescendantContextItems(
+    node: IContextItemNode,
+    targetAction: IAction
+): IOverrideContextItem[] {
+    if (node.descendantContextItems?.has(targetAction))
+        return node.descendantContextItems.get(targetAction) as IOverrideContextItem[];
+
+    const contextItems = node.contextItems
+        .filter(CI => CI.action == targetAction || CI.override == targetAction)
+        .map(CI => ({contextItem: CI, node}));
+
+    const bindingCount = getDescendantBindings(node).length;
+    const childContextItems = node.children.reduce((commonChildCIs, child, i) => {
+        // If the binding count isn't equal, either a sibling or the parent had an extra binding,
+        // So the children won't add any common CI that has full coverage anymore
+        if (getDescendantBindings(child).length != bindingCount) return [];
+
+        const childCIs = getCommonDescendantContextItems(child, targetAction);
+
+        // Find the common CIs
+        if (i == 0) return childCIs;
+        return getLCS(commonChildCIs, childCIs).map(([i]) => commonChildCIs[i]);
+    }, []);
+
+    const allContextItems = [...contextItems, ...childContextItems];
+
+    // Cache results for efficiency
+    if (!node.descendantContextItems) node.descendantContextItems = new WeakMap();
+    node.descendantContextItems.set(targetAction, allContextItems);
+    return allContextItems;
 }

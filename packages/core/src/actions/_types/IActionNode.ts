@@ -1,5 +1,6 @@
 import {IAction} from "./IAction";
 import {IActionResult} from "./IActionResult";
+import {IActionTarget} from "./IActionTarget";
 import {IIndexedActionBinding} from "./IIndexedActionBinding";
 
 /**
@@ -14,4 +15,14 @@ export type IActionNode = {
     bindings: IIndexedActionBinding[];
     /** The result of applying the action */
     result?: IActionResult<IIndexedActionBinding, any>;
+};
+
+/**
+ * A node in the action dependency graph, containing targets
+ */
+export type IActionNodeWithTargets = IActionNode & {
+    /** The targets that had a binding for this action */
+    targets: IActionTarget[];
+    /** The child actions that create input for this action */
+    children: IActionNodeWithTargets[];
 };

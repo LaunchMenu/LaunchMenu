@@ -1,4 +1,4 @@
-import {IActionNode} from "../_types/IActionNode";
+import {IActionNode, IActionNodeWithTargets} from "../_types/IActionNode";
 
 export type INodeState = {
     node: IActionNode;
@@ -11,7 +11,9 @@ export type INodeState = {
  * @param tree The tree to get the full ordering for
  * @returns The full action ordering
  */
-export function createActionOrdering(tree: IActionNode): IActionNode[] {
+export function createActionOrdering<T extends IActionNode>(
+    tree: T
+): (T extends IActionNodeWithTargets ? IActionNodeWithTargets : IActionNode)[] {
     const processingTag = Symbol();
     const processedTag = Symbol();
 
@@ -44,7 +46,9 @@ export function createActionOrdering(tree: IActionNode): IActionNode[] {
     ordering.forEach(
         node => delete (node as IActionNode & {[processedTag]?: boolean})[processedTag]
     );
-    return ordering;
+    return ordering as (T extends IActionNodeWithTargets
+        ? IActionNodeWithTargets
+        : IActionNode)[];
 }
 
 /**
