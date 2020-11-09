@@ -1,7 +1,8 @@
-import {ICategory} from "../actions/types/category/_types/ICategory";
 import {createStandardMenuItem} from "../items/createStandardMenuItem";
-import {searchAction} from "../actions/types/search/searchAction";
 import {adjustBindings} from "../items/adjustBindings";
+import {isActionBindingFor} from "../../actions/utils/isActionBindingFor";
+import {searchAction} from "../../actions/types/search/searchAction";
+import {ICategory} from "../../actions/types/category/_types/ICategory";
 
 /**
  * Creates a standard category
@@ -24,7 +25,7 @@ export function createStandardCategory({
         item: {
             view: item.view,
             actionBindings: adjustBindings(item.actionBindings, bindings =>
-                bindings.filter(binding => !searchAction.canBeAppliedTo([binding]))
+                bindings.filter(binding => !isActionBindingFor(searchAction, binding))
             ),
         },
     };

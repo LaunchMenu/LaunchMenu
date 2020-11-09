@@ -1,17 +1,13 @@
-import {IDataRetriever} from "model-react";
 import {IIOContext} from "../../../context/_types/IIOContext";
-import {createStandardMenuItem} from "../../../menus/items/createStandardMenuItem";
 import {Priority} from "../../../menus/menu/priority/Priority";
 import {IMenu} from "../../../menus/menu/_types/IMenu";
 import {CompoundCommand} from "../../../undoRedo/commands/CompoundCommand";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
-import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {contextMenuAction} from "../../contextMenuAction/contextMenuAction";
 import {createAction} from "../../createAction";
-import {IAction} from "../../_types/IAction";
 import {IActionBinding} from "../../_types/IActionBinding";
 import {IActionTarget} from "../../_types/IActionTarget";
-import {IExecutable, IExecutableObject} from "./_types/IExecutable";
+import {IExecutable} from "./_types/IExecutable";
 import {IItemExecuteCallback} from "./_types/IItemExecuteCallback";
 
 /**
@@ -41,6 +37,9 @@ export const executeAction = createAction({
             ),
         };
 
+        // Dynamically create the standard item creator in order ro deal with circular dependencies
+        const createStandardItemImport: typeof import("../../../menus/items/createStandardMenuItem") = require("../../../menus/items/createStandardMenuItem");
+
         return {
             result: combineExecutables,
 
@@ -51,7 +50,7 @@ export const executeAction = createAction({
                     execute: this.createBinding(combineExecutables), // Gets passed to the item
                     item: (execute: IActionBinding) => ({
                         priority: new Array(3).fill(Priority.HIGH),
-                        item: createStandardMenuItem({
+                        item: createStandardItemImport.createStandardMenuItem({
                             name: "Execute",
                             // actionBindings: execute?[execute]:[] // TODO: enable this
                         }),
@@ -59,32 +58,6 @@ export const executeAction = createAction({
                 }) as any,
             ],
         };
-    },
-
-    /** Creates a binding, without treating functions as subscribable data */
-    createBinding: function (data: ISubscribable<IExecutable>, subscribable?: boolean) {
-        if (subscribable) return {action: this, subscribableData: data};
-        else return {action: this, data};
-    } as {
-        /**
-         * Retrieves a binding for this action
-         * @param data The executable data for the binding
-         * @param subscribable Whether the passed data is a subscriber function
-         * @returns The created binding
-         */
-        (data: IExecutable, subscribable?: false): IActionBinding<
-            IAction<IExecutable, IExecutableObject>
-        >;
-
-        /**
-         * Retrieves a binding for this action
-         * @param data The retriever for the executable data for the binding
-         * @param subscribable Whether the passed data is a subscriber function
-         * @returns The created binding
-         */
-        (data: IDataRetriever<IExecutable>, subscribable: true): IActionBinding<
-            IAction<IExecutable, IExecutableObject>
-        >;
     },
 
     /** An execute method that automatically dispatches commands, and take care of onExecute callback calling */

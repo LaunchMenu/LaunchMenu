@@ -4,4 +4,9 @@ import {IActionBinding} from "./IActionBinding";
 /**
  * The type of target that an action can be applied to
  */
-export type IActionTarget = {actionBindings: ISubscribable<IActionBinding<IAction>[]>};
+export type IActionTarget = {
+    /**
+     * The action bindings
+     */
+    readonly actionBindings: ISubscribable<IActionBinding<IAction>[]>;
+};

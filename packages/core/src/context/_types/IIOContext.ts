@@ -1,9 +1,9 @@
 import {IUndoRedoFacility} from "../../undoRedo/_types/IUndoRedoFacility";
 import {SettingsContext} from "../../settings/SettingsContext";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
-import {IContextMenuItemGetter} from "../../menus/actions/contextAction/_types/IContextMenuItemGetter";
 import {IUILayer} from "../../uiLayers/_types/IUILayer";
 import {IDataHook} from "model-react";
+import {IActionBinding} from "../../actions/_types/IActionBinding";
 
 /**
  * A context to get general IO utilities from
@@ -32,6 +32,6 @@ export type IIOContext = {
     readonly undoRedo: IUndoRedoFacility;
     /** The application settings */
     readonly settings: SettingsContext;
-    /** The default context menu items to add to all context menus */
-    readonly contextMenuItems: ISubscribable<IContextMenuItemGetter[]>;
+    /** The default context menu bindings to add to all context menus */
+    readonly contextMenuBindings: ISubscribable<IActionBinding[]>;
 };

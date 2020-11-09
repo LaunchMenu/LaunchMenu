@@ -1,17 +1,19 @@
 import {getKeyPatternOptionIndex} from "../getKeyPatternOptionIndex";
 import {KeyPattern} from "../../../../../../../keyHandler/KeyPattern";
 import {IDeleteKeyPatternOptionData} from "../_types/IDeleteKeyPatternOptionData";
-import {deleteAction} from "../../../../../../actions/types/delete/deleteAction";
-import {results} from "../../../../../../actions/Action";
 import {SetFieldCommand} from "../../../../../../../undoRedo/commands/SetFieldCommand";
+import {createAction} from "../../../../../../../actions/createAction";
+import {deleteAction} from "../../../../../../../actions/types/delete/deleteAction";
 
 /**
  * A delete handler that can be used to delete a key pattern option
  */
-export const deleteKeyPatternOptionHandler = deleteAction.createHandler(
-    (data: IDeleteKeyPatternOptionData[]) => ({
-        [results]: data.map(({option, patternField, undoable}) => ({
-            delete: () => {
+export const deleteKeyPatternOptionHandler = createAction({
+    name: "Delete key pattern option",
+    parents: [deleteAction],
+    core: (data: IDeleteKeyPatternOptionData[]) => ({
+        children: data.map(({option, patternField, undoable}) =>
+            deleteAction.createBinding(() => {
                 const pattern = patternField.get(null);
                 const newIndex = getKeyPatternOptionIndex(pattern, option);
 
@@ -27,7 +29,7 @@ export const deleteKeyPatternOptionHandler = deleteAction.createHandler(
                         patternField.set(newPattern);
                     }
                 }
-            },
-        })),
-    })
-);
+            })
+        ),
+    }),
+});

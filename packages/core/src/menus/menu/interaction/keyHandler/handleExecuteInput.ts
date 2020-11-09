@@ -1,9 +1,9 @@
 import {IMenu} from "../../_types/IMenu";
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
-import {executeItems} from "../executeItems";
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
+import {executeAction} from "../../../../actions/types/execute/executeAction";
 
 /**
  * Handles execute input events
@@ -23,7 +23,7 @@ export function handleExecuteInput(
         .controls.menu.execute.get()
 ): void | boolean {
     if (pattern.matches(event)) {
-        executeItems(menu, onExecute);
+        executeAction.execute(menu, onExecute);
         return true;
     }
 }

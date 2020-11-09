@@ -2,16 +2,16 @@ import {IMenu} from "../../_types/IMenu";
 import {Observer} from "../../../../utils/modelReact/Observer";
 import {IKeyEventListenerObject} from "../../../../keyHandler/_types/IKeyEventListener";
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
-import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
-import {getContextMenuItems} from "../../../contextMenu/getContextMenuItems";
 import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
 import {PrioritizedMenu} from "../../PrioritizedMenu";
-import {sortContextCategories} from "../../../contextMenu/sortContextCategories";
+import {sortContextCategories} from "../../../../actions/contextMenuAction/sortContextCategories";
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {getHooked} from "../../../../utils/subscribables/getHooked";
 import {UILayer} from "../../../../uiLayers/standardUILayer/UILayer";
 import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
+import {contextMenuAction} from "../../../../actions/contextMenuAction/contextMenuAction";
+import {keyHandlerAction} from "../../../../actions/types/keyHandler/keyHandlerAction";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
@@ -72,9 +72,9 @@ export function setupContextMenuHandler(
                             contextData.menu.removeItems(contextData.items);
 
                         // Retrieve the new context items, and subscribe to item changes
-                        contextData.items = getContextMenuItems(
+                        contextData.items = contextMenuAction.getItems(
                             menu.getAllSelected(hook),
-                            ioContext,
+                            getHooked(ioContext.contextMenuBindings, hook),
                             hook
                         );
 

@@ -1,8 +1,8 @@
-import {getCategoryAction} from "../../../menus/actions/types/category/getCategoryAction";
 import {getContextCategory} from "../../../menus/categories/createContextCategory";
 import {createStandardMenuItem} from "../../../menus/items/createStandardMenuItem";
 import {Priority} from "../../../menus/menu/priority/Priority";
 import {createAction} from "../../createAction";
+import {getCategoryAction} from "../../types/category/getCategoryAction";
 import {executeAction} from "../../types/execute/executeAction";
 import {contextMenuAction} from "../contextMenuAction";
 
@@ -140,6 +140,7 @@ describe("contextMenuAction", () => {
                             someAction.createBinding(res),
                             contextMenuAction.createBinding({
                                 action: this,
+                                override: someAction,
                                 item: (...args) => menuItemMock2(...args),
                             }),
                         ],
@@ -230,6 +231,7 @@ describe("contextMenuAction", () => {
                             someAction.createBinding(res),
                             contextMenuAction.createBinding({
                                 action: this,
+                                override: someAction,
                                 item: (...args) => menuItemMock2(...args),
                                 execute: executeAction.createBinding(() => {
                                     result2 = res;
@@ -256,6 +258,7 @@ describe("contextMenuAction", () => {
                             someAction.createBinding(res),
                             contextMenuAction.createBinding({
                                 action: this,
+                                override: someAction,
                                 item: (...args) => menuItemMock3(...args),
                             }),
                         ],
@@ -302,8 +305,8 @@ describe("contextMenuAction", () => {
             expect(menuItemMock2.mock.calls).toHaveLength(1);
             expect(menuItemMock3.mock.calls).toHaveLength(0);
             menuItemMock2.mock.calls[0][0].data();
-            expect(result).toEqual("yes+maybe,no");
-            expect(result2).toEqual("yes+no+maybe");
+            expect(result).toEqual("yes+no+maybe");
+            expect(result2).toEqual(undefined);
 
             // Test when having bindings only for the second handler
             const targets3 = [
@@ -324,8 +327,267 @@ describe("contextMenuAction", () => {
             expect(menuItemMock3.mock.calls).toHaveLength(1);
             menuItemMock3.mock.calls[0][0].data();
             expect(result).toEqual("yes*no*maybe");
-            expect(result2).toEqual("yes+no+maybe");
+            expect(result2).toEqual(undefined);
         });
+        it("Should handle the graph splits properly", () => {
+            /**
+             * A:1 <━━ B <━━ D:3 <━━ E <━━ F:4 <━━ G
+             *  ∧                    │
+             *  ┕━━━━━ C:2 <━━━━━━━━━┙
+             */
+            const menuItem1 = {
+                priority: Priority.HIGH,
+                item: createStandardMenuItem({name: "A"}),
+            };
+            const menuItem2 = {
+                priority: Priority.HIGH,
+                item: createStandardMenuItem({name: "C"}),
+            };
+            const menuItem3 = {
+                priority: Priority.HIGH,
+                item: createStandardMenuItem({name: "D"}),
+            };
+            const menuItem4 = {
+                priority: Priority.HIGH,
+                item: createStandardMenuItem({name: "F"}),
+            };
+            const A = createAction({
+                name: "A",
+                parents: [contextMenuAction],
+                core: function (inp: string[]) {
+                    return {
+                        children: [
+                            contextMenuAction.createBinding({
+                                action: this,
+                                item: menuItem1,
+                            }),
+                        ],
+                    };
+                },
+            });
+            const B = createAction({
+                name: "B",
+                parents: [A],
+                core: function (inp: string[]) {
+                    return {
+                        children: [A.createBinding(inp.join("+"))],
+                    };
+                },
+            });
+            const C = createAction({
+                name: "C",
+                parents: [A, contextMenuAction],
+                core: function (inp: string[]) {
+                    return {
+                        children: [
+                            A.createBinding(inp.join("+")),
+                            contextMenuAction.createBinding({
+                                action: this,
+                                override: A,
+                                item: menuItem2,
+                            }),
+                        ],
+                    };
+                },
+            });
+            const D = createAction({
+                name: "D",
+                parents: [B, contextMenuAction],
+                core: function (inp: string[]) {
+                    return {
+                        children: [
+                            B.createBinding(inp.join("*")),
+                            contextMenuAction.createBinding({
+                                action: this,
+                                override: A,
+                                item: menuItem3,
+                            }),
+                        ],
+                    };
+                },
+            });
+            const E = createAction({
+                name: "E",
+                parents: [B, C],
+                core: function (inp: string[]) {
+                    return {
+                        children: [
+                            B.createBinding(inp.join("^")),
+                            C.createBinding(inp.join("^")),
+                        ],
+                    };
+                },
+            });
+            const F = createAction({
+                name: "F",
+                parents: [E, contextMenuAction],
+                core: function (inp: string[]) {
+                    return {
+                        children: [
+                            E.createBinding(inp.join("^")),
+                            contextMenuAction.createBinding({
+                                action: this,
+                                override: A,
+                                item: menuItem4,
+                            }),
+                        ],
+                    };
+                },
+            });
+            const G = createAction({
+                name: "G",
+                parents: [F],
+                core: function (inp: string[]) {
+                    return {
+                        children: [F.createBinding(inp.join("^"))],
+                    };
+                },
+            });
+
+            // Test when having bindings only for B
+            const targets1 = [
+                {actionBindings: [B.createBinding("yes")]},
+                {actionBindings: [B.createBinding("maybe")]},
+            ];
+            const contextItems1 = contextMenuAction.getItems(targets1);
+
+            expect(contextItems1).toHaveLength(1);
+            expect(contextItems1[0].item.view).toBe(menuItem1.item.view);
+
+            // Test when having bindings for D
+            const targets2 = [
+                {actionBindings: [D.createBinding("yes")]},
+                {actionBindings: [D.createBinding("maybe")]},
+            ];
+            const contextItems2 = contextMenuAction.getItems(targets2);
+
+            expect(contextItems2).toHaveLength(1);
+            expect(contextItems2[0].item.view).toBe(menuItem3.item.view);
+
+            // Test when having bindings for F and G
+            const targets3 = [
+                {actionBindings: [F.createBinding("yes")]},
+                {actionBindings: [G.createBinding("maybe")]},
+            ];
+            const contextItems3 = contextMenuAction.getItems(targets3);
+
+            expect(contextItems3).toHaveLength(1);
+            expect(contextItems3[0].item.view).toBe(menuItem4.item.view);
+
+            // Test when having bindings for E (flow passes C and D, but neither has full coverage)
+            const targets4 = [
+                {actionBindings: [E.createBinding("yes")]},
+                {actionBindings: [E.createBinding("maybe")]},
+            ];
+            const contextItems4 = contextMenuAction.getItems(targets4);
+
+            expect(contextItems4).toHaveLength(1);
+            expect(contextItems4[0].item.view).toBe(menuItem1.item.view);
+
+            // Test when having bindings for C and G, neither C or G has full coverage
+            const targets5 = [
+                {actionBindings: [C.createBinding("yes")]},
+                {actionBindings: [G.createBinding("maybe")]},
+            ];
+            const contextItems5 = contextMenuAction.getItems(targets5);
+
+            expect(contextItems5).toHaveLength(1);
+            expect(contextItems5[0].item.view).toBe(menuItem1.item.view);
+        });
+        it("Should handle actions with multiple parents properly", () => {
+            /**
+             * A:1 <━━ C:3,4
+             *         │
+             * B:2 <━━━┙
+             */
+            const menuItem1 = {
+                priority: Priority.HIGH,
+                item: createStandardMenuItem({name: "A"}),
+            };
+            const menuItem2 = {
+                priority: Priority.HIGH,
+                item: createStandardMenuItem({name: "B"}),
+            };
+            const menuItem3 = {
+                priority: Priority.HIGH,
+                item: createStandardMenuItem({name: "C"}),
+            };
+            const menuItem4 = {
+                priority: Priority.HIGH,
+                item: createStandardMenuItem({name: "C2"}),
+            };
+            const A = createAction({
+                name: "A",
+                parents: [contextMenuAction],
+                core: function (inp: string[]) {
+                    return {
+                        children: [
+                            contextMenuAction.createBinding({
+                                action: this,
+                                item: menuItem1,
+                            }),
+                        ],
+                    };
+                },
+            });
+            const B = createAction({
+                name: "B",
+                parents: [contextMenuAction],
+                core: function (inp: string[]) {
+                    return {
+                        children: [
+                            contextMenuAction.createBinding({
+                                action: this,
+                                item: menuItem2,
+                            }),
+                        ],
+                    };
+                },
+            });
+            const C = createAction({
+                name: "C",
+                parents: [A, B, contextMenuAction],
+                core: function (inp: string[]) {
+                    return {
+                        children: [
+                            A.createBinding(inp.join("+")),
+                            B.createBinding(inp.join("+")),
+                            contextMenuAction.createBinding({
+                                action: this,
+                                override: A,
+                                item: menuItem3,
+                            }),
+                            contextMenuAction.createBinding({
+                                action: this,
+                                override: B,
+                                item: menuItem4,
+                            }),
+                        ],
+                    };
+                },
+            });
+
+            // Test when having bindings for A, B, C
+            const targets1 = [
+                {actionBindings: [A.createBinding("yes")]},
+                {actionBindings: [B.createBinding("maybe")]},
+                {actionBindings: [C.createBinding("maybe")]},
+            ];
+            const contextItems1 = contextMenuAction.getItems(targets1);
+
+            expect(contextItems1).toHaveLength(2);
+            expect(contextItems1[0].item.view).toBe(menuItem1.item.view);
+            expect(contextItems1[1].item.view).toBe(menuItem2.item.view);
+
+            // Test when having bindings for just C
+            const targets2 = [{actionBindings: [C.createBinding("yes")]}];
+            const contextItems2 = contextMenuAction.getItems(targets2);
+
+            expect(contextItems2).toHaveLength(2);
+            expect(contextItems2[0].item.view).toBe(menuItem3.item.view);
+            expect(contextItems2[1].item.view).toBe(menuItem4.item.view);
+        });
+
         it("Should correctly add item count categories", () => {
             const menuItem = {
                 priority: Priority.HIGH,
@@ -374,11 +636,10 @@ describe("contextMenuAction", () => {
             const contextItems = contextMenuAction.getItems(targets);
 
             expect(contextItems).toHaveLength(2);
-            expect(
-                getCategoryAction
-                    .get(contextItems.map(({item}) => item))
-                    .map(({category}) => category)
-            ).toEqual([getContextCategory(2, 3), getContextCategory(1, 3)]);
+            expect(getCategoryAction.get(contextItems.map(({item}) => item))).toEqual([
+                getContextCategory(2, 3),
+                getContextCategory(1, 3),
+            ]);
         });
     });
 });

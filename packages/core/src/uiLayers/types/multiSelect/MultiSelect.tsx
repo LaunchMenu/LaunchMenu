@@ -10,10 +10,8 @@ import {IMultiSelectConfig} from "./_types/IMultiSelectConfig";
 import {v4 as uuid} from "uuid";
 import {IInputError} from "../input/_types/IInputError";
 import {adjustBindings} from "../../../menus/items/adjustBindings";
-import {executeAction} from "../../../menus/actions/types/execute/executeAction";
+import {executeAction} from "../../../actions/types/execute/executeAction";
 import {createStandardMenuItem} from "../../../menus/items/createStandardMenuItem";
-import {searchAction} from "../../../menus/actions/types/search/searchAction";
-import {getCategoryAction} from "../../../menus/actions/types/category/getCategoryAction";
 import {IViewStackItem} from "../../_types/IViewStackItem";
 import {MenuView} from "../../../components/menu/MenuView";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
@@ -29,7 +27,6 @@ import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
 import {IHighlighter} from "../../../textFields/syntax/_types/IHighlighter";
 import {createContentError} from "../../../components/content/error/createContentError";
-import {onMenuChangeAction} from "../../../menus/actions/types/onMenuChange/onMenuChangeAction";
 import {TextField} from "../../../textFields/TextField";
 import {waitFor} from "../../../utils/modelReact/waitFor";
 import {createFinishMenuItem} from "../../../menus/items/createFinishMenuItem";
@@ -37,6 +34,10 @@ import {Observer} from "../../../utils/modelReact/Observer";
 import {IMultiSelectOption} from "./_types/IMultiSelectOption";
 import {IMultiSelectOptionData} from "./_types/IMultiSelectOptionData";
 import {getControlsCategory} from "../../../menus/categories/types/getControlsCategory";
+import {getCategoryAction} from "../../../actions/types/category/getCategoryAction";
+import {searchAction} from "../../../actions/types/search/searchAction";
+import {isActionBindingFor} from "../../../actions/utils/isActionBindingFor";
+import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
 
 export function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -482,13 +483,11 @@ export class MultiSelect<T> extends AbstractUILayer {
                         }),
                         ...(selectItem
                             ? [
-                                  onMenuChangeAction.createBinding({
-                                      onMenuChange: (menu, added) => {
-                                          if (selectItem && added && menu == this.menu) {
-                                              menu.setCursor(item);
-                                              selectItem = false;
-                                          }
-                                      },
+                                  onMenuChangeAction.createBinding((menu, added) => {
+                                      if (selectItem && added && menu == this.menu) {
+                                          menu.setCursor(item);
+                                          selectItem = false;
+                                      }
                                   }),
                               ]
                             : []),
@@ -573,28 +572,28 @@ export class MultiSelect<T> extends AbstractUILayer {
 
         // Create a search binding that returns this item no matter what the query
         const id = uuid();
-        const searchBinding = searchAction.createBinding([
-            {
-                ID: id,
-                search: async query => ({
-                    // Note it should be this.customItem, not item, since item doesn't contain all data yet
-                    item:
-                        query.search != "" // To prevent duplicates since all items show  when search is empty
-                            ? this.customItem && {
-                                  item: this.customItem,
-                                  ID: id,
-                                  priority: 0.1,
-                              }
-                            : undefined,
-                }),
-            },
-        ]);
+        const searchBinding = searchAction.createBinding({
+            ID: id,
+            search: async query => ({
+                // Note it should be this.customItem, not item, since item doesn't contain all data yet
+                item:
+                    query.search != "" // To prevent duplicates since all items show  when search is empty
+                        ? this.customItem && {
+                              item: this.customItem,
+                              ID: id,
+                              priority: 0.1,
+                          }
+                        : undefined,
+            }),
+        });
 
         // Return the item together with the new search action binding
         return {
             view: item.view,
             actionBindings: adjustBindings(item.actionBindings, bindings => [
-                ...bindings.filter(binding => !searchAction.canBeAppliedTo([binding])),
+                ...bindings.filter(
+                    binding => !isActionBindingFor(searchAction, [binding])
+                ),
                 searchBinding,
                 getCategoryAction.createBinding(getControlsCategory()),
             ]),

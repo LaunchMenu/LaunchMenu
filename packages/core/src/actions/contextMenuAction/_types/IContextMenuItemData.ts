@@ -1,10 +1,6 @@
 import {IPrioritizedMenuItem} from "../../../menus/menu/_types/IPrioritizedMenuItem";
-import {executeAction} from "../../types/execute/executeAction";
 import {IAction} from "../../_types/IAction";
 import {IActionBinding} from "../../_types/IActionBinding";
-import {TPureAction} from "../../_types/TPureAction";
-
-type IExecuteBinding = IActionBinding<TPureAction<typeof executeAction>>;
 
 /**
  * The data used to create context menu items
@@ -13,12 +9,12 @@ export type IContextMenuItemData = {
     /** The action that this context item is for, if any */
     action: IAction | null;
     /**
-     * The parent for which to replace their context menu item with this item, in case this is the only handler for them.
-     * Gets inferred as the first parent of the action if left out and an action is provided.
+     * The root action for which to override the context item, if all its bindings originate from this action.
+     * Will automatically override any ancestor overrides too (overrides specified by our ancestors).
      */
-    parent?: IAction | null;
-    /** The execute binding which handlers of this action may use to perform this action */
-    execute?: IExecuteBinding;
+    override?: IAction;
+    /** The execute binding which override of this item may use to perform this action */
+    execute?: IActionBinding;
     /** The item to show in the context menu */
     item:
         | {
@@ -27,7 +23,7 @@ export type IContextMenuItemData = {
                * @param executeBinding The bindings that may be specified by ancestor actions (obtained from specified parents)
                * @returns The menu item to show in the menu
                */
-              (executeBindings?: IExecuteBinding): IPrioritizedMenuItem;
+              (executeBindings?: IActionBinding): IPrioritizedMenuItem;
           }
         | IPrioritizedMenuItem;
     /** Whether to prevent adding the count category to the item, defaults to false */

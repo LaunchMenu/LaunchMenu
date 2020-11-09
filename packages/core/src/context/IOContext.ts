@@ -2,15 +2,15 @@ import {IIOContext} from "./_types/IIOContext";
 import {IUndoRedoFacility} from "../undoRedo/_types/IUndoRedoFacility";
 import {SettingsContext} from "../settings/SettingsContext";
 import {ISubscribable} from "../utils/subscribables/_types/ISubscribable";
-import {IContextMenuItemGetter} from "../menus/actions/contextAction/_types/IContextMenuItemGetter";
 import {UndoRedoFacility} from "../undoRedo/UndoRedoFacility";
 import {Field, IDataHook} from "model-react";
 import {IUILayer} from "../uiLayers/_types/IUILayer";
+import {IActionBinding} from "../actions/_types/IActionBinding";
 
 export class IOContext implements IIOContext {
     public readonly undoRedo: IUndoRedoFacility;
     public settings: SettingsContext;
-    public readonly contextMenuItems: ISubscribable<IContextMenuItemGetter[]>;
+    public readonly contextMenuBindings: ISubscribable<IActionBinding[]>;
 
     protected uiStack = new Field([] as {onClose?: () => void; layer: IUILayer}[]);
 
@@ -21,11 +21,11 @@ export class IOContext implements IIOContext {
     public constructor(data: {
         undoRedo?: IUndoRedoFacility;
         settings?: SettingsContext;
-        contextMenuItems?: ISubscribable<IContextMenuItemGetter[]>;
+        contextMenuBindings?: ISubscribable<IActionBinding[]>;
     }) {
         this.undoRedo = data.undoRedo || new UndoRedoFacility();
         this.settings = data.settings || new SettingsContext();
-        this.contextMenuItems = data.contextMenuItems || [];
+        this.contextMenuBindings = data.contextMenuBindings || [];
     }
 
     /**

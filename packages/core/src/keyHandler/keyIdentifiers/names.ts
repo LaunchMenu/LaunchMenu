@@ -21,7 +21,7 @@ export const keyNames = {
     pageDown: "pageDown",
     end: "end",
     home: "home",
-    left: "eft",
+    left: "left",
     up: "up",
     right: "right",
     down: "down",
@@ -84,7 +84,7 @@ export const keyNames = {
     bracketRight: "bracketRight",
     quote: "quote",
     space: "space",
-};
+} as const;
 
 /** A valid key names */
 export type IKeyName = keyof typeof keyNames;

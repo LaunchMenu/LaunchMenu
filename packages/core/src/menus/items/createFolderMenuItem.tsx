@@ -1,12 +1,6 @@
 import React, {memo} from "react";
 import {IFolderMenuItemData} from "./_types/IFolderMenuItemData";
 import {IMenuItem} from "./_types/IMenuItem";
-import {IActionBinding} from "../actions/_types/IActionBinding";
-import {executeAction} from "../actions/types/execute/executeAction";
-import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
-import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
-import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
-import {getCategoryAction} from "../actions/types/category/getCategoryAction";
 import {MenuItemFrame} from "../../components/items/MenuItemFrame";
 import {MenuItemLayout} from "../../components/items/MenuItemLayout";
 import {MenuItemIcon} from "../../components/items/MenuItemIcon";
@@ -14,16 +8,20 @@ import {SimpleSearchHighlight} from "../../components/items/SimpleSearchHighligh
 import {Truncated} from "../../components/Truncated";
 import {IDataHook} from "model-react";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
-import {createSimpleSearchBinding} from "../actions/types/search/simpleSearch/simpleSearchHandler";
-import {openMenuExecuteHandler} from "../actions/types/execute/openMenuExecuteHandler";
-import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings";
 import {adjustBindings} from "./adjustBindings";
-import {openMenuItemContentHandler} from "../actions/types/onCursor/openMenuItemContentHandler";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
-import {shortcutHandler} from "../actions/types/keyHandler/shortcutHandler";
-import {keyHandlerAction} from "../actions/types/keyHandler/keyHandlerAction";
-import {forwardKeyEventHandler} from "../actions/types/keyHandler/forwardKeyEventHandler";
 import {getHooked} from "../../utils/subscribables/getHooked";
+import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
+import {IActionBinding} from "../../actions/_types/IActionBinding";
+import {simpleSearchHandler} from "../../actions/types/search/simpleSearch/simpleSearchHandler";
+import {openMenuExecuteHandler} from "../../actions/types/execute/openMenuExecuteHandler";
+import {executeAction} from "../../actions/types/execute/executeAction";
+import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
+import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
+import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
+import {openMenuItemContentHandler} from "../../actions/types/onCursor/openMenuItemContentHandler";
+import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
+import {forwardKeyEventHandler} from "../../actions/types/keyHandler/forwardKeyEventHandler";
 
 /**
  * Retrieves the children in (subscribable) list form
@@ -70,13 +68,14 @@ export function createFolderMenuItem<
     onMenuChange,
 }: IFolderMenuItemData<T, S>): IMenuItem & {children: T} {
     const childList = getChildList(children);
-    const generatedBindings: IActionBinding<any>[] = [
-        createSimpleSearchBinding({
+    const generatedBindings: IActionBinding[] = [
+        simpleSearchHandler.createBinding({
             name,
             description,
             tags,
             patternMatcher: searchPattern,
             children: getChildList(searchChildren),
+            item: () => item,
         }),
     ];
     if (childList.length > 0 || childList instanceof Function)
@@ -87,25 +86,29 @@ export function createFolderMenuItem<
                 pathName,
             })
         );
-    if (onExecute)
-        generatedBindings.push(executeAction.createBinding({execute: onExecute}));
-    if (onSelect) generatedBindings.push(onSelectAction.createBinding({onSelect}));
-    if (onCursor) generatedBindings.push(onCursorAction.createBinding({onCursor}));
+    if (onExecute) generatedBindings.push(executeAction.createBinding(onExecute));
+    if (onSelect) generatedBindings.push(onSelectAction.createBinding(onSelect));
+    if (onCursor) generatedBindings.push(onCursorAction.createBinding(onCursor));
     if (onMenuChange)
-        generatedBindings.push(onMenuChangeAction.createBinding({onMenuChange}));
+        generatedBindings.push(onMenuChangeAction.createBinding(onMenuChange));
     if (category) generatedBindings.push(getCategoryAction.createBinding(category));
     if (content)
         generatedBindings.push(openMenuItemContentHandler.createBinding(content));
-    if (shortcut) generatedBindings.push(shortcutHandler.createBinding({shortcut}));
+    if (shortcut)
+        generatedBindings.push(
+            shortcutHandler.createBinding({shortcut, target: () => item})
+        );
     if (forwardKeyEvents)
         generatedBindings.push(
-            forwardKeyEventHandler.createBinding(h => ({
-                targets: getHooked(childList, h),
-            }))
+            forwardKeyEventHandler.createBinding({
+                subscribableData: h => ({
+                    targets: getHooked(childList, h),
+                }),
+            })
         );
 
     // Combine the input action bindings with the created ones
-    let bindings = generatedBindings as ISubscribableActionBindings;
+    let bindings: ISubscribable<IActionBinding[]> = generatedBindings;
     if (actionBindings)
         bindings = adjustBindings(actionBindings, actionBindings => [
             ...actionBindings,
@@ -113,7 +116,7 @@ export function createFolderMenuItem<
         ]);
 
     // TODO: add folder specific styling to indicate it's a folder
-    return {
+    const item: IMenuItem & {children: T} = {
         view: memo(({highlight, ...props}) => {
             const [h] = useDataHook();
             const ico = get(icon, h);
@@ -146,4 +149,5 @@ export function createFolderMenuItem<
         actionBindings: generatedBindings,
         children,
     };
+    return item;
 }

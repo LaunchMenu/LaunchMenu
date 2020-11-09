@@ -1,28 +1,30 @@
+import {createContextAction} from "../../../../../../../actions/contextMenuAction/createContextAction";
+import {executeAction} from "../../../../../../../actions/types/execute/executeAction";
+import {IExecutable} from "../../../../../../../actions/types/execute/_types/IExecutable";
+import {Priority} from "../../../../../../menu/priority/Priority";
 import {IUpdateKeyPatternOptionTypeExecuteData} from "../_types/IUpdateKeyPatternOptionTypeExecuteData";
 import {updateKeyPatternOptionTypeExecuteHandler} from "./updateKeyPatternOptionTypeExecuteHandler";
-import {createContextAction} from "../../../../../../actions/contextAction/createContextAction";
-import {Action} from "../../../../../../actions/Action";
-import {executeAction} from "../../../../../../actions/types/execute/executeAction";
-import {IExecutable} from "../../../../../../actions/types/execute/_types/IExecutable";
 
 /**
  * An action to update the event type of a key pattern option
  */
-export const updateKeyPatternOptionTypeAction = new Action(
-    createContextAction(
-        (data: IUpdateKeyPatternOptionTypeExecuteData[], items): IExecutable => ({
-            execute: args => {
-                const bindings = data.flatMap((data, i) =>
-                    items[i].map(item => ({
-                        item,
-                        actionBindings: [
-                            updateKeyPatternOptionTypeExecuteHandler.createBinding(data),
-                        ],
-                    }))
-                );
-                return executeAction.get(bindings).execute(args);
-            },
-        }),
-        {name: "Update event type"}
-    )
-);
+export const updateKeyPatternOptionTypeAction = createContextAction({
+    name: "update pattern extras",
+    contextItem: {
+        priority: [Priority.HIGH, 2],
+    },
+    core: (data: IUpdateKeyPatternOptionTypeExecuteData[]) => {
+        const execute: IExecutable = args => {
+            const bindings = data.map((data, i) => ({
+                actionBindings: [
+                    updateKeyPatternOptionTypeExecuteHandler.createBinding(data),
+                ],
+            }));
+            return executeAction.get(bindings).execute(args);
+        };
+        return {
+            execute,
+            result: {execute},
+        };
+    },
+});

@@ -1,20 +1,21 @@
 import {IColorInputExecuteData} from "./_types/IColorInputExecuteData";
 import Color from "color";
-import {results} from "../../../../actions/Action";
 import {ColorInput} from "./ColorInput";
 import {ICommand} from "../../../../../undoRedo/_types/ICommand";
-import {IExecutable} from "../../../../actions/types/execute/_types/IExecutable";
-import {sequentialExecuteHandler} from "../../../../actions/types/execute/sequentialExecuteHandler";
+import {sequentialExecuteHandler} from "../../../../../actions/types/execute/sequentialExecuteHandler";
+import {createAction} from "../../../../../actions/createAction";
 
 //TODO: make a more advanced color input editor in accordance to the planning file
 /**
  * A simple execute handler for updating color fields
  */
-export const colorInputExecuteHandler = sequentialExecuteHandler.createHandler(
-    (data: IColorInputExecuteData[]) => ({
-        [results]: data.map(
-            ({field, liveUpdate, undoable}): IExecutable => ({
-                execute: ({context}) =>
+export const colorInputExecuteHandler = createAction({
+    name: "color input handler",
+    parents: [sequentialExecuteHandler],
+    core: (data: IColorInputExecuteData[]) => ({
+        children: data.map(({field, liveUpdate, undoable}) =>
+            sequentialExecuteHandler.createBinding(
+                ({context}) =>
                     new Promise<ICommand | void>(res => {
                         context.open(
                             new ColorInput(field, {
@@ -33,8 +34,8 @@ export const colorInputExecuteHandler = sequentialExecuteHandler.createHandler(
                             }),
                             res
                         );
-                    }),
-            })
+                    })
+            )
         ),
-    })
-);
+    }),
+});

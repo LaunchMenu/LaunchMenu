@@ -1,5 +1,5 @@
 import {HMRWatcher} from "@launchmenu/hmr";
-import {ICategory} from "../../../menus/actions/types/category/_types/ICategory";
+import {ICategory} from "../../../actions/types/category/_types/ICategory";
 import {IUUID} from "../../../_types/IUUID";
 import {IApplet} from "./IApplet";
 

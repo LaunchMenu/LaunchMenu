@@ -1,13 +1,14 @@
 import React from "react";
 import {v4 as uuid} from "uuid";
-import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {IMenuItem} from "../../items/_types/IMenuItem";
-import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
-import {executeAction} from "../../actions/types/execute/executeAction";
-import {searchAction} from "../../actions/types/search/searchAction";
 import {wait} from "../../../_tests/wait.helper";
 import {adjustBindings} from "../../items/adjustBindings";
-import {ISubscribableActionBindings} from "../../items/_types/ISubscribableActionBindings";
+import {ICategory} from "../../../actions/types/category/_types/ICategory";
+import {executeAction} from "../../../actions/types/execute/executeAction";
+import {getCategoryAction} from "../../../actions/types/category/getCategoryAction";
+import {IActionBinding} from "../../../actions/_types/IActionBinding";
+import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
+import {searchAction} from "../../../actions/types/search/searchAction";
 
 export function createDummyMenuItem({
     category,
@@ -17,7 +18,7 @@ export function createDummyMenuItem({
 }: {
     category?: ICategory;
     noSelect?: boolean;
-    actionBindings?: ISubscribableActionBindings;
+    actionBindings?: ISubscribable<IActionBinding[]>;
     name?: string;
 } = {}): IMenuItem {
     return {
@@ -50,20 +51,18 @@ export function createDummySearchableMenuItem({
         actionBindings: [
             ...(category ? [getCategoryAction.createBinding(category)] : []),
             ...(noSelect ? [] : [executeAction.createBinding({execute: () => {}})]),
-            searchAction.createBinding([
-                {
-                    ID: id,
-                    search: async ({search}, hook) => {
-                        if (searchDelay) await wait(searchDelay);
-                        const priority = searchPriorities[search] || 0;
-                        if (priority > 0)
-                            return {
-                                item: {priority, ID: id, item},
-                            };
-                        return {};
-                    },
+            searchAction.createBinding({
+                ID: id,
+                search: async ({search}, hook) => {
+                    if (searchDelay) await wait(searchDelay);
+                    const priority = searchPriorities[search] || 0;
+                    if (priority > 0)
+                        return {
+                            item: {priority, ID: id, item},
+                        };
+                    return {};
                 },
-            ]),
+            }),
         ],
         name,
     } as IMenuItem;

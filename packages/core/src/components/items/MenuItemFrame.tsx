@@ -5,9 +5,9 @@ import {IMenuItem} from "../../menus/items/_types/IMenuItem";
 import {isItemSelectable} from "../../menus/items/isItemSelectable";
 import {useIOContext} from "../../context/react/useIOContext";
 import {KeyEvent} from "../../keyHandler/KeyEvent";
-import {executeItems} from "../../menus/menu/interaction/executeItems";
 import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
-import {IMenuItemExecuteCallback} from "../../menus/menu/_types/IMenuItemExecuteCallback";
+import {IItemExecuteCallback} from "../../actions/types/execute/_types/IItemExecuteCallback";
+import {executeAction} from "../../actions/types/execute/executeAction";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution
@@ -15,7 +15,7 @@ import {IMenuItemExecuteCallback} from "../../menus/menu/_types/IMenuItemExecute
 export const MenuItemFrame: FC<{
     isSelected: boolean;
     isCursor: boolean;
-    onExecute?: IMenuItemExecuteCallback;
+    onExecute?: IItemExecuteCallback;
     menu?: IMenu;
     item?: IMenuItem;
 }> = ({isCursor, isSelected, menu, onExecute, item, children}) => {
@@ -27,7 +27,7 @@ export const MenuItemFrame: FC<{
                 onClick={useCallback(async () => {
                     if (!menu || !item) return;
                     if (menu.getCursor() == item) {
-                        executeItems(menu.getContext(), [item], onExecute);
+                        executeAction.execute(menu.getContext(), [item], onExecute);
                     } else if (isItemSelectable(item)) menu.setCursor(item);
                 }, [menu, item])}
                 // Open the context menu on right click

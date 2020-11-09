@@ -1,5 +1,6 @@
+import {executeAction} from "../../actions/types/execute/executeAction";
+import {hasActionBindingFor} from "../../actions/utils/hasActionBindingFor";
 import {IMenuItem} from "./_types/IMenuItem";
-import {executeAction} from "../actions/types/execute/executeAction";
 
 /**
  * Checks whether a given item can be selected in the menu
@@ -8,5 +9,5 @@ import {executeAction} from "../actions/types/execute/executeAction";
  * @exportTo ./menus/helpers
  */
 export function isItemSelectable(item: IMenuItem): boolean {
-    return executeAction.canBeAppliedTo(item);
+    return hasActionBindingFor(executeAction, item);
 }

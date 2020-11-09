@@ -1,9 +1,8 @@
 import {IDataHook} from "model-react";
 import {IIOContext} from "../../context/_types/IIOContext";
-import {getCategoryAction} from "../../menus/actions/types/category/getCategoryAction";
 import {getContextCategory} from "../../menus/categories/createContextCategory";
 import {adjustBindings} from "../../menus/items/adjustBindings";
-import {ProxiedPrioritizedMenu} from "../../menus/menu/ProxiedPrioritizedMenu";
+import type {ProxiedPrioritizedMenu} from "../../menus/menu/ProxiedPrioritizedMenu";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
 import {createAction} from "../createAction";
@@ -15,6 +14,7 @@ import {createActionGraph} from "../actionGraph/createActionHandlerTree";
 import {IActionNodeWithTargets} from "../_types/IActionNode";
 import {IIndexedActionBinding} from "../_types/IIndexedActionBinding";
 import {getLCS} from "../../utils/getLCS";
+import {getCategoryAction} from "../types/category/getCategoryAction";
 
 type IContextItemNode = Omit<IActionNodeWithTargets, "children"> & {
     contextItems: IContextMenuItemData[];
@@ -114,7 +114,9 @@ export const contextMenuAction = createAction({
             return contextMenuAction.getItems(items, extraBindings, h);
         };
 
-        return new ProxiedPrioritizedMenu(context, contextItems);
+        // Dynamically import the proxied prioritized menu class in order to deal with circular dependencies
+        const ProxiedPrioritizedMenuClass: typeof ProxiedPrioritizedMenu = require("../../menus/menu/ProxiedPrioritizedMenu").ProxiedPrioritizedMenu;
+        return new ProxiedPrioritizedMenuClass(context, contextItems);
     },
 });
 

@@ -1,9 +1,9 @@
-import {IDataHook, IDataRetriever, isDataLoadRequest} from "model-react";
+import {IDataHook, IDataRetriever} from "model-react";
+import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
+import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {DataCacher} from "../../utils/modelReact/DataCacher";
 import {TRequired} from "../../_types/TRequired";
-import {getMenuCategory} from "../actions/types/category/getCategoryAction";
-import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 import {isItemSelectable} from "../items/isItemSelectable";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {AbstractMenu} from "./AbstractMenu";
@@ -11,7 +11,7 @@ import {IMenuCategoryConfig} from "./_types/IMenuCategoryConfig";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 
 // TODO: properly call on menu add and remove hook
-// TODO: get rid write test file
+// TODO: write test file
 
 /**
  * A menu that wraps around an item source retriever, automatically updating its contents when the source updates.
@@ -35,7 +35,7 @@ export class ProxiedMenu extends AbstractMenu {
         super(context);
         this.itemSource = itemSource;
         this.categoryConfig = {
-            getCategory: config?.getCategory || getMenuCategory,
+            getCategory: config?.getCategory || getCategoryAction.getCategory,
             sortCategories:
                 config?.sortCategories ||
                 (categories => categories.map(({category}) => category)),

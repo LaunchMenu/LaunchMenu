@@ -1,9 +1,9 @@
 import {IMenu} from "../../_types/IMenu";
 import {Observer} from "../../../../utils/modelReact/Observer";
 import {IKeyEventListenerObject} from "../../../../keyHandler/_types/IKeyEventListener";
-import {keyHandlerAction} from "../../../actions/types/keyHandler/keyHandlerAction";
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
+import {keyHandlerAction} from "../../../../actions/types/keyHandler/keyHandlerAction";
 
 /**
  * Sets up a key event handler that emits events to the items in a menu

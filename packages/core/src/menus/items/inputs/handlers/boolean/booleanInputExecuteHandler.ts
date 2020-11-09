@@ -1,16 +1,17 @@
 import {IBooleanInputExecuteData} from "./_types/IBooleanInputExecuteData";
 import {createStandardMenuItem} from "../../../createStandardMenuItem";
-import {results} from "../../../../actions/Action";
 import {selectExecuteHandler} from "../../../../../uiLayers/types/select/selectExecuteHandler";
-import {ISelectExecuteData} from "../../../../../uiLayers/types/select/_types/ISelectExecuteData";
+import {createAction} from "../../../../../actions/createAction";
 
 /**
  * A simple execute handler for updating boolean fields
  */
-export const booleanInputExecuteHandler = selectExecuteHandler.createHandler(
-    (data: IBooleanInputExecuteData[]) => ({
-        [results]: data.map(
-            ({field, liveUpdate, undoable}): ISelectExecuteData<boolean> => ({
+export const booleanInputExecuteHandler = createAction({
+    name: "boolean input",
+    parents: [selectExecuteHandler],
+    core: (data: IBooleanInputExecuteData[]) => ({
+        children: data.map(({field, liveUpdate, undoable}) =>
+            selectExecuteHandler.createBinding<boolean>({
                 field,
                 undoable,
                 liveUpdate,
@@ -18,5 +19,5 @@ export const booleanInputExecuteHandler = selectExecuteHandler.createHandler(
                 createOptionView: v => createStandardMenuItem({name: v.toString()}),
             })
         ),
-    })
-);
+    }),
+});

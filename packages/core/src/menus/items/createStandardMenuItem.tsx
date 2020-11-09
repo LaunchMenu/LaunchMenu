@@ -1,27 +1,26 @@
 import React, {memo} from "react";
 import {IMenuItem} from "./_types/IMenuItem";
 import {IStandardMenuItemData} from "./_types/IStandardMenuItemData";
-import {IActionBinding} from "../actions/_types/IActionBinding";
 import {MenuItemFrame} from "../../components/items/MenuItemFrame";
 import {Truncated} from "../../components/Truncated";
-import {executeAction} from "../actions/types/execute/executeAction";
-import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
-import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
-import {getCategoryAction} from "../actions/types/category/getCategoryAction";
 import {MenuItemLayout} from "../../components/items/MenuItemLayout";
 import {MenuItemIcon} from "../../components/items/MenuItemIcon";
-import {createSimpleSearchBinding} from "../actions/types/search/simpleSearch/simpleSearchHandler";
 import {SimpleSearchHighlight} from "../../components/items/SimpleSearchHighlight";
-import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {adjustBindings} from "./adjustBindings";
-import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings";
 import {getHooked} from "../../utils/subscribables/getHooked";
-import {openMenuItemContentHandler} from "../actions/types/onCursor/openMenuItemContentHandler";
-import {keyHandlerAction} from "../actions/types/keyHandler/keyHandlerAction";
-import {shortcutHandler} from "../actions/types/keyHandler/shortcutHandler";
 import {useIOContext} from "../../context/react/useIOContext";
 import {Box} from "../../styling/box/Box";
+import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
+import {executeAction} from "../../actions/types/execute/executeAction";
+import {IActionBinding} from "../../actions/_types/IActionBinding";
+import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
+import {simpleSearchHandler} from "../../actions/types/search/simpleSearch/simpleSearchHandler";
+import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
+import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
+import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
+import {openMenuItemContentHandler} from "../../actions/types/onCursor/openMenuItemContentHandler";
+import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
 
 /**
  * Creates a new standard menu item
@@ -44,36 +43,40 @@ export function createStandardMenuItem({
     onCursor,
     onMenuChange,
 }: IStandardMenuItemData): IMenuItem {
-    const generatedBindings: IActionBinding<any>[] = [
-        createSimpleSearchBinding({
+    const generatedBindings: IActionBinding[] = [
+        simpleSearchHandler.createBinding({
             name,
             description,
             patternMatcher: searchPattern,
             tags,
+            item: () => item,
         }),
     ];
     if (onExecute)
         generatedBindings.push(
             executeAction.createBinding({execute: onExecute, passive: executePassively})
         );
-    if (onSelect) generatedBindings.push(onSelectAction.createBinding({onSelect}));
-    if (onCursor) generatedBindings.push(onCursorAction.createBinding({onCursor}));
+    if (onSelect) generatedBindings.push(onSelectAction.createBinding(onSelect));
+    if (onCursor) generatedBindings.push(onCursorAction.createBinding(onCursor));
     if (onMenuChange)
-        generatedBindings.push(onMenuChangeAction.createBinding({onMenuChange}));
+        generatedBindings.push(onMenuChangeAction.createBinding(onMenuChange));
     if (category) generatedBindings.push(getCategoryAction.createBinding(category));
     if (content)
         generatedBindings.push(openMenuItemContentHandler.createBinding(content));
-    if (shortcut) generatedBindings.push(shortcutHandler.createBinding({shortcut}));
+    if (shortcut)
+        generatedBindings.push(
+            shortcutHandler.createBinding({shortcut, target: () => item})
+        );
 
     // Combine the input action bindings with the created ones
-    let bindings = generatedBindings as ISubscribableActionBindings;
+    let bindings: ISubscribable<IActionBinding[]> = generatedBindings;
     if (actionBindings)
         bindings = adjustBindings(actionBindings, actionBindings => [
             ...actionBindings,
             ...generatedBindings,
         ]);
 
-    return {
+    const item: IMenuItem & {debugID: string} = {
         view: memo(({highlight, ...props}) => {
             const [h] = useDataHook();
             const ioContext = useIOContext();
@@ -124,5 +127,6 @@ export function createStandardMenuItem({
                 (getHooked(description) ? ", " + getHooked(description) : "")
             }`;
         },
-    } as IMenuItem;
+    };
+    return item;
 }

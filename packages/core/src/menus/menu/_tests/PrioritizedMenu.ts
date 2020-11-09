@@ -2,16 +2,16 @@ import {PrioritizedMenu} from "../PrioritizedMenu";
 import {createDummyPrioritizedMenuItem} from "./PrioritizedMenuItem.helper";
 import {wait} from "../../../_tests/wait.helper";
 import {Observer} from "../../../utils/modelReact/Observer";
-import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {createDummyMenuItem} from "./MenuItem.helper";
 import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
-import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
-import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
-import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangeAction";
 import {dummyContext} from "../../../_tests/context.helper";
-import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {Field} from "model-react";
 import {Priority} from "../priority/Priority";
+import {getCategoryAction} from "../../../actions/types/category/getCategoryAction";
+import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
+import {onSelectAction} from "../../../actions/types/onSelect/onSelectAction";
+import {onCursorAction} from "../../../actions/types/onCursor/onCursorAction";
+import {ICategory} from "../../../actions/types/category/_types/ICategory";
 
 const createMenu = (items?: IPrioritizedMenuItem[]) => {
     const menu = new PrioritizedMenu(dummyContext, {
@@ -248,11 +248,7 @@ describe("PrioritizedMenu", () => {
             const onMenuChange = jest.fn();
             const item = createDummyPrioritizedMenuItem({
                 priority: 1,
-                actionBindings: [
-                    onMenuChangeAction.createBinding({
-                        onMenuChange,
-                    }),
-                ],
+                actionBindings: [onMenuChangeAction.createBinding(onMenuChange)],
             });
             const menu = createMenu();
             menu.addItem(item);
@@ -455,11 +451,7 @@ describe("PrioritizedMenu", () => {
             const item = createDummyPrioritizedMenuItem({
                 priority: 1,
                 generateID: true,
-                actionBindings: [
-                    onMenuChangeAction.createBinding({
-                        onMenuChange,
-                    }),
-                ],
+                actionBindings: [onMenuChangeAction.createBinding(onMenuChange)],
             });
             const menu = createMenu();
             menu.addItem(item);
@@ -530,12 +522,10 @@ describe("PrioritizedMenu", () => {
             let deselectCount = 0;
             const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
-                    onSelectAction.createBinding({
-                        onSelect: (selected, m) => {
-                            if (selected) selectCount++;
-                            else deselectCount++;
-                            expect(m).toEqual(menu);
-                        },
+                    onSelectAction.createBinding((selected, m) => {
+                        if (selected) selectCount++;
+                        else deselectCount++;
+                        expect(m).toEqual(menu);
                     }),
                 ],
             });
@@ -592,12 +582,10 @@ describe("PrioritizedMenu", () => {
             let deselectCount = 0;
             const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
-                    onCursorAction.createBinding({
-                        onCursor: (selected, m) => {
-                            if (selected) selectCount++;
-                            else deselectCount++;
-                            expect(m).toEqual(menu);
-                        },
+                    onCursorAction.createBinding((selected, m) => {
+                        if (selected) selectCount++;
+                        else deselectCount++;
+                        expect(m).toEqual(menu);
                     }),
                 ],
             });
@@ -685,11 +673,9 @@ describe("PrioritizedMenu", () => {
             let deselectCount = 0;
             const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
-                    onSelectAction.createBinding({
-                        onSelect: (selected, m) => {
-                            if (!selected) deselectCount++;
-                            expect(m).toEqual(menu);
-                        },
+                    onSelectAction.createBinding((selected, m) => {
+                        if (!selected) deselectCount++;
+                        expect(m).toEqual(menu);
                     }),
                 ],
             });
@@ -706,11 +692,9 @@ describe("PrioritizedMenu", () => {
             let deselectCount = 0;
             const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
-                    onCursorAction.createBinding({
-                        onCursor: (selected, m) => {
-                            if (!selected) deselectCount++;
-                            expect(m).toEqual(menu);
-                        },
+                    onCursorAction.createBinding((selected, m) => {
+                        if (!selected) deselectCount++;
+                        expect(m).toEqual(menu);
                     }),
                 ],
             });
@@ -737,11 +721,9 @@ describe("PrioritizedMenu", () => {
             let selectCount = 0;
             const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
-                    onCursorAction.createBinding({
-                        onCursor: (selected, m) => {
-                            if (selected) selectCount++;
-                            expect(m).toEqual(menu);
-                        },
+                    onCursorAction.createBinding((selected, m) => {
+                        if (selected) selectCount++;
+                        expect(m).toEqual(menu);
                     }),
                 ],
             });
@@ -757,11 +739,9 @@ describe("PrioritizedMenu", () => {
             let selectCount = 0;
             const item = createDummyPrioritizedMenuItem({
                 actionBindings: [
-                    onSelectAction.createBinding({
-                        onSelect: (selected, m) => {
-                            if (selected) selectCount++;
-                            expect(m).toEqual(menu);
-                        },
+                    onSelectAction.createBinding((selected, m) => {
+                        if (selected) selectCount++;
+                        expect(m).toEqual(menu);
                     }),
                 ],
             });
@@ -936,11 +916,7 @@ describe("PrioritizedMenu", () => {
                     const item = createDummyPrioritizedMenuItem({
                         priority: 1,
                         generateID: true,
-                        actionBindings: [
-                            onMenuChangeAction.createBinding({
-                                onMenuChange,
-                            }),
-                        ],
+                        actionBindings: [onMenuChangeAction.createBinding(onMenuChange)],
                     });
                     menu.addItem(item);
                     menu.flushBatch();
@@ -951,11 +927,7 @@ describe("PrioritizedMenu", () => {
                     const item = createDummyPrioritizedMenuItem({
                         priority: 1,
                         generateID: true,
-                        actionBindings: [
-                            onMenuChangeAction.createBinding({
-                                onMenuChange,
-                            }),
-                        ],
+                        actionBindings: [onMenuChangeAction.createBinding(onMenuChange)],
                     });
                     menu.addItem(item);
                     menu.flushBatch();

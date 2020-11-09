@@ -19,12 +19,12 @@ import {IMenuItem} from "../../../_types/IMenuItem";
 import {createKeyPatternOptionMenuItem} from "./keyPatternOptionMenuItem/createKeyPatternOptionMenuItem";
 import {createStandardMenuItem} from "../../../createStandardMenuItem";
 import {updateKeyPatternOptionExecuteHandler} from "./keyPatternOptionMenuItem/actionHandlers/updateKeyPatternOptionExecuteHandler";
-import {getCategoryAction} from "../../../../actions/types/category/getCategoryAction";
 import {createFinishMenuItem} from "../../../createFinishMenuItem";
 import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand";
 import {ProxiedMenu} from "../../../../menu/ProxiedMenu";
 import {AdvancedKeyPatternContent} from "./AdvancedKeyPatternContent";
 import {getControlsCategory} from "../../../../categories/types/getControlsCategory";
+import {getCategoryAction} from "../../../../../actions/types/category/getCategoryAction";
 
 export class AdvancedKeyPatternUI extends AbstractUILayer {
     protected target: IField<KeyPattern>;

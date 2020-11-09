@@ -1,6 +1,6 @@
+import {IMenuSearchable} from "../../../actions/types/search/_types/IMenuSearchable";
+import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {IOContext} from "../../../context/IOContext";
-import {IContextMenuItemGetter} from "../../../menus/actions/contextAction/_types/IContextMenuItemGetter";
-import {IMenuSearchable} from "../../../menus/actions/types/search/_types/IMenuSearchable";
 import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 
 /**
@@ -8,7 +8,7 @@ import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
  */
 export type IAppletExecutionConfig = {
     /** Menu items that should appear in all context menus */
-    globalContextMenuItems?: ISubscribable<IContextMenuItemGetter[]>;
+    globalContextMenuBindings?: ISubscribable<IActionBinding[]>;
     /** Opens the application */
     open?: (args: {context: IOContext; onClose: () => void}) => void;
     /** A search method to find item matches within this applet  */

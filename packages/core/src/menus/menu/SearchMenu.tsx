@@ -2,7 +2,6 @@ import React from "react";
 import {PrioritizedMenu} from "./PrioritizedMenu";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {Field, IDataHook} from "model-react";
-import {searchAction} from "../actions/types/search/searchAction";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
 import {IQuery} from "./_types/IQuery";
 import {MenuView} from "../../components/menu/MenuView";
@@ -13,6 +12,7 @@ import {InstantCloseTransition} from "../../components/context/stacks/transition
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 import {IUUID} from "../../_types/IUUID";
 import {IPatternMatch} from "../../utils/searchExecuter/_types/IPatternMatch";
+import {searchAction} from "../../actions/types/search/searchAction";
 
 /**
  * A menu that can be used to perform a search on a collection of items

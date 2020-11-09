@@ -20,7 +20,9 @@ describe("createAction", () => {
             expect(binding.action).toBe(action);
             expect((binding as any).data).toBe("yes");
 
-            const subscribableBinding = action.createBinding(() => "yes");
+            const subscribableBinding = action.createBinding({
+                subscribableData: () => "yes",
+            });
             expect(subscribableBinding.action).toBe(action);
             expect((subscribableBinding as any).subscribableData()).toBe("yes");
         });
@@ -149,7 +151,7 @@ describe("createAction", () => {
                     const bulletPointNames = names.map(name => `• ${name}`);
                     return {
                         children: bulletPointNames.map(bulletPointName =>
-                            list.createBinding(bulletPointName, indices[0])
+                            list.createBinding({data: bulletPointName, index: indices[0]})
                         ),
                         result: bulletPointNames,
                     };

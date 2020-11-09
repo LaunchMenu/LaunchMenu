@@ -1,6 +1,6 @@
 import React, {FC} from "react";
+import {getSimpleSearchMatcher} from "../../actions/types/search/simpleSearch/SimpleSearchMatcher";
 import {IQuery} from "../../menus/menu/_types/IQuery";
-import {getSimpleSearchMatcher} from "../../menus/actions/types/search/simpleSearch/SimpleSearchMatcher";
 
 /**
  * A component that uses the simple query matcher to highlight queries in the given text
