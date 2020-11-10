@@ -44,7 +44,7 @@ describe("reduceActions", () => {
                 ["bye", 1],
             ]
         );
-        const result = reduceActions([node]);
+        const result = reduceActions([node], []);
 
         expect(result?.result).toEqual("hoi-bye");
     });
@@ -63,7 +63,7 @@ describe("reduceActions", () => {
             ]
         );
         const node = createNode(action, [handlerNode], [["stuff", 2]]);
-        const result = reduceActions([handlerNode, node]);
+        const result = reduceActions([handlerNode, node], []);
 
         expect(result?.result).toEqual("hoi+bye-stuff");
     });
@@ -93,7 +93,7 @@ describe("reduceActions", () => {
             ]
         );
         const node = createNode(action, [handlerNode], [["stuff", 4]]);
-        const result = reduceActions([handlerHandlerNode, handlerNode, node]);
+        const result = reduceActions([handlerHandlerNode, handlerNode, node], []);
 
         expect(result?.result).toEqual("(hoi)+(bye)+oranges+potatoes-stuff");
     });
@@ -107,7 +107,7 @@ describe("reduceActions", () => {
 
         const handlerNode = createNode(actionHandler, [], []);
         const node = createNode(action, [handlerNode], []);
-        const result = reduceActions([handlerNode, node]);
+        const result = reduceActions([handlerNode, node], []);
 
         expect(result?.result).toEqual("");
         expect(actionMock).toBeCalledTimes(1);
@@ -126,7 +126,7 @@ describe("reduceActions", () => {
                     ["oranges", 1],
                 ]
             );
-            const result = reduceActions([node]);
+            const result = reduceActions([node], []);
             expect(result?.result).toEqual("stuff-oranges");
         });
         it("Should decide combined handlers indices to be the same as their first input's index", () => {
@@ -146,7 +146,7 @@ describe("reduceActions", () => {
                 ]
             );
             const node1 = createNode(action, [handlerNode1], [["stuff", 2]]);
-            const result = reduceActions([handlerNode1, node1]);
+            const result = reduceActions([handlerNode1, node1], []);
             expect(result?.result).toEqual("oranges+potatoes-stuff");
 
             const handlerNode2 = createNode(
@@ -158,7 +158,7 @@ describe("reduceActions", () => {
                 ]
             );
             const node2 = createNode(action, [handlerNode2], [["stuff", 1]]);
-            const result2 = reduceActions([handlerNode2, node2]);
+            const result2 = reduceActions([handlerNode2, node2], []);
             expect(result2?.result).toEqual("oranges+potatoes-stuff");
 
             const handlerNode3 = createNode(
@@ -170,7 +170,7 @@ describe("reduceActions", () => {
                 ]
             );
             const node3 = createNode(action, [handlerNode3], [["stuff", 0]]);
-            const result3 = reduceActions([handlerNode3, node3]);
+            const result3 = reduceActions([handlerNode3, node3], []);
             expect(result3?.result).toEqual("stuff-oranges+potatoes");
         });
         it("Should decide mapped handlers indices to be the same as their inputs", () => {
@@ -197,7 +197,7 @@ describe("reduceActions", () => {
                     ["crap", 3],
                 ]
             );
-            const result = reduceActions([handlerNode, node]);
+            const result = reduceActions([handlerNode, node], []);
             expect(result?.result).toEqual("(oranges)-stuff-(potatoes)-crap");
         });
         it("Should decide mapped handlers indices to be the same as their inputs for multiple actions", () => {
@@ -230,7 +230,7 @@ describe("reduceActions", () => {
                     ["crap", 3],
                 ]
             );
-            const result = reduceActions([handlerNode, node]);
+            const result = reduceActions([handlerNode, node], []);
             expect(result?.result).toEqual("(oranges)-stuff-(potatoes)-crap");
 
             const handlerNode2 = createNode(
@@ -249,7 +249,7 @@ describe("reduceActions", () => {
                     ["crap", 3],
                 ]
             );
-            const result2 = reduceActions([handlerNode2, node2]);
+            const result2 = reduceActions([handlerNode2, node2], []);
             expect(result2?.result).toEqual("[oranges]*stuff*[potatoes]*crap");
         });
         it("Should allow for manual index assignment", () => {
@@ -280,7 +280,7 @@ describe("reduceActions", () => {
                     ["crap", 3],
                 ]
             );
-            const result = reduceActions([handlerNode, node]);
+            const result = reduceActions([handlerNode, node], []);
             expect(result?.result).toEqual("(potatoes)-stuff-(oranges)-crap");
         });
         it("Should keep the order when the indices are the same", () => {
@@ -304,7 +304,7 @@ describe("reduceActions", () => {
                 ]
             );
             const node1 = createNode(action, [handlerNode1], [["stuff", 2]]);
-            const result = reduceActions([handlerNode1, node1]);
+            const result = reduceActions([handlerNode1, node1], []);
             expect(result?.result).toEqual(
                 "oranges+potatoes+things-oranges*potatoes*things-stuff"
             );
@@ -340,7 +340,7 @@ describe("reduceActions", () => {
 
         const listener = jest.fn();
         new Observer(h =>
-            reduceActions([handlerHandlerNode, handlerNode, node], h)
+            reduceActions([handlerHandlerNode, handlerNode, node], [], h)
         ).listen(listener, true);
 
         oranges.set("smth");

@@ -22,12 +22,14 @@ export type IAction<I = any, O = any, P extends IAction = any> = {
      * @param bindingData The data of bindings to apply the transformer to
      * @param indices The indices of the passed data, which can be used to compute the indices for child bindings
      * @param hook A data hook to listen for changes
+     * @param items The input items that actions can use to extract extra data
      * @returns The action result and any possible child bindings
      */
     transform(
         bindingData: I[],
         indices: number[],
-        hook: IDataHook
+        hook: IDataHook,
+        items: IActionTarget[]
     ): IActionResult<IActionBinding<P>, O>;
 
     /**

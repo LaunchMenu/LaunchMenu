@@ -23,6 +23,7 @@ import {executeAction} from "../../../actions/types/execute/executeAction";
 import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
 import {isActionBindingFor} from "../../../actions/utils/isActionBindingFor";
 import {searchAction} from "../../../actions/types/search/searchAction";
+import {menuItemIdentityAction} from "../../../actions/types/identity/menuItemIdentityAction";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -161,32 +162,26 @@ export class Select<T> extends Input<T> {
         const {value, disabled = false} = isSelectObject(option)
             ? option
             : {value: option, disabled: false};
-        const item = this.config.createOptionView(value, disabled);
+        const item = menuItemIdentityAction.copyItem(
+            this.config.createOptionView(value, disabled),
+            disabled
+                ? []
+                : [
+                      executeAction.createBinding(({context}) => this.submit(context)),
+                      // Select this item when added to menu
+                      onMenuChangeAction.createBinding((menu, added) => {
+                          const v = this.target.get(null);
+                          if (
+                              menu == this.menu &&
+                              added &&
+                              (this.config.equals?.(v, value) ?? v == value)
+                          )
+                              menu.setCursor(item);
+                      }),
+                  ]
+        );
 
-        const finalItem = {
-            view: item.view,
-            actionBindings: adjustBindings(item.actionBindings, bindings => [
-                ...bindings,
-                ...(disabled
-                    ? []
-                    : [
-                          executeAction.createBinding(({context}) =>
-                              this.submit(context)
-                          ),
-                          // Select this item when added to menu
-                          onMenuChangeAction.createBinding((menu, added) => {
-                              const v = this.target.get(null);
-                              if (
-                                  menu == this.menu &&
-                                  added &&
-                                  (this.config.equals?.(v, value) ?? v == value)
-                              )
-                                  menu.setCursor(finalItem);
-                          }),
-                      ]),
-            ]),
-        };
-        return finalItem;
+        return item;
     }
 
     /** @override */

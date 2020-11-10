@@ -22,6 +22,7 @@ import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAc
 import {openMenuItemContentHandler} from "../../actions/types/onCursor/openMenuItemContentHandler";
 import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
 import {forwardKeyEventHandler} from "../../actions/types/keyHandler/forwardKeyEventHandler";
+import {menuItemIdentityAction} from "../../actions/types/identity/menuItemIdentityAction";
 
 /**
  * Retrieves the children in (subscribable) list form
@@ -68,14 +69,16 @@ export function createFolderMenuItem<
     onMenuChange,
 }: IFolderMenuItemData<T, S>): IMenuItem & {children: T} {
     const childList = getChildList(children);
+    const identity = menuItemIdentityAction.createBinding(() => item);
     const generatedBindings: IActionBinding[] = [
+        identity,
         simpleSearchHandler.createBinding({
             name,
             description,
             tags,
             patternMatcher: searchPattern,
             children: getChildList(searchChildren),
-            item: () => item,
+            itemID: identity.ID,
         }),
     ];
     if (childList.length > 0 || childList instanceof Function)
@@ -96,7 +99,7 @@ export function createFolderMenuItem<
         generatedBindings.push(openMenuItemContentHandler.createBinding(content));
     if (shortcut)
         generatedBindings.push(
-            shortcutHandler.createBinding({shortcut, target: () => item})
+            shortcutHandler.createBinding({shortcut, itemID: identity.ID})
         );
     if (forwardKeyEvents)
         generatedBindings.push(

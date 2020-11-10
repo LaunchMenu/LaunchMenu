@@ -3,17 +3,20 @@ import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
 import {IActionNode} from "../_types/IActionNode";
 import {IActionResult} from "../_types/IActionResult";
+import {IActionTarget} from "../_types/IActionTarget";
 import {IIndexedActionBinding} from "../_types/IIndexedActionBinding";
 
 /**
  * Obtains the result of the last action node, when all actions are reduced from left to right
  * @param actions The actions and their bindings to reduce to a single result
- * @param hook THe hook to subscribe to changes (when action bindings change their data)
+ * @param items The input items that actions can use to extract extra data
+ * @param hook The hook to subscribe to changes (when action bindings change their data)
  * @param getActionResultIndex The function to use to decide how to order action handler bindings with other bindings
  * @returns The result of the final action
  */
 export function reduceActions(
     actions: IActionNode[],
+    items: IActionTarget[],
     hook: IDataHook = null,
     getActionResultIndex: (bindings: IIndexedActionBinding[]) => number = bindings =>
         bindings[0] ? bindings[0].index : Infinity
@@ -26,7 +29,7 @@ export function reduceActions(
         if (bindings.length == 0 && i != actions.length - 1) continue; // Can happen if a handler decides to not create any bindings, but we always want to compute the final action
         const inputs = bindings.map(binding => getBindingData(binding, hook));
         const indices = bindings.map(binding => binding.index);
-        const result = node.action.transform(inputs, indices, hook);
+        const result = node.action.transform(inputs, indices, hook, items);
 
         // Add index data to the result's bindings
         const combinedIndex = getActionResultIndex(bindings);

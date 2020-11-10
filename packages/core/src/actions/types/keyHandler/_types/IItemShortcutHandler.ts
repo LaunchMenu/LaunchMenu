@@ -1,7 +1,7 @@
 import {IIOContext} from "../../../../context/_types/IIOContext";
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
+import {IUUID} from "../../../../_types/IUUID";
 import {IActionBinding} from "../../../_types/IActionBinding";
-import {IActionTarget} from "../../../_types/IActionTarget";
 import {IExecutable} from "../../execute/_types/IExecutable";
 
 /**
@@ -14,6 +14,6 @@ export type IItemShortcutHandler = {
           onExecute: IActionBinding | IExecutable;
       }
     | {
-          target: IActionTarget | (() => IActionTarget);
+          itemID: IUUID;
       }
 );

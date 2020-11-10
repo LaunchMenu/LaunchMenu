@@ -21,6 +21,7 @@ import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
 import {openMenuItemContentHandler} from "../../actions/types/onCursor/openMenuItemContentHandler";
 import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
+import {menuItemIdentityAction} from "../../actions/types/identity/menuItemIdentityAction";
 
 /**
  * Creates a new standard menu item
@@ -43,13 +44,15 @@ export function createStandardMenuItem({
     onCursor,
     onMenuChange,
 }: IStandardMenuItemData): IMenuItem {
+    const identity = menuItemIdentityAction.createBinding(() => item);
     const generatedBindings: IActionBinding[] = [
+        identity,
         simpleSearchHandler.createBinding({
             name,
             description,
             patternMatcher: searchPattern,
             tags,
-            item: () => item,
+            itemID: identity.ID,
         }),
     ];
     if (onExecute)
@@ -65,7 +68,7 @@ export function createStandardMenuItem({
         generatedBindings.push(openMenuItemContentHandler.createBinding(content));
     if (shortcut)
         generatedBindings.push(
-            shortcutHandler.createBinding({shortcut, target: () => item})
+            shortcutHandler.createBinding({shortcut, itemID: identity.ID})
         );
 
     // Combine the input action bindings with the created ones

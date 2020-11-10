@@ -20,6 +20,6 @@ export const actionGetter =
     ): O {
         const tree = createActionHandlerTree(this, targets, hook);
         const ordering = createActionOrdering(tree);
-        const result = reduceActions(ordering, hook);
+        const result = reduceActions(ordering, targets, hook);
         return result?.result;
     };

@@ -1,4 +1,4 @@
-import {searchAction} from "../searchAction";
+import {getSearchIdentity, searchAction} from "../searchAction";
 import {ISimpleSearchData} from "./_types/ISimpleSearchData";
 import {ISimpleSearchQuery} from "./_types/ISimpleSearchQuery";
 import {getSimpleSearchMatcher} from "../simpleSearch/SimpleSearchMatcher";
@@ -64,13 +64,10 @@ export function getSimplePriority(
 export const simpleSearchHandler = createAction({
     name: "simple search",
     parents: [searchAction],
-    core: (data: ISimpleSearchData[]) => {
+    core: (data: ISimpleSearchData[], _1, _2, targets) => {
         // Map all the search data
         const searchables = data.map(
-            (
-                {children: childItemsGetter, item: itemGetter, id, ...data},
-                i
-            ): IMenuSearchable => {
+            ({children: childItemsGetter, itemID, id, ...data}, i): IMenuSearchable => {
                 return {
                     ID: id,
                     search: async (
@@ -81,10 +78,13 @@ export const simpleSearchHandler = createAction({
                         const childItems = getHooked(childItemsGetter, hook);
                         const children = childItems && searchAction.get(childItems);
                         const patternMatch = data.patternMatcher?.(query, hook);
-                        const item =
-                            itemGetter instanceof Function ? itemGetter() : itemGetter;
+
+                        const item = getSearchIdentity(itemID, query, targets, hook);
                         return {
-                            item: priority > 0 ? {priority, ID: id, item} : undefined,
+                            item:
+                                priority > 0 && item
+                                    ? {priority, ID: id, item}
+                                    : undefined,
                             children,
                             patternMatch,
                         };

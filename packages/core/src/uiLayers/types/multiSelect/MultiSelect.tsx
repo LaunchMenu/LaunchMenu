@@ -38,6 +38,7 @@ import {getCategoryAction} from "../../../actions/types/category/getCategoryActi
 import {searchAction} from "../../../actions/types/search/searchAction";
 import {isActionBindingFor} from "../../../actions/utils/isActionBindingFor";
 import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
+import {menuItemIdentityAction} from "../../../actions/types/identity/menuItemIdentityAction";
 
 export function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -266,28 +267,25 @@ export class MultiSelect<T> extends AbstractUILayer {
         const includes = (hook?: IDataHook) =>
             !!this.getValue(hook ?? null).find(v => this.equals(v, value));
 
-        const item = this.config.createOptionView(value, includes, disabled);
-        const finalItem = {
-            view: item.view,
-            actionBindings: adjustBindings(item.actionBindings, bindings => [
-                ...bindings,
-                ...(disabled
-                    ? []
-                    : [
-                          executeAction.createBinding({
-                              execute: () => {
-                                  const cur = this.getValue(null);
-                                  if (includes()) {
-                                      this.selection.set(
-                                          cur.filter(v => !this.equals(v, value))
-                                      );
-                                  } else this.selection.set([...cur, value]);
-                              },
-                          }),
-                      ]),
-            ]),
-        };
-        return finalItem;
+        const item = menuItemIdentityAction.copyItem(
+            this.config.createOptionView(value, includes, disabled),
+            disabled
+                ? []
+                : [
+                      executeAction.createBinding({
+                          execute: () => {
+                              const cur = this.getValue(null);
+                              if (includes()) {
+                                  this.selection.set(
+                                      cur.filter(v => !this.equals(v, value))
+                                  );
+                              } else this.selection.set([...cur, value]);
+                          },
+                      }),
+                  ]
+        );
+
+        return item;
     }
 
     /**

@@ -19,8 +19,8 @@ export type ISimpleSearchData = {
     children?: ISubscribable<IMenuItem[]>;
     /** A possible pattern matcher to recognize search types */
     patternMatcher?: ISimpleSearchPatternMatcher;
-    /** The menu item to show when watched */
-    item: IMenuItem | (() => IMenuItem);
+    /** The ID of the menu item to show when matched, item can be attached using the identityAction */
+    itemID: IUUID;
     /** An identifier for the searchable */
     id: IUUID;
 };

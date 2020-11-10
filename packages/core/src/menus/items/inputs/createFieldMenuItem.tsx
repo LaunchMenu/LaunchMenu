@@ -22,6 +22,7 @@ import {shortcutHandler} from "../../../actions/types/keyHandler/shortcutHandler
 import {simpleSearchHandler} from "../../../actions/types/search/simpleSearch/simpleSearchHandler";
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
+import {menuItemIdentityAction} from "../../../actions/types/identity/menuItemIdentityAction";
 
 // TODO: reuse standard menu item to reduce code duplication
 
@@ -53,14 +54,15 @@ export function createFieldMenuItem<T>({
         actionBindings,
         searchPattern,
     } = data(field);
-
+    const identity = menuItemIdentityAction.createBinding(() => item);
     let generatedBindings: IActionBinding[] = [
+        identity,
         simpleSearchHandler.createBinding({
             name,
             description,
             tags,
             patternMatcher: searchPattern,
-            item: () => item,
+            itemID: identity.ID,
         }),
     ];
     if (onExecute) generatedBindings.push(executeAction.createBinding(onExecute));
@@ -81,7 +83,7 @@ export function createFieldMenuItem<T>({
         );
     if (shortcut)
         generatedBindings.push(
-            shortcutHandler.createBinding({shortcut, target: () => item})
+            shortcutHandler.createBinding({shortcut, itemID: identity.ID})
         );
 
     // Combine the input action bindings with the created ones

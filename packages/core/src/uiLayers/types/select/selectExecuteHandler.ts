@@ -1,6 +1,5 @@
 import {createAction, createStandardBinding} from "../../../actions/createAction";
 import {sequentialExecuteHandler} from "../../../actions/types/execute/sequentialExecuteHandler";
-import {IExecutable} from "../../../actions/types/execute/_types/IExecutable";
 import {IAction} from "../../../actions/_types/IAction";
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
