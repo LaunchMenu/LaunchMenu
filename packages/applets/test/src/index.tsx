@@ -1,17 +1,18 @@
 import React from "React";
 import {
+    contextMenuAction,
     createStringSetting,
     declare,
     IKeyEventListenerFunction,
     IOContextContext,
     openMenuExecuteHandler,
+    searchAction,
     UILayer,
 } from "@launchmenu/core";
 import {createSettings} from "@launchmenu/core/build/settings/createSettings";
 import {createSettingsFolder} from "@launchmenu/core/build/settings/inputs/createSettingsFolder";
 import {createNumberSetting} from "@launchmenu/core/build/settings/inputs/createNumberSetting";
 import {createStandardMenuItem} from "@launchmenu/core/build/menus/items/createStandardMenuItem";
-import {searchAction} from "@launchmenu/core/build/menus/actions/types/search/searchAction";
 import {Loader} from "model-react";
 
 export const info = {
@@ -73,8 +74,14 @@ const item = createStandardMenuItem({
 export default declare({
     info,
     settings,
-    globalContextMenuItems(hook) {
-        return [() => ({priority: 3, item})];
+    globalContextMenuBindings(hook) {
+        return [
+            contextMenuAction.createBinding({
+                action: null,
+                preventCountCategory: true,
+                item: {priority: 3, item},
+            }),
+        ];
     },
     async search(query) {
         return {

@@ -1,12 +1,10 @@
 import {
     adjustSearchable,
+    contextMenuAction,
     createSettings,
     createSettingsFolder,
-    createStandardMenuItem,
     declare,
-    IMenuItem,
     Menu,
-    Observer,
     searchAction,
     settingPatternMatcher,
     UILayer,
@@ -45,7 +43,7 @@ export default declare({
         const rootSearchables = new DataCacher(h => ({
             children: recursiveRootSearchables
                 .get(h)
-                .children// Get rid of the children, making the search not recursive
+                .children // Get rid of the children, making the search not recursive
                 .map(searchable => adjustSearchable(searchable, {children: () => []})),
         }));
 
@@ -62,17 +60,21 @@ export default declare({
             },
             withSession: session => ({
                 // Retrieve a prioritized menu item to open global and selected applet setting
-                globalContextMenuItems: (h = null) => {
+                globalContextMenuBindings: (h = null) => {
                     const selectedApplet = session.selectedApplet.get(h);
                     const settingsData =
                         selectedApplet && manager.getSettingsData(selectedApplet.ID);
                     return [
-                        () => ({
-                            priority: 1,
-                            item: createSettingsContextMenuItem({
-                                settings: settingsFolders.get(h),
-                                appletSettings: settingsData?.file.settings,
-                            }),
+                        contextMenuAction.createBinding({
+                            action: null,
+                            preventCountCategory: true,
+                            item: {
+                                priority: 1,
+                                item: createSettingsContextMenuItem({
+                                    settings: settingsFolders.get(h),
+                                    appletSettings: settingsData?.file.settings,
+                                }),
+                            },
                         }),
                     ];
                 },

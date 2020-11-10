@@ -52,7 +52,7 @@ export const executeAction = createAction({
                         priority: new Array(3).fill(Priority.HIGH),
                         item: createStandardItemImport.createStandardMenuItem({
                             name: "Execute",
-                            // actionBindings: execute?[execute]:[] // TODO: enable this
+                            actionBindings: execute ? [execute] : [],
                         }),
                     }),
                 }) as any,
@@ -90,7 +90,7 @@ export const executeAction = createAction({
         let c: IIOContext;
         if ("getAllSelected" in context) {
             c = context.getContext();
-            exItems = [] || context.getAllSelected(); // TODO: menu items use new action interfaces
+            exItems = context.getAllSelected();
         } else {
             c = context;
             exItems = items as IActionTarget[];

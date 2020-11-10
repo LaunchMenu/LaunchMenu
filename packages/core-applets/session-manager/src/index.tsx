@@ -11,6 +11,7 @@ import {
     createKeyPatternSetting,
     createContextFolderMenuItem,
     UILayer,
+    contextMenuAction,
 } from "@launchmenu/core";
 import {DataCacher, IDataHook} from "model-react";
 import {SessionData} from "./SessionData";
@@ -102,16 +103,20 @@ export default declare({
                     }))
                 );
             },
-            globalContextMenuItems: [
-                {
-                    priority: [Priority.LOW, Priority.LOW],
-                    item: createContextFolderMenuItem({
-                        name: "Switch session",
-                        children: getSessionMenuItems,
-                        shortcut: context =>
-                            context.settings.get(settings).openMenu.get(),
-                    }),
-                },
+            globalContextMenuBindings: [
+                contextMenuAction.createBinding({
+                    action: null,
+                    preventCountCategory: true,
+                    item: {
+                        priority: [Priority.LOW, Priority.LOW],
+                        item: createContextFolderMenuItem({
+                            name: "Switch session",
+                            children: getSessionMenuItems,
+                            shortcut: context =>
+                                context.settings.get(settings).openMenu.get(),
+                        }),
+                    },
+                }),
             ],
             development: {
                 onReload(): void {

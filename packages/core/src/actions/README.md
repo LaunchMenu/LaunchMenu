@@ -31,6 +31,9 @@ const item2 = {actionBindings: [names.createBinding("item2")]};
 const items = [item1, item2];
 ```
 
+Note that the data passed in the binding is of type string, while we expect a string array in our action.
+This is the case because the action will retrieve multiple bindings at once, so the type of the input data will always be an array.
+
 Now we can apply the action to these items, in order to extract all the names of the items:
 
 ```ts
@@ -40,13 +43,13 @@ names.get(items); // == ["item1", "item2"]
 Not every item that you apply the action on needs to have a binding to the action, and one item may even have multiple bindings to the same action, so from the result there is no way of figuring how it corresponds to the items. E.g. can't just assume that the first item of items has name "item1", as can be seen in the following example:
 
 ```ts
-const item1 = {
-    actionBindings: [names.createBinding("item1"), names.createBinding("item1Alt")],
+const item1 = {actionBindings: []};
+const item2 = {
+    actionBindings: [names.createBinding("item2"), names.createBinding("item2Alt")],
 };
-const item2 = {actionBindings: []};
 const item3 = {actionBindings: [names.createBinding("item3")]};
 const items = [item1, item2, item3];
-names.get(items); // == ["item1", "item1Alt", "item3"]
+names.get(items); // == ["item2", "item2Alt", "item3"]
 ```
 
 ## Multiple actions example
@@ -337,7 +340,7 @@ const listBulletPointHandler = createAction({
         const bulletPointNames = names.map(name => `• ${name}`);
         return {
             children: bulletPointNames.map(bulletPointName =>
-                list.createBinding(bulletPointName, indices[0])
+                list.createBinding({data: bulletPointName, index: indices[0]})
             ),
             result: bulletPointNames,
         };
@@ -468,7 +471,11 @@ The most straight forward data source is a `Field`. Then we can make a binding w
 
 ```ts
 const item1Name = new Field("item1");
-const item1 = {actionBindings: [listDashHandler.createBinding(h => itemName.get(h))]};
+const item1 = {
+    actionBindings: [
+        listDashHandler.createBinding({subscribableData: h => itemName.get(h)}),
+    ],
+};
 const item2 = {actionBindings: [listDashHandler.createBinding("item2")]};
 ```
 

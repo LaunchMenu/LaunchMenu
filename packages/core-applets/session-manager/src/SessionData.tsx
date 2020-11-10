@@ -43,14 +43,12 @@ export class SessionData {
             },
             content: <SessionPreview session={this.session} />,
             actionBindings: [
-                deleteAction.createBinding({
-                    delete: () => {
-                        if (manager.getSessions().length > 1)
-                            manager.removeSession(this.session);
-                        else {
-                            // TODO: show some error message
-                        }
-                    },
+                deleteAction.createBinding(() => {
+                    if (manager.getSessions().length > 1)
+                        manager.removeSession(this.session);
+                    else {
+                        // TODO: show some error message
+                    }
                 }),
             ],
         });

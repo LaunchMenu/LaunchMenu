@@ -9,7 +9,7 @@ import {updateKeyPatternOptionExtrasExecuteHandler} from "./updateKeyPatternOpti
  * An action to update the extra keys that are allowed of a key pattern option
  */
 export const updateKeyPatternOptionExtrasAction = createContextAction({
-    name: "update pattern extras",
+    name: "Update pattern extras",
     contextItem: {
         priority: [Priority.HIGH, 1],
     },

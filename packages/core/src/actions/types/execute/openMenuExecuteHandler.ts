@@ -5,6 +5,7 @@ import {UILayer} from "../../../uiLayers/standardUILayer/UILayer";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {createContextAction} from "../../contextMenuAction/createContextAction";
+import {executeAction} from "./executeAction";
 import {sequentialExecuteHandler} from "./sequentialExecuteHandler";
 import {IExecutable} from "./_types/IExecutable";
 import {IOpenMenuExecuteData} from "./_types/IOpenMenuExecuteData";
@@ -33,7 +34,8 @@ const containsClosingItem = (data: IOpenMenuExecuteData[], items: IMenuItem[]) =
  * An execute handler to open menus
  */
 export const openMenuExecuteHandler = createContextAction({
-    name: "open menu",
+    name: "Open menu",
+    override: executeAction,
     parents: [sequentialExecuteHandler],
     core: (data: IOpenMenuExecuteData[]) => {
         const execute: IExecutable = async ({context, preventCallback}) => {

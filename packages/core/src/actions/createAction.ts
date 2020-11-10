@@ -66,5 +66,5 @@ export function createStandardBinding(
 ): IActionBinding {
     if (config instanceof Object && ("subscribableData" in config || "data" in config))
         return {action: this, ...config} as any;
-    return {action: this, data: config, index: config?.index} as any;
+    return {action: this, data: config};
 }

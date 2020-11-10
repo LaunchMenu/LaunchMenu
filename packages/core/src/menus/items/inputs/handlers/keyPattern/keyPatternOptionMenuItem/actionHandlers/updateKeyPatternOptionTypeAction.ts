@@ -9,7 +9,7 @@ import {updateKeyPatternOptionTypeExecuteHandler} from "./updateKeyPatternOption
  * An action to update the event type of a key pattern option
  */
 export const updateKeyPatternOptionTypeAction = createContextAction({
-    name: "update pattern extras",
+    name: "Update pattern trigger type",
     contextItem: {
         priority: [Priority.HIGH, 2],
     },
