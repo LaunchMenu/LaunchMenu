@@ -74,22 +74,25 @@ export const menuItemIdentityAction = createAction({
         };
     },
 
-    /**
-     * Copies an item, making the specified bindings adjustments, updating the identity
-     * @param item The item to copy
-     * @param bindings The bindings to be added, or a function to obtain the new bindings
-     * @returns The newly created item
-     */
-    copyItem<T extends IMenuItem>(
-        item: T,
-        bindings?:
-            | IActionBinding[]
-            | ((oldBindings: IActionBinding[], hook: IDataHook) => IActionBinding[])
-    ): T {
-        return copyItem(
-            item,
-            (item, ID) => createStandardBinding.call(menuItemIdentityAction, {ID, item}),
-            bindings
-        );
+    extras: {
+        /**
+         * Copies an item, making the specified bindings adjustments, updating the identity
+         * @param item The item to copy
+         * @param bindings The bindings to be added, or a function to obtain the new bindings
+         * @returns The newly created item
+         */
+        copyItem<T extends IMenuItem>(
+            item: T,
+            bindings?:
+                | IActionBinding[]
+                | ((oldBindings: IActionBinding[], hook: IDataHook) => IActionBinding[])
+        ): T {
+            return copyItem(
+                item,
+                (item, ID) =>
+                    createStandardBinding.call(menuItemIdentityAction, {ID, item}),
+                bindings
+            );
+        },
     },
 });

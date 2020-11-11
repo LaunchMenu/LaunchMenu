@@ -6,6 +6,7 @@ import {createAction} from "../createAction";
 import {executeAction} from "../types/execute/executeAction";
 import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
+import {IBindingCreator} from "../_types/IBindingCreator";
 import {TPureAction} from "../_types/TPureAction";
 import {contextMenuAction} from "./contextMenuAction";
 import {IContextActionTransformer} from "./_types/IContextActionTransformer";
@@ -27,51 +28,32 @@ export function createContextAction<
     /** The possible resulting bindings of this action */
     K extends IActionBinding<TPureAction<P>> = never,
     /** The create binding function, which may want to specify generic types for more elaborate interfaces */
-    CB = {
-        /**
-         * Creates a new binding for this action
-         * @param data The binding data
-         * @param index The index of the binding
-         * @returns The created binding
-         */
-        (data: ISubscribable<I>, index?: number): IActionBinding<
-            IAction<I, O, P & TPureAction<typeof contextMenuAction>>
-        >;
-    },
+    CB = IBindingCreator<I, O, P & TPureAction<typeof contextMenuAction>>,
     /** The remaining functions specified on the object */
-    REST = unknown
->(
-    actionInput: {
-        /** The name of the action */
-        name: string;
-        /** The parent actions of this action */
-        parents?: P[];
-        /** The core transformer of the action */
-        core: IContextActionTransformer<I, O, K>;
-        /** A custom binding creator in case generic types are needed */
-        createBinding?: CB;
-        /** The item to show in the context menu */
-        contextItem?: IContextMenuItemData["item"] | IContextItemData;
-        /**
-         * The root action for which to override the context item, if all its bindings originate from this action.
-         * Will automatically override any ancestor overrides too (overrides specified by our ancestors).
-         */
-        override?: IAction | null;
-        /** Whether to prevent adding the count category to the item, defaults to false */
-        preventCountCategory?: boolean;
-    } & REST
-): /** The action as well as an interface to create bindings for this action with */
+    EXTRAS = unknown
+>(actionInput: {
+    /** The name of the action */
+    name: string;
+    /** The parent actions of this action */
+    parents?: P[];
+    /** The core transformer of the action */
+    core: IContextActionTransformer<I, O, K>;
+    /** A custom binding creator in case generic types are needed */
+    createBinding?: CB;
+    /** The item to show in the context menu */
+    contextItem?: IContextMenuItemData["item"] | IContextItemData;
+    /**
+     * The root action for which to override the context item, if all its bindings originate from this action.
+     * Will automatically override any ancestor overrides too (overrides specified by our ancestors).
+     */
+    override?: IAction | null;
+    /** Whether to prevent adding the count category to the item, defaults to false */
+    preventCountCategory?: boolean;
+    /** Extra data to set on the created action */
+    extras?: EXTRAS;
+}): /** The action as well as an interface to create bindings for this action with */
 IAction<I, O, P & TPureAction<typeof contextMenuAction>> &
-    Omit<
-        REST,
-        | "name"
-        | "parents"
-        | "core"
-        | "createBinding"
-        | "item"
-        | "override"
-        | "preventCountCategory"
-    > & {
+    EXTRAS & {
         createBinding: CB;
     } {
     const {
@@ -82,7 +64,7 @@ IAction<I, O, P & TPureAction<typeof contextMenuAction>> &
         contextItem,
         override: inpOverride,
         preventCountCategory,
-        ...rest
+        extras: extra,
     } = actionInput;
 
     // Get the action to override
@@ -149,7 +131,7 @@ IAction<I, O, P & TPureAction<typeof contextMenuAction>> &
                 };
             },
         }),
-        ...rest,
+        ...extra,
     };
     return action as any;
 }

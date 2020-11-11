@@ -12,17 +12,19 @@ export const getCategoryAction = createAction({
     core: (categories: ICategory[]) => ({
         result: categories,
     }),
-    /**
-     * Retrieve the category for a given item
-     * @param item The item to get the category of
-     * @param hook The data hook to subscribe to changes
-     * @returns The category
-     */
-    getCategory(
-        item: IMenuItem | IPrioritizedMenuItem,
-        hook?: IDataHook
-    ): ICategory | undefined {
-        if ("priority" in item) item = item.item;
-        return getCategoryAction.get([item], hook)[0];
+    extras: {
+        /**
+         * Retrieve the category for a given item
+         * @param item The item to get the category of
+         * @param hook The data hook to subscribe to changes
+         * @returns The category
+         */
+        getCategory(
+            item: IMenuItem | IPrioritizedMenuItem,
+            hook?: IDataHook
+        ): ICategory | undefined {
+            if ("priority" in item) item = item.item;
+            return getCategoryAction.get([item], hook)[0];
+        },
     },
 });

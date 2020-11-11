@@ -23,23 +23,23 @@ export function createAction<
     /** The create binding function, which may want to specify generic types for more elaborate interfaces */
     CB = IBindingCreator<I, O, P>,
     /** The remaining functions specified on the object */
-    REST = unknown
->(
-    actionInput: {
-        /** The name of the action */
-        name: string;
-        /** The parent actions of this action */
-        parents?: P[];
-        /** The core transformer of the action */
-        core: IActionTransformer<I, O, K>;
-        /** A custom binding creator in case generic types are needed */
-        createBinding?: CB;
-    } & REST
-): /** The action as well as an interface to create bindings for this action with */
+    EXTRAS = unknown
+>(actionInput: {
+    /** The name of the action */
+    name: string;
+    /** The parent actions of this action */
+    parents?: P[];
+    /** The core transformer of the action */
+    core: IActionTransformer<I, O, K>;
+    /** A custom binding creator in case generic types are needed */
+    createBinding?: CB;
+    /** Extra data to set on the created action */
+    extras?: EXTRAS;
+}): /** The action as well as an interface to create bindings for this action with */
 IAction<I, O, P> & {
     createBinding: CB;
-} & Omit<REST, "name" | "parents" | "core" | "createBinding"> {
-    const {name, parents, core, createBinding, ...rest} = actionInput;
+} & EXTRAS {
+    const {name, parents, core, createBinding, extras: extra = {}} = actionInput;
 
     parents?.forEach(parent => {
         if (parent === undefined)
@@ -54,7 +54,7 @@ IAction<I, O, P> & {
         transform: core as any,
         get: actionGetter,
         createBinding: createBinding || (createStandardBinding as any),
-        ...rest,
+        ...(extra as any),
     };
 }
 

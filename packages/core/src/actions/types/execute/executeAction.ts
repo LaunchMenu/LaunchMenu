@@ -59,67 +59,68 @@ export const executeAction = createAction({
             ],
         };
     },
-
-    /** An execute method that automatically dispatches commands, and take care of onExecute callback calling */
-    execute: async function (
-        context: IMenu | IIOContext,
-        items?: IActionTarget[] | IItemExecuteCallback,
-        onExecute?: IItemExecuteCallback
-    ) {
-        // Setup a function to handle the callbacks
-        let blockCallback = false;
-        let exItems: IActionTarget[];
-        const executeCallback = () => {
-            if (!blockCallback) {
-                if (items instanceof Function) items?.(exItems);
-                else onExecute?.(exItems);
-            }
-            blockCallback = true; // Make sure to not perform the callback twice
-        };
-
-        let preventCount = 0; // Track how many executors temporarily prevented the callback
-        const preventCallback = () => {
-            preventCount++;
-            return () => {
-                preventCount--;
-                if (preventCount == 0) executeCallback();
-            };
-        };
-
-        // Execute the command
-        let c: IIOContext;
-        if ("getAllSelected" in context) {
-            c = context.getContext();
-            exItems = context.getAllSelected();
-        } else {
-            c = context;
-            exItems = items as IActionTarget[];
-        }
-        const executable = this.get(exItems);
-        blockCallback = executable.passive || false; // Block the callback if the executor is passive
-        const cmd = await executable.execute({context: c, preventCallback});
-        if (cmd) c.undoRedo.execute(cmd);
-
-        // Close the menu if not prevented
-        if (preventCount == 0) executeCallback();
-    } as {
-        /**
-         * Executes the default actions of the selected items of the menu
-         * @param menu The menu for which to execute the items
-         * @param onExecute A callback to perform when an item executed (may be suppressed/delayed by an executable)
-         */
-        (menu: IMenu, onExecute?: IItemExecuteCallback): Promise<void>;
-
-        /**
-         * Executes the default actions of specified items
-         * @param context The context the items can use
-         * @param items The items for which to execute the default action
-         * @param onExecute A callback to perform when an item executed (may be suppressed/delayed by an executable)
-         */
-        (
-            context: IIOContext,
-            items: IActionTarget[],
+    extras: {
+        /** An execute method that automatically dispatches commands, and take care of onExecute callback calling */
+        execute: async function (
+            context: IMenu | IIOContext,
+            items?: IActionTarget[] | IItemExecuteCallback,
             onExecute?: IItemExecuteCallback
-        ): Promise<void>;
+        ) {
+            // Setup a function to handle the callbacks
+            let blockCallback = false;
+            let exItems: IActionTarget[];
+            const executeCallback = () => {
+                if (!blockCallback) {
+                    if (items instanceof Function) items?.(exItems);
+                    else onExecute?.(exItems);
+                }
+                blockCallback = true; // Make sure to not perform the callback twice
+            };
+
+            let preventCount = 0; // Track how many executors temporarily prevented the callback
+            const preventCallback = () => {
+                preventCount++;
+                return () => {
+                    preventCount--;
+                    if (preventCount == 0) executeCallback();
+                };
+            };
+
+            // Execute the command
+            let c: IIOContext;
+            if ("getAllSelected" in context) {
+                c = context.getContext();
+                exItems = context.getAllSelected();
+            } else {
+                c = context;
+                exItems = items as IActionTarget[];
+            }
+            const executable = this.get(exItems);
+            blockCallback = executable.passive || false; // Block the callback if the executor is passive
+            const cmd = await executable.execute({context: c, preventCallback});
+            if (cmd) c.undoRedo.execute(cmd);
+
+            // Close the menu if not prevented
+            if (preventCount == 0) executeCallback();
+        } as {
+            /**
+             * Executes the default actions of the selected items of the menu
+             * @param menu The menu for which to execute the items
+             * @param onExecute A callback to perform when an item executed (may be suppressed/delayed by an executable)
+             */
+            (menu: IMenu, onExecute?: IItemExecuteCallback): Promise<void>;
+
+            /**
+             * Executes the default actions of specified items
+             * @param context The context the items can use
+             * @param items The items for which to execute the default action
+             * @param onExecute A callback to perform when an item executed (may be suppressed/delayed by an executable)
+             */
+            (
+                context: IIOContext,
+                items: IActionTarget[],
+                onExecute?: IItemExecuteCallback
+            ): Promise<void>;
+        },
     },
 });
