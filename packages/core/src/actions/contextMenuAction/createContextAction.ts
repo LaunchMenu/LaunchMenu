@@ -8,6 +8,7 @@ import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
 import {IBindingCreator} from "../_types/IBindingCreator";
 import {TPureAction} from "../_types/TPureAction";
+import {IContextFolderAction} from "./contextFolders/_types/IContextFolderAction";
 import {contextMenuAction} from "./contextMenuAction";
 import {IContextActionTransformer} from "./_types/IContextActionTransformer";
 import {IContextItemData} from "./_types/IContextItemData";
@@ -27,8 +28,10 @@ export function createContextAction<
     P extends IAction = IAction<unknown, unknown, any>,
     /** The possible resulting bindings of this action */
     K extends IActionBinding<TPureAction<P>> = never,
+    /** The folder to show the item in */
+    F extends IContextFolderAction = typeof contextMenuAction,
     /** The create binding function, which may want to specify generic types for more elaborate interfaces */
-    CB = IBindingCreator<I, O, P & TPureAction<typeof contextMenuAction>>,
+    CB = IBindingCreator<I, O, P & TPureAction<F>>,
     /** The remaining functions specified on the object */
     EXTRAS = unknown
 >(actionInput: {
@@ -49,10 +52,12 @@ export function createContextAction<
     override?: IAction | null;
     /** Whether to prevent adding the count category to the item, defaults to false */
     preventCountCategory?: boolean;
+    /** The folder that the action should appear in, defaults to the context menu (no folder) */
+    folder?: F;
     /** Extra data to set on the created action */
     extras?: EXTRAS;
 }): /** The action as well as an interface to create bindings for this action with */
-IAction<I, O, P & TPureAction<typeof contextMenuAction>> &
+IAction<I, O, P & TPureAction<F>> &
     EXTRAS & {
         createBinding: CB;
     } {
@@ -64,8 +69,11 @@ IAction<I, O, P & TPureAction<typeof contextMenuAction>> &
         contextItem,
         override: inpOverride,
         preventCountCategory,
+        folder,
         extras: extra,
     } = actionInput;
+
+    const targetMenu = (folder || contextMenuAction) as IContextFolderAction;
 
     // Get the action to override
     let override = inpOverride == null ? undefined : inpOverride;
@@ -73,7 +81,7 @@ IAction<I, O, P & TPureAction<typeof contextMenuAction>> &
         let ancestorAction = parents[0] as IAction;
         while (ancestorAction.parents && ancestorAction.parents.length == 1) {
             ancestorAction = ancestorAction.parents[0];
-            if (ancestorAction.parents.find(({action}) => action == contextMenuAction))
+            if (ancestorAction.parents.find(({action}) => action == folder))
                 override = ancestorAction;
         }
     }
@@ -109,7 +117,7 @@ IAction<I, O, P & TPureAction<typeof contextMenuAction>> &
     const action = {
         ...createAction({
             name,
-            parents: parents ? [...parents, contextMenuAction] : [contextMenuAction],
+            parents: parents ? [...parents, targetMenu] : [targetMenu],
             createBinding,
             core: (bindingData: I[], indices: number[], hook: IDataHook) => {
                 const {execute, result, children} = core(bindingData, indices, hook);
@@ -118,7 +126,7 @@ IAction<I, O, P & TPureAction<typeof contextMenuAction>> &
                     ("action" in execute
                         ? execute
                         : executeAction.createBinding(execute));
-                const contextItem = contextMenuAction.createBinding({
+                const contextItem = targetMenu.createBinding({
                     item,
                     override,
                     preventCountCategory,

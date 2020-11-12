@@ -46,10 +46,8 @@ export class IOContext implements IIOContext {
     public async open(
         layer: IUILayer,
         onClose?: () => void | Promise<void>
-    ): Promise<() => void> {
-        const close = () => {
-            this.close(layer);
-        };
+    ): Promise<() => Promise<void>> {
+        const close = () => this.close(layer);
         const layerOnClose = (await layer.onOpen(this, close)) || undefined;
         this.uiStack.set([
             ...this.uiStack.get(null),

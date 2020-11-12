@@ -21,7 +21,7 @@ const containsClosingItem = (data: IOpenMenuExecuteData[], items: IMenuItem[]) =
         if (cur) return true;
         if ("closeOnExecute" in d && d.closeOnExecute) {
             const containsItems = items.reduce(
-                (cur, item) => getHooked(d.items).includes(item),
+                (cur, item) => cur || getHooked(d.items).includes(item),
                 false
             );
             if (containsItems) return true;

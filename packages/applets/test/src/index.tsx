@@ -1,11 +1,15 @@
 import React from "React";
 import {
     contextMenuAction,
+    createAction,
+    createContextAction,
+    createContextFolderHandler,
     createStringSetting,
     declare,
     IKeyEventListenerFunction,
     IOContextContext,
     openMenuExecuteHandler,
+    Priority,
     searchAction,
     UILayer,
 } from "@launchmenu/core";
@@ -40,6 +44,30 @@ export const settings = createSettings({
         }),
 });
 
+const folder1 = createContextFolderHandler({
+    name: "bob",
+    priority: 3,
+});
+const folder2 = createContextFolderHandler({
+    name: "john",
+    override: folder1,
+    priority: 4,
+});
+const folder3 = createContextFolderHandler({
+    name: "johny",
+    parent: folder1,
+    priority: 4,
+});
+const fakeAction = createContextAction({
+    name: "eat pant",
+    folder: folder2,
+    core: function () {
+        return {
+            execute: () => console.log("yes"),
+        };
+    },
+});
+
 const item2 = createStandardMenuItem({
     name: "orange",
     content: (
@@ -57,6 +85,19 @@ const item2 = createStandardMenuItem({
         const a = context.settings.get(settings).someNumber.get();
         console.log(context.settings, a);
     },
+    actionBindings: [
+        folder1.createBinding({
+            item: {
+                priority: Priority.HIGH,
+                item: createStandardMenuItem({
+                    name: "yes",
+                    onExecute: () => console.log("hoi"),
+                }),
+            },
+            action: null,
+        }),
+        fakeAction.createBinding(3),
+    ],
 });
 
 const item = createStandardMenuItem({
@@ -67,6 +108,36 @@ const item = createStandardMenuItem({
     },
     actionBindings: [
         openMenuExecuteHandler.createBinding({items: [item2], closeOnExecute: true}),
+        fakeAction.createBinding(6),
+        folder3.createBinding({
+            item: {
+                priority: Priority.HIGH,
+                item: createStandardMenuItem({
+                    name: "oranges",
+                    onExecute: () => console.log("ya"),
+                }),
+            },
+            action: null,
+        }),
+    ],
+});
+
+const item3 = createStandardMenuItem({
+    name: "okay",
+    onExecute({context}) {
+        console.log("okay this");
+    },
+    actionBindings: [
+        folder2.createBinding({
+            item: {
+                priority: Priority.HIGH,
+                item: createStandardMenuItem({
+                    name: "oranges",
+                    onExecute: () => console.log("ya"),
+                }),
+            },
+            action: null,
+        }),
     ],
 });
 
@@ -85,7 +156,7 @@ export default declare({
     },
     async search(query) {
         return {
-            children: searchAction.get([item, item2]),
+            children: searchAction.get([item, item2, item3]),
         };
     },
 

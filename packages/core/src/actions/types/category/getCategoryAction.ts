@@ -24,7 +24,8 @@ export const getCategoryAction = createAction({
             hook?: IDataHook
         ): ICategory | undefined {
             if ("priority" in item) item = item.item;
-            return getCategoryAction.get([item], hook)[0];
+            const categories = getCategoryAction.get([item], hook);
+            return categories[categories.length - 1];
         },
     },
 });
