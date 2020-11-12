@@ -14,11 +14,19 @@ export const openMenuItemContentHandler = createAction({
     core: (contents: IOpenMenuItemContentHandlerData[]) => ({
         children: [
             onCursorAction.createBinding((isCursor, menu) => {
-                // Normalize the contents
+                // Find the layer that the menu is in of possible
                 const defaultContext = menu.getContext();
+                const menuLayer = defaultContext
+                    .getUI()
+                    .find(layer =>
+                        layer.getMenuData().find(({menu: fMenu}) => fMenu == menu)
+                    );
+
+                // Normalize the contents
                 const normalizedContents = contents.map(content =>
                     "context" in content ? content : {content, context: defaultContext}
                 );
+
                 // Group by context
                 const grouped = groupBy(normalizedContents, "context");
 
@@ -26,7 +34,9 @@ export const openMenuItemContentHandler = createAction({
                 if (isCursor) {
                     // For each group, only open the first item
                     grouped.forEach(({key: context, values: [{content}, ..._]}) => {
-                        context.open(new UILayer({contentView: content}));
+                        context.open(new UILayer({contentView: content}), {
+                            after: context == defaultContext ? menuLayer : undefined,
+                        });
                     });
                 } else {
                     // Close all content

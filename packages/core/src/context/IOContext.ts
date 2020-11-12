@@ -40,24 +40,43 @@ export class IOContext implements IIOContext {
     /**
      * Opens the given UI layer
      * @param layer The layer of UI data to open
-     * @param onClose A callback to perform when the layer is closed
+     * @param config Extra configuration
      * @returns A function that can be used to close the opened layer
      */
     public async open(
         layer: IUILayer,
-        onClose?: () => void | Promise<void>
+        config?: {
+            /** A callback to perform when the layer is closed */
+            onClose?: () => void | Promise<void>;
+            /** The index on the stack to open this layer at */
+            index?: number;
+            /** The UILayer to open this layer after */
+            after?: IUILayer;
+        }
     ): Promise<() => Promise<void>> {
         const close = () => this.close(layer);
         const layerOnClose = (await layer.onOpen(this, close)) || undefined;
+
+        // Find the index to open the item at
+        const current = this.uiStack.get(null);
+        let index = Infinity;
+        if (config?.index !== undefined) index = config.index;
+        if (config?.after) {
+            const afterIndex = current.findIndex(({layer}) => layer == config.after);
+            if (afterIndex != -1) index = afterIndex + 1;
+        }
+
+        // Open the layer
         this.uiStack.set([
-            ...this.uiStack.get(null),
+            ...current.slice(0, index),
             {
                 layer,
                 onClose: async () => {
                     await layerOnClose?.();
-                    await onClose?.();
+                    await config?.onClose?.();
                 },
             },
+            ...current.slice(index),
         ]);
         return close;
     }

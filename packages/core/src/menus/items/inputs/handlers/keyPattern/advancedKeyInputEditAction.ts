@@ -28,7 +28,7 @@ export const advancedKeyInputEditAction = createContextAction({
                                 else if (!liveUpdate) field.set(result);
                             },
                         }),
-                        res
+                        {onClose: res}
                     );
                 });
             }

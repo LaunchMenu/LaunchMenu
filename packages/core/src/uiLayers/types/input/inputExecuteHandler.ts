@@ -30,8 +30,10 @@ export const inputExecuteHandler = createAction({
                                       }
                                     : undefined,
                             }),
-                            () => {
-                                res(cmd);
+                            {
+                                onClose: () => {
+                                    res(cmd);
+                                },
                             }
                         );
                     })

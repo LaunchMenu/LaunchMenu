@@ -138,9 +138,9 @@ export class LMSession {
      * Initializes all the UI
      */
     protected async setupUI(): Promise<void> {
+        await this.setupContent();
         await this.setupMenu();
         await this.setupField();
-        await this.setupContent();
     }
 
     /**

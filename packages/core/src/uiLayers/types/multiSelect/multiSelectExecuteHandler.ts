@@ -31,8 +31,10 @@ export const multiSelectExecuteHandler = createAction({
                                       }
                                     : undefined,
                             }),
-                            () => {
-                                res(cmd);
+                            {
+                                onClose: () => {
+                                    res(cmd);
+                                },
                             }
                         );
                     }),

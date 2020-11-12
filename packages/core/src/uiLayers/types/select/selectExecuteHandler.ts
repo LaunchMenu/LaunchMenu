@@ -29,8 +29,10 @@ export const selectExecuteHandler = createAction({
                                       }
                                     : undefined,
                             }),
-                            () => {
-                                res(cmd);
+                            {
+                                onClose: () => {
+                                    res(cmd);
+                                },
                             }
                         );
                     })

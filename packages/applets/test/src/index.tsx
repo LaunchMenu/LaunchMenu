@@ -177,7 +177,7 @@ export default declare({
                 };
                 const layer = new UILayer({contentHandler: listener});
 
-                session.context.open(layer);
+                session.context.open(layer, {index: 0});
                 return () => {
                     session.context.close(layer);
                 };

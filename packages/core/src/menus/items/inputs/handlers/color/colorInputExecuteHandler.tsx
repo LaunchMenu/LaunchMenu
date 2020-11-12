@@ -32,7 +32,7 @@ export const colorInputExecuteHandler = createAction({
                                     }
                                 },
                             }),
-                            res
+                            {onClose: res}
                         );
                     })
             )

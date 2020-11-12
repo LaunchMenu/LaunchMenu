@@ -1,4 +1,4 @@
-import {Field, IDataHook} from "model-react";
+import {DataCacher, Field, IDataHook} from "model-react";
 import {IIOContext} from "../context/_types/IIOContext";
 import {IKeyEventListener} from "../keyHandler/_types/IKeyEventListener";
 import {IUILayerPathNode} from "./_types/IUILayerPathNode";
@@ -14,7 +14,8 @@ export abstract class AbstractUILayer implements IUILayer {
     // Initialization management
     protected closers: (() => void)[] = [];
     protected relativePath: string;
-    protected path = new Field([] as IUILayerPathNode[]);
+
+    protected context = new Field(null as null | IIOContext);
 
     /**
      * Creates a new abstract UI layer
@@ -43,8 +44,9 @@ export abstract class AbstractUILayer implements IUILayer {
     public async onOpen(context: IIOContext, close: () => void): Promise<() => void> {
         this.closers.push(close);
         const onClose = (await this.initialize(context, close)) || undefined;
-        this.path.set(this.getAbsolutePath(this.relativePath, context));
+        this.context.set(context);
         return async () => {
+            this.context.set(null);
             const index = this.closers.indexOf(close);
             if (index >= 0) this.closers.splice(index, 1);
             await onClose?.();
@@ -65,22 +67,21 @@ export abstract class AbstractUILayer implements IUILayer {
      * @returns The path
      */
     public getPath(hook: IDataHook = null): IUILayerPathNode[] {
-        return this.path.get(hook);
+        return this.absolutePath.get(hook);
     }
 
     /**
-     * Retrieves the new absolute path given a relative path and the context
-     * @param relativePath The relative path
-     * @param context The context
-     * @returns The absolute path
+     * A cached getter for the absolute path
      */
-    protected getAbsolutePath(
-        relativePath: string,
-        context: IIOContext
-    ): IUILayerPathNode[] {
-        const UI = context.getUI();
-        const current = UI[UI.length - 1]?.getPath() ?? [];
-        return relativePath.split("/").reduce((cur, node) => {
+    protected absolutePath = new DataCacher<IUILayerPathNode[]>(h => {
+        const context = this.context.get(h);
+        if (!context) return [];
+
+        const UI = context.getUI(h);
+        const index = UI.indexOf(this);
+        const parent = index >= 0 ? UI[index - 1] : undefined;
+        const current = parent?.getPath(h) ?? [];
+        return this.relativePath.split("/").reduce((cur, node) => {
             if (node == ".") {
                 // Add itself to the top path
                 const top = cur[cur.length - 1];
@@ -98,7 +99,7 @@ export abstract class AbstractUILayer implements IUILayer {
                 return [...cur, {name: node, layers: [this]}];
             }
         }, current);
-    }
+    });
 
     // Data management
     // TODO: add a system to not call the hook if nothing changed for a given stack (menu/field/content)
