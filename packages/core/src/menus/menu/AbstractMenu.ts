@@ -4,9 +4,9 @@ import {Field, IDataHook} from "model-react";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 import {isItemSelectable} from "../items/isItemSelectable";
-import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
-import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
-import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
+import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
+import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
+import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 
 /**
  * An abstract menu class that doesn't deal with item management itself

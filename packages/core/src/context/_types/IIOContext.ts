@@ -1,9 +1,9 @@
 import {IUndoRedoFacility} from "../../undoRedo/_types/IUndoRedoFacility";
 import {SettingsContext} from "../../settings/SettingsContext";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
-import {IContextMenuItemGetter} from "../../menus/actions/contextAction/_types/IContextMenuItemGetter";
 import {IUILayer} from "../../uiLayers/_types/IUILayer";
 import {IDataHook} from "model-react";
+import {IActionBinding} from "../../actions/_types/IActionBinding";
 
 /**
  * A context to get general IO utilities from
@@ -18,10 +18,20 @@ export type IIOContext = {
     /**
      * Opens the given UI layer
      * @param layer The layer of UI data to open
-     * @param onClose A callback to perform when the layer is closed
+     * @param config Extra configuration
      * @returns A function that can be used to close the opened layer
      */
-    open(layer: IUILayer, onClose?: () => void | Promise<void>): Promise<() => void>;
+    open(
+        layer: IUILayer,
+        config?: {
+            /** A callback to perform when the layer is closed */
+            onClose?: () => void | Promise<void>;
+            /** The index on the stack to open this layer at */
+            index?: number;
+            /** The UILayer to open this layer after */
+            after?: IUILayer;
+        }
+    ): Promise<() => void>;
     /**
      * Closes the given UI layer
      * @param layer The layer of UI data to close
@@ -32,6 +42,6 @@ export type IIOContext = {
     readonly undoRedo: IUndoRedoFacility;
     /** The application settings */
     readonly settings: SettingsContext;
-    /** The default context menu items to add to all context menus */
-    readonly contextMenuItems: ISubscribable<IContextMenuItemGetter[]>;
+    /** The default context menu bindings to add to all context menus */
+    readonly contextMenuBindings: ISubscribable<IActionBinding[]>;
 };

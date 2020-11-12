@@ -19,12 +19,12 @@ import {IMenuItem} from "../../../_types/IMenuItem";
 import {createKeyPatternOptionMenuItem} from "./keyPatternOptionMenuItem/createKeyPatternOptionMenuItem";
 import {createStandardMenuItem} from "../../../createStandardMenuItem";
 import {updateKeyPatternOptionExecuteHandler} from "./keyPatternOptionMenuItem/actionHandlers/updateKeyPatternOptionExecuteHandler";
-import {getCategoryAction} from "../../../../actions/types/category/getCategoryAction";
 import {createFinishMenuItem} from "../../../createFinishMenuItem";
 import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand";
 import {ProxiedMenu} from "../../../../menu/ProxiedMenu";
 import {AdvancedKeyPatternContent} from "./AdvancedKeyPatternContent";
 import {getControlsCategory} from "../../../../categories/types/getControlsCategory";
+import {getCategoryAction} from "../../../../../actions/types/category/getCategoryAction";
 
 export class AdvancedKeyPatternUI extends AbstractUILayer {
     protected target: IField<KeyPattern>;
@@ -45,7 +45,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
         field: IField<KeyPattern>,
         config: IAdvancedKeyPatternUIData = {}
     ) {
-        super();
+        super("Key Editor");
         this.target = field;
         this.config = config;
 
@@ -94,7 +94,6 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
                     option,
                 })
             );
-            console.log(patterns);
             return [...controls, ...patterns];
         };
 
@@ -106,7 +105,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
             ID: uuid(),
             menu,
             menuView: this.getMenuView(menu),
-            menuHandler: this.getMenuHandler(menu),
+            menuHandler: this.getMenuHandler(menu, close),
         };
         const menuSearch = new MenuSearch({menu});
         const contentData: IUILayerContentData = {
@@ -114,7 +113,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
             contentView: <AdvancedKeyPatternContent pattern={h => this.value.get(h)} />,
         };
 
-        const disposeSearch = await menuSearch.onOpen(context, close);
+        const disposeSearch = await menuSearch.onOpen(context, () => {});
 
         // Open the UI
         this.contentData.set(contentData);
@@ -143,10 +142,11 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
     /**
      * Retrieves the key handler for a menu
      * @param menu The menu to create the handler for
+     * @param close The function to close the UI
      * @returns The key listener
      */
-    protected getMenuHandler(menu: IMenu): IKeyEventListener {
-        return createMenuKeyHandler(menu);
+    protected getMenuHandler(menu: IMenu, close: () => void): IKeyEventListener {
+        return createMenuKeyHandler(menu, {onExit: close});
     }
 
     /**

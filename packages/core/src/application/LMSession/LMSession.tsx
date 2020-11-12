@@ -1,7 +1,6 @@
-import {DataCacher, Field, IDataHook, Loader} from "model-react";
+import {DataCacher, Field, IDataHook, IDataRetriever, Loader} from "model-react";
 import React from "react";
 import {IOContext} from "../../context/IOContext";
-import {IMenuSearchable} from "../../menus/actions/types/search/_types/IMenuSearchable";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
 import {IQuery} from "../../menus/menu/_types/IQuery";
 import {SettingsContext} from "../../settings/SettingsContext";
@@ -17,12 +16,6 @@ import {v4 as uuid} from "uuid";
 import {IApplet} from "../applets/_types/IApplet";
 import {LMSessionMenu} from "./LMSessionMenu";
 import {adjustSearchable} from "../../utils/searchExecuter/adjustSearchable";
-import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
-import {
-    getCategoryAction,
-    getMenuCategory,
-} from "../../menus/actions/types/category/getCategoryAction";
-import {IContextMenuItemGetter} from "../../menus/actions/contextAction/_types/IContextMenuItemGetter";
 import {IMenuItem} from "../../menus/items/_types/IMenuItem";
 import {IUUID} from "../../_types/IUUID";
 import {withSession} from "../applets/declaration/withSession";
@@ -30,6 +23,10 @@ import {UILayer} from "../../uiLayers/standardUILayer/UILayer";
 import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {Breadcumbs} from "../../components/context/paths/Breadcrumbs";
+import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
+import {IMenuSearchable} from "../../actions/types/search/_types/IMenuSearchable";
+import {IActionBinding} from "../../actions/_types/IActionBinding";
+import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
 
 /**
  * An application session
@@ -105,7 +102,7 @@ export class LMSession {
         this.context = new IOContext({
             undoRedo: new UndoRedoFacility(),
             settings: new SettingsContext(),
-            contextMenuItems: this.getGlobalContextMenuItems(),
+            contextMenuBindings: this.getGlobalContextMenuBindings(),
         });
 
         // Retrieve the settings context from LM which includes all base settings data, and listen for changes
@@ -120,12 +117,12 @@ export class LMSession {
      * Retrieves the context menu items that should be global in this session
      * @returns The menu items
      */
-    protected getGlobalContextMenuItems(): (hook: IDataHook) => IContextMenuItemGetter[] {
+    protected getGlobalContextMenuBindings(): IDataRetriever<IActionBinding[]> {
         return hook =>
             this.getApplets(hook).flatMap(applet =>
-                applet.globalContextMenuItems instanceof Function
-                    ? applet.globalContextMenuItems(hook)
-                    : applet.globalContextMenuItems ?? []
+                applet.globalContextMenuBindings instanceof Function
+                    ? applet.globalContextMenuBindings(hook)
+                    : applet.globalContextMenuBindings ?? []
             );
     }
 
@@ -141,9 +138,9 @@ export class LMSession {
      * Initializes all the UI
      */
     protected async setupUI(): Promise<void> {
+        await this.setupContent();
         await this.setupMenu();
         await this.setupField();
-        await this.setupContent();
     }
 
     /**
@@ -169,7 +166,7 @@ export class LMSession {
         this.observers.menuCursor = new Observer(h => this.menu.getCursor(h)).listen(
             item => {
                 if (item) {
-                    const category = getMenuCategory(item);
+                    const category = getCategoryAction.getCategory(item);
                     const appletData = appletManager
                         .getAppletCategories()
                         .find(({category: cat}) => cat == category);

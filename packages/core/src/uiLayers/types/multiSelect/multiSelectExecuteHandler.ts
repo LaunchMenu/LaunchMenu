@@ -1,25 +1,24 @@
-import {results} from "../../../menus/actions/Action";
-import {sequentialExecuteHandler} from "../../../menus/actions/types/execute/sequentialExecuteHandler";
-import {IExecutable} from "../../../menus/actions/types/execute/_types/IExecutable";
-import {IAction} from "../../../menus/actions/_types/IAction";
-import {IActionBinding} from "../../../menus/actions/_types/IActionBinding";
-import {IActionCore} from "../../../menus/actions/_types/IActionCore";
-import {IActionMultiResult} from "../../../menus/actions/_types/IActionMultiResult";
-import {ITagsOverride} from "../../../menus/actions/_types/ITagsOverride";
+import {createAction, createStandardBinding} from "../../../actions/createAction";
+import {sequentialExecuteHandler} from "../../../actions/types/execute/sequentialExecuteHandler";
+import {IExecutable} from "../../../actions/types/execute/_types/IExecutable";
+import {IAction} from "../../../actions/_types/IAction";
+import {IActionBinding} from "../../../actions/_types/IActionBinding";
+import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
+import {TPureAction} from "../../../actions/_types/TPureAction";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
-import {INonFunction} from "../../../_types/INonFunction";
-import {TReplace} from "../../../_types/TReplace";
 import {MultiSelect} from "./MultiSelect";
 import {IMultiSelectExecuteData} from "./_types/IMultiSelectExecuteData";
 
 /**
  * A handler to let users alter a field with multiple values given a selection of options
  */
-export const multiSelectExecuteHandler = sequentialExecuteHandler.createHandler(
-    (data: IMultiSelectExecuteData<unknown>[]) => ({
-        [results]: data.map(
-            ({field, undoable, ...config}): IExecutable => ({
+export const multiSelectExecuteHandler = createAction({
+    name: "multi select handler",
+    parents: [sequentialExecuteHandler],
+    core: (data: IMultiSelectExecuteData<unknown>[]) => ({
+        children: data.map(({field, undoable, ...config}) =>
+            sequentialExecuteHandler.createBinding({
                 execute: ({context}) =>
                     new Promise<ICommand | void>(res => {
                         let cmd: ICommand | undefined;
@@ -32,49 +31,26 @@ export const multiSelectExecuteHandler = sequentialExecuteHandler.createHandler(
                                       }
                                     : undefined,
                             }),
-                            () => {
-                                res(cmd);
+                            {
+                                onClose: () => {
+                                    res(cmd);
+                                },
                             }
                         );
                     }),
             })
         ),
-    })
-) as TReplace<
-    // Cast to get improved error checking with template parameter
-    IAction<IMultiSelectExecuteData<unknown>, IActionMultiResult<IExecutable>>,
-    {
+    }),
+    createBinding: createStandardBinding as {
         /**
-         * Creates a new handler for this action, specifying how this action can be executed
-         * @param handlerCore The function describing the execution process
-         * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
-         * @returns The created action handler
+         * Creates a new action binding
+         * @param config The data for the binding, and optionally extra configuration
+         * @returns The created binding
          */
-        createHandler<T extends INonFunction, K>(
-            handlerCore: IActionCore<T, IMultiSelectExecuteData<K>>,
-            defaultTags?: ITagsOverride
-        ): IAction<T, IMultiSelectExecuteData<K>>;
-
-        /**
-         * Creates a new handler for this action, specifying how this action can be executed
-         * @param handlerCore The function describing the execution process
-         * @param defaultTags The default tags that bindings of these handlers should have, this action's default tags are inherited if left out
-         * @returns The created action handler
-         */
-        createHandler<T extends INonFunction, K>(
-            handlerCore: IActionCore<T, IActionMultiResult<IMultiSelectExecuteData<K>>>,
-            defaultTags?: ITagsOverride
-        ): IAction<T, IActionMultiResult<IMultiSelectExecuteData<K>>>;
-
-        /**
-         * Creates a binding for this action handler
-         * @param data The field configuration data
-         * @param tags The tags to include in the binding
-         * @returns The action binding
-         */
-        createBinding<T>(
-            data: IMultiSelectExecuteData<T>,
-            tags?: ITagsOverride
-        ): IActionBinding<IMultiSelectExecuteData<T>>;
-    }
->;
+        <T>(
+            config:
+                | IMultiSelectExecuteData<T>
+                | IBindingCreatorConfig<IMultiSelectExecuteData<T>>
+        ): IActionBinding<IAction<IMultiSelectExecuteData<unknown>, never>>;
+    },
+});

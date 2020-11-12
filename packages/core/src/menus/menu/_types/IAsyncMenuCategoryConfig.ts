@@ -1,7 +1,7 @@
-import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {IPrioritizedMenuItem} from "./IPrioritizedMenuItem";
 import {SortedList} from "../../../utils/SortedList";
 import {IDataHook, IDataSource} from "model-react";
+import {ICategory} from "../../../actions/types/category/_types/ICategory";
 
 /**
  * Configuration for the categories in a prioritized menu

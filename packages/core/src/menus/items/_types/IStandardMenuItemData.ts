@@ -1,13 +1,14 @@
 import {ReactNode} from "react";
-import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {IMenu} from "../../menu/_types/IMenu";
-import {IExecutable} from "../../actions/types/execute/_types/IExecutable";
 import {IDataHook} from "model-react";
-import {ISubscribableActionBindings} from "./ISubscribableActionBindings";
-import {ISimpleSearchPatternMatcher} from "../../actions/types/search/simpleSearch/_types/ISimpleSearchData";
-import {IMenuItemContent} from "../../actions/types/onCursor/_types/IMenuItemContent";
 import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {IIOContext} from "../../../context/_types/IIOContext";
+import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
+import {IActionBinding} from "../../../actions/_types/IActionBinding";
+import {IMenuItemContent} from "../../../actions/types/onCursor/_types/IMenuItemContent";
+import {ICategory} from "../../../actions/types/category/_types/ICategory";
+import {ISimpleSearchPatternMatcher} from "../../../actions/types/search/simpleSearch/_types/ISimpleSearchData";
+import {IExecutableFunction} from "../../../actions/types/execute/_types/IExecutable";
 
 /**
  * A type for the data passed to a standard menu item
@@ -35,14 +36,14 @@ export type IStandardMenuItemData = {
     category?: ICategory;
 
     /** Bindings to additional actions */
-    actionBindings?: ISubscribableActionBindings;
+    actionBindings?: ISubscribable<IActionBinding[]>;
 
     /** A pattern matcher that can be used to capture patterns in a search and highlight them */
     searchPattern?: ISimpleSearchPatternMatcher;
 
     // Event listeners
     /** The function to execute when executing the menu item's default action */
-    onExecute?: IExecutable["execute"];
+    onExecute?: IExecutableFunction;
 
     /** Whether to not invoke the menus execution callback if only onExecute gets executed (defaults to false) */
     executePassively?: boolean;

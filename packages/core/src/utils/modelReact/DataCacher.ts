@@ -14,6 +14,7 @@ export class DataCacher<T> extends AbstractDataSource<T> implements IDataSource<
     protected loading: boolean = false;
     protected exceptions: any[];
     protected lastLoadTime: number = 0;
+    protected isDirty = true;
 
     // A function to execute when the data is changed, but after it finished computing (and once stored)
     protected onUpdate?: (value: T, previous: T | undefined) => void;
@@ -55,7 +56,7 @@ export class DataCacher<T> extends AbstractDataSource<T> implements IDataSource<
                     ? params.refreshTimestamp
                     : undefined
                 : undefined;
-        if (this.dependencyRemovers.length !== 0 && !refreshTimestamp) return;
+        if (!(this.isDirty || refreshTimestamp)) return;
 
         // Remove the old dependency listeners if there are any
         this.dependencyRemovers.forEach(remove => remove());
@@ -76,11 +77,13 @@ export class DataCacher<T> extends AbstractDataSource<T> implements IDataSource<
             this.dependencyRemovers = [];
 
             // Inform our listeners
+            this.isDirty = true;
             this.callListeners();
         };
 
         // Retrieve the new value and setup the new listener
         const prev = this.cached;
+        this.isDirty = false;
         this.cached = this.source(
             {
                 refreshData: true,

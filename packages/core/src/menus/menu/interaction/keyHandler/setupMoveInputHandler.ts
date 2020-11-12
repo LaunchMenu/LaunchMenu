@@ -8,6 +8,7 @@ import {createMenuControlsSettingsFolder} from "../../../../application/settings
 import {TSettingsFromFactory} from "../../../../settings/_types/TSettingsFromFactory";
 import {isMenuControlsSettingsFolder} from "./isMenuControlsSettingsFolder";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
+import {DataCacher} from "../../../../utils/modelReact/DataCacher";
 
 /**
  * Sets up a key event handler that listens for cursor movement and selection change events
@@ -26,13 +27,15 @@ export function setupMoveInputHandler(
               typeof createMenuControlsSettingsFolder
           > = menu.getContext().settings.get(baseSettings).controls.menu
 ): IKeyEventListenerObject {
-    const pPatterns = isMenuControlsSettingsFolder(patterns)
-        ? (patterns = {
-              up: patterns.up.get(),
-              down: patterns.down.get(),
-              selectItem: patterns.selectItem.get(),
-          })
-        : patterns;
+    const patternsSource = new DataCacher(h =>
+        isMenuControlsSettingsFolder(patterns)
+            ? {
+                  up: patterns.up.get(h),
+                  down: patterns.down.get(h),
+                  selectItem: patterns.selectItem.get(h),
+              }
+            : patterns
+    );
 
     // // Whether we should toggle the cursor selection when letting go of shift
     let toggleCursorSelection = false;
@@ -45,6 +48,8 @@ export function setupMoveInputHandler(
          * @returns Whether the event was caught
          */
         emit(event: KeyEvent): boolean | undefined {
+            const pPatterns = patternsSource.get(null);
+
             // TODO: create system for custom rate repeat
             const isUpKey = pPatterns.up.matches(event);
             const isDownKey = pPatterns.down.matches(event);

@@ -1,7 +1,7 @@
 import {SortedList} from "../../utils/SortedList";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
-import {ICategory} from "../actions/types/category/_types/ICategory";
 import {hasHigherOrEqualPriority} from "./priority/hasHigherOrEqualPriority";
+import {ICategory} from "../../actions/types/category/_types/ICategory";
 
 /**
  * Sorts the given categories based on the top priority of each of the categories

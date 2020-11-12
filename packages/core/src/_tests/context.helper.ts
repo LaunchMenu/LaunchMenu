@@ -11,5 +11,5 @@ export const dummyContext: IIOContext = {
     open: () => Promise.resolve(() => {}),
     undoRedo: new UndoRedoFacility(),
     settings: new SettingsContext(),
-    contextMenuItems: [],
+    contextMenuBindings: [],
 };

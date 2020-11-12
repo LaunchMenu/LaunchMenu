@@ -94,7 +94,8 @@ export class UILayer extends UnifiedAbstractUILayer {
                 });
             if (data.destroyOnClose != false)
                 res.onClose = mergeCallbacks([res.onClose, () => menu.destroy()]);
-            if (data.searchable !== false) extra.push(new MenuSearch({menu: data.menu}));
+            if (data.searchable !== false) extra.push(new MenuSearch({menu: data.menu, 
+                onExecute: data.onExecute}));
         }
 
         // Create the standard field data

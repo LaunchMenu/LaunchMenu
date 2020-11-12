@@ -1,4 +1,4 @@
-import {ICategory} from "../../menus/actions/types/category/_types/ICategory";
+import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {createStandardCategory} from "../../menus/categories/createStandardCategory";
 import {IApplet} from "./_types/IApplet";
 

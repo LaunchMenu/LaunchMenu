@@ -1,4 +1,4 @@
-import {Ace} from "ace-builds";
+import type {Ace} from "ace-builds";
 import {ITextSelection} from "../../../textFields/_types/ITextSelection";
 import {useRef, useCallback, useEffect, MutableRefObject} from "react";
 import {get1dSelectionRange} from "../../../textFields/utils/rangeConversion";

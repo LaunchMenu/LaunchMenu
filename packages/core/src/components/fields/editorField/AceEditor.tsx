@@ -1,18 +1,16 @@
 import React, {useRef, useEffect, useState, useCallback} from "react";
-import {edit, Ace, config} from "ace-builds";
+import type {Ace} from "ace-builds";
 import {IAceEditorProps} from "./_types/IAceEditorProps";
 import {get2dSelectionRange} from "../../../textFields/utils/rangeConversion";
 import {Box} from "../../../styling/box/Box";
 import {useAceSelectionListener} from "./useAceSelectionListener";
 import {LFC} from "../../../_types/LFC";
-
-// Make sure all of ace is easily accessible
-export * from "ace-builds";
+import {getAce} from "./getAce";
 
 // https://github.com/ajaxorg/ace/issues/1518#issuecomment-324130995
-config.set("basePath", "/ace-builds/src-noconflict");
-config.set("modePath", "/ace-builds/src-noconflict");
-config.set("themePath", "/ace-builds/src-noconflict");
+getAce().config.set("basePath", "/ace-builds/src-noconflict");
+getAce().config.set("modePath", "/ace-builds/src-noconflict");
+getAce().config.set("themePath", "/ace-builds/src-noconflict");
 
 /**
  * A react component for the ace text editor
@@ -33,7 +31,7 @@ export const AceEditor: LFC<IAceEditorProps> = ({
     useEffect(() => {
         if (divRef.current && !editor) {
             // Create the editor
-            let editor = edit(divRef.current);
+            let editor = getAce().edit(divRef.current);
             if (options) editor.setOptions(options);
             setEditor(editor);
 

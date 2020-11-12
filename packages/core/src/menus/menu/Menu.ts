@@ -2,14 +2,14 @@ import {IMenuItem} from "../items/_types/IMenuItem";
 import {IDataHook, Field} from "model-react";
 import {IMenuCategoryConfig} from "./_types/IMenuCategoryConfig";
 import {TRequired} from "../../_types/TRequired";
-import {ICategory} from "../actions/types/category/_types/ICategory";
-import {getMenuCategory} from "../actions/types/category/getCategoryAction";
 import {isItemSelectable} from "../items/isItemSelectable";
-import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 import {AbstractMenu} from "./AbstractMenu";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
+import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
+import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
+import {ICategory} from "../../actions/types/category/_types/ICategory";
 
 /**
  * A menu class to control menu items and their state,
@@ -56,7 +56,7 @@ export class Menu extends AbstractMenu {
 
         // Create the category config
         this.categoryConfig = {
-            getCategory: config?.getCategory || getMenuCategory,
+            getCategory: config?.getCategory || getCategoryAction.getCategory,
             sortCategories:
                 config?.sortCategories ||
                 (categories => categories.map(({category}) => category)),

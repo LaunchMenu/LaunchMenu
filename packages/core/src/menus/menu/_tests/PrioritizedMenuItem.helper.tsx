@@ -1,9 +1,10 @@
 import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
 import {createDummyMenuItem} from "./MenuItem.helper";
-import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {v4 as uuid} from "uuid";
-import {ISubscribableActionBindings} from "../../items/_types/ISubscribableActionBindings";
 import {IPriority} from "../priority/_types/IPriority";
+import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
+import {IActionBinding} from "../../../actions/_types/IActionBinding";
+import {ICategory} from "../../../actions/types/category/_types/ICategory";
 
 export function createDummyPrioritizedMenuItem<
     T extends {
@@ -11,7 +12,7 @@ export function createDummyPrioritizedMenuItem<
         category?: ICategory | undefined;
         generateID?: boolean;
         noSelect?: boolean;
-        actionBindings?: ISubscribableActionBindings;
+        actionBindings?: ISubscribable<IActionBinding[]>;
         name?: string;
     }
 >({

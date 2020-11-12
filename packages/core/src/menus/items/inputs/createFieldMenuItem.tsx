@@ -1,14 +1,7 @@
 import React, {memo} from "react";
 import {IFieldMenuItemData} from "./_types/IFieldMenuItemData";
 import {IFieldMenuItem} from "./_types/IFieldMenuItem";
-import {Field, IDataHook} from "model-react";
-import {IActionBinding} from "../../actions/_types/IActionBinding";
-import {createSimpleSearchBinding} from "../../actions/types/search/simpleSearch/simpleSearchHandler";
-import {executeAction} from "../../actions/types/execute/executeAction";
-import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
-import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
-import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangeAction";
-import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
+import {Field} from "model-react";
 import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {MenuItemFrame} from "../../../components/items/MenuItemFrame";
 import {MenuItemLayout} from "../../../components/items/MenuItemLayout";
@@ -17,11 +10,19 @@ import {SimpleSearchHighlight} from "../../../components/items/SimpleSearchHighl
 import {Truncated} from "../../../components/Truncated";
 import {Box} from "../../../styling/box/Box";
 import {resetFieldAction} from "./resetFieldAction";
-import {ISubscribableActionBindings} from "../_types/ISubscribableActionBindings";
 import {adjustBindings} from "../adjustBindings";
 import {getHooked} from "../../../utils/subscribables/getHooked";
-import {openMenuItemContentHandler} from "../../actions/types/onCursor/openMenuItemContentHandler";
-import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
+import {getCategoryAction} from "../../../actions/types/category/getCategoryAction";
+import {executeAction} from "../../../actions/types/execute/executeAction";
+import {onSelectAction} from "../../../actions/types/onSelect/onSelectAction";
+import {onCursorAction} from "../../../actions/types/onCursor/onCursorAction";
+import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
+import {openMenuItemContentHandler} from "../../../actions/types/onCursor/openMenuItemContentHandler";
+import {shortcutHandler} from "../../../actions/types/keyHandler/shortcutHandler";
+import {simpleSearchHandler} from "../../../actions/types/search/simpleSearch/simpleSearchHandler";
+import {IActionBinding} from "../../../actions/_types/IActionBinding";
+import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
+import {menuItemIdentityAction} from "../../../actions/types/identity/menuItemIdentityAction";
 
 // TODO: reuse standard menu item to reduce code duplication
 
@@ -53,21 +54,22 @@ export function createFieldMenuItem<T>({
         actionBindings,
         searchPattern,
     } = data(field);
-
-    let generatedBindings: IActionBinding<any>[] = [
-        createSimpleSearchBinding({
+    const identity = menuItemIdentityAction.createBinding(() => item);
+    let generatedBindings: IActionBinding[] = [
+        identity,
+        simpleSearchHandler.createBinding({
             name,
             description,
             tags,
             patternMatcher: searchPattern,
+            itemID: identity.ID,
         }),
     ];
-    if (onExecute)
-        generatedBindings.push(executeAction.createBinding({execute: onExecute}));
-    if (onSelect) generatedBindings.push(onSelectAction.createBinding({onSelect}));
-    if (onCursor) generatedBindings.push(onCursorAction.createBinding({onCursor}));
+    if (onExecute) generatedBindings.push(executeAction.createBinding(onExecute));
+    if (onSelect) generatedBindings.push(onSelectAction.createBinding(onSelect));
+    if (onCursor) generatedBindings.push(onCursorAction.createBinding(onCursor));
     if (onMenuChange)
-        generatedBindings.push(onMenuChangeAction.createBinding({onMenuChange}));
+        generatedBindings.push(onMenuChangeAction.createBinding(onMenuChange));
     if (category) generatedBindings.push(getCategoryAction.createBinding(category));
     if (content)
         generatedBindings.push(openMenuItemContentHandler.createBinding(content));
@@ -79,17 +81,20 @@ export function createFieldMenuItem<T>({
                 undoable: resetUndoable,
             })
         );
-    if (shortcut) generatedBindings.push(shortcutHandler.createBinding({shortcut}));
+    if (shortcut)
+        generatedBindings.push(
+            shortcutHandler.createBinding({shortcut, itemID: identity.ID})
+        );
 
     // Combine the input action bindings with the created ones
-    let bindings = generatedBindings as ISubscribableActionBindings;
+    let bindings: ISubscribable<IActionBinding[]> = generatedBindings;
     if (actionBindings)
         bindings = adjustBindings(actionBindings, actionBindings => [
             ...actionBindings,
             ...generatedBindings,
         ]);
 
-    return {
+    const item: IFieldMenuItem<T> = {
         get: (hook = null) => field.get(hook),
         set: value => field.set(value),
         view: memo(({highlight, ...props}) => {
@@ -127,4 +132,5 @@ export function createFieldMenuItem<T>({
         }),
         actionBindings: bindings,
     };
+    return item;
 }

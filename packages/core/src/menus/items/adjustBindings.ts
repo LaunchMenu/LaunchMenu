@@ -1,6 +1,6 @@
 import {IDataHook} from "model-react";
-import {IActionBinding} from "../actions/_types/IActionBinding";
-import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings";
+import {IActionBinding} from "../../actions/_types/IActionBinding";
+import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
 
 /**
  * Adapts the given bindings using the passed function
@@ -10,12 +10,9 @@ import {ISubscribableActionBindings} from "./_types/ISubscribableActionBindings"
  * @exportTo ./menus/helpers
  */
 export function adjustBindings(
-    bindings: ISubscribableActionBindings,
-    extendBindings: (
-        bindings: IActionBinding<any>[],
-        hooh: IDataHook
-    ) => IActionBinding<any>[]
-): ISubscribableActionBindings {
+    bindings: ISubscribable<IActionBinding[]>,
+    extendBindings: (bindings: IActionBinding[], hooh: IDataHook) => IActionBinding[]
+): ISubscribable<IActionBinding[]> {
     return (hook: IDataHook) =>
         extendBindings(bindings instanceof Function ? bindings(hook) : bindings, hook);
 }

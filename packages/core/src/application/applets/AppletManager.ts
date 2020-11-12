@@ -7,12 +7,12 @@ import FS from "fs";
 import {IApplet} from "./_types/IApplet";
 import {LaunchMenu} from "../LaunchMenu";
 import {IUUID} from "../../_types/IUUID";
-import {ICategory} from "../../menus/actions/types/category/_types/ICategory";
 import {createAppletResultCategory} from "./createAppletResultCategory";
 import {withLM} from "./declaration/withLM";
 import {JSONFile} from "../../settings/storage/fileTypes/JSONFile";
 import {DataCacher} from "../../utils/modelReact/DataCacher";
 import {IAppletData} from "./_types/IAppletData";
+import {ICategory} from "../../actions/types/category/_types/ICategory";
 
 /**
  * A manager of applets, takes care of loading applets given their locations

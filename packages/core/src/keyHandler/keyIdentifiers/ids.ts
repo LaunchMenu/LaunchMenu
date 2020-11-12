@@ -89,7 +89,7 @@ export const keyIds = {
     bracketRight: "bracketRight",
     quote: "quote",
     space: "space",
-};
+} as const;
 
 /** A valid key id */
 export type IKeyId = keyof typeof keyIds;

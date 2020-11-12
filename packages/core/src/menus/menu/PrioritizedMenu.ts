@@ -1,21 +1,19 @@
-import {IDataHook, Field, isDataLoadRequest, isLoading} from "model-react";
+import {IDataHook, Field} from "model-react";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {TRequired} from "../../_types/TRequired";
 import {IPrioritizedMenuCategoryConfig} from "./_types/IAsyncMenuCategoryConfig";
 import {SortedList} from "../../utils/SortedList";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
-import {ICategory} from "../actions/types/category/_types/ICategory";
-import {getMenuCategory} from "../actions/types/category/getCategoryAction";
-import {onSelectAction} from "../actions/types/onSelect/onSelectAction";
-import {onCursorAction} from "../actions/types/onCursor/onCursorAction";
 import {isItemSelectable} from "../items/isItemSelectable";
 import {sortPrioritizedCategories} from "./SortPrioritizedCategories";
-import {onMenuChangeAction} from "../actions/types/onMenuChange/onMenuChangeAction";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 import {AbstractMenu} from "./AbstractMenu";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
 import {hasHigherOrEqualPriority} from "./priority/hasHigherOrEqualPriority";
+import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
+import {ICategory} from "../../actions/types/category/_types/ICategory";
+import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 
 type CategoryData = {
     items: SortedList<IPrioritizedMenuItem>;
@@ -88,7 +86,7 @@ export class PrioritizedMenu extends AbstractMenu {
 
         // Create the category config
         this.categoryConfig = {
-            getCategory: categoryConfig?.getCategory || getMenuCategory,
+            getCategory: categoryConfig?.getCategory || getCategoryAction.getCategory,
             sortCategories: categoryConfig?.sortCategories || sortPrioritizedCategories,
             maxCategoryItemCount: categoryConfig?.maxCategoryItemCount || Infinity,
             batchInterval: categoryConfig?.batchInterval || 100,

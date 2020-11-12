@@ -1,8 +1,6 @@
 import React from "react";
 import {Field, IDataHook} from "model-react";
 import {IIOContext} from "../../../context/_types/IIOContext";
-import {executeAction} from "../../../menus/actions/types/execute/executeAction";
-import {onMenuChangeAction} from "../../../menus/actions/types/onMenuChange/onMenuChangeAction";
 import {adjustBindings} from "../../../menus/items/adjustBindings";
 import {createStandardMenuItem} from "../../../menus/items/createStandardMenuItem";
 import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
@@ -13,7 +11,6 @@ import {Input} from "../input/Input";
 import {IInputConfig} from "../input/_types/IInputConfig";
 import {ISelectConfig} from "./_types/ISelectConfig";
 import {v4 as uuid} from "uuid";
-import {searchAction} from "../../../menus/actions/types/search/searchAction";
 import {Observer} from "../../../utils/modelReact/Observer";
 import {IInputError} from "../input/_types/IInputError";
 import {IViewStackItem} from "../../_types/IViewStackItem";
@@ -22,6 +19,11 @@ import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
 import {createMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {ISelectOption} from "./_types/ISelectOption";
 import {ISelectOptionData} from "./_types/ISelectOptionData";
+import {executeAction} from "../../../actions/types/execute/executeAction";
+import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
+import {isActionBindingFor} from "../../../actions/utils/isActionBindingFor";
+import {searchAction} from "../../../actions/types/search/searchAction";
+import {menuItemIdentityAction} from "../../../actions/types/identity/menuItemIdentityAction";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -160,34 +162,26 @@ export class Select<T> extends Input<T> {
         const {value, disabled = false} = isSelectObject(option)
             ? option
             : {value: option, disabled: false};
-        const item = this.config.createOptionView(value, disabled);
+        const item = menuItemIdentityAction.copyItem(
+            this.config.createOptionView(value, disabled),
+            disabled
+                ? []
+                : [
+                      executeAction.createBinding(({context}) => this.submit(context)),
+                      // Select this item when added to menu
+                      onMenuChangeAction.createBinding((menu, added) => {
+                          const v = this.target.get(null);
+                          if (
+                              menu == this.menu &&
+                              added &&
+                              (this.config.equals?.(v, value) ?? v == value)
+                          )
+                              menu.setCursor(item);
+                      }),
+                  ]
+        );
 
-        const finalItem = {
-            view: item.view,
-            actionBindings: adjustBindings(item.actionBindings, bindings => [
-                ...bindings,
-                ...(disabled
-                    ? []
-                    : [
-                          executeAction.createBinding({
-                              execute: ({context}) => this.submit(context),
-                          }),
-                          // Select this item when added to menu
-                          onMenuChangeAction.createBinding({
-                              onMenuChange: (menu, added) => {
-                                  const v = this.target.get(null);
-                                  if (
-                                      menu == this.menu &&
-                                      added &&
-                                      (this.config.equals?.(v, value) ?? v == value)
-                                  )
-                                      menu.setCursor(finalItem);
-                              },
-                          }),
-                      ]),
-            ]),
-        };
-        return finalItem;
+        return item;
     }
 
     /** @override */
@@ -237,28 +231,26 @@ export class Select<T> extends Input<T> {
 
         // Create a search binding that returns this item no matter what the query
         const id = uuid();
-        const searchBinding = searchAction.createBinding([
-            {
-                ID: id,
-                search: async query => ({
-                    // Note it should be this.customItem, not item, since item doesn't contain all data yet
-                    item:
-                        query.search != "" // To prevent duplicates since all items show  when search is empty
-                            ? this.customItem && {
-                                  item: this.customItem,
-                                  ID: id,
-                                  priority: 0.1,
-                              }
-                            : undefined,
-                }),
-            },
-        ]);
+        const searchBinding = searchAction.createBinding({
+            ID: id,
+            search: async query => ({
+                // Note it should be this.customItem, not item, since item doesn't contain all data yet
+                item:
+                    query.search != "" // To prevent duplicates since all items show  when search is empty
+                        ? this.customItem && {
+                              item: this.customItem,
+                              ID: id,
+                              priority: 0.1,
+                          }
+                        : undefined,
+            }),
+        });
 
         // Return the item together with the new search action binding
         return {
             view: item.view,
             actionBindings: adjustBindings(item.actionBindings, bindings => [
-                ...bindings.filter(binding => !searchAction.canBeAppliedTo([binding])),
+                ...bindings.filter(binding => !isActionBindingFor(searchAction, binding)),
                 searchBinding,
             ]),
         };

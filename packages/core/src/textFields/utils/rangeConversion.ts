@@ -1,4 +1,5 @@
-import {Ace, Range} from "ace-builds";
+import type {Ace} from "ace-builds";
+import {getAce} from "../../components/fields/editorField/getAce";
 import {ITextSelection} from "../_types/ITextSelection";
 
 /**
@@ -43,7 +44,7 @@ export function get2dIndex(text: string, index: number): {row: number; column: n
 export function get2dSelectionRange(text: string, selection: ITextSelection): Ace.Range {
     const start = get2dIndex(text, selection.start);
     const end = get2dIndex(text, selection.end);
-    return new Range(start.row, start.column, end.row, end.column);
+    return new (getAce().Range)(start.row, start.column, end.row, end.column);
 }
 
 /**
