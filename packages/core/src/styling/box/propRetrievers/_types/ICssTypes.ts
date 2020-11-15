@@ -150,3 +150,11 @@ export type ICssCursor =
     | "nwse-resize"
     | "zoom-in"
     | "zoom-out";
+
+export type ICssBoxSizing =
+    | "border-box"
+    | "content-box"
+    | "initial"
+    | "inherit"
+    | "revert"
+    | "unset";

@@ -3,6 +3,12 @@ import {adjustBindings} from "../items/adjustBindings";
 import {isActionBindingFor} from "../../actions/utils/isActionBindingFor";
 import {searchAction} from "../../actions/types/search/searchAction";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
+import {MenuItemFrame} from "../../components/items/MenuItemFrame";
+import React, {memo} from "react";
+import {MenuItemLayout} from "../../components/items/MenuItemLayout";
+import {Box} from "../../styling/box/Box";
+import {useDataHook} from "model-react";
+import {getHooked} from "../../utils/subscribables/getHooked";
 
 /**
  * Creates a standard category
@@ -18,15 +24,18 @@ export function createStandardCategory({
     /** The description of the category */
     description?: string;
 }): ICategory {
-    const item = createStandardMenuItem({name, description});
     return {
         name,
         description,
         item: {
-            view: item.view,
-            actionBindings: adjustBindings(item.actionBindings, bindings =>
-                bindings.filter(binding => !isActionBindingFor(searchAction, binding))
-            ),
+            view: memo(({highlight, ...props}) => {
+                return (
+                    <MenuItemFrame {...props} transparent={true}>
+                        <MenuItemLayout name={<Box font="header">{name}</Box>} />
+                    </MenuItemFrame>
+                );
+            }),
+            actionBindings: [],
         },
     };
 }

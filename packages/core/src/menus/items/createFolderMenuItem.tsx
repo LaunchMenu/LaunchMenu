@@ -23,6 +23,10 @@ import {openMenuItemContentHandler} from "../../actions/types/onCursor/openMenuI
 import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
 import {forwardKeyEventHandler} from "../../actions/types/keyHandler/forwardKeyEventHandler";
 import {menuItemIdentityAction} from "../../actions/types/identity/menuItemIdentityAction";
+import {createStandardActionBindings} from "./createStandardActionBindings";
+import {Box} from "../../styling/box/Box";
+import {ShortcutLabel} from "../../components/items/ShortcutLabel";
+import {ThemeIcon} from "../../components/ThemeIcon";
 
 /**
  * Retrieves the children in (subscribable) list form
@@ -37,9 +41,6 @@ export function getChildList<
         : Object.values(children);
 }
 
-const get = <T extends unknown>(f: T, h?: IDataHook) =>
-    f instanceof Function ? f(h) : f;
-
 /**
  * Creates a new folder menu item, used to store multiple child menu items in
  * @param data The data to create the menu item from
@@ -49,107 +50,88 @@ export function createFolderMenuItem<
     T extends {[key: string]: IMenuItem} | ISubscribable<IMenuItem[]>,
     S extends {[key: string]: IMenuItem} | ISubscribable<IMenuItem[]> = T
 >({
-    name,
-    description,
-    tags,
-    icon,
-    content,
-    shortcut,
-    category,
     actionBindings,
     children,
     closeOnExecute = false,
     forwardKeyEvents = false,
-    searchPattern,
     searchChildren = (children as any) as S,
-    onExecute,
-    onSelect,
-    onCursor,
+    name,
     pathName = getHooked(name),
-    onMenuChange,
+    ...rest
 }: IFolderMenuItemData<T, S>): IMenuItem & {children: T} {
     const childList = getChildList(children);
-    const identity = menuItemIdentityAction.createBinding(() => item);
-    const generatedBindings: IActionBinding[] = [
-        identity,
-        simpleSearchHandler.createBinding({
-            name,
-            description,
-            tags,
-            patternMatcher: searchPattern,
-            children: getChildList(searchChildren),
-            itemID: identity.ID,
-        }),
-    ];
+    const extraBindings: IActionBinding[] = [];
     if (childList.length > 0 || childList instanceof Function)
-        generatedBindings.push(
+        extraBindings.push(
             openMenuExecuteHandler.createBinding({
                 items: childList,
                 closeOnExecute,
                 pathName,
             })
         );
-    if (onExecute) generatedBindings.push(executeAction.createBinding(onExecute));
-    if (onSelect) generatedBindings.push(onSelectAction.createBinding(onSelect));
-    if (onCursor) generatedBindings.push(onCursorAction.createBinding(onCursor));
-    if (onMenuChange)
-        generatedBindings.push(onMenuChangeAction.createBinding(onMenuChange));
-    if (category) generatedBindings.push(getCategoryAction.createBinding(category));
-    if (content)
-        generatedBindings.push(openMenuItemContentHandler.createBinding(content));
-    if (shortcut)
-        generatedBindings.push(
-            shortcutHandler.createBinding({shortcut, itemID: identity.ID})
-        );
     if (forwardKeyEvents)
-        generatedBindings.push(
+        extraBindings.push(
             forwardKeyEventHandler.createBinding({
                 subscribableData: h => ({
                     targets: getHooked(childList, h),
                 }),
             })
         );
+    const bindings = createStandardActionBindings(
+        {
+            name,
+            ...rest,
+            actionBindings: adjustBindings(actionBindings ?? [], extraBindings),
+            searchChildren: getChildList(searchChildren),
+        },
+        () => item
+    );
 
-    // Combine the input action bindings with the created ones
-    let bindings: ISubscribable<IActionBinding[]> = generatedBindings;
-    if (actionBindings)
-        bindings = adjustBindings(actionBindings, actionBindings => [
-            ...actionBindings,
-            ...generatedBindings,
-        ]);
+    const {icon, description, shortcut} = rest;
 
     // TODO: add folder specific styling to indicate it's a folder
     const item: IMenuItem & {children: T} = {
         view: memo(({highlight, ...props}) => {
             const [h] = useDataHook();
-            const ico = get(icon, h);
-            const desc = get(description, h);
+            const iconV = getHooked(icon, h);
+            const descriptionV = getHooked(description, h);
+            const nameV = getHooked(name, h);
             return (
                 <MenuItemFrame {...props}>
-                    <MenuItemLayout
-                        icon={
-                            ico &&
-                            (typeof ico == "string" ? <MenuItemIcon icon={ico} /> : ico)
-                        }
-                        content={
-                            <>
-                                <SimpleSearchHighlight query={highlight}>
-                                    {get(name, h)}
-                                </SimpleSearchHighlight>
-                                {desc && (
-                                    <Truncated title={desc}>
+                    <Box display="flex" alignItems="center">
+                        <MenuItemLayout
+                            icon={
+                                iconV &&
+                                (typeof iconV == "string" ? (
+                                    <MenuItemIcon icon={iconV} />
+                                ) : (
+                                    iconV
+                                ))
+                            }
+                            name={
+                                <Box font="header">
+                                    <SimpleSearchHighlight query={highlight}>
+                                        {nameV}
+                                    </SimpleSearchHighlight>
+                                </Box>
+                            }
+                            shortcut={shortcut && <ShortcutLabel shortcut={shortcut} />}
+                            description={
+                                descriptionV && (
+                                    <Truncated title={descriptionV}>
                                         <SimpleSearchHighlight query={highlight}>
-                                            {desc}
+                                            {descriptionV}
                                         </SimpleSearchHighlight>
                                     </Truncated>
-                                )}
-                            </>
-                        }
-                    />
+                                )
+                            }
+                        />
+                        <ThemeIcon icon="arrowRight" size={30} />
+                    </Box>
                 </MenuItemFrame>
             );
         }),
-        actionBindings: generatedBindings,
+        actionBindings: bindings,
         children,
     };
     return item;

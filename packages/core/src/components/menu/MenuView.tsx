@@ -5,6 +5,7 @@ import {useSmoothScroll} from "../../utils/hooks/useSmoothScroll";
 import {IMenuViewProps} from "./_types/IMenuViewProps";
 import {useVerticalScroll} from "../../utils/hooks/useVerticalScroll";
 import {LFC} from "../../_types/LFC";
+import {useTheme} from "../../styling/theming/ThemeContext";
 
 /**
  * A standard simple view for a menu
@@ -62,12 +63,40 @@ export const MenuView: LFC<IMenuViewProps> = ({
     // Use a vertical scroll hook to enable smooth scrolling
     const wheelScrollRef = useVerticalScroll(smoothScrollDuration);
 
+    // Cache the items, such that we can still display them even tho the menu is already deleted
+    const cachedItems = useRef(items);
+    if (!menu.isDestroyed()) cachedItems.current = items;
+
+    const theme = useTheme();
     return (
         <FillBox
+            className="menu"
             elRef={[elRef, scrollRef, wheelScrollRef]}
             overflow="auto"
-            background="bgPrimary">
-            {items.map((menuItem, i) => {
+            background="bgTertiary"
+            zIndex={1}
+            // Add custom scrollbar styling
+            css={{
+                "&::-webkit-scrollbar": {
+                    width: 15,
+                },
+                "&::-webkit-scrollbar-track": {
+                    background: theme.color.bgTertiary,
+                },
+                "&::-webkit-scrollbar-thumb": {
+                    background: theme.color.bgPrimary,
+                    border: "3px solid",
+                    borderColor: "transparent",
+                    backgroundClip: "padding-box",
+                },
+                "&::-webkit-scrollbar-thumb:hover": {
+                    background: theme.color.primary,
+                    border: "3px solid",
+                    borderColor: "transparent",
+                    backgroundClip: "padding-box",
+                },
+            }}>
+            {cachedItems.current.map((menuItem, i) => {
                 const isCursor = cursorItem == menuItem;
                 return (
                     <div key={i} ref={isCursor ? cursorRef : undefined}>

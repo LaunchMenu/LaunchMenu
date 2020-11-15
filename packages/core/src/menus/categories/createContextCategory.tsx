@@ -22,7 +22,7 @@ export function createContextCategory(
             view: memo(props => (
                 <MenuItemFrame {...props}>
                     <MenuItemLayout
-                        content={
+                        name={
                             <>
                                 {count}/{totalCount}
                             </>

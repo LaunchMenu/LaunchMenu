@@ -4,8 +4,15 @@ import {Box} from "../styling/box/Box";
 /**
  * An inline component that highlights its content text
  */
-export const Highlight: FC<{children: string}> = ({children}) => (
-    <Box as="span" css={{backgroundColor: "green"}} borderRadius="small">
+export const Highlight: FC<{
+    children: string;
+    /** Whether to use the secondary highlight color */
+    secondaryColor?: boolean;
+}> = ({children, secondaryColor}) => (
+    <Box
+        as="span"
+        background={secondaryColor ? "secondary" : "primary"}
+        borderRadius="small">
         {children}
     </Box>
 );

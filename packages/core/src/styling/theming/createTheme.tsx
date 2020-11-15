@@ -69,20 +69,12 @@ export function createTheme(
         },
         elevation: {
             extraSmall:
-                themeInput.elevations?.extraSmall ||
-                "rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px;",
-            small:
-                themeInput.elevations?.small ||
-                "rgba(0, 0, 0, 0.2) 0px 3px 3px -2px, rgba(0, 0, 0, 0.14) 0px 3px 4px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px",
-            medium:
-                themeInput.elevations?.medium ||
-                "rgba(0, 0, 0, 0.2) 0px 3px 5px -1px, rgba(0, 0, 0, 0.14) 0px 6px 10px 0px, rgba(0, 0, 0, 0.12) 0px 1px 14px 0px;",
-            large:
-                themeInput.elevations?.large ||
-                "rgba(0, 0, 0, 0.2) 0px 8px 9px -5px, rgba(0, 0, 0, 0.14) 0px 15px 22px 2px, rgba(0, 0, 0, 0.12) 0px 5px 26px 4px;",
+                themeInput.elevations?.extraSmall || "0 14px 28px 0px rgba(0,0,0,0.10)",
+            small: themeInput.elevations?.small || "0 3px 6px -2px rgba(0,0,0,0.10)",
+            medium: themeInput.elevations?.medium || "0 10px 20px -5px rgba(0,0,0,0.10)",
+            large: themeInput.elevations?.large || " 0 14px 28px -7px rgba(0,0,0,0.10)",
             extraLarge:
-                themeInput.elevations?.extraLarge ||
-                "rgba(0, 0, 0, 0.2) 0px 11px 15px -7px, rgba(0, 0, 0, 0.14) 0px 24px 38px 3px, rgba(0, 0, 0, 0.12) 0px 9px 44px 8px;",
+                themeInput.elevations?.extraLarge || "0 19px 38px -10px rgba(0,0,0,0.10)",
         },
         font: {
             textField: {

@@ -11,8 +11,8 @@ export const defaultTheme = createTheme(
             },
             background: {
                 primary: "#FFFFFF",
-                secondary: "#EEEEEE",
-                tertiary: "#DDDDDD",
+                secondary: "#FAFAFA",
+                tertiary: "#EEEEEE",
             },
             font: {
                 accent: "#FFFFFF",

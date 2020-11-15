@@ -23,6 +23,8 @@ import {simpleSearchHandler} from "../../../actions/types/search/simpleSearch/si
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {menuItemIdentityAction} from "../../../actions/types/identity/menuItemIdentityAction";
+import {createStandardActionBindings} from "../createStandardActionBindings";
+import {ShortcutLabel} from "../../../components/items/ShortcutLabel";
 
 // TODO: reuse standard menu item to reduce code duplication
 
@@ -36,95 +38,64 @@ export function createFieldMenuItem<T>({
     data,
 }: IFieldMenuItemData<T>): IFieldMenuItem<T> {
     const field = new Field(init);
-    const {
-        valueView,
-        name,
-        icon,
-        description,
-        tags,
-        content,
-        shortcut,
-        onExecute,
-        onSelect,
-        onCursor,
-        onMenuChange,
-        category,
-        resetable,
-        resetUndoable,
-        actionBindings,
-        searchPattern,
-    } = data(field);
-    const identity = menuItemIdentityAction.createBinding(() => item);
-    let generatedBindings: IActionBinding[] = [
-        identity,
-        simpleSearchHandler.createBinding({
-            name,
-            description,
-            tags,
-            patternMatcher: searchPattern,
-            itemID: identity.ID,
-        }),
-    ];
-    if (onExecute) generatedBindings.push(executeAction.createBinding(onExecute));
-    if (onSelect) generatedBindings.push(onSelectAction.createBinding(onSelect));
-    if (onCursor) generatedBindings.push(onCursorAction.createBinding(onCursor));
-    if (onMenuChange)
-        generatedBindings.push(onMenuChangeAction.createBinding(onMenuChange));
-    if (category) generatedBindings.push(getCategoryAction.createBinding(category));
-    if (content)
-        generatedBindings.push(openMenuItemContentHandler.createBinding(content));
+    const {valueView, resetable, resetUndoable, actionBindings, ...rest} = data(field);
+    const extraBindings: IActionBinding[] = [];
     if (resetable)
-        generatedBindings.push(
+        extraBindings.push(
             resetFieldAction.createBinding({
                 default: init,
                 field,
                 undoable: resetUndoable,
             })
         );
-    if (shortcut)
-        generatedBindings.push(
-            shortcutHandler.createBinding({shortcut, itemID: identity.ID})
-        );
 
-    // Combine the input action bindings with the created ones
-    let bindings: ISubscribable<IActionBinding[]> = generatedBindings;
-    if (actionBindings)
-        bindings = adjustBindings(actionBindings, actionBindings => [
-            ...actionBindings,
-            ...generatedBindings,
-        ]);
+    let bindings = createStandardActionBindings(
+        {
+            ...rest,
+            actionBindings: adjustBindings(actionBindings ?? [], extraBindings),
+        },
+        () => item,
+        undefined
+    );
+
+    const {name, icon, description, shortcut} = rest;
 
     const item: IFieldMenuItem<T> = {
         get: (hook = null) => field.get(hook),
         set: value => field.set(value),
         view: memo(({highlight, ...props}) => {
             const [h] = useDataHook();
-            const ico = getHooked(icon, h);
-            const desc = getHooked(description, h);
+            const iconV = getHooked(icon, h);
+            const descriptionV = getHooked(description, h);
+            const nameV = getHooked(name, h);
             return (
                 <MenuItemFrame {...props}>
                     <MenuItemLayout
                         icon={
-                            ico &&
-                            (typeof ico == "string" ? <MenuItemIcon icon={ico} /> : ico)
+                            iconV &&
+                            (typeof iconV == "string" ? (
+                                <MenuItemIcon icon={iconV} />
+                            ) : (
+                                iconV
+                            ))
                         }
-                        content={
-                            <>
+                        name={
+                            <Box font="header">
                                 <SimpleSearchHighlight query={highlight}>
-                                    {getHooked(name, h)}
+                                    {nameV}
                                 </SimpleSearchHighlight>
-                                :
-                                <Box display="inline" marginLeft="small">
-                                    {valueView}
-                                </Box>
-                                {desc && (
-                                    <Truncated title={desc}>
-                                        <SimpleSearchHighlight query={highlight}>
-                                            {desc}
-                                        </SimpleSearchHighlight>
-                                    </Truncated>
-                                )}
-                            </>
+                            </Box>
+                        }
+                        value={valueView}
+                        shortcut={shortcut && <ShortcutLabel shortcut={shortcut} />}
+                        description={
+                            descriptionV && (
+                                <Truncated title={descriptionV}>
+                                    <SimpleSearchHighlight query={highlight}>
+                                        {descriptionV}
+                                    </SimpleSearchHighlight>
+                                </Truncated>
+                            )
                         }
                     />
                 </MenuItemFrame>

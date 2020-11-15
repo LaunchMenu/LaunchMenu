@@ -15,6 +15,7 @@ import {
     ICssFloat,
     ICssCursor,
     ICssFlexWrap,
+    ICssBoxSizing,
 } from "../_types/ICssTypes";
 
 /*
@@ -49,6 +50,7 @@ export const cssLiteralMappers = {
     whiteSpace: (p: ICssWhiteSpace) => p,
     float: (p: ICssFloat) => p,
     cursor: (p: ICssCursor) => p,
+    boxSizing: (p: ICssBoxSizing) => p,
     zIndex: (p: number) => p,
     order: (p: number) => p,
     flexGrow: (p: number) => p,

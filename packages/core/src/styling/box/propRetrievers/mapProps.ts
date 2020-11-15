@@ -23,7 +23,9 @@ export function mapProps<
     Object.keys(props).forEach(propName => {
         // Ignore any props that aren't specified in the mapper
         if (mapper[propName]) {
-            const value = mapper[propName](props[propName], context);
+            const inpValue = props[propName];
+            if (inpValue === undefined) return; // Skip undefined keys (as if they aren't there)
+            const value = mapper[propName](inpValue, context);
 
             // IF the value is an object 'expand' it into the result
             if (value instanceof Object && !(value instanceof Function)) {
