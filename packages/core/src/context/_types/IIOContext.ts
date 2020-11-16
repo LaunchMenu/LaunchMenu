@@ -28,8 +28,6 @@ export type IIOContext = {
             onClose?: () => void | Promise<void>;
             /** The index on the stack to open this layer at */
             index?: number;
-            /** The UILayer to open this layer after */
-            after?: IUILayer;
         }
     ): Promise<() => void>;
     /**

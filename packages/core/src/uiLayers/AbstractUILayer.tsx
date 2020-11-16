@@ -6,11 +6,23 @@ import {IUILayer} from "./_types/IUILayer";
 import {IUILayerContentData} from "./_types/IUILayerContentData";
 import {IUILayerFieldData} from "./_types/IUILayerFieldData";
 import {IUILayerMenuData} from "./_types/IUILayerMenuData";
+import {UIMissingView} from "./UILayerMissingView";
+import {v4 as uuid} from "uuid";
+import {getContentAction} from "../actions/types/content/getContentAction";
 
 /**
  * An abstract class that can be used as a foundation for a UILayer
  */
 export abstract class AbstractUILayer implements IUILayer {
+    // An overlay element to show in case this layer has no data for a given section
+    protected showNodataOverlays: boolean;
+    protected UIMissingData = {
+        ID: uuid(),
+        contentView: UIMissingView,
+        menuView: UIMissingView,
+        fieldView: UIMissingView,
+    };
+
     // Initialization management
     protected closers: (() => void)[] = [];
     protected relativePath: string;
@@ -20,9 +32,11 @@ export abstract class AbstractUILayer implements IUILayer {
     /**
      * Creates a new abstract UI layer
      * @param relativePath The path input
+     * @param showNodataOverlays Whether to show overlays for sections without data
      */
-    public constructor(relativePath: string = ".") {
+    public constructor(relativePath: string = ".", showNodataOverlays: boolean = true) {
         this.relativePath = relativePath;
+        this.showNodataOverlays = showNodataOverlays;
     }
 
     /**
@@ -101,6 +115,18 @@ export abstract class AbstractUILayer implements IUILayer {
         }, current);
     });
 
+    /**
+     * Checks whether this layer is on the top of the stack
+     * @param hook The hook to subscribe to changes
+     * @returns Whether this layer is on top
+     */
+    protected isOnTop(hook: IDataHook = null): boolean {
+        const context = this.context.get(hook);
+        if (!context) return false;
+        const layers = context.getUI(hook);
+        return layers[layers.length - 1] == this;
+    }
+
     // Data management
     // TODO: add a system to not call the hook if nothing changed for a given stack (menu/field/content)
     /**
@@ -109,7 +135,7 @@ export abstract class AbstractUILayer implements IUILayer {
      * @returns The menu data of this layer
      */
     public getMenuData(hook?: IDataHook): IUILayerMenuData[] {
-        return [];
+        return this.showNodataOverlays && this.isOnTop(hook) ? [this.UIMissingData] : [];
     }
 
     /**
@@ -118,16 +144,34 @@ export abstract class AbstractUILayer implements IUILayer {
      * @returns The field data of this layer
      */
     public getFieldData(hook?: IDataHook): IUILayerFieldData[] {
-        return [];
+        return this.showNodataOverlays && this.isOnTop(hook) ? [this.UIMissingData] : [];
     }
+
+    /**
+     * Contents that are visible from the currently selected menu items
+     */
+    protected menuItemContents = new DataCacher(h =>
+        this.getMenuData(h).flatMap(data => {
+            if (!("menu" in data) || !data.menu) return [];
+
+            const cursor = data.menu.getCursor(h);
+            if (!cursor) return [];
+
+            const cursorContents = getContentAction.get([cursor], h);
+            return cursorContents;
+        })
+    );
 
     /**
      * Retrieves the content data
      * @param hook The data hook to subscribe to changes
      * @returns The content data of this layer
      */
-    public getContentData(hook?: IDataHook): IUILayerContentData[] {
-        return [];
+    public getContentData(hook: IDataHook = null): IUILayerContentData[] {
+        const itemContents = this.menuItemContents.get(hook);
+        return this.showNodataOverlays && itemContents.length == 0 && this.isOnTop(hook)
+            ? [this.UIMissingData]
+            : itemContents;
     }
 
     /**

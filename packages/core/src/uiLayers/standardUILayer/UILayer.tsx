@@ -26,12 +26,14 @@ export class UILayer extends UnifiedAbstractUILayer {
      * Creates a new standard UILayer
      * @param data The data to create the layer from
      * @param path The relative path
+     * @param showNodataOverlays Whether to show overlays for sections without data (defaults to true)
      */
     public constructor(
         data: IStandardUILayerData[] | IStandardUILayerData,
-        path?: string
+        path?: string,
+        showNodataOverlays?: boolean
     ) {
-        super(path);
+        super(path, showNodataOverlays);
         if (!(data instanceof Array)) data = [data];
         this.inputData = data;
     }
@@ -94,8 +96,8 @@ export class UILayer extends UnifiedAbstractUILayer {
                 });
             if (data.destroyOnClose != false)
                 res.onClose = mergeCallbacks([res.onClose, () => menu.destroy()]);
-            if (data.searchable !== false) extra.push(new MenuSearch({menu: data.menu, 
-                onExecute: data.onExecute}));
+            if (data.searchable !== false)
+                extra.push(new MenuSearch({menu: data.menu, onExecute: data.onExecute}));
         }
 
         // Create the standard field data

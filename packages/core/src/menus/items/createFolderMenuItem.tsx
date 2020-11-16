@@ -19,7 +19,7 @@ import {executeAction} from "../../actions/types/execute/executeAction";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
-import {openMenuItemContentHandler} from "../../actions/types/onCursor/openMenuItemContentHandler";
+import {getContentAction} from "../../actions/types/content/getContentAction";
 import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
 import {forwardKeyEventHandler} from "../../actions/types/keyHandler/forwardKeyEventHandler";
 import {menuItemIdentityAction} from "../../actions/types/identity/menuItemIdentityAction";

@@ -34,7 +34,7 @@ export class MenuSearch extends AbstractUILayer {
      * @param data The menu, context and config data
      */
     public constructor(data: IMenuSearchConfig) {
-        super();
+        super(undefined, false);
         this.data = data;
     }
 

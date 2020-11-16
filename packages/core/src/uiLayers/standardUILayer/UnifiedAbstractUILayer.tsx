@@ -48,11 +48,13 @@ export abstract class UnifiedAbstractUILayer extends AbstractUILayer implements 
      * @returns The menu data of this layer
      */
     public getMenuData(hook?: IDataHook): IUILayerMenuData[] {
-        return this.getAll(hook)
+        const menus = this.getAll(hook)
             .flatMap((item): IUILayerData[] =>
                 "getMenuData" in item ? item.getMenuData(hook) : [item]
             )
             .filter((el): el is IUILayerMenuData => "menuView" in el);
+        if (this.showNodataOverlays && menus.length == 0) return super.getMenuData(hook);
+        return menus;
     }
 
     /**
@@ -61,11 +63,14 @@ export abstract class UnifiedAbstractUILayer extends AbstractUILayer implements 
      * @returns The field data of this layer
      */
     public getFieldData(hook?: IDataHook): IUILayerFieldData[] {
-        return this.getAll(hook)
+        const fields = this.getAll(hook)
             .flatMap((item): IUILayerData[] =>
                 "getFieldData" in item ? item.getFieldData(hook) : [item]
             )
             .filter((el): el is IUILayerFieldData => "fieldView" in el);
+        if (this.showNodataOverlays && fields.length == 0)
+            return super.getFieldData(hook);
+        return fields;
     }
 
     /**
@@ -73,15 +78,21 @@ export abstract class UnifiedAbstractUILayer extends AbstractUILayer implements 
      * @param hook The data hook to subscribe to changes
      * @returns The content data of this layer
      */
-    public getContentData(hook?: IDataHook): IUILayerContentData[] {
-        return this.getAll(hook)
-            .flatMap((item): IUILayerData[] =>
-                "getContentData" in item ? item.getContentData(hook) : [item]
-            )
-            .filter(
-                (el): el is IUILayerContentData =>
-                    "contentView" in el && el.contentView !== undefined
-            );
+    public getContentData(hook: IDataHook = null): IUILayerContentData[] {
+        const content = [
+            ...this.getAll(hook)
+                .flatMap((item): IUILayerData[] =>
+                    "getContentData" in item ? item.getContentData(hook) : [item]
+                )
+                .filter(
+                    (el): el is IUILayerContentData =>
+                        "contentView" in el && el.contentView !== undefined
+                ),
+            ...this.menuItemContents.get(hook),
+        ];
+        if (this.showNodataOverlays && content.length == 0)
+            return super.getContentData(hook);
+        return content;
     }
 
     /**

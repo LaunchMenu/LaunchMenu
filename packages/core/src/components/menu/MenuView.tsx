@@ -74,7 +74,7 @@ export const MenuView: LFC<IMenuViewProps> = ({
             elRef={[elRef, scrollRef, wheelScrollRef]}
             overflow="auto"
             background="bgTertiary"
-            zIndex={1}
+            zIndex={0}
             // Add custom scrollbar styling
             css={{
                 "&::-webkit-scrollbar": {

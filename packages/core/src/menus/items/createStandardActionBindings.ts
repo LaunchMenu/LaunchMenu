@@ -7,7 +7,7 @@ import {executeAction} from "../../actions/types/execute/executeAction";
 import {menuItemIdentityAction} from "../../actions/types/identity/menuItemIdentityAction";
 import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
-import {openMenuItemContentHandler} from "../../actions/types/onCursor/openMenuItemContentHandler";
+import {getContentAction} from "../../actions/types/content/getContentAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {simpleSearchHandler} from "../../actions/types/search/simpleSearch/simpleSearchHandler";
@@ -64,8 +64,7 @@ export function createStandardActionBindings(
     if (onMenuChange)
         generatedBindings.push(onMenuChangeAction.createBinding(onMenuChange));
     if (category) generatedBindings.push(getCategoryAction.createBinding(category));
-    if (content)
-        generatedBindings.push(openMenuItemContentHandler.createBinding(content));
+    if (content) generatedBindings.push(getContentAction.createBinding(content));
     if (shortcut)
         generatedBindings.push(
             shortcutHandler.createBinding({shortcut, itemID: identity.ID})
