@@ -6,7 +6,7 @@ import {IUILayer} from "./_types/IUILayer";
 import {IUILayerContentData} from "./_types/IUILayerContentData";
 import {IUILayerFieldData} from "./_types/IUILayerFieldData";
 import {IUILayerMenuData} from "./_types/IUILayerMenuData";
-import {UIMissingView} from "./UILayerMissingView";
+import {UIMissingView, standardOverlayGroup} from "./UILayerMissingView";
 import {v4 as uuid} from "uuid";
 import {getContentAction} from "../actions/types/content/getContentAction";
 
@@ -21,6 +21,7 @@ export abstract class AbstractUILayer implements IUILayer {
         contentView: UIMissingView,
         menuView: UIMissingView,
         fieldView: UIMissingView,
+        overlayGroup: standardOverlayGroup,
     };
 
     // Initialization management
@@ -115,36 +116,36 @@ export abstract class AbstractUILayer implements IUILayer {
         }, current);
     });
 
-    /**
-     * Checks whether this layer is on the top of the stack
-     * @param hook The hook to subscribe to changes
-     * @returns Whether this layer is on top
-     */
-    protected isOnTop(hook: IDataHook = null): boolean {
-        const context = this.context.get(hook);
-        if (!context) return false;
-        const layers = context.getUI(hook);
-        return layers[layers.length - 1] == this;
-    }
-
     // Data management
     // TODO: add a system to not call the hook if nothing changed for a given stack (menu/field/content)
     /**
      * Retrieves the menu data
      * @param hook The data hook to subscribe to changes
+     * @param extendData The data to add to
      * @returns The menu data of this layer
      */
-    public getMenuData(hook?: IDataHook): IUILayerMenuData[] {
-        return this.showNodataOverlays && this.isOnTop(hook) ? [this.UIMissingData] : [];
+    public getMenuData(
+        hook?: IDataHook,
+        extendData: IUILayerMenuData[] = []
+    ): IUILayerMenuData[] {
+        return this.showNodataOverlays && extendData.length == 0
+            ? [this.UIMissingData]
+            : extendData;
     }
 
     /**
      * Retrieves the field data
      * @param hook The data hook to subscribe to changes
+     * @param extendData The data to add to
      * @returns The field data of this layer
      */
-    public getFieldData(hook?: IDataHook): IUILayerFieldData[] {
-        return this.showNodataOverlays && this.isOnTop(hook) ? [this.UIMissingData] : [];
+    public getFieldData(
+        hook?: IDataHook,
+        extendData: IUILayerFieldData[] = []
+    ): IUILayerFieldData[] {
+        return this.showNodataOverlays && extendData.length == 0
+            ? [this.UIMissingData]
+            : extendData;
     }
 
     /**
@@ -165,11 +166,15 @@ export abstract class AbstractUILayer implements IUILayer {
     /**
      * Retrieves the content data
      * @param hook The data hook to subscribe to changes
+     * @param extendData The data to add to
      * @returns The content data of this layer
      */
-    public getContentData(hook: IDataHook = null): IUILayerContentData[] {
-        const itemContents = this.menuItemContents.get(hook);
-        return this.showNodataOverlays && itemContents.length == 0 && this.isOnTop(hook)
+    public getContentData(
+        hook: IDataHook = null,
+        extendData: IUILayerContentData[] = []
+    ): IUILayerContentData[] {
+        const itemContents = [...extendData, ...this.menuItemContents.get(hook)];
+        return this.showNodataOverlays && itemContents.length == 0
             ? [this.UIMissingData]
             : itemContents;
     }
@@ -185,5 +190,18 @@ export abstract class AbstractUILayer implements IUILayer {
             ...this.getFieldData(hook).map(({fieldHandler}) => fieldHandler),
             ...this.getContentData(hook).map(({contentHandler}) => contentHandler),
         ].filter((m): m is IKeyEventListener => !!m);
+    }
+
+    // Helpers
+    /**
+     * Checks whether this layer is on the top of the stack
+     * @param hook The hook to subscribe to changes
+     * @returns Whether this layer is on top
+     */
+    protected isOnTop(hook: IDataHook = null): boolean {
+        const context = this.context.get(hook);
+        if (!context) return false;
+        const layers = context.getUI(hook);
+        return layers[layers.length - 1] == this;
     }
 }

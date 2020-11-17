@@ -99,19 +99,19 @@ export class MultiSelect<T> extends AbstractUILayer {
     /** @override */
     public getFieldData(hook: IDataHook = null): IUILayerFieldData[] {
         const fieldData = this.fieldData.get(hook);
-        return fieldData ? [fieldData] : [];
+        return super.getFieldData(hook, fieldData ? [fieldData] : []);
     }
 
     /** @override */
     public getContentData(hook: IDataHook = null): IUILayerContentData[] {
         const contentData = this.contentData.get(hook);
-        return contentData ? [contentData] : [];
+        return super.getContentData(hook, contentData ? [contentData] : []);
     }
 
     /** @override */
     public getMenuData(hook: IDataHook = null): IUILayerMenuData[] {
         const menuData = this.menuData.get(hook);
-        return menuData ? [menuData] : [];
+        return super.getMenuData(hook, menuData ? [menuData] : []);
     }
 
     /** @override */

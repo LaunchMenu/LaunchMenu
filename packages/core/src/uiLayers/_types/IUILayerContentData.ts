@@ -10,4 +10,6 @@ export type IUILayerContentData = {
     contentView: IViewStackItem | undefined;
     /** The content's key handler */
     contentHandler?: IKeyEventListener;
+    /** The overlay group to use, making sure that only the bottom view with the same group in a continuous sequence is shown */
+    overlayGroup?: Symbol;
 };

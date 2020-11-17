@@ -2,6 +2,7 @@ import {IDataHook} from "model-react";
 import {IIOContext} from "../_types/IIOContext";
 import {IIdentifiedItem} from "../../_types/IIdentifiedItem";
 import {IViewStackItem} from "../../uiLayers/_types/IViewStackItem";
+import {getUIStack} from "./getUIStack";
 
 /**
  * Retrieves the contents UI
@@ -13,11 +14,17 @@ export function getContextContentStack(
     context: IIOContext,
     hook?: IDataHook
 ): IIdentifiedItem<IViewStackItem>[] {
-    const res = context.getUI(hook).flatMap(layer =>
-        layer
-            .getContentData(hook)
-            .map(({ID, contentView}) => ({ID, value: contentView}))
-            .filter((m): m is IIdentifiedItem<IViewStackItem> => !!m.value)
+    return getUIStack(
+        context,
+        layer =>
+            layer.getContentData(hook).flatMap(({ID, contentView, overlayGroup}) =>
+                contentView
+                    ? {
+                          view: {ID, value: contentView},
+                          overlayGroup,
+                      }
+                    : []
+            ),
+        hook
     );
-    return res;
 }

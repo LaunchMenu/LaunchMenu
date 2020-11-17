@@ -3,7 +3,7 @@ import React, {useLayoutEffect, useRef, useState} from "react";
 import {UIPathView} from "../../components/context/paths/UIPathView";
 import {StackView} from "../../components/context/stacks/StackView";
 import {InstantChangeTransition} from "../../components/context/stacks/transitions/change/InstantChangeTransition";
-import {SlideDownChangeTransition} from "../../components/context/stacks/transitions/change/slideChange/slideChangeDirectionts";
+import {SlideUpChangeTransition} from "../../components/context/stacks/transitions/change/slideChange/slideChangeDirectionts";
 import {
     SlideRightCloseTransition,
     SlideUpCloseTransition,
@@ -114,7 +114,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                     transition={`${fieldState.duration}ms height`}>
                     <StackView
                         OpenTransitionComp={SlideDownOpenTransition}
-                        ChangeTransitionComp={SlideDownChangeTransition}
+                        ChangeTransitionComp={SlideUpChangeTransition}
                         CloseTransitionComp={SlideUpCloseTransition}
                         stackGetter={fieldStackGetter}
                     />
