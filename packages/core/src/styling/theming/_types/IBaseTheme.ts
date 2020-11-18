@@ -36,6 +36,7 @@ export type IBaseTheme = {
         header: ITypography;
         headerLarge: ITypography;
         paragraph: ITypography;
+        bold: ITypography;
     };
     radius: {
         small: number;

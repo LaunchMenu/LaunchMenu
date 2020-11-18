@@ -1,4 +1,5 @@
 import React, {FC} from "react";
+import {useBackgroundColor} from "../styling/backgroundColorContext";
 import {Box} from "../styling/box/Box";
 
 /**
@@ -6,13 +7,15 @@ import {Box} from "../styling/box/Box";
  */
 export const Highlight: FC<{
     children: string;
-    /** Whether to use the secondary highlight color */
-    secondaryColor?: boolean;
-}> = ({children, secondaryColor}) => (
-    <Box
-        as="span"
-        background={secondaryColor ? "secondary" : "primary"}
-        borderRadius="small">
-        {children}
-    </Box>
-);
+}> = ({children}) => {
+    const {isDark} = useBackgroundColor();
+    return (
+        <Box
+            as="span"
+            background={isDark ? "bgPrimary" : "primary"}
+            color={isDark ? "primary" : "fontPrimary"}
+            borderRadius="small">
+            {children}
+        </Box>
+    );
+};

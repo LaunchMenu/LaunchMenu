@@ -45,8 +45,10 @@ const UIPathViewCrumbs: LFC<{context: IIOContext; pathTransitionDuration?: numbe
     return (
         <Box
             background="bgTertiary"
-            color="primary"
+            color="fontBgPrimary"
+            opacity={0.5}
             padding="small"
+            font="bold"
             height="100%"
             boxSizing="border-box">
             <Breadcumbs path={pathData} transitionDuration={pathTransitionDuration} />

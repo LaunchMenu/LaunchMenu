@@ -105,6 +105,13 @@ export function createTheme(
                 fontWeight: themeInput.fonts?.paragraph?.fontWeight || 200,
                 textTransform: themeInput.fonts?.paragraph?.textTransform || "none",
             },
+            bold: {
+                fontFamily: getFont(themeInput.fonts?.paragraph?.fontFamily),
+                fontSize: themeInput.fonts?.paragraph?.fontSize || 14,
+                fontStyle: themeInput.fonts?.paragraph?.fontStyle || "normal",
+                fontWeight: themeInput.fonts?.paragraph?.fontWeight || 900,
+                textTransform: themeInput.fonts?.paragraph?.textTransform || "none",
+            },
         },
         radius: {
             small: themeInput.radius?.small || 4,

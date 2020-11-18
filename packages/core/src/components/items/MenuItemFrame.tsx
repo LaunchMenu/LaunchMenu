@@ -11,6 +11,7 @@ import {executeAction} from "../../actions/types/execute/executeAction";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {getConnectionGroupAction} from "../../actions/types/connectionGroup/getConnectionGroupAction";
 import {useTheme} from "../../styling/theming/ThemeContext";
+import {BackgroundColorProvider} from "../../styling/backgroundColorContext";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution
@@ -25,7 +26,6 @@ export const MenuItemFrame: FC<{
     transparent?: boolean;
 }> = ({isCursor, isSelected, menu, onExecute, item, children, transparent}) => {
     const ioContext = useIOContext();
-    const theme = useTheme();
 
     const {connectBgPrevious, connectBgNext} = transparent
         ? ({} as IConnections)
@@ -46,43 +46,45 @@ export const MenuItemFrame: FC<{
             elevation={transparent ? undefined : "small"}
             zIndex={1}
             position="relative">
-            <Box
-                background={mainBgColor}
-                marginLeft="medium"
-                cursor="pointer"
-                onClick={useCallback(async () => {
-                    if (!menu || !item) return;
-                    if (menu.getCursor() == item) {
-                        executeAction.execute(menu.getContext(), [item], onExecute);
-                    } else if (isItemSelectable(item)) menu.setCursor(item);
-                }, [menu, item])}
-                // Open the context menu on right click
-                onContextMenu={() => {
-                    if (!menu || !item) return;
-                    if (isItemSelectable(item)) {
-                        menu.setCursor(item);
+            <BackgroundColorProvider color={mainBgColor}>
+                <Box
+                    background={mainBgColor}
+                    marginLeft="medium"
+                    cursor="pointer"
+                    onClick={useCallback(async () => {
+                        if (!menu || !item) return;
+                        if (menu.getCursor() == item) {
+                            executeAction.execute(menu.getContext(), [item], onExecute);
+                        } else if (isItemSelectable(item)) menu.setCursor(item);
+                    }, [menu, item])}
+                    // Open the context menu on right click
+                    onContextMenu={() => {
+                        if (!menu || !item) return;
+                        if (isItemSelectable(item)) {
+                            menu.setCursor(item);
 
-                        // Use the context menu keyboard shortcut to open the menu
-                        if (ioContext) {
-                            emitContextEvent(
-                                ioContext,
-                                new KeyEvent({
-                                    key: {id: "tab", name: "tab"},
-                                    type: "down",
-                                })
-                            );
-                            emitContextEvent(
-                                ioContext,
-                                new KeyEvent({
-                                    key: {id: "tab", name: "tab"},
-                                    type: "up",
-                                })
-                            );
+                            // Use the context menu keyboard shortcut to open the menu
+                            if (ioContext) {
+                                emitContextEvent(
+                                    ioContext,
+                                    new KeyEvent({
+                                        key: {id: "tab", name: "tab"},
+                                        type: "down",
+                                    })
+                                );
+                                emitContextEvent(
+                                    ioContext,
+                                    new KeyEvent({
+                                        key: {id: "tab", name: "tab"},
+                                        type: "up",
+                                    })
+                                );
+                            }
                         }
-                    }
-                }}>
-                {children}
-            </Box>
+                    }}>
+                    {children}
+                </Box>
+            </BackgroundColorProvider>
         </Box>
     );
 };
