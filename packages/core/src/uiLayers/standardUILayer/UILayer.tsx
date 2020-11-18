@@ -16,6 +16,7 @@ import {MenuSearch} from "../types/menuSearch/MenuSearch";
 import {mergeCallbacks} from "../../utils/mergeCallbacks";
 import {ContentView} from "../../components/content/ContentView";
 import {createContentKeyHandler} from "../../content/interaction/keyHandler/createContentKeyHandler";
+import {IUILayerBaseConfig} from "../_types/IUILayerBaseConfig";
 
 /**
  * The default UILayer class
@@ -27,15 +28,13 @@ export class UILayer extends UnifiedAbstractUILayer {
     /**
      * Creates a new standard UILayer
      * @param data The data to create the layer from
-     * @param path The relative path
-     * @param showNodataOverlays Whether to show overlays for sections without data (defaults to true)
+     * @param config Base ui layer configuration
      */
     public constructor(
         data: IStandardUILayerData[] | IStandardUILayerData,
-        path?: string,
-        showNodataOverlays?: boolean
+        config?: IUILayerBaseConfig
     ) {
-        super(path, showNodataOverlays);
+        super(config);
         if (!(data instanceof Array)) data = [data];
         this.inputData = data;
     }

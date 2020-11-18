@@ -152,7 +152,7 @@ export function createTheme(
                     src: path,
                 })),
             },
-            themeInput.globalCss
+            themeInput.globalCss || undefined
         ),
     };
 

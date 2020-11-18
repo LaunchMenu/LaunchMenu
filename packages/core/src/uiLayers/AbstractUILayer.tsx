@@ -9,13 +9,16 @@ import {IUILayerMenuData} from "./_types/IUILayerMenuData";
 import {UIMissingView, standardOverlayGroup} from "./UILayerMissingView";
 import {v4 as uuid} from "uuid";
 import {getContentAction} from "../actions/types/content/getContentAction";
+import {IUILayerBaseConfig} from "./_types/IUILayerBaseConfig";
+import {catchAllKeyHandler} from "../keyHandler/utils/catchAllKeyHandler";
 
 /**
  * An abstract class that can be used as a foundation for a UILayer
  */
 export abstract class AbstractUILayer implements IUILayer {
+    protected layerConfig: Required<IUILayerBaseConfig>;
+
     // An overlay element to show in case this layer has no data for a given section
-    protected showNodataOverlays: boolean;
     protected UIMissingData = {
         ID: uuid(),
         contentView: UIMissingView,
@@ -26,18 +29,19 @@ export abstract class AbstractUILayer implements IUILayer {
 
     // Initialization management
     protected closers: (() => void)[] = [];
-    protected relativePath: string;
-
     protected context = new Field(null as null | IIOContext);
 
     /**
      * Creates a new abstract UI layer
-     * @param relativePath The path input
-     * @param showNodataOverlays Whether to show overlays for sections without data
+     * @param config The layer config
      */
-    public constructor(relativePath: string = ".", showNodataOverlays: boolean = true) {
-        this.relativePath = relativePath;
-        this.showNodataOverlays = showNodataOverlays;
+    public constructor(config?: IUILayerBaseConfig) {
+        this.layerConfig = {
+            path: ".",
+            showNodataOverlay: true,
+            catchAllKeys: true,
+            ...config,
+        };
     }
 
     /**
@@ -96,7 +100,7 @@ export abstract class AbstractUILayer implements IUILayer {
         const index = UI.indexOf(this);
         const parent = index >= 0 ? UI[index - 1] : undefined;
         const current = parent?.getPath(h) ?? [];
-        return this.relativePath.split("/").reduce((cur, node) => {
+        return this.layerConfig.path.split("/").reduce((cur, node) => {
             if (node == ".") {
                 // Add itself to the top path
                 const top = cur[cur.length - 1];
@@ -128,7 +132,7 @@ export abstract class AbstractUILayer implements IUILayer {
         hook?: IDataHook,
         extendData: IUILayerMenuData[] = []
     ): IUILayerMenuData[] {
-        return this.showNodataOverlays && extendData.length == 0
+        return this.layerConfig.showNodataOverlay && extendData.length == 0
             ? [this.UIMissingData]
             : extendData;
     }
@@ -143,7 +147,7 @@ export abstract class AbstractUILayer implements IUILayer {
         hook?: IDataHook,
         extendData: IUILayerFieldData[] = []
     ): IUILayerFieldData[] {
-        return this.showNodataOverlays && extendData.length == 0
+        return this.layerConfig.showNodataOverlay && extendData.length == 0
             ? [this.UIMissingData]
             : extendData;
     }
@@ -174,7 +178,7 @@ export abstract class AbstractUILayer implements IUILayer {
         extendData: IUILayerContentData[] = []
     ): IUILayerContentData[] {
         const itemContents = [...extendData, ...this.menuItemContents.get(hook)];
-        return this.showNodataOverlays && itemContents.length == 0
+        return this.layerConfig.showNodataOverlay && itemContents.length == 0
             ? [this.UIMissingData]
             : itemContents;
     }
@@ -186,6 +190,7 @@ export abstract class AbstractUILayer implements IUILayer {
      */
     public getKeyHandlers(hook?: IDataHook): IKeyEventListener[] {
         return [
+            ...(this.layerConfig.catchAllKeys ? [catchAllKeyHandler] : []),
             ...this.getMenuData(hook).map(({menuHandler}) => menuHandler),
             ...this.getFieldData(hook).map(({fieldHandler}) => fieldHandler),
             ...this.getContentData(hook).map(({contentHandler}) => contentHandler),
