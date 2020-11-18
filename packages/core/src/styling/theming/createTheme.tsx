@@ -15,6 +15,7 @@ import {
     FiChevronRight,
     FiChevronUp,
 } from "react-icons/fi";
+import {mergeStyles} from "../../utils/mergeStyles";
 
 /**
  * Creates a new theme from the given input
@@ -144,12 +145,15 @@ export function createTheme(
             arrowLeft: themeInput.icons?.arrowLeft || <FiChevronLeft />,
             arrowRight: themeInput.icons?.arrowRight || <FiChevronRight />,
         },
-        globalCss: {
-            "@font-face": Object.values(fonts).map(({name, path}) => ({
-                fontFamily: name,
-                src: path,
-            })),
-        },
+        globalCss: mergeStyles(
+            {
+                "@font-face": Object.values(fonts).map(({name, path}) => ({
+                    fontFamily: name,
+                    src: path,
+                })),
+            },
+            themeInput.globalCss
+        ),
     };
 
     return {

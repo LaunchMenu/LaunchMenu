@@ -13,7 +13,7 @@ import {ITextField} from "../../../textFields/_types/ITextField";
 import {IViewStackItem} from "../../_types/IViewStackItem";
 import {IInputConfig} from "./_types/IInputConfig";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
-import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
+import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
 import {IInputError} from "./_types/IInputError";
 import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {IUILayerContentData} from "../../_types/IUILayerContentData";

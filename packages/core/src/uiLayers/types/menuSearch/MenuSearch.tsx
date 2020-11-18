@@ -14,7 +14,7 @@ import {IMenuSearchConfig} from "./_types/IMenuSearchConfig";
 import {v4 as uuid} from "uuid";
 import {ITextField} from "../../../textFields/_types/ITextField";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
-import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
+import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {createMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {MenuView} from "../../../components/menu/MenuView";

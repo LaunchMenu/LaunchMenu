@@ -67,7 +67,7 @@ function updateChildren(
         }
 
         // Create the view element
-        let view: LFC<{onTop: boolean; index: number}> | JSX.Element;
+        let view: IViewStackItemView;
         if ("view" in item.value) view = item.value.view;
         else view = item.value;
         const {transparent, transitions} =

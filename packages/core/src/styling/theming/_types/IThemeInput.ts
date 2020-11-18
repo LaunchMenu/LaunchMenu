@@ -1,6 +1,8 @@
 import {ITypography} from "./ITypography";
 import {IIcons} from "./IIcons";
 import {IBorder} from "./IBorder";
+import {Interpolation} from "@emotion/core";
+import {ITheme} from "./ITheme";
 
 export type IThemeInput = {
     colors: {
@@ -62,4 +64,5 @@ export type IThemeInput = {
         extraLarge?: number;
     };
     icons?: Partial<IIcons>;
+    globalCss?: Interpolation | ((theme: ITheme) => Interpolation);
 };

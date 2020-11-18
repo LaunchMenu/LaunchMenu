@@ -3,6 +3,7 @@ import {createSettings} from "../../../settings/createSettings";
 import {createKeyPatternSetting} from "../../../settings/inputs/createKeyPatternSetting";
 import {createSettingsFolder} from "../../../settings/inputs/createSettingsFolder";
 import {constGetter} from "../../../utils/constGetter";
+import {createContentControlsSettingsFolder} from "./controls/createContentControlsSettingsFolder";
 import {
     createFieldControlsSettingsFolder,
     fieldControlsFolderCategories,
@@ -30,6 +31,7 @@ export const baseSettings = createSettings({
                     children: {
                         menu: createMenuControlsSettingsFolder(),
                         field: createFieldControlsSettingsFolder(),
+                        content: createContentControlsSettingsFolder(),
                         back: createKeyPatternSetting({
                             name: "back",
                             init: new KeyPattern("esc"),

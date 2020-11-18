@@ -28,6 +28,7 @@ import {IMenuSearchable} from "../../actions/types/search/_types/IMenuSearchable
 import {IActionBinding} from "../../actions/_types/IActionBinding";
 import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
 import {IStandardUILayerData} from "../../uiLayers/standardUILayer/_types/IStandardUILayerData";
+import {Content} from "../../content/Content";
 
 /**
  * An application session
@@ -237,46 +238,61 @@ export class LMSession {
         const path = new Field(["shit", "orange", "bread"]);
         return [
             {
-                contentView: (
-                    <Loader>
-                        {h => (
-                            <div>
+                content: new Content(
+                    (
+                        <Loader>
+                            {h => (
                                 <div>
-                                    <button
-                                        onClick={() =>
-                                            setPath(["shit", "orange", "bread"])
-                                        }>
-                                        opt1
-                                    </button>
-                                    <button onClick={() => setPath(["shit", "bread"])}>
-                                        opt2
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            setPath(["shit", "orange", "bread", "shit"])
-                                        }>
-                                        opt3
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            setPath(["shit", "potatoes", "bread"])
-                                        }>
-                                        opt4
-                                    </button>
-                                    <button onClick={() => setPath(["shit", "potatoes"])}>
-                                        opt5
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            setPath(["fuck", "potatoes", "bread"])
-                                        }>
-                                        opt6
-                                    </button>
+                                    <div>
+                                        <button
+                                            onClick={() =>
+                                                setPath(["shit", "orange", "bread"])
+                                            }>
+                                            opt1
+                                        </button>
+                                        <button
+                                            onClick={() => setPath(["shit", "bread"])}>
+                                            opt2
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                setPath([
+                                                    "shit",
+                                                    "orange",
+                                                    "bread",
+                                                    "shit",
+                                                ])
+                                            }>
+                                            opt3
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                setPath(["shit", "potatoes", "bread"])
+                                            }>
+                                            opt4
+                                        </button>
+                                        <button
+                                            onClick={() => setPath(["shit", "potatoes"])}>
+                                            opt5
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                setPath(["fuck", "potatoes", "bread"])
+                                            }>
+                                            opt6
+                                        </button>
+                                    </div>
+                                    <Breadcumbs path={path.get(h)} />
+                                    {new Array(200).fill(null).map((_, i) => (
+                                        <div key={i}>
+                                            {i}
+                                            <br />
+                                        </div>
+                                    ))}
                                 </div>
-                                <Breadcumbs path={path.get(h)} />
-                            </div>
-                        )}
-                    </Loader>
+                            )}
+                        </Loader>
+                    )
                 ),
             },
         ];

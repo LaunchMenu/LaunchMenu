@@ -2,6 +2,7 @@ import {ITypography} from "./ITypography";
 import {IIcons} from "./IIcons";
 import {IBorder} from "./IBorder";
 import {Interpolation} from "@emotion/core";
+import {ITheme} from "./ITheme";
 
 /**
  * The base properties of a theme
@@ -57,7 +58,7 @@ export type IBaseTheme = {
         extraLarge: number;
     };
     icon: IIcons;
-    globalCss?: Interpolation;
+    globalCss?: Interpolation | ((theme: ITheme) => Interpolation);
 };
 
 /**

@@ -22,7 +22,7 @@ import {AbstractUILayer} from "../../AbstractUILayer";
 import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {ITextField} from "../../../textFields/_types/ITextField";
-import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
+import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
 import {IHighlighter} from "../../../textFields/syntax/_types/IHighlighter";

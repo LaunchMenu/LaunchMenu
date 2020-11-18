@@ -1,5 +1,4 @@
 import React from "react";
-import {FadeChangeTransition} from "../components/context/stacks/transitions/change/FadeChangeTransition";
 import {InstantChangeTransition} from "../components/context/stacks/transitions/change/InstantChangeTransition";
 import {FadeCloseTransition} from "../components/context/stacks/transitions/close/FadeCloseTransition";
 import {FadeOpenTransition} from "../components/context/stacks/transitions/open/FadeOpenTransition";
@@ -18,7 +17,7 @@ export const UIMissingView: IViewStackItem = {
     transparent: true,
     transitions: {
         Open: FadeOpenTransition,
-        Change: FadeChangeTransition,
+        Change: InstantChangeTransition,
         Close: FadeCloseTransition,
     },
     view: <FillBox backgroundColor="bgTertiary" opacity={0.6} />,

@@ -9,11 +9,13 @@ import {v4 as uuid} from "uuid";
 import {MenuView} from "../../components/menu/MenuView";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {TextFieldView} from "../../components/fields/TextFieldView";
-import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
+import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {UnifiedAbstractUILayer} from "./UnifiedAbstractUILayer";
 import {MenuSearch} from "../types/menuSearch/MenuSearch";
 import {mergeCallbacks} from "../../utils/mergeCallbacks";
+import {ContentView} from "../../components/content/ContentView";
+import {createContentKeyHandler} from "../../content/interaction/keyHandler/createContentKeyHandler";
 
 /**
  * The default UILayer class
@@ -116,6 +118,13 @@ export class UILayer extends UnifiedAbstractUILayer {
         }
 
         // Create the content data
+        if (data.content) {
+            empty = false;
+            if (!data.contentView)
+                res.contentView = <ContentView content={data.content} />;
+            if (!data.contentHandler)
+                res.contentHandler = createContentKeyHandler(data.content, context);
+        }
         if (empty && !res.contentView) res.contentView = undefined;
 
         // Return the data

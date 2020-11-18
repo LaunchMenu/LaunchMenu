@@ -16,7 +16,7 @@ import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
  * Creates a standard menu key handler
  * @param menu The menu to create the handler for
  * @param config Any additional optional data for the key handler configuration
- * @returns The key handler that can be added to the input handler stack
+ * @returns The key handler that can be added to the UILayer
  */
 export function createMenuKeyHandler(
     menu: IMenu,
