@@ -163,7 +163,15 @@ export abstract class AbstractUILayer implements IUILayer {
             if (!cursor) return [];
 
             const cursorContents = getContentAction.get([cursor], h);
-            return cursorContents;
+            const context = this.context.get(h);
+            if (!context)
+                return cursorContents.filter(
+                    (item): item is IUILayerContentData => !(item instanceof Function)
+                );
+            else
+                return cursorContents.map(item =>
+                    item instanceof Function ? item(context) : item
+                );
         })
     );
 

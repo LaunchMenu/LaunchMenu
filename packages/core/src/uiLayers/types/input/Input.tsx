@@ -1,4 +1,4 @@
-import React from "react";
+import React, {ReactNode} from "react";
 import {Field, IDataHook} from "model-react";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
@@ -251,14 +251,12 @@ export class Input<T> extends AbstractUILayer {
         const error = this.checkError();
         this.error.set(error);
 
-        if (error) {
-            let errorView: IViewStackItem;
+        const context = this.context.get(null);
+        if (error && context) {
+            let errorView: ReactNode;
             if ("view" in error) errorView = error.view;
-            else errorView = createContentError(error.message);
-            this.contentData.set({
-                ID: uuid(),
-                contentView: errorView,
-            });
+            else errorView = error.message;
+            this.contentData.set(createContentError(errorView, context));
         } else {
             this.contentData.set(null);
         }

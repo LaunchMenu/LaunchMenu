@@ -1,9 +1,10 @@
 import {IDataHook} from "model-react";
 import {ICategory} from "../../../actions/types/category/_types/ICategory";
-import {IContentData} from "../../../actions/types/content/_types/IContentData";
+import {IGetContentInputData} from "../../../actions/types/content/_types/IGetContentInputData";
 import {IExecutableFunction} from "../../../actions/types/execute/_types/IExecutable";
 import {ISimpleSearchPatternMatcher} from "../../../actions/types/search/simpleSearch/_types/ISimpleSearchData";
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
+import {IViewStackItemView} from "../../../uiLayers/_types/IViewStackItem";
 import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {IMenu} from "../../menu/_types/IMenu";
 import {IMenuItem} from "./IMenuItem";
@@ -26,7 +27,7 @@ export type IStandardActionBindingData = {
     shortcut?: IShortcutInput;
 
     /** Content to show when this item is selected */
-    content?: IContentData;
+    content?: IViewStackItemView;
 
     /** The category to put the item under in the menu */
     category?: ICategory;

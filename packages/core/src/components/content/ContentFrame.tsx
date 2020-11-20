@@ -1,6 +1,7 @@
 import React, {FC} from "react";
 import {IContent} from "../../content/_types/IContent";
 import {Box} from "../../styling/box/Box";
+import {FillBox} from "../FillBox";
 import {ContentScroller} from "./ContentScroller";
 
 /**
@@ -8,8 +9,10 @@ import {ContentScroller} from "./ContentScroller";
  */
 export const ContentFrame: FC<{content: IContent}> = ({content, children}) => {
     return (
-        <ContentScroller content={content}>
-            <Box padding="medium">{children}</Box>
-        </ContentScroller>
+        <FillBox className="contentFrame">
+            <ContentScroller content={content}>
+                <Box padding="medium">{children}</Box>
+            </ContentScroller>
+        </FillBox>
     );
 };

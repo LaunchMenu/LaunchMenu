@@ -7,7 +7,6 @@ import {executeAction} from "../../actions/types/execute/executeAction";
 import {menuItemIdentityAction} from "../../actions/types/identity/menuItemIdentityAction";
 import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
-import {getContentAction} from "../../actions/types/content/getContentAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {simpleSearchHandler} from "../../actions/types/search/simpleSearch/simpleSearchHandler";
@@ -16,6 +15,7 @@ import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
 import {adjustBindings} from "./adjustBindings";
 import {IMenuItem} from "./_types/IMenuItem";
 import {IStandardActionBindingData} from "./_types/IStandardActionBindingData";
+import {scrollableContentHandler} from "../../actions/types/content/scrollableContentHandler";
 
 /**
  * Creates standard subscribable action bindings
@@ -64,7 +64,7 @@ export function createStandardActionBindings(
     if (onMenuChange)
         generatedBindings.push(onMenuChangeAction.createBinding(onMenuChange));
     if (category) generatedBindings.push(getCategoryAction.createBinding(category));
-    if (content) generatedBindings.push(getContentAction.createBinding(content));
+    if (content) generatedBindings.push(scrollableContentHandler.createBinding(content));
     if (shortcut)
         generatedBindings.push(
             shortcutHandler.createBinding({shortcut, itemID: identity.ID})
