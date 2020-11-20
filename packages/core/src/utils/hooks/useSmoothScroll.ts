@@ -49,7 +49,7 @@ export function useSmoothScroll<T extends HTMLElement = HTMLElement>(): [
     const updateTarget = useCallback(
         (
             newTarget: {left?: number; top?: number; addLeft?: number; addTop?: number},
-            duration: number = 500,
+            duration: number = 200,
             ease: number = 0.5
         ) => {
             const el = elRef.current;

@@ -22,7 +22,6 @@ export const UIPathView: LFC<{
     const crumbs = useMemo(() => <UIPathViewCrumbs context={context} />, [context]);
     return (
         <Box
-            color="primary"
             position="relative"
             css={{transition: `height ${heightTransitionDuration}ms`}}
             height={path.length > 0 || top?.pathView ? 30 : 0}>
@@ -43,5 +42,16 @@ const UIPathViewCrumbs: LFC<{context: IIOContext; pathTransitionDuration?: numbe
         (cur, {name}) => (cur.length == 0 ? [name] : [...cur, ">", name]),
         []
     );
-    return <Breadcumbs path={pathData} transitionDuration={pathTransitionDuration} />;
+    return (
+        <Box
+            background="bgTertiary"
+            color="fontBgPrimary"
+            opacity={0.5}
+            padding="small"
+            font="bold"
+            height="100%"
+            boxSizing="border-box">
+            <Breadcumbs path={pathData} transitionDuration={pathTransitionDuration} />
+        </Box>
+    );
 };

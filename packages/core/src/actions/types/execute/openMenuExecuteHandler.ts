@@ -68,7 +68,7 @@ export const openMenuExecuteHandler = createContextAction({
                             },
                             onClose: res,
                         }),
-                        pathName
+                        {path: pathName}
                     )
                 );
             });

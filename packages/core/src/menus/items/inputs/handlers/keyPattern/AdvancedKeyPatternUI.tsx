@@ -45,7 +45,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
         field: IField<KeyPattern>,
         config: IAdvancedKeyPatternUIData = {}
     ) {
-        super("Key Editor");
+        super({path: "Key Editor"});
         this.target = field;
         this.config = config;
 

@@ -64,7 +64,7 @@ export class Select<T> extends Input<T> {
     /** @override */
     public getMenuData(hook: IDataHook = null): IUILayerMenuData[] {
         const menuData = this.menuData.get(hook);
-        return menuData ? [menuData] : [];
+        return super.getMenuData(hook, menuData ? [menuData] : []);
     }
 
     /** @override */

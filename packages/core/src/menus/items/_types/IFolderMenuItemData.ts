@@ -19,4 +19,4 @@ export type IFolderMenuItemData<
     closeOnExecute?: boolean;
     /** Whether to forward the key events passed to this item to the item's children (defaults to false) */
     forwardKeyEvents?: boolean;
-} & IStandardMenuItemData;
+} & Omit<IStandardMenuItemData, "searchChildren">;

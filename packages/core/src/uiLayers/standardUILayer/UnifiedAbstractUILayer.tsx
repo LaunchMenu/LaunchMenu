@@ -48,11 +48,12 @@ export abstract class UnifiedAbstractUILayer extends AbstractUILayer implements 
      * @returns The menu data of this layer
      */
     public getMenuData(hook?: IDataHook): IUILayerMenuData[] {
-        return this.getAll(hook)
+        const menus = this.getAll(hook)
             .flatMap((item): IUILayerData[] =>
                 "getMenuData" in item ? item.getMenuData(hook) : [item]
             )
             .filter((el): el is IUILayerMenuData => "menuView" in el);
+        return super.getMenuData(hook, menus);
     }
 
     /**
@@ -61,11 +62,12 @@ export abstract class UnifiedAbstractUILayer extends AbstractUILayer implements 
      * @returns The field data of this layer
      */
     public getFieldData(hook?: IDataHook): IUILayerFieldData[] {
-        return this.getAll(hook)
+        const fields = this.getAll(hook)
             .flatMap((item): IUILayerData[] =>
                 "getFieldData" in item ? item.getFieldData(hook) : [item]
             )
             .filter((el): el is IUILayerFieldData => "fieldView" in el);
+        return super.getFieldData(hook, fields);
     }
 
     /**
@@ -73,8 +75,8 @@ export abstract class UnifiedAbstractUILayer extends AbstractUILayer implements 
      * @param hook The data hook to subscribe to changes
      * @returns The content data of this layer
      */
-    public getContentData(hook?: IDataHook): IUILayerContentData[] {
-        return this.getAll(hook)
+    public getContentData(hook: IDataHook = null): IUILayerContentData[] {
+        const content = this.getAll(hook)
             .flatMap((item): IUILayerData[] =>
                 "getContentData" in item ? item.getContentData(hook) : [item]
             )
@@ -82,6 +84,7 @@ export abstract class UnifiedAbstractUILayer extends AbstractUILayer implements 
                 (el): el is IUILayerContentData =>
                     "contentView" in el && el.contentView !== undefined
             );
+        return super.getContentData(hook, content);
     }
 
     /**

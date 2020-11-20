@@ -2,6 +2,8 @@ import {ITypography} from "./ITypography";
 import {IIcons} from "./IIcons";
 import {IBorder} from "./IBorder";
 import {Interpolation} from "@emotion/core";
+import {ITheme} from "./ITheme";
+import {IEmotionCss} from "./IEmotionCss";
 
 /**
  * The base properties of a theme
@@ -36,6 +38,7 @@ export type IBaseTheme = {
         header: ITypography;
         headerLarge: ITypography;
         paragraph: ITypography;
+        bold: ITypography;
     };
     radius: {
         small: number;
@@ -56,7 +59,7 @@ export type IBaseTheme = {
         extraLarge: number;
     };
     icon: IIcons;
-    globalCss?: Interpolation;
+    globalCss?: IEmotionCss;
 };
 
 /**

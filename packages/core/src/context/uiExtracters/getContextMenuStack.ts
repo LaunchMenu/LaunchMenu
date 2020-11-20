@@ -2,6 +2,7 @@ import {IDataHook} from "model-react";
 import {IViewStackItem} from "../../uiLayers/_types/IViewStackItem";
 import {IIdentifiedItem} from "../../_types/IIdentifiedItem";
 import {IIOContext} from "../_types/IIOContext";
+import {getUIStack} from "./getUIStack";
 
 /**
  * Retrieves the menus UI
@@ -13,9 +14,13 @@ export function getContextMenuStack(
     context: IIOContext,
     hook?: IDataHook
 ): IIdentifiedItem<IViewStackItem>[] {
-    return context
-        .getUI(hook)
-        .flatMap(layer =>
-            layer.getMenuData(hook).map(({ID, menuView}) => ({ID, value: menuView}))
-        );
+    return getUIStack(
+        context,
+        layer =>
+            layer.getMenuData(hook).map(({ID, menuView, overlayGroup}) => ({
+                view: {ID, value: menuView},
+                overlayGroup,
+            })),
+        hook
+    );
 }

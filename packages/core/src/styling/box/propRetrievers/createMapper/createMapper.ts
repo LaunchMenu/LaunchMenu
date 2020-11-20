@@ -8,7 +8,7 @@ import {ExtendedObject} from "../../../../utils/ExtendedObject";
  * @param mapperInput The data to be mapped, functions will remain functions, true will be replaced by the default mapping, strings wil use the default map function but get aliased
  * @returns A valid mapper definition
  */
-export function createMapper<C, I, O, M extends ICreateMapperInput<C, I, O>>(
+export function createMapper<C, I, O, M extends ICreateMapperInput<C, I>>(
     map: (value: I, context: C) => O,
     mapperInput: M
 ): TCreateMapperOutput<M, C, I, O> {

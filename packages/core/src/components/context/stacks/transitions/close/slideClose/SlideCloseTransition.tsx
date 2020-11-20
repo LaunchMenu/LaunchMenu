@@ -1,12 +1,12 @@
 import React, {useEffect, useState, FC, useCallback, useRef} from "react";
-import {Box} from "../../../../../styling/box/Box";
-import {ISlideOpenTransitionProps} from "./_types/ISlideOpenTransition";
-import {FillBox} from "../../../../FillBox";
+import {Box} from "../../../../../../styling/box/Box";
+import {ISlideCloseTransitionProps} from "../_types/ISlideCloseTransitionProps";
+import {FillBox} from "../../../../../FillBox";
 
 /**
  * A simple sliding transition
  */
-export const SlideOpenTransition: FC<ISlideOpenTransitionProps> = ({
+export const SlideCloseTransition: FC<ISlideCloseTransitionProps> = ({
     onComplete,
     children,
     duration = 150,
@@ -28,10 +28,10 @@ export const SlideOpenTransition: FC<ISlideOpenTransitionProps> = ({
     }, []);
 
     const dirProp = {
-        left: "right",
-        right: "left",
-        up: "bottom",
-        down: "top",
+        left: "left",
+        right: "right",
+        up: "top",
+        down: "bottom",
     }[direction];
     const flexDirProp = ({
         left: "row",
@@ -39,7 +39,6 @@ export const SlideOpenTransition: FC<ISlideOpenTransitionProps> = ({
         up: "column",
         down: "column-reverse",
     } as const)[direction];
-
     return (
         <FillBox display="flex" overflow="hidden">
             <Box
@@ -51,7 +50,7 @@ export const SlideOpenTransition: FC<ISlideOpenTransitionProps> = ({
                     minWidth: "100%",
                     minHeight: "100%",
                     transition: started ? `${dirProp} ${duration}ms linear` : "",
-                    [dirProp]: started ? 0 : `-100%`,
+                    [dirProp]: started ? `-100%` : 0,
                     position: "relative",
                 }}>
                 <Box

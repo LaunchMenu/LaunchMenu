@@ -7,10 +7,10 @@ import React, {
     useEffect,
     memo,
 } from "react";
-import {SlideOpenTransition} from "./open/SlideOpenTransition";
-import {SlideCloseTransition} from "./close/SlideCloseTransition";
+import {SlideOpenTransition} from "./open/slideOpen/SlideOpenTransition";
+import {SlideCloseTransition} from "./close/slideClose/SlideCloseTransition";
 import {v4 as uuid} from "uuid";
-import {SlideChangeTransition} from "./change/SlideChangeTransition";
+import {SlideChangeTransition} from "./change/slideChange/SlideChangeTransition";
 import {ITransitionProps} from "./_types/ITransitionProps";
 
 export const defaultTransitions = {

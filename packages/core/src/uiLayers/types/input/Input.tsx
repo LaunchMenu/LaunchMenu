@@ -1,4 +1,4 @@
-import React from "react";
+import React, {ReactNode} from "react";
 import {Field, IDataHook} from "model-react";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
@@ -13,7 +13,7 @@ import {ITextField} from "../../../textFields/_types/ITextField";
 import {IViewStackItem} from "../../_types/IViewStackItem";
 import {IInputConfig} from "./_types/IInputConfig";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
-import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
+import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
 import {IInputError} from "./_types/IInputError";
 import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {IUILayerContentData} from "../../_types/IUILayerContentData";
@@ -68,13 +68,13 @@ export class Input<T> extends AbstractUILayer {
     /** @override */
     public getFieldData(hook: IDataHook = null): IUILayerFieldData[] {
         const fieldData = this.fieldData.get(hook);
-        return fieldData ? [fieldData] : [];
+        return super.getFieldData(hook, fieldData ? [fieldData] : []);
     }
 
     /** @override */
     public getContentData(hook: IDataHook = null): IUILayerContentData[] {
         const contentData = this.contentData.get(hook);
-        return contentData ? [contentData] : [];
+        return super.getContentData(hook, contentData ? [contentData] : []);
     }
 
     /** @override */
@@ -251,14 +251,12 @@ export class Input<T> extends AbstractUILayer {
         const error = this.checkError();
         this.error.set(error);
 
-        if (error) {
-            let errorView: IViewStackItem;
+        const context = this.context.get(null);
+        if (error && context) {
+            let errorView: ReactNode;
             if ("view" in error) errorView = error.view;
-            else errorView = createContentError(error.message);
-            this.contentData.set({
-                ID: uuid(),
-                contentView: errorView,
-            });
+            else errorView = error.message;
+            this.contentData.set(createContentError(errorView, context));
         } else {
             this.contentData.set(null);
         }

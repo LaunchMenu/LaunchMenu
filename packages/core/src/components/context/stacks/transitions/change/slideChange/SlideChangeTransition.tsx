@@ -1,7 +1,7 @@
 import React, {useEffect, useState, FC, useCallback, useRef, isValidElement} from "react";
-import {Box} from "../../../../../styling/box/Box";
-import {ISlideChangeTransitionProps} from "./_types/ISlideChangeTransitionProps";
-import {FillBox} from "../../../../FillBox";
+import {Box} from "../../../../../../styling/box/Box";
+import {ISlideChangeTransitionProps} from "../_types/ISlideChangeTransitionProps";
+import {FillBox} from "../../../../../FillBox";
 
 /**
  * A simple sliding transition

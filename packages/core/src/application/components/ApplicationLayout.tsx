@@ -3,6 +3,15 @@ import React, {useLayoutEffect, useRef, useState} from "react";
 import {UIPathView} from "../../components/context/paths/UIPathView";
 import {StackView} from "../../components/context/stacks/StackView";
 import {InstantChangeTransition} from "../../components/context/stacks/transitions/change/InstantChangeTransition";
+import {SlideUpChangeTransition} from "../../components/context/stacks/transitions/change/slideChange/slideChangeDirectionts";
+import {
+    SlideRightCloseTransition,
+    SlideUpCloseTransition,
+} from "../../components/context/stacks/transitions/close/slideClose/slideCloseDirections";
+import {
+    SlideLeftOpenTransition,
+    SlideDownOpenTransition,
+} from "../../components/context/stacks/transitions/open/slideOpen/slideOpenDirectionts";
 import {IOContextProvider} from "../../context/react/IOContextContext";
 import {getContextContentStack} from "../../context/uiExtracters/getContextContentStack";
 import {getContextFieldStack} from "../../context/uiExtracters/getContextFieldStack";
@@ -90,12 +99,25 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
             : 0) * size.width;
     return (
         <IOContextProvider value={context}>
-            <Box elRef={layoutRef} display="flex" flexDirection="column" height="100%">
+            <Box
+                elRef={layoutRef}
+                display="flex"
+                flexDirection="column"
+                height="100%"
+                borderRadius="normal"
+                overflow="hidden">
                 <Box
                     position="relative"
+                    elevation="medium"
+                    zIndex={100}
                     height={fieldState.open ? fieldHeight : 0}
                     transition={`${fieldState.duration}ms height`}>
-                    <StackView stackGetter={fieldStackGetter} />
+                    <StackView
+                        OpenTransitionComp={SlideDownOpenTransition}
+                        ChangeTransitionComp={SlideUpChangeTransition}
+                        CloseTransitionComp={SlideUpCloseTransition}
+                        stackGetter={fieldStackGetter}
+                    />
                 </Box>
                 <Box>
                     <UIPathView
@@ -121,6 +143,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                         display="flex">
                         <Box
                             position="relative"
+                            background="bgTertiary"
                             flexShrink={0}
                             onAnimationStart={() => (bottomSectionState.animating = true)}
                             onAnimationEnd={() => (bottomSectionState.animating = false)}
@@ -136,10 +159,18 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                                 height="100%"
                                 right="none"
                                 position="absolute">
-                                <StackView stackGetter={menuStackGetter} />
+                                <StackView
+                                    OpenTransitionComp={SlideLeftOpenTransition}
+                                    CloseTransitionComp={SlideRightCloseTransition}
+                                    stackGetter={menuStackGetter}
+                                />
                             </Box>
                         </Box>
-                        <Box position="relative" flexGrow={1} flexShrink={1}>
+                        <Box
+                            position="relative"
+                            flexGrow={1}
+                            flexShrink={1}
+                            background="bgSecondary">
                             <Box
                                 width={size.width * (1 - menuWidthFraction)}
                                 height="100%">

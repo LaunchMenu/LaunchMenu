@@ -1,4 +1,4 @@
-import React from "react";
+import React, {ReactNode} from "react";
 import {Field, IDataHook} from "model-react";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
@@ -22,7 +22,7 @@ import {AbstractUILayer} from "../../AbstractUILayer";
 import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {ITextField} from "../../../textFields/_types/ITextField";
-import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
+import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
 import {IHighlighter} from "../../../textFields/syntax/_types/IHighlighter";
@@ -99,19 +99,19 @@ export class MultiSelect<T> extends AbstractUILayer {
     /** @override */
     public getFieldData(hook: IDataHook = null): IUILayerFieldData[] {
         const fieldData = this.fieldData.get(hook);
-        return fieldData ? [fieldData] : [];
+        return super.getFieldData(hook, fieldData ? [fieldData] : []);
     }
 
     /** @override */
     public getContentData(hook: IDataHook = null): IUILayerContentData[] {
         const contentData = this.contentData.get(hook);
-        return contentData ? [contentData] : [];
+        return super.getContentData(hook, contentData ? [contentData] : []);
     }
 
     /** @override */
     public getMenuData(hook: IDataHook = null): IUILayerMenuData[] {
         const menuData = this.menuData.get(hook);
-        return menuData ? [menuData] : [];
+        return super.getMenuData(hook, menuData ? [menuData] : []);
     }
 
     /** @override */
@@ -346,14 +346,12 @@ export class MultiSelect<T> extends AbstractUILayer {
         const error = this.checkError();
         this.error.set(error);
 
-        if (error) {
-            let errorView: IViewStackItem;
+        const context = this.context.get(null);
+        if (error && context) {
+            let errorView: ReactNode;
             if ("view" in error) errorView = error.view;
-            else errorView = createContentError(error.message);
-            this.contentData.set({
-                ID: uuid(),
-                contentView: errorView,
-            });
+            else errorView = error.message;
+            this.contentData.set(createContentError(errorView, context));
         } else {
             this.contentData.set(null);
         }

@@ -50,8 +50,6 @@ export class IOContext implements IIOContext {
             onClose?: () => void | Promise<void>;
             /** The index on the stack to open this layer at */
             index?: number;
-            /** The UILayer to open this layer after */
-            after?: IUILayer;
         }
     ): Promise<() => Promise<void>> {
         const close = () => this.close(layer);
@@ -61,10 +59,6 @@ export class IOContext implements IIOContext {
         const current = this.uiStack.get(null);
         let index = Infinity;
         if (config?.index !== undefined) index = config.index;
-        if (config?.after) {
-            const afterIndex = current.findIndex(({layer}) => layer == config.after);
-            if (afterIndex != -1) index = afterIndex + 1;
-        }
 
         // Open the layer
         this.uiStack.set([

@@ -12,6 +12,19 @@ export function mapSpacing(spacing: IThemeSpacing, theme: ITheme): number {
     return theme.spacing[spacing] ?? spacing;
 }
 
+/**
+ * Retrieves a given spacing value from the the theme, or defaults to auto
+ * @param spacing The spacing value to retrieve
+ * @param theme The theme to retrieve the spacing from
+ * @returns The spacing value
+ */
+export function mapSpacingWithAuto(
+    spacing: IThemeSpacing | "auto",
+    theme: ITheme
+): number | string {
+    return spacing == "auto" ? "auto" : theme.spacing[spacing];
+}
+
 /*
  - true: applies mapping transformation above and stores it under the property with the same name
  - string: applies mapping transformation above and stores it under a property whose name is the specified string
@@ -22,19 +35,19 @@ export function mapSpacing(spacing: IThemeSpacing, theme: ITheme): number {
  * All the mapping functions to map properties to css spacings
  */
 export const cssSpacingMappers = createMapper(mapSpacing, {
-    margin: true,
-    marginX: (spacing, theme) => ({
-        marginLeft: mapSpacing(spacing, theme),
-        marginRight: mapSpacing(spacing, theme),
+    margin: mapSpacingWithAuto,
+    marginX: (spacing: IThemeSpacing | "auto", theme) => ({
+        marginLeft: mapSpacingWithAuto(spacing, theme),
+        marginRight: mapSpacingWithAuto(spacing, theme),
     }),
-    marginY: (spacing, theme) => ({
-        marginTop: mapSpacing(spacing, theme),
-        marginBottom: mapSpacing(spacing, theme),
+    marginY: (spacing: IThemeSpacing | "auto", theme) => ({
+        marginTop: mapSpacingWithAuto(spacing, theme),
+        marginBottom: mapSpacingWithAuto(spacing, theme),
     }),
-    marginTop: true,
-    marginRight: true,
-    marginBottom: true,
-    marginLeft: true,
+    marginTop: mapSpacingWithAuto,
+    marginRight: mapSpacingWithAuto,
+    marginBottom: mapSpacingWithAuto,
+    marginLeft: mapSpacingWithAuto,
     padding: true,
     paddingX: (spacing, theme) => ({
         paddingLeft: mapSpacing(spacing, theme),

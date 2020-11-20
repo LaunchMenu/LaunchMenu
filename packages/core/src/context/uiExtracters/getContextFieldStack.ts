@@ -2,6 +2,7 @@ import {IDataHook} from "model-react";
 import {IViewStackItem} from "../../uiLayers/_types/IViewStackItem";
 import {IIdentifiedItem} from "../../_types/IIdentifiedItem";
 import {IIOContext} from "../_types/IIOContext";
+import {getUIStack} from "./getUIStack";
 
 /**
  * Retrieves the fields UI
@@ -13,9 +14,13 @@ export function getContextFieldStack(
     context: IIOContext,
     hook?: IDataHook
 ): IIdentifiedItem<IViewStackItem>[] {
-    return context
-        .getUI(hook)
-        .flatMap(layer =>
-            layer.getFieldData(hook).map(({ID, fieldView}) => ({ID, value: fieldView}))
-        );
+    return getUIStack(
+        context,
+        layer =>
+            layer.getFieldData(hook).map(({ID, fieldView, overlayGroup}) => ({
+                view: {ID, value: fieldView},
+                overlayGroup,
+            })),
+        hook
+    );
 }

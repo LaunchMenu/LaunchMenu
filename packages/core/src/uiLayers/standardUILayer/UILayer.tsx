@@ -9,11 +9,14 @@ import {v4 as uuid} from "uuid";
 import {MenuView} from "../../components/menu/MenuView";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
 import {TextFieldView} from "../../components/fields/TextFieldView";
-import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler.ts/createTextFieldKeyHandler";
+import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {UnifiedAbstractUILayer} from "./UnifiedAbstractUILayer";
 import {MenuSearch} from "../types/menuSearch/MenuSearch";
 import {mergeCallbacks} from "../../utils/mergeCallbacks";
+import {ContentView} from "../../components/content/ContentView";
+import {createContentKeyHandler} from "../../content/interaction/keyHandler/createContentKeyHandler";
+import {IUILayerBaseConfig} from "../_types/IUILayerBaseConfig";
 
 /**
  * The default UILayer class
@@ -25,13 +28,13 @@ export class UILayer extends UnifiedAbstractUILayer {
     /**
      * Creates a new standard UILayer
      * @param data The data to create the layer from
-     * @param path The relative path
+     * @param config Base ui layer configuration
      */
     public constructor(
         data: IStandardUILayerData[] | IStandardUILayerData,
-        path?: string
+        config?: IUILayerBaseConfig
     ) {
-        super(path);
+        super(config);
         if (!(data instanceof Array)) data = [data];
         this.inputData = data;
     }
@@ -94,8 +97,8 @@ export class UILayer extends UnifiedAbstractUILayer {
                 });
             if (data.destroyOnClose != false)
                 res.onClose = mergeCallbacks([res.onClose, () => menu.destroy()]);
-            if (data.searchable !== false) extra.push(new MenuSearch({menu: data.menu, 
-                onExecute: data.onExecute}));
+            if (data.searchable !== false)
+                extra.push(new MenuSearch({menu: data.menu, onExecute: data.onExecute}));
         }
 
         // Create the standard field data
@@ -114,6 +117,13 @@ export class UILayer extends UnifiedAbstractUILayer {
         }
 
         // Create the content data
+        if (data.content) {
+            empty = false;
+            if (!data.contentView)
+                res.contentView = <ContentView content={data.content} />;
+            if (!data.contentHandler)
+                res.contentHandler = createContentKeyHandler(data.content, context);
+        }
         if (empty && !res.contentView) res.contentView = undefined;
 
         // Return the data

@@ -20,7 +20,12 @@ export const TextFieldView: LFC<ITextFieldViewProps> = ({
     ...rest
 }) => {
     return (
-        <Box display="flex" alignItems="stretch" backgroundColor="bgPrimary" {...rest}>
+        <Box
+            display="flex"
+            paddingLeft="small"
+            alignItems="stretch"
+            backgroundColor="bgPrimary"
+            {...rest}>
             {icon && (
                 <Box
                     display="flex"
@@ -28,13 +33,7 @@ export const TextFieldView: LFC<ITextFieldViewProps> = ({
                     justifyContent="center"
                     width={iconSize}
                     height={iconSize}>
-                    {isValidElement(icon) ? (
-                        icon
-                    ) : (
-                        <Box padding="medium" font="textField">
-                            <ThemeIcon icon={icon} />
-                        </Box>
-                    )}
+                    {isValidElement(icon) ? icon : <ThemeIcon size={30} icon={icon} />}
                 </Box>
             )}
             <Box

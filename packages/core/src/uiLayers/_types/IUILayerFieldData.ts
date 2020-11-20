@@ -20,4 +20,6 @@ export type IUILayerFieldData = {
     highlighter?: IHighlighter;
     /** The icon to show at the start of the field */
     icon?: IThemeIcon | ReactElement;
+    /** The overlay group to use, making sure that only the bottom view with the same group in a continuous sequence is shown */
+    overlayGroup?: Symbol;
 };

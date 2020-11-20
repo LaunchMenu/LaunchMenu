@@ -1,3 +1,3 @@
-export type ICreateMapperInput<C, I, O> = {
-    [name: string]: ((prop: I, context: C) => O | {[key: string]: O}) | true | string;
+export type ICreateMapperInput<C, I> = {
+    [name: string]: ((prop: I, context: C) => any | {[key: string]: any}) | true | string;
 };

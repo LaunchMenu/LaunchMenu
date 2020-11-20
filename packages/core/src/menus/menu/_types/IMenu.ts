@@ -74,4 +74,11 @@ export type IMenu = {
      * @returns Whether destroyed properly (returns false if it was already destroyed)
      */
     destroy(): boolean | Promise<boolean>;
+
+    /**
+     * Checks whether the menu has been destroyed
+     * @param hook The hook to subscribe to changes
+     * @returns Whether or not destroyed
+     */
+    isDestroyed(hook?: IDataHook): boolean;
 };

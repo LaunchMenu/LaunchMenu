@@ -11,8 +11,16 @@ import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
  */
 export function adjustBindings(
     bindings: ISubscribable<IActionBinding[]>,
-    extendBindings: (bindings: IActionBinding[], hooh: IDataHook) => IActionBinding[]
+    extendBindings:
+        | ((bindings: IActionBinding[], hooh: IDataHook) => IActionBinding[])
+        | IActionBinding[]
 ): ISubscribable<IActionBinding[]> {
-    return (hook: IDataHook) =>
-        extendBindings(bindings instanceof Function ? bindings(hook) : bindings, hook);
+    if (bindings instanceof Array) {
+        if (extendBindings instanceof Array) return [...bindings, ...extendBindings];
+        else return (hook: IDataHook) => extendBindings(bindings, hook);
+    } else {
+        if (extendBindings instanceof Function)
+            return (hook: IDataHook) => extendBindings(bindings(hook), hook);
+        else return (hook: IDataHook) => [...bindings(hook), ...extendBindings];
+    }
 }

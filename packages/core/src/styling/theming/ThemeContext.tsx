@@ -26,7 +26,13 @@ export const ThemeProvider: FC<{theme?: ITheme; children: ReactNode}> = ({
     if (!theme) theme = getTheme(h);
     return (
         <ThemeContext.Provider value={theme}>
-            <Global styles={theme.globalCss} />
+            <Global<ITheme>
+                styles={
+                    (theme.globalCss instanceof Function
+                        ? theme.globalCss(theme)
+                        : theme.globalCss) || {}
+                }
+            />
             {children}
         </ThemeContext.Provider>
     );

@@ -27,6 +27,8 @@ import {getCategoryAction} from "../../actions/types/category/getCategoryAction"
 import {IMenuSearchable} from "../../actions/types/search/_types/IMenuSearchable";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
 import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
+import {IStandardUILayerData} from "../../uiLayers/standardUILayer/_types/IStandardUILayerData";
+import {Content} from "../../content/Content";
 
 /**
  * An application session
@@ -138,28 +140,17 @@ export class LMSession {
      * Initializes all the UI
      */
     protected async setupUI(): Promise<void> {
-        await this.setupContent();
-        await this.setupMenu();
-        await this.setupField();
+        const content = await this.setupContent();
+        const menu = await this.setupMenu();
+        const field = await this.setupField();
+        this.context.open(new UILayer([...content, ...menu, ...field]));
     }
 
     /**
      * Initializes the menu to be displayed
      */
-    protected async setupMenu(): Promise<void> {
+    protected async setupMenu(): Promise<IStandardUILayerData[]> {
         this.menu = new LMSessionMenu(this.context);
-
-        await this.context.open(
-            new UILayer({
-                menu: this.menu,
-                searchable: false,
-                menuHandler: createMenuKeyHandler(this.menu, {
-                    onExit: () => {
-                        console.log("detect");
-                    },
-                }),
-            })
-        );
 
         // Update the selected applet based on what category a given item belongs to
         const appletManager = this.LM.getAppletManager();
@@ -188,12 +179,25 @@ export class LMSession {
             onAdd: item => this.menu.addItem(item),
             onRemove: item => this.menu.removeItem(item),
         });
+
+        // Return the UI to be shown:
+        return [
+            {
+                menu: this.menu,
+                searchable: false,
+                menuHandler: createMenuKeyHandler(this.menu, {
+                    onExit: () => {
+                        console.log("detect");
+                    },
+                }),
+            },
+        ];
     }
 
     /**
      * Initializes the field to be displayed
      */
-    protected async setupField(): Promise<void> {
+    protected async setupField(): Promise<IStandardUILayerData[]> {
         // Create a text field and connect it to the search executer
         this.searchField = new TextField();
 
@@ -208,19 +212,20 @@ export class LMSession {
             this.searchExecuter.getPatternMatches(h)
         );
 
-        await this.context.open(
-            new UILayer({
+        // Return the UI to be shown
+        return [
+            {
                 field: this.searchField,
                 highlighter,
                 icon: "search",
-            })
-        );
+            },
+        ];
     }
 
     /**
      * Initializes the content to be displayed
      */
-    protected async setupContent(): Promise<void> {
+    protected async setupContent(): Promise<IStandardUILayerData[]> {
         // await this.context.open(new UILayer({contentView: {close: true}}));
 
         const setPath = (d: string[]) =>
@@ -231,51 +236,66 @@ export class LMSession {
                 )
             );
         const path = new Field(["shit", "orange", "bread"]);
-        await this.context.open(
-            new UILayer({
-                contentView: (
-                    <Loader>
-                        {h => (
-                            <div>
+        return [
+            {
+                content: new Content(
+                    (
+                        <Loader>
+                            {h => (
                                 <div>
-                                    <button
-                                        onClick={() =>
-                                            setPath(["shit", "orange", "bread"])
-                                        }>
-                                        opt1
-                                    </button>
-                                    <button onClick={() => setPath(["shit", "bread"])}>
-                                        opt2
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            setPath(["shit", "orange", "bread", "shit"])
-                                        }>
-                                        opt3
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            setPath(["shit", "potatoes", "bread"])
-                                        }>
-                                        opt4
-                                    </button>
-                                    <button onClick={() => setPath(["shit", "potatoes"])}>
-                                        opt5
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            setPath(["fuck", "potatoes", "bread"])
-                                        }>
-                                        opt6
-                                    </button>
+                                    <div>
+                                        <button
+                                            onClick={() =>
+                                                setPath(["shit", "orange", "bread"])
+                                            }>
+                                            opt1
+                                        </button>
+                                        <button
+                                            onClick={() => setPath(["shit", "bread"])}>
+                                            opt2
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                setPath([
+                                                    "shit",
+                                                    "orange",
+                                                    "bread",
+                                                    "shit",
+                                                ])
+                                            }>
+                                            opt3
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                setPath(["shit", "potatoes", "bread"])
+                                            }>
+                                            opt4
+                                        </button>
+                                        <button
+                                            onClick={() => setPath(["shit", "potatoes"])}>
+                                            opt5
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                setPath(["fuck", "potatoes", "bread"])
+                                            }>
+                                            opt6
+                                        </button>
+                                    </div>
+                                    <Breadcumbs path={path.get(h)} />
+                                    {new Array(200).fill(null).map((_, i) => (
+                                        <div key={i}>
+                                            {i}
+                                            <br />
+                                        </div>
+                                    ))}
                                 </div>
-                                <Breadcumbs path={path.get(h)} />
-                            </div>
-                        )}
-                    </Loader>
+                            )}
+                        </Loader>
+                    )
                 ),
-            })
-        );
+            },
+        ];
     }
 
     // Applet management

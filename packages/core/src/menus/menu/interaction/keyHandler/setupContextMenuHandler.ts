@@ -8,10 +8,10 @@ import {sortContextCategories} from "../../../../actions/contextMenuAction/sortC
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {getHooked} from "../../../../utils/subscribables/getHooked";
-import {UILayer} from "../../../../uiLayers/standardUILayer/UILayer";
 import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
 import {contextMenuAction} from "../../../../actions/contextMenuAction/contextMenuAction";
 import {keyHandlerAction} from "../../../../actions/types/keyHandler/keyHandlerAction";
+import type {ContextMenuLayer} from "../../../../uiLayers/types/context/ContextMenuLayer";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
@@ -107,18 +107,19 @@ export function setupContextMenuHandler(
                     }));
                     menu.addItems(items);
 
+                    // Dynamically load the contextMenuLayer to deal with a dependency cycle (contextMenuLayer -> UILayer -> createMenuKeyHandler -> setupContextMenuHandler)
+                    const {
+                        ContextMenuLayer,
+                    } = require("../../../../uiLayers/types/context/ContextMenuLayer");
                     contextData.close = await ioContext.open(
-                        new UILayer(
-                            () => ({
-                                menu,
-                                onExecute: () => contextData?.close?.(),
-                                onClose: () => {
-                                    contextData.close = undefined;
-                                    contextData.menu = undefined;
-                                },
-                            }),
-                            "context"
-                        )
+                        new ContextMenuLayer({
+                            menu,
+                            onExecute: () => contextData?.close?.(),
+                            onClose: () => {
+                                contextData.close = undefined;
+                                contextData.menu = undefined;
+                            },
+                        })
                     );
                 }
                 return true;

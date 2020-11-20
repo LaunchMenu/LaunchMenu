@@ -6,23 +6,42 @@ import {IUILayer} from "./_types/IUILayer";
 import {IUILayerContentData} from "./_types/IUILayerContentData";
 import {IUILayerFieldData} from "./_types/IUILayerFieldData";
 import {IUILayerMenuData} from "./_types/IUILayerMenuData";
+import {UIMissingView, standardOverlayGroup} from "./UILayerMissingView";
+import {v4 as uuid} from "uuid";
+import {getContentAction} from "../actions/types/content/getContentAction";
+import {IUILayerBaseConfig} from "./_types/IUILayerBaseConfig";
+import {catchAllKeyHandler} from "../keyHandler/utils/catchAllKeyHandler";
 
 /**
  * An abstract class that can be used as a foundation for a UILayer
  */
 export abstract class AbstractUILayer implements IUILayer {
+    protected layerConfig: Required<IUILayerBaseConfig>;
+
+    // An overlay element to show in case this layer has no data for a given section
+    protected UIMissingData = {
+        ID: uuid(),
+        contentView: UIMissingView,
+        menuView: UIMissingView,
+        fieldView: UIMissingView,
+        overlayGroup: standardOverlayGroup,
+    };
+
     // Initialization management
     protected closers: (() => void)[] = [];
-    protected relativePath: string;
-
     protected context = new Field(null as null | IIOContext);
 
     /**
      * Creates a new abstract UI layer
-     * @param relativePath The path input
+     * @param config The layer config
      */
-    public constructor(relativePath: string = ".") {
-        this.relativePath = relativePath;
+    public constructor(config?: IUILayerBaseConfig) {
+        this.layerConfig = {
+            path: ".",
+            showNodataOverlay: true,
+            catchAllKeys: true,
+            ...config,
+        };
     }
 
     /**
@@ -81,7 +100,7 @@ export abstract class AbstractUILayer implements IUILayer {
         const index = UI.indexOf(this);
         const parent = index >= 0 ? UI[index - 1] : undefined;
         const current = parent?.getPath(h) ?? [];
-        return this.relativePath.split("/").reduce((cur, node) => {
+        return this.layerConfig.path.split("/").reduce((cur, node) => {
             if (node == ".") {
                 // Add itself to the top path
                 const top = cur[cur.length - 1];
@@ -106,28 +125,70 @@ export abstract class AbstractUILayer implements IUILayer {
     /**
      * Retrieves the menu data
      * @param hook The data hook to subscribe to changes
+     * @param extendData The data to add to
      * @returns The menu data of this layer
      */
-    public getMenuData(hook?: IDataHook): IUILayerMenuData[] {
-        return [];
+    public getMenuData(
+        hook?: IDataHook,
+        extendData: IUILayerMenuData[] = []
+    ): IUILayerMenuData[] {
+        return this.layerConfig.showNodataOverlay && extendData.length == 0
+            ? [this.UIMissingData]
+            : extendData;
     }
 
     /**
      * Retrieves the field data
      * @param hook The data hook to subscribe to changes
+     * @param extendData The data to add to
      * @returns The field data of this layer
      */
-    public getFieldData(hook?: IDataHook): IUILayerFieldData[] {
-        return [];
+    public getFieldData(
+        hook?: IDataHook,
+        extendData: IUILayerFieldData[] = []
+    ): IUILayerFieldData[] {
+        return this.layerConfig.showNodataOverlay && extendData.length == 0
+            ? [this.UIMissingData]
+            : extendData;
     }
+
+    /**
+     * Contents that are visible from the currently selected menu items
+     */
+    protected menuItemContents = new DataCacher(h =>
+        this.getMenuData(h).flatMap(data => {
+            if (!("menu" in data) || !data.menu) return [];
+
+            const cursor = data.menu.getCursor(h);
+            if (!cursor) return [];
+
+            const cursorContents = getContentAction.get([cursor], h);
+            const context = this.context.get(h);
+            if (!context)
+                return cursorContents.filter(
+                    (item): item is IUILayerContentData => !(item instanceof Function)
+                );
+            else
+                return cursorContents.map(item =>
+                    item instanceof Function ? item(context) : item
+                );
+        })
+    );
 
     /**
      * Retrieves the content data
      * @param hook The data hook to subscribe to changes
+     * @param extendData The data to add to
      * @returns The content data of this layer
      */
-    public getContentData(hook?: IDataHook): IUILayerContentData[] {
-        return [];
+    public getContentData(
+        hook: IDataHook = null,
+        extendData: IUILayerContentData[] = []
+    ): IUILayerContentData[] {
+        const itemContents = [...extendData, ...this.menuItemContents.get(hook)];
+        return this.layerConfig.showNodataOverlay && itemContents.length == 0
+            ? [this.UIMissingData]
+            : itemContents;
     }
 
     /**
@@ -137,9 +198,23 @@ export abstract class AbstractUILayer implements IUILayer {
      */
     public getKeyHandlers(hook?: IDataHook): IKeyEventListener[] {
         return [
+            ...(this.layerConfig.catchAllKeys ? [catchAllKeyHandler] : []),
             ...this.getMenuData(hook).map(({menuHandler}) => menuHandler),
             ...this.getFieldData(hook).map(({fieldHandler}) => fieldHandler),
             ...this.getContentData(hook).map(({contentHandler}) => contentHandler),
         ].filter((m): m is IKeyEventListener => !!m);
+    }
+
+    // Helpers
+    /**
+     * Checks whether this layer is on the top of the stack
+     * @param hook The hook to subscribe to changes
+     * @returns Whether this layer is on top
+     */
+    protected isOnTop(hook: IDataHook = null): boolean {
+        const context = this.context.get(hook);
+        if (!context) return false;
+        const layers = context.getUI(hook);
+        return layers[layers.length - 1] == this;
     }
 }
