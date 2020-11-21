@@ -37,7 +37,7 @@ export function createFieldMenuItem<T>({
     init,
     data,
 }: IFieldMenuItemData<T>): IFieldMenuItem<T> {
-    const field = new Field(init);
+    const field = "get" in init && "set" in init ? init : new Field(init);
     const {valueView, resetable, resetUndoable, actionBindings, ...rest} = data(field);
     const extraBindings: IActionBinding[] = [];
     if (resetable)

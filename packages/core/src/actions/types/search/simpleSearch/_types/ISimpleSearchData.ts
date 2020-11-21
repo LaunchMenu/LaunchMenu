@@ -17,6 +17,8 @@ export type ISimpleSearchData = {
     tags?: ISubscribable<string[] | undefined>;
     /** Any number of children that can be matched */
     children?: ISubscribable<IMenuItem[]>;
+    /** The content text data (should be relatively small for efficiency) */
+    content?: ISubscribable<string | undefined>;
     /** A possible pattern matcher to recognize search types */
     patternMatcher?: ISimpleSearchPatternMatcher;
     /** The ID of the menu item to show when matched, item can be attached using the identityAction */

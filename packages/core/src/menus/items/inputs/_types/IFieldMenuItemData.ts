@@ -4,7 +4,7 @@ import {IField} from "../../../../_types/IField";
 /** The input data to create a field menu item */
 export type IFieldMenuItemData<T> = {
     /** The initial value */
-    init: T;
+    init: IField<T> | T;
     /** Retrieves the config data */
     data: (
         field: IField<T>

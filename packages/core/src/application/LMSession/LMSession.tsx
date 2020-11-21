@@ -203,7 +203,7 @@ export class LMSession {
 
         this.observers.search = new Observer(h => this.searchField.get(h)).listen(
             search => {
-                const query = {search};
+                const query = {search, context: this.context};
                 this.searchExecuter.setQuery(query);
                 this.menu?.setQuery(query);
             }
