@@ -17,10 +17,12 @@ const tagsList = [
     "empty",
     "text",
     "patternMatch",
+    "searchHighlight",
+    "darkBackground",
 ] as const;
 
 /**
- * A collection of standard
+ * A collection of standard highlight tags
  */
 export const highlightTags = {} as {[P in typeof tagsList[any]]: P};
 tagsList.forEach(tag => ((highlightTags[tag] as any) = tag));

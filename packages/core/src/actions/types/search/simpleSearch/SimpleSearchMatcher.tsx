@@ -5,7 +5,6 @@ import {
     isSimpleSearchQuery,
 } from "./_types/ISimpleSearchQuery";
 import execWithIndices from "regexp-match-indices";
-import {Highlight} from "../../../../components/Highlight";
 import {IQuery} from "../../../../menus/menu/_types/IQuery";
 
 /**
@@ -110,7 +109,11 @@ export class SimpleSearchMatcher {
 
         sections.forEach(([start, end]) => {
             parts.push(text.substring(prevEndIndex, start));
-            parts.push(<Highlight key={start}>{text.substring(start, end)}</Highlight>);
+            parts.push(
+                <span key={start} style={{color: "purple"}}>
+                    {text.substring(start, end)}
+                </span>
+            );
             prevEndIndex = end;
         });
         parts.push(text.substring(prevEndIndex, text.length));

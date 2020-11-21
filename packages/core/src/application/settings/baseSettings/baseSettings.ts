@@ -9,6 +9,7 @@ import {
     fieldControlsFolderCategories,
 } from "./controls/createFieldControlsSettingsFolder";
 import {createMenuControlsSettingsFolder} from "./controls/createMenuControlsSettingsFolder";
+import {createSearchSettingsFolder} from "./createSearchSettingsFolder";
 
 /**
  * Categories in the base settings
@@ -38,6 +39,7 @@ export const baseSettings = createSettings({
                         }),
                     },
                 }),
+                search: createSearchSettingsFolder(),
             },
         }),
 });

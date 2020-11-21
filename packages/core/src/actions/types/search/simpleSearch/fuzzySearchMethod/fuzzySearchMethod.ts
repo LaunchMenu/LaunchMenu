@@ -5,7 +5,9 @@ import {ISimpleSearchMethod} from "../_types/ISimpleSearchMethod";
  * The fuzzy search method
  */
 export const fuzzySearchMethod: ISimpleSearchMethod = {
-    view: createStandardMenuItem({name: "fuzzy finder"}),
+    name: "Fuzzy",
     ID: "CoreFuzzySearchMethod",
-    grade: () => 12,
+    view: createStandardMenuItem({name: "Fuzzy finder"}),
+    grade: (d, {search}) => (search.length > 0 ? 12 : 0),
+    highlight: (text, query) => [{start: 2, end: 5}],
 };

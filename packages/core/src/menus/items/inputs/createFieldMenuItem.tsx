@@ -6,7 +6,6 @@ import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {MenuItemFrame} from "../../../components/items/MenuItemFrame";
 import {MenuItemLayout} from "../../../components/items/MenuItemLayout";
 import {MenuItemIcon} from "../../../components/items/MenuItemIcon";
-import {SimpleSearchHighlight} from "../../../components/items/SimpleSearchHighlight";
 import {Truncated} from "../../../components/Truncated";
 import {Box} from "../../../styling/box/Box";
 import {resetFieldAction} from "./resetFieldAction";
@@ -20,6 +19,7 @@ import {ISerializableField} from "../../../settings/_types/ISerializableField";
 import {IMenuItemView} from "../_types/IMenuItemView";
 import {IField} from "../../../_types/IField";
 import {ISerializeField} from "../../../settings/storage/fileTypes/FieldsFile/_types/ISerializedField";
+import {simpleSearchHandler} from "../../../actions/types/search/simpleSearch/simpleSearchHandler";
 
 // TODO: try to fix the types (removing any)
 
@@ -81,7 +81,6 @@ export function createFieldMenuItem<D extends IJSON, T = D>({
             const [h] = useDataHook();
             const iconV = getHooked(icon, h);
             const descriptionV = getHooked(description, h);
-            const nameV = getHooked(name, h);
             return (
                 <MenuItemFrame {...props}>
                     <MenuItemLayout
@@ -95,9 +94,9 @@ export function createFieldMenuItem<D extends IJSON, T = D>({
                         }
                         name={
                             <Box font="header">
-                                <SimpleSearchHighlight query={highlight}>
-                                    {nameV}
-                                </SimpleSearchHighlight>
+                                <simpleSearchHandler.Highlighter query={highlight}>
+                                    {name}
+                                </simpleSearchHandler.Highlighter>
                             </Box>
                         }
                         value={valueView}
@@ -105,9 +104,9 @@ export function createFieldMenuItem<D extends IJSON, T = D>({
                         description={
                             descriptionV && (
                                 <Truncated title={descriptionV}>
-                                    <SimpleSearchHighlight query={highlight}>
+                                    <simpleSearchHandler.Highlighter query={highlight}>
                                         {descriptionV}
-                                    </SimpleSearchHighlight>
+                                    </simpleSearchHandler.Highlighter>
                                 </Truncated>
                             )
                         }

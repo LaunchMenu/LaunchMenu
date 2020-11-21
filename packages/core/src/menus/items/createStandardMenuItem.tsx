@@ -5,13 +5,12 @@ import {MenuItemFrame} from "../../components/items/MenuItemFrame";
 import {Truncated} from "../../components/Truncated";
 import {MenuItemLayout} from "../../components/items/MenuItemLayout";
 import {MenuItemIcon} from "../../components/items/MenuItemIcon";
-import {SimpleSearchHighlight} from "../../components/items/SimpleSearchHighlight";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {getHooked} from "../../utils/subscribables/getHooked";
-import {useIOContext} from "../../context/react/useIOContext";
 import {Box} from "../../styling/box/Box";
 import {createStandardActionBindings} from "./createStandardActionBindings";
 import {ShortcutLabel} from "../../components/items/ShortcutLabel";
+import {simpleSearchHandler} from "../../actions/types/search/simpleSearch/simpleSearchHandler";
 
 /**
  * Creates a new standard menu item
@@ -44,18 +43,18 @@ export function createStandardMenuItem({
                         }
                         name={
                             <Box font="header">
-                                <SimpleSearchHighlight query={highlight}>
+                                <simpleSearchHandler.Highlighter query={highlight}>
                                     {nameV}
-                                </SimpleSearchHighlight>
+                                </simpleSearchHandler.Highlighter>
                             </Box>
                         }
                         shortcut={shortcut && <ShortcutLabel shortcut={shortcut} />}
                         description={
                             descriptionV && (
                                 <Truncated title={descriptionV}>
-                                    <SimpleSearchHighlight query={highlight}>
+                                    <simpleSearchHandler.Highlighter query={highlight}>
                                         {descriptionV}
-                                    </SimpleSearchHighlight>
+                                    </simpleSearchHandler.Highlighter>
                                 </Truncated>
                             )
                         }

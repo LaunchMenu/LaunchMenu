@@ -4,25 +4,15 @@ import {IMenuItem} from "./_types/IMenuItem";
 import {MenuItemFrame} from "../../components/items/MenuItemFrame";
 import {MenuItemLayout} from "../../components/items/MenuItemLayout";
 import {MenuItemIcon} from "../../components/items/MenuItemIcon";
-import {SimpleSearchHighlight} from "../../components/items/SimpleSearchHighlight";
 import {Truncated} from "../../components/Truncated";
-import {IDataHook} from "model-react";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {adjustBindings} from "./adjustBindings";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
 import {getHooked} from "../../utils/subscribables/getHooked";
-import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
 import {simpleSearchHandler} from "../../actions/types/search/simpleSearch/simpleSearchHandler";
 import {openMenuExecuteHandler} from "../../actions/types/execute/openMenuExecuteHandler";
-import {executeAction} from "../../actions/types/execute/executeAction";
-import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
-import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
-import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
-import {getContentAction} from "../../actions/types/content/getContentAction";
-import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
 import {forwardKeyEventHandler} from "../../actions/types/keyHandler/forwardKeyEventHandler";
-import {menuItemIdentityAction} from "../../actions/types/identity/menuItemIdentityAction";
 import {createStandardActionBindings} from "./createStandardActionBindings";
 import {Box} from "../../styling/box/Box";
 import {ShortcutLabel} from "../../components/items/ShortcutLabel";
@@ -110,18 +100,19 @@ export function createFolderMenuItem<
                             }
                             name={
                                 <Box font="header">
-                                    <SimpleSearchHighlight query={highlight}>
+                                    <simpleSearchHandler.Highlighter query={highlight}>
                                         {nameV}
-                                    </SimpleSearchHighlight>
+                                    </simpleSearchHandler.Highlighter>
                                 </Box>
                             }
                             shortcut={shortcut && <ShortcutLabel shortcut={shortcut} />}
                             description={
                                 descriptionV && (
                                     <Truncated title={descriptionV}>
-                                        <SimpleSearchHighlight query={highlight}>
+                                        <simpleSearchHandler.Highlighter
+                                            query={highlight}>
                                             {descriptionV}
-                                        </SimpleSearchHighlight>
+                                        </simpleSearchHandler.Highlighter>
                                     </Truncated>
                                 )
                             }

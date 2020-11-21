@@ -1,9 +1,10 @@
+import React from "react";
 import {getSearchIdentity, searchAction} from "../searchAction";
 import {ISimpleSearchData} from "./_types/ISimpleSearchData";
 import {ISimpleSearchQuery} from "./_types/ISimpleSearchQuery";
 import {v4 as uuid} from "uuid";
 import {IActionBinding} from "../../../_types/IActionBinding";
-import {Field, IDataHook} from "model-react";
+import {Field, IDataHook, Loader} from "model-react";
 import {IMenuSearchable} from "../_types/IMenuSearchable";
 import {IQuery} from "../../../../menus/menu/_types/IQuery";
 import {getHooked} from "../../../../utils/subscribables/getHooked";
@@ -12,6 +13,12 @@ import {createAction} from "../../../createAction";
 import {ISimpleSearchMethod} from "./_types/ISimpleSearchMethod";
 import {IIOContext} from "../../../../context/_types/IIOContext";
 import {ISimpleSearchExecutor} from "./_types/ISimpleSearchExecutor";
+import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
+import {SearchHighlighter} from "../SearchHighlighter";
+import {useIOContext} from "../../../../context/react/useIOContext";
+import {useDataHook} from "../../../../utils/modelReact/useDataHook";
+import {LFC} from "../../../../_types/LFC";
+import {ISearchHighlighterProps} from "../_types/ISearchHighlighterProps";
 
 /** The search handlers that are available */
 const searchHandlers = new Field([] as ISimpleSearchMethod[]);
@@ -100,8 +107,30 @@ export const simpleSearchHandler = createAction({
          * @returns The search methods
          */
         getSearchMethods(hook: IDataHook = null): ISimpleSearchMethod[] {
-            return searchHandlers.get(hook);
+            return [
+                ...searchHandlers.get(hook),
+                // Always include fuzzy search, dynamic import to prevent dependency cycle
+                require("./fuzzySearchMethod/fuzzySearchMethod").fuzzySearchMethod,
+            ];
         },
+
+        /**
+         * The search highlight component
+         */
+        Highlighter: (({query, children: text}) => {
+            const [h] = useDataHook();
+            const highlighter = query?.context.settings
+                .get(baseSettings)
+                .search.simpleSearchMethod.get(h).highlight;
+            if (!query || !highlighter) return <>{getHooked(text, h)}</>;
+            return (
+                <SearchHighlighter
+                    query={query}
+                    text={text}
+                    searchHighlighter={highlighter}
+                />
+            );
+        }) as LFC<ISearchHighlighterProps>,
     },
 });
 
@@ -111,10 +140,12 @@ export const simpleSearchHandler = createAction({
  * @returns The function to retrieve a searchable for a given item
  */
 function getSimpleSearchMethod(context: IIOContext): ISimpleSearchExecutor {
-    const method: ISimpleSearchMethod = null as any; //TODO: extract from settings
+    const method: ISimpleSearchMethod = context.settings
+        .get(baseSettings)
+        .search.simpleSearchMethod.get();
 
     // If the method has a searchable retriever, just return it
-    if ("getSearchable" in method) return method.getSearchable;
+    if (method.getSearchable) return method.getSearchable;
 
     // If the method only has a grade function, create a searchable retriever
     const executor: ISimpleSearchExecutor = async (
@@ -131,16 +162,17 @@ function getSimpleSearchMethod(context: IIOContext): ISimpleSearchExecutor {
         query,
         hook
     ) => {
-        const priority = method.grade(
-            {
-                name: name && getHooked(name, hook),
-                description: description && getHooked(description, hook),
-                content: content && getHooked(content, hook),
-                tags: tags && getHooked(tags, hook),
-            },
-            query,
-            hook
-        );
+        const priority =
+            method.grade?.(
+                {
+                    name: name && getHooked(name, hook),
+                    description: description && getHooked(description, hook),
+                    content: content && getHooked(content, hook),
+                    tags: tags && getHooked(tags, hook),
+                },
+                query,
+                hook
+            ) || 0;
         const childItems = getHooked(childItemsGetter, hook);
         const children = childItems && searchAction.get(childItems);
         const patternMatch = patternMatcher?.(query, hook);
