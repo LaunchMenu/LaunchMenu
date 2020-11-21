@@ -1,11 +1,10 @@
 import {IField} from "../../../../../_types/IField";
 import {IJSON} from "../../../../../_types/IJSON";
-import {IJSONDeserializer} from "../../../../_types/serialization/IJSONDeserializer";
-import {ISerializables} from "../../../../_types/serialization/ISerializable";
+import {ISerializeField} from "./ISerializedField";
 
 /**
  * A tree of fields with a predetermined structure
  */
-export type IFieldsTree<T extends IJSONDeserializer> = {
-    [key: string]: IFieldsTree<T> | IField<IJSON | ISerializables<T>>;
+export type IFieldsTree = {
+    [key: string]: IField<IJSON> | ISerializeField<IJSON> | IFieldsTree;
 };

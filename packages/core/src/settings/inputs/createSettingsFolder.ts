@@ -2,8 +2,6 @@ import {IFieldMenuItem} from "../../menus/items/inputs/_types/IFieldMenuItem";
 import {IFolderMenuItemData} from "../../menus/items/_types/IFolderMenuItemData";
 import {createFolderMenuItem} from "../../menus/items/createFolderMenuItem";
 import {ISettingsFolderMenuItem} from "../_types/ISettingsFolderMenuItem";
-import {ISerializable} from "../_types/serialization/ISerializable";
-import {IJSONDeserializer} from "../_types/serialization/IJSONDeserializer";
 import {settingPatternMatcher} from "./settingPatternMatcher";
 
 /**
@@ -13,10 +11,9 @@ import {settingPatternMatcher} from "./settingPatternMatcher";
  */
 export function createSettingsFolder<
     T extends {
-        [key: string]: IFieldMenuItem<ISerializable<S>> | ISettingsFolderMenuItem<S>;
-    },
-    S extends IJSONDeserializer
->(data: IFolderMenuItemData<T>): ISettingsFolderMenuItem<S, T> {
+        [key: string]: IFieldMenuItem<any> | ISettingsFolderMenuItem;
+    }
+>(data: IFolderMenuItemData<T>): ISettingsFolderMenuItem<T> {
     return createFolderMenuItem({
         searchPattern: settingPatternMatcher,
         ...data,

@@ -1,20 +1,23 @@
 import {IField} from "../../_types/IField";
+import {IJSON} from "../../_types/IJSON";
+import {ISerializeField} from "../storage/fileTypes/FieldsFile/_types/ISerializedField";
 import {IRenderableSettingsTree} from "./IRenderableSettingsTree";
-import {IJSONDeserializer} from "./serialization/IJSONDeserializer";
-import {ISerializable} from "./serialization/ISerializable";
 
 /**
  * Extracts a simple settings tree from a renderable settings tree, by removing the category nodes
  */
-export type TSettingsTree<
-    T extends IRenderableSettingsTree<D>,
-    D extends IJSONDeserializer
-> = {
-    [P in keyof T]: T[P] extends {children: IRenderableSettingsTree<D>}
-        ? TSettingsTree<T[P]["children"], D>
+export type TSettingsTree<T extends IRenderableSettingsTree> = {
+    [P in keyof T]: T[P] extends {children: IRenderableSettingsTree}
+        ? TSettingsTree<T[P]["children"]>
         : T[P] extends IField<infer I>
-        ? I extends ISerializable<D>
+        ? I extends IJSON
             ? IField<I> // Reduces the input to only a field, hiding all other data
-            : IField<ISerializable<D>>
-        : IField<ISerializable<D>>; // This case shouldn't occur, is just a safety net
+            : TSerializableField<T[P]> & IField<I> // Reduces the input to an serialize field and a field, hiding all other data
+        : TSerializableField<T[P]>; // Reduces the input to only a serialize field, hiding all other data;
 };
+
+type TSerializableField<T> = T extends ISerializeField<infer I>
+    ? I extends IJSON
+        ? ISerializeField<I>
+        : never
+    : never;

@@ -10,9 +10,8 @@ import {IAppletConfig} from "./IAppletConfig";
 export type IApplet<
     S extends IIdentifiedSettingsConfig<
         IJSON,
-        ISettingsFolderMenuItem,
-        any
-    > = IIdentifiedSettingsConfig<IJSON, ISettingsFolderMenuItem, any>
+        ISettingsFolderMenuItem
+    > = IIdentifiedSettingsConfig<IJSON, ISettingsFolderMenuItem>
 > = {
     /** A unique ID for this module */
     ID: IUUID;

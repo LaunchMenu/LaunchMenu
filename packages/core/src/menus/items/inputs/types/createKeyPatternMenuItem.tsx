@@ -1,12 +1,13 @@
 import React from "react";
 import {createFieldMenuItem} from "../createFieldMenuItem";
 import {IFieldMenuItem} from "../_types/IFieldMenuItem";
-import {Loader} from "model-react";
+import {Field, IDataHook, Loader} from "model-react";
 import {IKeyPatternMenuItemData} from "./_types/IKeyPatternMenuItemData";
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {keyInputExecuteHandler} from "../handlers/keyPattern/keyInputExecuteHandler";
 import {advancedKeyInputEditAction} from "../handlers/keyPattern/advancedKeyInputEditAction";
 import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
+import {IKeyArrayPatternData} from "../handlers/keyPattern/_types/IKeyPatternData";
 
 /**
  * Creates a new key pattern menu item
@@ -23,8 +24,16 @@ export function createKeyPatternMenuItem({
     resetUndoable = undoable,
     ...rest
 }: IKeyPatternMenuItemData): IFieldMenuItem<KeyPattern> {
+    const field = new Field(init);
+    const serializableField = {
+        get: (h: IDataHook) => field.get(h),
+        set: (value: KeyPattern) => field.set(value),
+        getSerialized: (h: IDataHook) => field.get(h).serialize(),
+        setSerialized: (value: IKeyArrayPatternData[]) =>
+            field.set(new KeyPattern(value)),
+    };
     return createFieldMenuItem({
-        init,
+        field: serializableField,
         data: field => ({
             name,
             valueView: <Loader>{h => field.get(h).toString()}</Loader>,

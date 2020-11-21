@@ -1,19 +1,16 @@
 import {IField} from "../../../../../_types/IField";
 import {IFieldsTree} from "../../FieldsFile/_types/IFieldsTree";
-import {IJSONDeserializer} from "../../../../_types/serialization/IJSONDeserializer";
-
-export type TFieldSerialized<T> = T extends {serialize(): infer U} ? U : T;
+import {ISerializeField} from "../../FieldsFile/_types/ISerializedField";
 
 /**
  * Extracts the serialized data of a fields tree
  */
-export type TFieldsTreeSerialized<
-    T extends IFieldsTree<S>,
-    S extends IJSONDeserializer
-> = {
-    [K in keyof T]: T[K] extends IFieldsTree<S>
-        ? TFieldsTreeSerialized<T[K], S>
+export type TFieldsTreeSerialized<T extends IFieldsTree> = {
+    [K in keyof T]: T[K] extends IFieldsTree
+        ? TFieldsTreeSerialized<T[K]>
+        : T[K] extends ISerializeField<infer U>
+        ? U
         : T[K] extends IField<infer U>
-        ? TFieldSerialized<U>
+        ? U
         : T[K];
 };

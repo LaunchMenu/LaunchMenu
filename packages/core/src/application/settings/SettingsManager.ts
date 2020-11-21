@@ -2,7 +2,6 @@ import {DataCacher, Field, IDataHook, IDataRetriever} from "model-react";
 import {SettingsContext} from "../../settings/SettingsContext";
 import {SettingsFile} from "../../settings/storage/fileTypes/SettingsFile";
 import {ISettingsFolderMenuItem} from "../../settings/_types/ISettingsFolderMenuItem";
-import {IJSONDeserializer} from "../../settings/_types/serialization/IJSONDeserializer";
 import {IUUID} from "../../_types/IUUID";
 import {IApplet} from "../applets/_types/IApplet";
 import {ISettingsData} from "./_types/ISettingsData";
@@ -16,7 +15,7 @@ export class SettingsManager {
     protected appletsSource: IDataRetriever<IAppletData[]>;
     protected settingsDirectory: string;
 
-    protected extraFiles = new Field([] as ISettingsData<IJSONDeserializer>[]);
+    protected extraFiles = new Field([] as ISettingsData[]);
 
     protected destroyed = new Field(false);
 
@@ -52,7 +51,7 @@ export class SettingsManager {
     public getSettingsData(
         ID: IUUID,
         hook: IDataHook = null
-    ): ISettingsData<IJSONDeserializer> | null {
+    ): ISettingsData | null {
         return this.getAllSettingsData(hook).find(({ID: OID}) => OID == ID) ?? null;
     }
 
@@ -63,7 +62,7 @@ export class SettingsManager {
      */
     public getAllSettingsData(
         hook: IDataHook = null
-    ): ISettingsData<IJSONDeserializer>[] {
+    ): ISettingsData[] {
         return [...this.extraFiles.get(hook), ...this.appletSettings.get(hook)];
     }
 
@@ -143,7 +142,6 @@ export class SettingsManager {
      * Saves all settings in the session
      */
     public async saveAll(): Promise<void> {
-        console.log("Shit");
         // TODO: add observers to all properties of all settings files, and track what files are dirty in order to only save those files.
         await Promise.all(this.getAllSettingsData(null).map(({file}) => file.save()));
     }
@@ -152,12 +150,12 @@ export class SettingsManager {
     /**
      * Retrieves the applet settings given the applets source
      */
-    protected appletSettings = new DataCacher<ISettingsData<IJSONDeserializer>[]>(
+    protected appletSettings = new DataCacher<ISettingsData[]>(
         (h, prevAppletSettings = []) => {
             const destroyed = this.destroyed.get(h);
             const applets = destroyed ? [] : this.appletsSource(h);
 
-            // Remove any old applets
+            // Remove any old applets // TODO: uncomment once destroy is needed
             // prevAppletSettings.forEach(({ID, file, appletVersion})=>{
             //     const used = applets.find(({applet, version})=>applet.ID == ID && version == appletVersion);
             //     if(!used) file.destroy();

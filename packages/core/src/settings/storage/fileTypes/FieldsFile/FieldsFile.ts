@@ -1,6 +1,5 @@
 import {ActionState, Field, getExceptions, isLoading} from "model-react";
 import {IFieldsTree} from "./_types/IFieldsTree";
-import {IJSONDeserializer} from "../../../_types/serialization/IJSONDeserializer";
 import FS from "fs";
 import {IJSON} from "../../../../_types/IJSON";
 import {ExtendedObject} from "../../../../utils/ExtendedObject";
@@ -11,9 +10,7 @@ import {ISavable} from "../_types/ISavable";
 /**
  * A file that stores the value of the fields
  */
-export class FieldsFile<F extends IFieldsTree<T>, T extends IJSONDeserializer = never>
-    implements ISavable {
-    protected deserializers: T[];
+export class FieldsFile<F extends IFieldsTree> implements ISavable {
     protected filePath: string;
     protected loading = new ActionState<void>();
     protected loadTime: number = 0;
@@ -22,34 +19,17 @@ export class FieldsFile<F extends IFieldsTree<T>, T extends IJSONDeserializer = 
     public fields: F;
 
     /**
-     * Creates a new fields file object, without custom field types
-     * @param data The data to construct the fields file from
-     */
-    public constructor(data: {
-        /** The path of the file */
-        path: string;
-        /** The fields without any custom types */
-        fields: F;
-        /** No deserializers */
-        deserializers?: undefined;
-    });
-
-    /**
      * Creates a new fields file object with custom field types
      * @param data The data to construct the fields file from
      */
     public constructor(data: {
         /** The path of the file */
         path: string;
-        /** The custom types for that can be used for deserialization */
-        deserializers: T[];
         /** The fields with possible custom types */
         fields: F;
-    });
-    public constructor(data: {path: string; deserializers?: T[]; fields: F}) {
+    }) {
         this.filePath = data.path;
         this.fields = data.fields;
-        this.deserializers = data.deserializers ?? [];
     }
 
     /**
@@ -158,24 +138,14 @@ export class FieldsFile<F extends IFieldsTree<T>, T extends IJSONDeserializer = 
      * @throws An exception if the data couldn't be encoded
      * @returns The encoded data
      */
-    protected encode(data: IFieldsTree<T>): IJSON {
+    protected encode(data: IFieldsTree): IJSON {
         return ExtendedObject.map(data, f => {
-            if ("get" in f && f.get instanceof Function) {
-                const val = f.get(null);
-                if (
-                    typeof val == "object" &&
-                    val != null &&
-                    "serialize" in val &&
-                    val.serialize instanceof Function
-                ) {
-                    const serialized = (val.serialize as any)();
-                    serialized.type = serialized.type;
-                    return serialized;
-                } else {
-                    return val;
-                }
+            if ("getSerialized" in f && f.getSerialized instanceof Function) {
+                return f.getSerialized(null);
+            } else if ("get" in f && f.get instanceof Function) {
+                return f.get(null);
             } else {
-                return this.encode(f as IFieldsTree<T>);
+                return this.encode(f as IFieldsTree);
             }
         });
     }
@@ -186,36 +156,26 @@ export class FieldsFile<F extends IFieldsTree<T>, T extends IJSONDeserializer = 
      * @param fields The fields to transfer the data to
      * @throws An exception if the data couldn't be decoded
      */
-    protected decode(data: IJSON, fields: IFieldsTree<T>): void {
+    protected decode(data: IJSON, fields: IFieldsTree): void {
         ExtendedObject.map(data, (val, key) => {
             const field = fields[key];
             if (
+                "setSerialized" in field &&
+                field.setSerialized instanceof Function &&
+                "getSerialized" in field &&
+                field.getSerialized instanceof Function
+            ) {
+                if (val != field.getSerialized(null)) field.setSerialized(val);
+            } else if (
                 "set" in field &&
                 field.set instanceof Function &&
                 "get" in field &&
                 field.get instanceof Function
             ) {
-                const decoded = this.decodeValue(val);
-                if (decoded != field.get(null)) field.set(decoded);
+                if (val != field.get(null)) field.set(val);
             } else if (typeof val == "object") {
-                this.decode(val, field as IFieldsTree<T>);
+                this.decode(val, field as IFieldsTree);
             }
         });
-    }
-
-    /**
-     * Decodes a single field value
-     * @param data The data from the disk
-     * @returns The deserialized value
-     */
-    protected decodeValue(data: IJSON): any {
-        if (typeof data == "object" && data != null && "$$type" in data) {
-            const type = data.$$type;
-            const deserializer = this.deserializers.find(
-                ({jsonTypeName}) => jsonTypeName == type
-            );
-            if (deserializer) return deserializer.deserialize(data);
-        }
-        return data;
     }
 }

@@ -8,7 +8,7 @@ import {TSettingsTree} from "./TSettingsTree";
 export type TSettingsFromFactory<
     S extends () => ISettingsFolderMenuItem
 > = S extends () => infer F
-    ? F extends {children: IRenderableSettingsTree<infer D>}
-        ? TSettingsTree<F["children"], D>
+    ? F extends {children: IRenderableSettingsTree}
+        ? TSettingsTree<F["children"]>
         : never
     : never;

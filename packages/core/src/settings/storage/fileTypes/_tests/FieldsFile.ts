@@ -1,4 +1,4 @@
-import {Field} from "model-react";
+import {Field, IDataHook} from "model-react";
 import {FieldsFile} from "../FieldsFile/FieldsFile";
 import Path from "path";
 import FS from "fs";
@@ -26,16 +26,22 @@ class Test {
 
     // Serialization stuff
     public serialize() {
-        return {
-            $$type: Test.jsonTypeName,
-            name: this.name,
-        } as const;
+        return {name: this.name};
     }
-    public static readonly jsonTypeName = "Test";
     public static deserialize(data: {name: string}): Test {
         return new Test(data.name);
     }
 }
+const createTestField = (value: Test) => {
+    const field = new Field(value);
+    return {
+        get: (h: IDataHook) => field.get(h),
+        set: (value: Test) => field.set(value),
+        getSerialized: (h: IDataHook) => field.get(h).serialize(),
+        setSerialized: ({name}: {name: string}) => field.set(Test.deserialize({name})),
+    };
+};
+
 const createFieldsCustom = () => ({
     oranges: new Field("yes"),
     potatoes: new Field(4),
@@ -44,7 +50,7 @@ const createFieldsCustom = () => ({
         potatoes: new Field(true),
         sub: {
             sub: {
-                potatoes: new Field(new Test("yes")),
+                potatoes: createTestField(new Test("yes")),
             },
         },
     },
@@ -64,7 +70,6 @@ describe("FieldsFile", () => {
         it("Can be constructed with custom types", () => {
             const file = new FieldsFile({
                 path: getPath("t0.json"),
-                deserializers: [Test],
                 fields: createFieldsCustom(),
             });
         });
@@ -104,7 +109,6 @@ describe("FieldsFile", () => {
             const path = getPath("t2.json");
             const file = new FieldsFile({
                 path,
-                deserializers: [Test],
                 fields: createFieldsCustom(),
             });
             await file.save();
@@ -119,7 +123,6 @@ describe("FieldsFile", () => {
                     sub: {
                         sub: {
                             potatoes: {
-                                $$type: "Test",
                                 name: "yes",
                             },
                         },
@@ -172,7 +175,6 @@ describe("FieldsFile", () => {
                         sub: {
                             sub: {
                                 potatoes: {
-                                    $$type: "Test",
                                     name: "orange",
                                 },
                             },
@@ -183,7 +185,6 @@ describe("FieldsFile", () => {
             );
             const file = new FieldsFile({
                 path,
-                deserializers: [Test],
                 fields: createFieldsCustom(),
             });
             await file.load();
@@ -197,24 +198,3 @@ describe("FieldsFile", () => {
         });
     });
 });
-
-// const file = new FieldsFile({path: "hoi", deserializers: [Test], fields: {
-//     oranges: new Field("yes"),
-//     potatoes: new Field(4),
-//     shit: new Field({test: 3}),
-//     stuff: {
-//         potatoes: new Field(true),
-//         sub: {
-//             sub: {
-//                 potatoes: new Field(new Test("yes")),
-//             },
-//         },
-//     },
-// }});
-// file.fields.shit.set({test: 25});
-// await file.save();
-
-// file.fields.shit.set({test: 20});
-
-// await file.load();
-// file.fields.shit.get(null); // {test: 25}

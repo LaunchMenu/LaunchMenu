@@ -12,32 +12,37 @@ import {Box} from "../../../styling/box/Box";
 import {resetFieldAction} from "./resetFieldAction";
 import {adjustBindings} from "../adjustBindings";
 import {getHooked} from "../../../utils/subscribables/getHooked";
-import {getCategoryAction} from "../../../actions/types/category/getCategoryAction";
-import {executeAction} from "../../../actions/types/execute/executeAction";
-import {onSelectAction} from "../../../actions/types/onSelect/onSelectAction";
-import {onCursorAction} from "../../../actions/types/onCursor/onCursorAction";
-import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
-import {getContentAction} from "../../../actions/types/content/getContentAction";
-import {shortcutHandler} from "../../../actions/types/keyHandler/shortcutHandler";
-import {simpleSearchHandler} from "../../../actions/types/search/simpleSearch/simpleSearchHandler";
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
-import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
-import {menuItemIdentityAction} from "../../../actions/types/identity/menuItemIdentityAction";
 import {createStandardActionBindings} from "../createStandardActionBindings";
 import {ShortcutLabel} from "../../../components/items/ShortcutLabel";
+import {IJSON} from "../../../_types/IJSON";
+import {ISerializableField} from "../../../settings/_types/ISerializableField";
+import {IMenuItemView} from "../_types/IMenuItemView";
+import {IField} from "../../../_types/IField";
+import {ISerializeField} from "../../../settings/storage/fileTypes/FieldsFile/_types/ISerializedField";
 
-// TODO: reuse standard menu item to reduce code duplication
+// TODO: try to fix the types (removing any)
 
 /**
  * Creates a new field menu item
  * @param data The data to create the menu item with
  * @returns The created field menu item
  */
-export function createFieldMenuItem<T>({
-    init,
+export function createFieldMenuItem<D extends IJSON, T = D>({
     data,
-}: IFieldMenuItemData<T>): IFieldMenuItem<T> {
-    const field = "get" in init && "set" in init ? init : new Field(init);
+    ...fieldData
+}: IFieldMenuItemData<T, D>): IFieldMenuItem<T, D> {
+    let init: T;
+    let f: ISerializableField<T, D>;
+    if ("field" in fieldData) {
+        f = fieldData.field;
+        init = fieldData.init ?? f.get();
+    } else {
+        f = new Field(fieldData.init) as any;
+        init = fieldData.init;
+    }
+    const field: ISerializableField<T, D> = f;
+
     const {valueView, resetable, resetUndoable, actionBindings, ...rest} = data(field);
     const extraBindings: IActionBinding[] = [];
     if (resetable)
@@ -60,9 +65,18 @@ export function createFieldMenuItem<T>({
 
     const {name, icon, description, shortcut} = rest;
 
-    const item: IFieldMenuItem<T> = {
+    function isSerializeable(
+        field: ISerializableField<any, any>
+    ): field is IField<T> & ISerializeField<D> {
+        return "getSerialized" in field;
+    }
+    const item = {
         get: (hook = null) => field.get(hook),
-        set: value => field.set(value),
+        set: (value: T) => field.set(value),
+        ...(isSerializeable(field) && {
+            getSerialized: (hook = null) => field.getSerialized(hook),
+            setSerialized: (value: D) => field.setSerialized(value),
+        }),
         view: memo(({highlight, ...props}) => {
             const [h] = useDataHook();
             const iconV = getHooked(icon, h);
@@ -100,8 +114,8 @@ export function createFieldMenuItem<T>({
                     />
                 </MenuItemFrame>
             );
-        }),
+        }) as IMenuItemView,
         actionBindings: bindings,
-    };
+    } as any;
     return item;
 }
