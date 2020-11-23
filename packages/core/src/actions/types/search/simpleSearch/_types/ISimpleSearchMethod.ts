@@ -18,7 +18,7 @@ export type ISimpleSearchMethod = {
     /** The way to represent the search executor in the settings */
     view: IMenuItem;
     /** A function to grade the item's search data */
-    grade?: (data: ISimpleSearchGradeFields, query: IQuery, hook: IDataHook) => IPriority;
+    rate?: (data: ISimpleSearchGradeFields, query: IQuery, hook: IDataHook) => IPriority;
     /** A function to completely override the default search behavior */
     getSearchable?: ISimpleSearchExecutor;
     /** Highlights a given piece of text with this method */

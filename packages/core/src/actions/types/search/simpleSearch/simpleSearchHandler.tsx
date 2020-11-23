@@ -163,7 +163,7 @@ function getSimpleSearchMethod(context: IIOContext): ISimpleSearchExecutor {
         hook
     ) => {
         const priority =
-            method.grade?.(
+            method.rate?.(
                 {
                     name: name && getHooked(name, hook),
                     description: description && getHooked(description, hook),
