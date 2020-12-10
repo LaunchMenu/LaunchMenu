@@ -9,7 +9,7 @@ import {ContentScroller} from "./ContentScroller";
  */
 export const ContentFrame: FC<{content: IContent}> = ({content, children}) => {
     return (
-        <FillBox className="contentFrame">
+        <FillBox className="contentFrame" background="bgSecondary">
             <ContentScroller content={content}>
                 <Box padding="medium">{children}</Box>
             </ContentScroller>

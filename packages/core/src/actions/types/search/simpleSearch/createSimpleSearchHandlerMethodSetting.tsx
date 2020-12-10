@@ -10,7 +10,7 @@ import {selectExecuteHandler} from "../../../../uiLayers/types/select/selectExec
  * Creates a menu item to select the search handler method
  * @returns The menu item field that can be used as a setting
  */
-export function createSimpleSearchHandlerMethodSettings() {
+export function createSimpleSearchHandlerMethodSetting() {
     const field = new Field(null as ISimpleSearchMethod | null);
     const get = (hook: IDataHook = null) =>
         field.get(hook) || simpleSearchHandler.getSearchMethods()[0];

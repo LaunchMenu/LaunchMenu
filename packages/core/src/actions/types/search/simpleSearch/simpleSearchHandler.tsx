@@ -4,7 +4,7 @@ import {ISimpleSearchData} from "./_types/ISimpleSearchData";
 import {ISimpleSearchQuery} from "./_types/ISimpleSearchQuery";
 import {v4 as uuid} from "uuid";
 import {IActionBinding} from "../../../_types/IActionBinding";
-import {Field, IDataHook, Loader} from "model-react";
+import {Field, IDataHook} from "model-react";
 import {IMenuSearchable} from "../_types/IMenuSearchable";
 import {IQuery} from "../../../../menus/menu/_types/IQuery";
 import {getHooked} from "../../../../utils/subscribables/getHooked";
@@ -15,10 +15,10 @@ import {IIOContext} from "../../../../context/_types/IIOContext";
 import {ISimpleSearchExecutor} from "./_types/ISimpleSearchExecutor";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {SearchHighlighter} from "../SearchHighlighter";
-import {useIOContext} from "../../../../context/react/useIOContext";
 import {useDataHook} from "../../../../utils/modelReact/useDataHook";
 import {LFC} from "../../../../_types/LFC";
 import {ISearchHighlighterProps} from "../_types/ISearchHighlighterProps";
+import {Priority} from "../../../../menus/menu/priority/Priority";
 
 /** The search handlers that are available */
 const searchHandlers = new Field([] as ISimpleSearchMethod[]);
@@ -30,7 +30,7 @@ const searchHandlers = new Field([] as ISimpleSearchMethod[]);
 export const simpleSearchHandler = createAction({
     name: "simple search",
     parents: [searchAction],
-    core: (data: ISimpleSearchData[], _1, _2, targets) => {
+    core: (data: ISimpleSearchData[], _1, globalHook, targets) => {
         let search: ISimpleSearchExecutor;
 
         // Map all the search data
@@ -41,7 +41,8 @@ export const simpleSearchHandler = createAction({
                     query: IQuery & Partial<ISimpleSearchQuery>,
                     hook: IDataHook
                 ) => {
-                    if (!search) search = getSimpleSearchMethod(query.context);
+                    if (!search)
+                        search = getSimpleSearchMethod(query.context, globalHook);
                     return search(
                         data,
                         () => getSearchIdentity(data.itemID, query, targets, hook),
@@ -58,6 +59,7 @@ export const simpleSearchHandler = createAction({
             result: searchables,
         };
     },
+
     /**
      * Creates a new binding for this action
      * @param data The binding data
@@ -137,12 +139,16 @@ export const simpleSearchHandler = createAction({
 /**
  * Retrieves the currently configured search method
  * @param context The context to extract the search method from
+ * @param raterHook The data hook to listen for query rater changes
  * @returns The function to retrieve a searchable for a given item
  */
-function getSimpleSearchMethod(context: IIOContext): ISimpleSearchExecutor {
+function getSimpleSearchMethod(
+    context: IIOContext,
+    raterHook: IDataHook = null
+): ISimpleSearchExecutor {
     const method: ISimpleSearchMethod = context.settings
         .get(baseSettings)
-        .search.simpleSearchMethod.get();
+        .search.simpleSearchMethod.get(raterHook);
 
     // If the method has a searchable retriever, just return it
     if (method.getSearchable) return method.getSearchable;
@@ -179,7 +185,10 @@ function getSimpleSearchMethod(context: IIOContext): ISimpleSearchExecutor {
 
         const item = getItem();
         return {
-            item: priority > 0 && item ? {priority, ID: id, item} : undefined,
+            item:
+                Priority.isPositive(priority) && item
+                    ? {priority, ID: id, item}
+                    : undefined,
             children,
             patternMatch,
         };

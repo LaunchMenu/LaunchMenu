@@ -1,4 +1,5 @@
-import {createSimpleSearchHandlerMethodSettings} from "../../../actions/types/search/simpleSearch/createSimpleSearchHandlerMethodSetting";
+import {createSimpleSearchHandlerMethodSetting} from "../../../actions/types/search/simpleSearch/createSimpleSearchHandlerMethodSetting";
+import {createFuzzySearchSettingsFolder} from "../../../actions/types/search/simpleSearch/fuzzySearchMethod/settings/createFuzzySearchSettingsFolder";
 import {createSettingsFolder} from "../../../settings/inputs/createSettingsFolder";
 
 /**
@@ -9,7 +10,8 @@ export function createSearchSettingsFolder() {
     return createSettingsFolder({
         name: "Search",
         children: {
-            simpleSearchMethod: createSimpleSearchHandlerMethodSettings(),
+            simpleSearchMethod: createSimpleSearchHandlerMethodSetting(),
+            fuzzySearchSettings: createFuzzySearchSettingsFolder(),
         },
     });
 }

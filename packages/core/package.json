@@ -38,6 +38,7 @@
         "@launchmenu/hmr": "^0.0.0",
         "ace-builds": "^1.4.12",
         "bezier-js": "^2.6.1",
+        "fuzzy-rater": "^0.0.0",
         "chevrotain": "^7.0.1",
         "color": "^3.1.2",
         "mkdirp": "^1.0.4",
@@ -49,7 +50,7 @@
         "uuid": "^8.2.0"
     },
     "devDependencies": {
-        "@launchmenu/build-tools": "^0.0.1",
+        "@launchmenu/build-tools": "^0.0.2",
         "@testing-library/jest-dom": "^5.5.0",
         "@testing-library/react": "^10.0.3",
         "@types/ace": "^0.0.43",
