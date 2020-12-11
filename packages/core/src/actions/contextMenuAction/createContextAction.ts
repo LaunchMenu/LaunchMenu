@@ -1,18 +1,19 @@
 import {IDataHook} from "model-react";
-import {createStandardMenuItem} from "../../menus/items/createStandardMenuItem";
+import type {createStandardMenuItem} from "../../menus/items/createStandardMenuItem";
 import {Priority} from "../../menus/menu/priority/Priority";
-import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
-import {createAction} from "../createAction";
-import {executeAction} from "../types/execute/executeAction";
 import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
 import {IBindingCreator} from "../_types/IBindingCreator";
 import {TPureAction} from "../_types/TPureAction";
 import {IContextFolderAction} from "./contextFolders/_types/IContextFolderAction";
-import {contextMenuAction} from "./contextMenuAction";
 import {IContextActionTransformer} from "./_types/IContextActionTransformer";
 import {IContextItemData} from "./_types/IContextItemData";
 import {IContextMenuItemData} from "./_types/IContextMenuItemData";
+
+import {contextMenuAction} from "./contextMenuAction";
+import {executeAction} from "../types/execute/executeAction";
+import {createAction} from "../createAction";
+import {adjustBindings} from "../../menus/items/adjustBindings";
 
 /**
  * Creates an action that conforms to all constraints of a proper action
@@ -101,13 +102,17 @@ IAction<I, O, P & TPureAction<F>> &
             priority = Priority.MEDIUM,
         } = contextItem ?? {};
         item = execute => ({
-            item: createStandardMenuItem({
+            // Use dynamic import to prevent nasty dependency cycles...
+            item: (require("../../menus/items/createStandardMenuItem")
+                .createStandardMenuItem as typeof createStandardMenuItem)({
                 name: itemName,
                 shortcut,
                 icon,
                 description,
                 tags,
-                actionBindings: execute ? [...actionBindings, execute] : actionBindings,
+                actionBindings: execute
+                    ? adjustBindings(execute, actionBindings)
+                    : actionBindings,
             }),
             priority,
         });
@@ -120,17 +125,21 @@ IAction<I, O, P & TPureAction<F>> &
             parents: parents ? [...parents, targetMenu] : [targetMenu],
             createBinding,
             core: (bindingData: I[], indices: number[], hook: IDataHook) => {
-                const {execute, result, children} = core(bindingData, indices, hook);
-                const executeBinding =
-                    execute &&
-                    ("action" in execute
-                        ? execute
-                        : executeAction.createBinding(execute));
+                const {execute, actionBindings = [], result, children} = core(
+                    bindingData,
+                    indices,
+                    hook
+                );
+                const executeBindings = execute
+                    ? adjustBindings(actionBindings, [
+                          executeAction.createBinding(execute),
+                      ])
+                    : actionBindings;
                 const contextItem = targetMenu.createBinding({
                     item,
                     override,
                     preventCountCategory,
-                    execute: executeBinding,
+                    execute: executeBindings,
                     action,
                 });
                 return {

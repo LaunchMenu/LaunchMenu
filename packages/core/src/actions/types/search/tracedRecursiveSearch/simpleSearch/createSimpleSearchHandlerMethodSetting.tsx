@@ -1,10 +1,10 @@
 import React from "react";
 import {Field, IDataHook, Loader} from "model-react";
-import {createFieldMenuItem} from "../../../../menus/items/inputs/createFieldMenuItem";
-import {IUUID} from "../../../../_types/IUUID";
+import {createFieldMenuItem} from "../../../../../menus/items/inputs/createFieldMenuItem";
+import {IUUID} from "../../../../../_types/IUUID";
 import {simpleSearchHandler} from "./simpleSearchHandler";
 import {ISimpleSearchMethod} from "./_types/ISimpleSearchMethod";
-import {selectExecuteHandler} from "../../../../uiLayers/types/select/selectExecuteHandler";
+import {selectExecuteHandler} from "../../../../../uiLayers/types/select/selectExecuteHandler";
 
 /**
  * Creates a menu item to select the search handler method

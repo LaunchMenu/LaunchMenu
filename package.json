@@ -8,6 +8,7 @@
         "packages/launcher*"
     ],
     "devDependencies": {
-        "@launchmenu/build-tools": "^0.0.2"
+        "@launchmenu/build-tools": "^0.0.2",
+        "rimraf": "^3.0.2"
     }
 }

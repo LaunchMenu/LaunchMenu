@@ -1,12 +1,11 @@
-import {FuzzyRater as CoreRater, IFuzzyMatch} from "fuzzy-rater";
-import {baseSettings} from "../../../../../application/settings/baseSettings/baseSettings";
-import {IIOContext} from "../../../../../context/_types/IIOContext";
-import {Priority} from "../../../../../menus/menu/priority/Priority";
-import {IPriority} from "../../../../../menus/menu/priority/_types/IPriority";
-import {IQuery} from "../../../../../menus/menu/_types/IQuery";
-import {SettingsContext} from "../../../../../settings/SettingsContext";
-import {highlightTags} from "../../../../../textFields/syntax/utils/highlightTags";
-import {IHighlightNode} from "../../../../../textFields/syntax/_types/IHighlightNode";
+import {FuzzyRater as CoreRater} from "fuzzy-rater";
+import {baseSettings} from "../../../../../../application/settings/baseSettings/baseSettings";
+import {Priority} from "../../../../../../menus/menu/priority/Priority";
+import {IPriority} from "../../../../../../menus/menu/priority/_types/IPriority";
+import {IQuery} from "../../../../../../menus/menu/_types/IQuery";
+import {SettingsContext} from "../../../../../../settings/SettingsContext";
+import {highlightTags} from "../../../../../../textFields/syntax/utils/highlightTags";
+import {IHighlightNode} from "../../../../../../textFields/syntax/_types/IHighlightNode";
 import {ISimpleSearchGradeFields} from "../_types/ISimpleSearchGradeFields";
 import {IFuzzyRaterConfig} from "./_types/IFuzzyRaterConfig";
 

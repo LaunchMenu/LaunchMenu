@@ -1,24 +1,24 @@
 import React from "react";
-import {getSearchIdentity, searchAction} from "../searchAction";
+import {getSearchIdentity} from "../../searchAction";
 import {ISimpleSearchData} from "./_types/ISimpleSearchData";
-import {ISimpleSearchQuery} from "./_types/ISimpleSearchQuery";
 import {v4 as uuid} from "uuid";
-import {IActionBinding} from "../../../_types/IActionBinding";
+import {IActionBinding} from "../../../../_types/IActionBinding";
 import {Field, IDataHook} from "model-react";
-import {IMenuSearchable} from "../_types/IMenuSearchable";
-import {IQuery} from "../../../../menus/menu/_types/IQuery";
-import {getHooked} from "../../../../utils/subscribables/getHooked";
-import {IAction} from "../../../_types/IAction";
-import {createAction} from "../../../createAction";
+import {IMenuSearchable} from "../../_types/IMenuSearchable";
+import {IQuery} from "../../../../../menus/menu/_types/IQuery";
+import {getHooked} from "../../../../../utils/subscribables/getHooked";
+import {IAction} from "../../../../_types/IAction";
+import {createAction} from "../../../../createAction";
 import {ISimpleSearchMethod} from "./_types/ISimpleSearchMethod";
-import {IIOContext} from "../../../../context/_types/IIOContext";
+import {IIOContext} from "../../../../../context/_types/IIOContext";
 import {ISimpleSearchExecutor} from "./_types/ISimpleSearchExecutor";
-import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
-import {SearchHighlighter} from "../SearchHighlighter";
-import {useDataHook} from "../../../../utils/modelReact/useDataHook";
-import {LFC} from "../../../../_types/LFC";
-import {ISearchHighlighterProps} from "../_types/ISearchHighlighterProps";
-import {Priority} from "../../../../menus/menu/priority/Priority";
+import {baseSettings} from "../../../../../application/settings/baseSettings/baseSettings";
+import {SearchHighlighter} from "../../SearchHighlighter";
+import {useDataHook} from "../../../../../utils/modelReact/useDataHook";
+import {LFC} from "../../../../../_types/LFC";
+import {ISearchHighlighterProps} from "../../_types/ISearchHighlighterProps";
+import {Priority} from "../../../../../menus/menu/priority/Priority";
+import {tracedRecursiveSearchHandler} from "../tracedRecursiveSearchHandler";
 
 /** The search handlers that are available */
 const searchHandlers = new Field([] as ISimpleSearchMethod[]);
@@ -29,7 +29,7 @@ const searchHandlers = new Field([] as ISimpleSearchMethod[]);
  */
 export const simpleSearchHandler = createAction({
     name: "simple search",
-    parents: [searchAction],
+    parents: [tracedRecursiveSearchHandler],
     core: (data: ISimpleSearchData[], _1, globalHook, targets) => {
         let search: ISimpleSearchExecutor;
 
@@ -37,10 +37,7 @@ export const simpleSearchHandler = createAction({
         const searchables = data.map(
             (data): IMenuSearchable => ({
                 ID: data.id,
-                search: async (
-                    query: IQuery & Partial<ISimpleSearchQuery>,
-                    hook: IDataHook
-                ) => {
+                search: async (query: IQuery, hook: IDataHook) => {
                     if (!search)
                         search = getSimpleSearchMethod(query.context, globalHook);
                     return search(
@@ -53,9 +50,15 @@ export const simpleSearchHandler = createAction({
             })
         );
         return {
-            children: searchables.map(searchable =>
-                searchAction.createBinding(searchable)
-            ),
+            children: searchables.map((searchable, i) => {
+                const item = data[i];
+                return tracedRecursiveSearchHandler.createBinding({
+                    searchable,
+                    itemID: item.itemID,
+                    children: item.children,
+                    showChild: item.showChild,
+                });
+            }),
             result: searchables,
         };
     },
@@ -90,6 +93,7 @@ export const simpleSearchHandler = createAction({
             const handlers = searchHandlers.get(null);
             if (!handlers.includes(method)) searchHandlers.set([...handlers, method]);
         },
+
         /**
          * Removes a simple search method
          * @param method The method to be added
@@ -103,6 +107,7 @@ export const simpleSearchHandler = createAction({
                     ...handlers.slice(index + 1),
                 ]);
         },
+
         /**
          * Retrieves the simple search methods
          * @param hook A hook to subscribe to changes
@@ -155,15 +160,7 @@ function getSimpleSearchMethod(
 
     // If the method only has a grade function, create a searchable retriever
     const executor: ISimpleSearchExecutor = async (
-        {
-            children: childItemsGetter,
-            id,
-            name,
-            description,
-            content,
-            tags,
-            patternMatcher,
-        },
+        {id, name, description, content, tags, patternMatcher},
         getItem,
         query,
         hook
@@ -179,8 +176,6 @@ function getSimpleSearchMethod(
                 query,
                 hook
             ) || 0;
-        const childItems = getHooked(childItemsGetter, hook);
-        const children = childItems && searchAction.get(childItems);
         const patternMatch = patternMatcher?.(query, hook);
 
         const item = getItem();
@@ -189,7 +184,6 @@ function getSimpleSearchMethod(
                 Priority.isPositive(priority) && item
                     ? {priority, ID: id, item}
                     : undefined,
-            children,
             patternMatch,
         };
     };

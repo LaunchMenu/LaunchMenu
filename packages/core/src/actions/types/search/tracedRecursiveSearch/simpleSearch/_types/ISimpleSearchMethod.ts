@@ -1,11 +1,11 @@
-import {IMenuItem} from "../../../../../menus/items/_types/IMenuItem";
-import {IPriority} from "../../../../../menus/menu/priority/_types/IPriority";
-import {IQuery} from "../../../../../menus/menu/_types/IQuery";
+import {IMenuItem} from "../../../../../../menus/items/_types/IMenuItem";
+import {IPriority} from "../../../../../../menus/menu/priority/_types/IPriority";
+import {IQuery} from "../../../../../../menus/menu/_types/IQuery";
 import {ISimpleSearchGradeFields} from "./ISimpleSearchGradeFields";
 import {ISimpleSearchExecutor} from "./ISimpleSearchExecutor";
 import {IDataHook} from "model-react";
-import {IUUID} from "../../../../../_types/IUUID";
-import {ISearchHighlighter} from "../../_types/ISearchHighlighter";
+import {IUUID} from "../../../../../../_types/IUUID";
+import {ISearchHighlighter} from "../../../_types/ISearchHighlighter";
 
 /**
  * A search executor, such that different search methods can be chosen for the simple search handler

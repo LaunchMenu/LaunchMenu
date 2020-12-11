@@ -1,8 +1,10 @@
 import {IDataHook} from "model-react";
+import {IIOContext} from "../../../context/_types/IIOContext";
 import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
 import {ProxiedMenu} from "../../../menus/menu/ProxiedMenu";
 import {UILayer} from "../../../uiLayers/standardUILayer/UILayer";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
+import {waitFor} from "../../../utils/modelReact/waitFor";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {createContextAction} from "../../contextMenuAction/createContextAction";
 import {executeAction} from "./executeAction";
@@ -35,12 +37,31 @@ const containsClosingItem = (data: IOpenMenuExecuteData[], items: IMenuItem[]) =
  */
 export const openMenuExecuteHandler = createContextAction({
     name: "Open menu",
+    contextItem: {
+        priority: executeAction.priority,
+    },
     override: executeAction,
     parents: [sequentialExecuteHandler],
     core: (data: IOpenMenuExecuteData[]) => {
-        const execute: IExecutable = async ({context, preventCallback}) => {
+        /**
+         * Executes the open function
+         * @param data The data of how to handle the opening
+         * @returns A promise that resolves once the menu is closed again
+         */
+        const execute = async ({
+            context,
+            preventCallback,
+            focus,
+        }: {
+            /** The context to open the menu in */
+            context: IIOContext;
+            /** A function to indicate the execution success should be suspended, until the second function is called */
+            preventCallback?: () => () => void;
+            /** The item to focus on in the menu */
+            focus?: IMenuItem;
+        }) => {
             const callback = preventCallback?.();
-            return new Promise<ICommand | void>(res => {
+            return new Promise<void>(res => {
                 const childrenGetter = (h: IDataHook) =>
                     data.flatMap(d =>
                         "items" in d ? getHooked(d.items, h) : getHooked(d, h)
@@ -71,11 +92,23 @@ export const openMenuExecuteHandler = createContextAction({
                         {path: pathName}
                     )
                 );
+
+                // Focus the item
+                if (focus)
+                    waitFor(h => {
+                        const items = menu.getItems(h);
+                        if (items.includes(focus)) {
+                            menu.setCursor(focus);
+                            return true;
+                        }
+                        return false;
+                    });
             });
         };
 
         return {
             execute,
+            result: {execute},
             children: [sequentialExecuteHandler.createBinding(execute)],
         };
     },

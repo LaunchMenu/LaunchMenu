@@ -1,4 +1,4 @@
-import {createStandardMenuItem} from "../../../../../menus/items/createStandardMenuItem";
+import {createStandardMenuItem} from "../../../../../../menus/items/createStandardMenuItem";
 import {ISimpleSearchMethod} from "../_types/ISimpleSearchMethod";
 import {FuzzyRater} from "./FuzzyRater";
 

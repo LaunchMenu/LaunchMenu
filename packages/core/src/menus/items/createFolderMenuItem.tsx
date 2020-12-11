@@ -10,13 +10,14 @@ import {adjustBindings} from "./adjustBindings";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
 import {getHooked} from "../../utils/subscribables/getHooked";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
-import {simpleSearchHandler} from "../../actions/types/search/simpleSearch/simpleSearchHandler";
 import {openMenuExecuteHandler} from "../../actions/types/execute/openMenuExecuteHandler";
 import {forwardKeyEventHandler} from "../../actions/types/keyHandler/forwardKeyEventHandler";
 import {createStandardActionBindings} from "./createStandardActionBindings";
 import {Box} from "../../styling/box/Box";
 import {ShortcutLabel} from "../../components/items/ShortcutLabel";
 import {ThemeIcon} from "../../components/ThemeIcon";
+import {simpleSearchHandler} from "../../actions/types/search/tracedRecursiveSearch/simpleSearch/simpleSearchHandler";
+import {identityAction} from "../../actions/types/identity/identityAction";
 
 /**
  * Retrieves the children in (subscribable) list form
@@ -73,6 +74,12 @@ export function createFolderMenuItem<
             ...rest,
             actionBindings: adjustBindings(actionBindings ?? [], extraBindings),
             searchChildren: getChildList(searchChildren),
+            showChild: async ({parent, child, context}) => {
+                if (parent)
+                    return openMenuExecuteHandler
+                        .get([parent])
+                        .execute({context, focus: child});
+            },
         },
         () => item
     );

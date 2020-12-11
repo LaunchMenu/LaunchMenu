@@ -1,8 +1,8 @@
 import {Loader} from "model-react";
 import React from "react";
-import {createStandardMenuItem} from "../../../../../../menus/items/createStandardMenuItem";
-import {createFieldMenuItem} from "../../../../../../menus/items/inputs/createFieldMenuItem";
-import {selectExecuteHandler} from "../../../../../../uiLayers/types/select/selectExecuteHandler";
+import {createStandardMenuItem} from "../../../../../../../menus/items/createStandardMenuItem";
+import {createFieldMenuItem} from "../../../../../../../menus/items/inputs/createFieldMenuItem";
+import {selectExecuteHandler} from "../../../../../../../uiLayers/types/select/selectExecuteHandler";
 import {IFuzzinessIntensity} from "../_types/IFuzzinessIntensity";
 
 /**

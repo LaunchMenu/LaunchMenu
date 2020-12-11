@@ -1,5 +1,5 @@
 import {ICategory} from "../../../../../actions/types/category/_types/ICategory";
-import {ISimpleSearchPatternMatcher} from "../../../../../actions/types/search/simpleSearch/_types/ISimpleSearchData";
+import {ISimpleSearchPatternMatcher} from "../../../../../actions/types/search/tracedRecursiveSearch/simpleSearch/_types/ISimpleSearchData";
 import {ISubscribable} from "../../../../../utils/subscribables/_types/ISubscribable";
 import {ISubscribableActionBindings} from "../../../_types/ISubscribableActionBindings";
 

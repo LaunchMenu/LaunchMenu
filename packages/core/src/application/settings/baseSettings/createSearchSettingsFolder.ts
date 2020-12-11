@@ -1,5 +1,5 @@
-import {createSimpleSearchHandlerMethodSetting} from "../../../actions/types/search/simpleSearch/createSimpleSearchHandlerMethodSetting";
-import {createFuzzySearchSettingsFolder} from "../../../actions/types/search/simpleSearch/fuzzySearchMethod/settings/createFuzzySearchSettingsFolder";
+import {createSimpleSearchHandlerMethodSetting} from "../../../actions/types/search/tracedRecursiveSearch/simpleSearch/createSimpleSearchHandlerMethodSetting";
+import {createFuzzySearchSettingsFolder} from "../../../actions/types/search/tracedRecursiveSearch/simpleSearch/fuzzySearchMethod/settings/createFuzzySearchSettingsFolder";
 import {createSettingsFolder} from "../../../settings/inputs/createSettingsFolder";
 
 /**

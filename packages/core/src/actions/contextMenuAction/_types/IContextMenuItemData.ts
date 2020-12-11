@@ -1,4 +1,5 @@
 import {IPrioritizedMenuItem} from "../../../menus/menu/_types/IPrioritizedMenuItem";
+import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {IAction} from "../../_types/IAction";
 import {IActionBinding} from "../../_types/IActionBinding";
 
@@ -14,7 +15,7 @@ export type IContextMenuItemData = {
      */
     override?: IAction;
     /** The execute binding which override of this item may use to perform this action */
-    execute?: IActionBinding;
+    execute?: ISubscribable<IActionBinding[]>;
     /** The item to show in the context menu */
     item:
         | {
@@ -23,7 +24,7 @@ export type IContextMenuItemData = {
                * @param executeBinding The bindings that may be specified by ancestor actions (obtained from specified parents)
                * @returns The menu item to show in the menu
                */
-              (executeBindings?: IActionBinding): IPrioritizedMenuItem;
+              (executeBindings?: ISubscribable<IActionBinding[]>): IPrioritizedMenuItem;
           }
         | IPrioritizedMenuItem;
     /** Whether to prevent adding the count category to the item, defaults to false */

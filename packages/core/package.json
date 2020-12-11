@@ -16,7 +16,8 @@
         "clean": "lm-build-tools --cleanup",
         "test": "jest -i",
         "test-watch": "jest --watch -i",
-        "test-watch-debug": "node --inspect-brk ../../node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\""
+        "test-watch-debug": "node --inspect-brk ../../node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\"",
+        "eslint": "eslint ./src -o eslintLog.tap --format tap"
     },
     "repository": {
         "type": "git",
@@ -38,9 +39,9 @@
         "@launchmenu/hmr": "^0.0.0",
         "ace-builds": "^1.4.12",
         "bezier-js": "^2.6.1",
-        "fuzzy-rater": "^0.0.0",
         "chevrotain": "^7.0.1",
         "color": "^3.1.2",
+        "fuzzy-rater": "^0.0.0",
         "mkdirp": "^1.0.4",
         "model-react": "^3.0.2",
         "react": "^16.13.0",
@@ -50,7 +51,6 @@
         "uuid": "^8.2.0"
     },
     "devDependencies": {
-        "@launchmenu/build-tools": "^0.0.2",
         "@testing-library/jest-dom": "^5.5.0",
         "@testing-library/react": "^10.0.3",
         "@types/ace": "^0.0.43",
@@ -61,7 +61,11 @@
         "@types/react": "^16.9.35",
         "@types/react-dom": "^16.9.8",
         "@types/uuid": "^8.0.0",
+        "@typescript-eslint/eslint-plugin": "^4.9.1",
+        "@typescript-eslint/parser": "^4.9.1",
         "electron": "^9.3.1",
+        "eslint": "^7.15.0",
+        "eslint-plugin-import": "^2.22.1",
         "jest": "^26.0.1",
         "ts-jest": "^26.1.0",
         "typescript": "4.0.2"

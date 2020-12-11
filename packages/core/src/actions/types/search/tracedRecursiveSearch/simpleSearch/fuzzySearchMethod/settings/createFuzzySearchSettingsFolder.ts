@@ -1,6 +1,6 @@
-import {createBooleanMenuItem} from "../../../../../../menus/items/inputs/types/createBooleanMenuItem";
-import {createNumberMenuItem} from "../../../../../../menus/items/inputs/types/createNumberMenuItem";
-import {createSettingsFolder} from "../../../../../../settings/inputs/createSettingsFolder";
+import {createBooleanMenuItem} from "../../../../../../../menus/items/inputs/types/createBooleanMenuItem";
+import {createNumberMenuItem} from "../../../../../../../menus/items/inputs/types/createNumberMenuItem";
+import {createSettingsFolder} from "../../../../../../../settings/inputs/createSettingsFolder";
 import {createFuzzinessSetting} from "./createFuzzinessSetting";
 
 /**

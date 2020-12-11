@@ -1,9 +1,9 @@
 import {IDataHook} from "model-react";
-import {IMenuItem} from "../../../../../menus/items/_types/IMenuItem";
-import {IPrioritizedMenuItem} from "../../../../../menus/menu/_types/IPrioritizedMenuItem";
-import {IQuery} from "../../../../../menus/menu/_types/IQuery";
-import {SearchExecuter} from "../../../../../utils/searchExecuter/SearchExecuter";
-import {ISearchableResult} from "../../../../../utils/searchExecuter/_types/ISearchable";
+import {IMenuItem} from "../../../../../../menus/items/_types/IMenuItem";
+import {IPrioritizedMenuItem} from "../../../../../../menus/menu/_types/IPrioritizedMenuItem";
+import {IQuery} from "../../../../../../menus/menu/_types/IQuery";
+import {SearchExecuter} from "../../../../../../utils/searchExecuter/SearchExecuter";
+import {ISearchableResult} from "../../../../../../utils/searchExecuter/_types/ISearchable";
 import {ISimpleSearchData} from "./ISimpleSearchData";
 
 export type ISimpleSearchExecutor = {

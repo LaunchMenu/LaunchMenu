@@ -10,6 +10,8 @@ import {IActionTarget} from "../../_types/IActionTarget";
 import {IExecutable} from "./_types/IExecutable";
 import {IItemExecuteCallback} from "./_types/IItemExecuteCallback";
 
+const priority = new Array(3).fill(Priority.HIGH);
+
 /**
  * The action to execute the main function of menu items
  */
@@ -45,14 +47,14 @@ export const executeAction = createAction({
 
             // Create a context menu item for this action, such that it also shows up in the context menu
             children: [
-                (contextMenuAction as any).createBinding({
+                contextMenuAction.createBinding({
                     action: this,
-                    execute: this.createBinding(combineExecutables), // Gets passed to the item
-                    item: (execute: IActionBinding) => ({
-                        priority: new Array(3).fill(Priority.HIGH),
+                    execute: [this.createBinding(combineExecutables)], // Gets passed to the item
+                    item: (execute: IActionBinding[]) => ({
+                        priority,
                         item: createStandardItemImport.createStandardMenuItem({
                             name: "Execute",
-                            actionBindings: execute ? [execute] : [],
+                            actionBindings: execute,
                         }),
                     }),
                 }) as any,
@@ -60,6 +62,8 @@ export const executeAction = createAction({
         };
     },
     extras: {
+        /** The context menu priority of the execute action */
+        priority,
         /** An execute method that automatically dispatches commands, and take care of onExecute callback calling */
         execute: async function (
             context: IMenu | IIOContext,

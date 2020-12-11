@@ -342,7 +342,10 @@ export class PrioritizedMenu extends AbstractMenu {
      * @returns The menu items
      */
     public getItems(hook: IDataHook = null): IMenuItem[] {
-        if (this.isDestroyed(hook)) return [];
+        if (this.isDestroyed(hook))
+            // Whenever the menu is destroyed, we no longer inform about item changes
+            return this.items.get(null);
+
         if (hook && "markIsLoading" in hook && this.categoryConfig.isLoading.get(hook))
             hook.markIsLoading?.();
         return this.items.get(hook);
@@ -354,7 +357,10 @@ export class PrioritizedMenu extends AbstractMenu {
      * @returns The categories and their items
      */
     public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
-        if (this.isDestroyed(hook)) return [];
+        if (this.isDestroyed(hook))
+            // Whenever the menu is destroyed, we no longer inform about category changes
+            return this.categories.get(null);
+
         if (hook && "markIsLoading" in hook && this.categoryConfig.isLoading.get(hook))
             hook.markIsLoading?.();
         return this.categories.get(hook);

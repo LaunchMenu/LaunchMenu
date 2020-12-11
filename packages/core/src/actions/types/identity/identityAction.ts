@@ -9,6 +9,8 @@ import {v4 as uuid} from "uuid";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {IDataHook} from "model-react";
 import {copyItem} from "./copyItem";
+import {IPrioritizedMenuItem} from "../../../menus/menu/_types/IPrioritizedMenuItem";
+import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
 
 /**
  * An action to retrieve the identity of an item (usually the item itself, but allows for overrides)
@@ -87,6 +89,24 @@ export const identityAction = createAction({
                 (item, ID) => createStandardBinding.call(identityAction, {ID, item}),
                 bindings
             );
+        },
+
+        /**
+         * Copies an item, making the specified bindings adjustments, updating the identity
+         * @param item The prioritized item to copy
+         * @param bindings The bindings to be added, or a function to obtain the new bindings
+         * @returns The newly created prioritized item
+         */
+        copyPrioritizedItem(
+            item: IPrioritizedMenuItem,
+            bindings?:
+                | IActionBinding[]
+                | ((oldBindings: IActionBinding[], hook: IDataHook) => IActionBinding[])
+        ): IPrioritizedMenuItem {
+            return {
+                ...item,
+                item: identityAction.copyItem(item.item, bindings),
+            };
         },
     },
 });

@@ -19,7 +19,7 @@ import {ISerializableField} from "../../../settings/_types/ISerializableField";
 import {IMenuItemView} from "../_types/IMenuItemView";
 import {IField} from "../../../_types/IField";
 import {ISerializeField} from "../../../settings/storage/fileTypes/FieldsFile/_types/ISerializedField";
-import {simpleSearchHandler} from "../../../actions/types/search/simpleSearch/simpleSearchHandler";
+import {simpleSearchHandler} from "../../../actions/types/search/tracedRecursiveSearch/simpleSearch/simpleSearchHandler";
 
 // TODO: try to fix the types (removing any)
 

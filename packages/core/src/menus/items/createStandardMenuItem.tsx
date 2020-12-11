@@ -10,7 +10,7 @@ import {getHooked} from "../../utils/subscribables/getHooked";
 import {Box} from "../../styling/box/Box";
 import {createStandardActionBindings} from "./createStandardActionBindings";
 import {ShortcutLabel} from "../../components/items/ShortcutLabel";
-import {simpleSearchHandler} from "../../actions/types/search/simpleSearch/simpleSearchHandler";
+import {simpleSearchHandler} from "../../actions/types/search/tracedRecursiveSearch/simpleSearch/simpleSearchHandler";
 
 /**
  * Creates a new standard menu item

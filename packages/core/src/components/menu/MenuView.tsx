@@ -1,5 +1,4 @@
 import React, {useEffect, useMemo, useRef} from "react";
-import {useDataHook} from "model-react";
 import {FillBox} from "../FillBox";
 import {useSmoothScroll} from "../../utils/hooks/useSmoothScroll";
 import {IMenuViewProps} from "./_types/IMenuViewProps";
@@ -7,6 +6,7 @@ import {useVerticalScroll} from "../../utils/hooks/useVerticalScroll";
 import {LFC} from "../../_types/LFC";
 import {useTheme} from "../../styling/theming/ThemeContext";
 import {getHighlightThemeStyle} from "../../styling/theming/highlighting/getHighlightThemeStyle";
+import {useDataHook} from "../../utils/modelReact/useDataHook";
 
 /**
  * A standard simple view for a menu

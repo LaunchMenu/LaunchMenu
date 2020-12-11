@@ -1,9 +1,8 @@
 import {IDataHook} from "model-react";
-import {executeAction} from "../../types/execute/executeAction";
+import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {IExecutable} from "../../types/execute/_types/IExecutable";
 import {IActionBinding} from "../../_types/IActionBinding";
 import {IActionResult} from "../../_types/IActionResult";
-import {TPureAction} from "../../_types/TPureAction";
 
 export type IContextActionTransformer<I, O, AB extends IActionBinding> = {
     /**
@@ -14,6 +13,9 @@ export type IContextActionTransformer<I, O, AB extends IActionBinding> = {
      * @returns The action result and any possible child bindings
      */
     (bindingData: I[], indices: number[], hook: IDataHook): IActionResult<AB, O> & {
-        execute?: IActionBinding<TPureAction<typeof executeAction>> | IExecutable;
+        /** A default execute function for the context menu item */
+        execute?: IExecutable;
+        /** Action bindings to be used by the context menu item */
+        actionBindings?: ISubscribable<IActionBinding[]>;
     };
 };
