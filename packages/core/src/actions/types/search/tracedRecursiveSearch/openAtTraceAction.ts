@@ -1,3 +1,4 @@
+import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
 import {Priority} from "../../../../menus/menu/priority/Priority";
 import {createContextAction} from "../../../contextMenuAction/createContextAction";
@@ -14,6 +15,8 @@ export const openAtTraceAction = createContextAction({
     contextItem: {
         name: "Open in location",
         priority: [Priority.HIGH],
+        shortcut: context =>
+            context.settings.get(baseSettings).controls.search.openAtTrace.get(),
     },
     core: (traces: (ISearchTraceNode[] | (() => ISearchTraceNode[]))[]) => {
         return {

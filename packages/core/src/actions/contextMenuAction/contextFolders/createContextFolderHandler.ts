@@ -78,6 +78,7 @@ export function createContextFolderHandler(config: {
                 name,
                 pathName: name,
                 closeOnExecute: true,
+                forwardKeyEvents: true,
                 children: itemsGetter,
                 searchChildren: searchItems,
                 ...contextItemData,
