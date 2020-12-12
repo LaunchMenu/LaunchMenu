@@ -43,6 +43,9 @@ export const openMenuExecuteHandler = createContextAction({
     override: executeAction,
     parents: [sequentialExecuteHandler],
     core: (data: IOpenMenuExecuteData[]) => {
+        const childrenGetter = (h: IDataHook = null) =>
+            data.flatMap(d => ("items" in d ? getHooked(d.items, h) : getHooked(d, h)));
+
         /**
          * Executes the open function
          * @param data The data of how to handle the opening
@@ -62,11 +65,6 @@ export const openMenuExecuteHandler = createContextAction({
         }) => {
             const callback = preventCallback?.();
             return new Promise<void>(res => {
-                const childrenGetter = (h: IDataHook) =>
-                    data.flatMap(d =>
-                        "items" in d ? getHooked(d.items, h) : getHooked(d, h)
-                    );
-
                 const pathName =
                     data.reduce(
                         (cur, d) =>
@@ -108,7 +106,17 @@ export const openMenuExecuteHandler = createContextAction({
 
         return {
             execute,
-            result: {execute},
+            result: {
+                execute,
+                getItems: childrenGetter as {
+                    /**
+                     * Retrieves the items that would be shown in the menu
+                     * @param hook The data hook to subscribe to changes
+                     * @returns The items for the menu
+                     */
+                    (hook?: IDataHook): IMenuItem[];
+                },
+            },
             children: [sequentialExecuteHandler.createBinding(execute)],
         };
     },
