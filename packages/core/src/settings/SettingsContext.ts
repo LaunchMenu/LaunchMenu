@@ -1,7 +1,6 @@
 import {extractSettings} from "./utils/extractSettings";
 import {IIdentifiedSettingsConfig} from "./_types/IIdentifiedSettingsConfig";
 import {ISettingsFolderMenuItem} from "./_types/ISettingsFolderMenuItem";
-import {IJSONDeserializer} from "./_types/serialization/IJSONDeserializer";
 import {TSettingsTree} from "./_types/TSettingsTree";
 
 /**
@@ -25,7 +24,7 @@ export class SettingsContext {
      * @returns The newly created context
      */
     public augment<F extends ISettingsFolderMenuItem>(
-        config: IIdentifiedSettingsConfig<any, F, IJSONDeserializer>,
+        config: IIdentifiedSettingsConfig<any, F>,
         values: F
     ): SettingsContext {
         return new SettingsContext({...this.settings, [config.ID]: values});
@@ -36,9 +35,9 @@ export class SettingsContext {
      * @param config The settings group to retrieve
      * @returns The values for these settings within this context
      */
-    public get<F extends ISettingsFolderMenuItem, D extends IJSONDeserializer>(
-        config: IIdentifiedSettingsConfig<any, F, D>
-    ): TSettingsTree<F["children"], D> {
+    public get<F extends ISettingsFolderMenuItem>(
+        config: IIdentifiedSettingsConfig<any, F>
+    ): TSettingsTree<F["children"]> {
         if (!config) throw Error("No config was provided");
         return extractSettings(this.getUI(config));
     }
@@ -55,10 +54,10 @@ export class SettingsContext {
      * @returns The UI to represent the settings
      */
     public getUI<F extends ISettingsFolderMenuItem>(
-        config: IIdentifiedSettingsConfig<any, F, IJSONDeserializer>
+        config: IIdentifiedSettingsConfig<any, F>
     ): F;
     public getUI<F extends ISettingsFolderMenuItem>(
-        config?: IIdentifiedSettingsConfig<any, F, IJSONDeserializer>
+        config?: IIdentifiedSettingsConfig<any, F>
     ): F | ISettingsFolderMenuItem[] {
         if (config) {
             if (!this.settings[config.ID]) this.settings[config.ID] = config.settings();

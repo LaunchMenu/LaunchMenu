@@ -9,6 +9,7 @@ import {
     fieldControlsFolderCategories,
 } from "./controls/createFieldControlsSettingsFolder";
 import {createMenuControlsSettingsFolder} from "./controls/createMenuControlsSettingsFolder";
+import {createSearchSettingsFolder} from "./createSearchSettingsFolder";
 
 /**
  * Categories in the base settings
@@ -33,11 +34,21 @@ export const baseSettings = createSettings({
                         field: createFieldControlsSettingsFolder(),
                         content: createContentControlsSettingsFolder(),
                         back: createKeyPatternSetting({
-                            name: "back",
+                            name: "Back",
                             init: new KeyPattern("esc"),
+                        }),
+                        search: createSettingsFolder({
+                            name: "Search",
+                            children: {
+                                openAtTrace: createKeyPatternSetting({
+                                    name: "Open in location",
+                                    init: new KeyPattern("ctrl+o"),
+                                }),
+                            },
                         }),
                     },
                 }),
+                search: createSearchSettingsFolder(),
             },
         }),
 });

@@ -72,9 +72,11 @@ describe("contextMenuAction", () => {
                             contextMenuAction.createBinding({
                                 action: this,
                                 item: (...args) => menuItemMock(...args),
-                                execute: executeAction.createBinding(() => {
-                                    result = inp.join(",");
-                                }),
+                                execute: [
+                                    executeAction.createBinding(() => {
+                                        result = inp.join(",");
+                                    }),
+                                ],
                             }),
                         ],
                     };
@@ -114,9 +116,11 @@ describe("contextMenuAction", () => {
                             contextMenuAction.createBinding({
                                 action: this,
                                 item: (...args) => menuItemMock(...args),
-                                execute: executeAction.createBinding(() => {
-                                    result = inp.join(",");
-                                }),
+                                execute: [
+                                    executeAction.createBinding(() => {
+                                        result = inp.join(",");
+                                    }),
+                                ],
                             }),
                         ],
                     };
@@ -205,9 +209,11 @@ describe("contextMenuAction", () => {
                             contextMenuAction.createBinding({
                                 action: this,
                                 item: (...args) => menuItemMock(...args),
-                                execute: executeAction.createBinding(() => {
-                                    result = inp.join(",");
-                                }),
+                                execute: [
+                                    executeAction.createBinding(() => {
+                                        result = inp.join(",");
+                                    }),
+                                ],
                             }),
                         ],
                     };
@@ -233,9 +239,11 @@ describe("contextMenuAction", () => {
                                 action: this,
                                 override: someAction,
                                 item: (...args) => menuItemMock2(...args),
-                                execute: executeAction.createBinding(() => {
-                                    result2 = res;
-                                }),
+                                execute: [
+                                    executeAction.createBinding(() => {
+                                        result2 = res;
+                                    }),
+                                ],
                             }),
                         ],
                     };
@@ -605,9 +613,11 @@ describe("contextMenuAction", () => {
                             contextMenuAction.createBinding({
                                 action: this,
                                 item: (...args) => menuItemMock(...args),
-                                execute: executeAction.createBinding(() => {
-                                    result = inp.join(",");
-                                }),
+                                execute: [
+                                    executeAction.createBinding(() => {
+                                        result = inp.join(",");
+                                    }),
+                                ],
                             }),
                         ],
                     };

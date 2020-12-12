@@ -1,5 +1,4 @@
-import {Field} from "model-react";
-import {FieldsFile} from "../FieldsFile/FieldsFile";
+import {Field, IDataHook} from "model-react";
 import Path from "path";
 import FS from "fs";
 import {promisify} from "util";
@@ -14,16 +13,21 @@ class Test {
 
     // Serialization stuff
     public serialize() {
-        return {
-            $$type: Test.jsonTypeName,
-            name: this.name,
-        } as const;
+        return {name: this.name};
     }
-    public static readonly jsonTypeName = "Test";
     public static deserialize(data: {name: string}): Test {
         return new Test(data.name);
     }
 }
+const createTestField = (value: Test) => {
+    const field = new Field(value);
+    return {
+        get: (h: IDataHook) => field.get(h),
+        set: (value: Test) => field.set(value),
+        getSerialized: (h: IDataHook) => field.get(h).serialize(),
+        setSerialized: ({name}: {name: string}) => field.set(Test.deserialize({name})),
+    };
+};
 
 const oldFieldsVersion = {
     oranges: new Field("yes"),
@@ -41,7 +45,7 @@ const createFieldsCustom = () => ({
         potatoes: new Field(true),
         sub: {
             sub: {
-                potatoes: new Field(new Test("yes")),
+                potatoes: createTestField(new Test("yes")),
             },
         },
     },
@@ -57,7 +61,6 @@ describe("FieldsFile", () => {
                 version: 1,
                 updater: (version, data) => data as any,
                 path: getPath("t0.json"),
-                deserializers: [Test],
                 // fields: createFieldsCustom(),
                 fields: {},
             });
@@ -70,7 +73,6 @@ describe("FieldsFile", () => {
                 version: 1,
                 updater: (version, data) => data as any,
                 path,
-                deserializers: [Test],
                 fields: createFieldsCustom(),
             });
             await file.save();
@@ -87,7 +89,6 @@ describe("FieldsFile", () => {
                         sub: {
                             sub: {
                                 potatoes: {
-                                    $$type: "Test",
                                     name: "yes",
                                 },
                             },
@@ -121,15 +122,11 @@ describe("FieldsFile", () => {
                 updater: (
                     version,
                     data: TFieldsTreeSerialized<
-                        typeof createFieldsCustom extends () => infer T ? T : unknown,
-                        any
+                        typeof createFieldsCustom extends () => infer T ? T : unknown
                     >
                 ) => {
                     if (version == 0) {
-                        const v0 = data as TFieldsTreeSerialized<
-                            typeof oldFieldsVersion,
-                            any
-                        >;
+                        const v0 = data as TFieldsTreeSerialized<typeof oldFieldsVersion>;
                         data = {
                             ...v0,
                             stuff: {
@@ -137,7 +134,6 @@ describe("FieldsFile", () => {
                                 sub: {
                                     sub: {
                                         potatoes: {
-                                            $$type: "Test",
                                             name: "bob",
                                         },
                                     },
@@ -148,7 +144,6 @@ describe("FieldsFile", () => {
                     return data;
                 },
                 path,
-                deserializers: [Test],
                 fields: createFieldsCustom(),
             });
             await file.load();

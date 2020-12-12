@@ -119,7 +119,9 @@ export class ProxiedMenu extends AbstractMenu {
      * @returns The menu items
      */
     public getItems(hook: IDataHook = null): IMenuItem[] {
-        if (this.isDestroyed(hook)) return [];
+        if (this.isDestroyed(hook))
+            // Whenever the menu is destroyed, we no longer inform about item changes
+            return this.itemsList.get(null);
         return this.itemsList.get(hook);
     }
 
@@ -129,7 +131,9 @@ export class ProxiedMenu extends AbstractMenu {
      * @returns The categories and their items
      */
     public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
-        if (this.isDestroyed(hook)) return [];
+        if (this.isDestroyed(hook))
+            // Whenever the menu is destroyed, we no longer inform about category changes
+            return this.categories.get(null).categories;
         return this.categories.get(hook).categories;
     }
 }

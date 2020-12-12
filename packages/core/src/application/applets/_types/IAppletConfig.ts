@@ -1,6 +1,5 @@
 import {IIdentifiedSettingsConfig} from "../../../settings/_types/IIdentifiedSettingsConfig";
 import {ISettingsFolderMenuItem} from "../../../settings/_types/ISettingsFolderMenuItem";
-import {IJSONDeserializer} from "../../../settings/_types/serialization/IJSONDeserializer";
 import {IJSON} from "../../../_types/IJSON";
 import {IAppletExecutionConfig} from "./IAppletExecutionConfig";
 import {IAppletInfo} from "./IAppletInfo";
@@ -13,9 +12,8 @@ import {IAppletSessionInitializer} from "./IAppletSessionInitializer";
 export type IAppletConfig<
     S extends IIdentifiedSettingsConfig<
         IJSON,
-        ISettingsFolderMenuItem,
-        IJSONDeserializer
-    > = IIdentifiedSettingsConfig<IJSON, ISettingsFolderMenuItem, any>
+        ISettingsFolderMenuItem
+    > = IIdentifiedSettingsConfig<IJSON, ISettingsFolderMenuItem>
 > = {
     /** The applet info for listings */
     info: IAppletInfo;

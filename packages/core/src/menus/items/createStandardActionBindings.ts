@@ -9,13 +9,13 @@ import {shortcutHandler} from "../../actions/types/keyHandler/shortcutHandler";
 import {onCursorAction} from "../../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
 import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
-import {simpleSearchHandler} from "../../actions/types/search/simpleSearch/simpleSearchHandler";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
 import {adjustBindings} from "./adjustBindings";
 import {IMenuItem} from "./_types/IMenuItem";
 import {IStandardActionBindingData} from "./_types/IStandardActionBindingData";
 import {scrollableContentHandler} from "../../actions/types/content/scrollableContentHandler";
+import {simpleSearchHandler} from "../../actions/types/search/tracedRecursiveSearch/simpleSearch/simpleSearchHandler";
 
 /**
  * Creates standard subscribable action bindings
@@ -39,6 +39,7 @@ export function createStandardActionBindings(
         onCursor,
         onMenuChange,
         searchChildren,
+        showChild,
     }: IStandardActionBindingData,
     item: () => IMenuItem,
     connectionGroup: Symbol | undefined = standardConnectionGroup
@@ -53,6 +54,7 @@ export function createStandardActionBindings(
             tags,
             children: searchChildren,
             itemID: identity.ID,
+            showChild,
         }),
     ];
     if (onExecute)

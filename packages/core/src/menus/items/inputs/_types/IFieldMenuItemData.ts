@@ -1,10 +1,21 @@
 import {IStandardMenuItemData} from "../../_types/IStandardMenuItemData";
 import {IField} from "../../../../_types/IField";
+import {IJSON} from "../../../../_types/IJSON";
+import {ISerializableField} from "../../../../settings/_types/ISerializableField";
 
 /** The input data to create a field menu item */
-export type IFieldMenuItemData<T> = {
+export type IFieldMenuItemData<T, D extends IJSON> = (
+    | {
+          /** The field to store data in */
+          field: ISerializableField<T, D>;
+      }
+    | {
+          /** The initial value */
+          init: T extends IJSON ? T : never;
+      }
+) & {
     /** The initial value */
-    init: T;
+    init?: T;
     /** Retrieves the config data */
     data: (
         field: IField<T>

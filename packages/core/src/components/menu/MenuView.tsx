@@ -1,11 +1,12 @@
-import React, {useEffect, useRef} from "react";
-import {useDataHook} from "model-react";
+import React, {useEffect, useMemo, useRef} from "react";
 import {FillBox} from "../FillBox";
 import {useSmoothScroll} from "../../utils/hooks/useSmoothScroll";
 import {IMenuViewProps} from "./_types/IMenuViewProps";
 import {useVerticalScroll} from "../../utils/hooks/useVerticalScroll";
 import {LFC} from "../../_types/LFC";
 import {useTheme} from "../../styling/theming/ThemeContext";
+import {getHighlightThemeStyle} from "../../styling/theming/highlighting/getHighlightThemeStyle";
+import {useDataHook} from "../../utils/modelReact/useDataHook";
 
 /**
  * A standard simple view for a menu
@@ -67,7 +68,13 @@ export const MenuView: LFC<IMenuViewProps> = ({
     const cachedItems = useRef(items);
     if (!menu.isDestroyed()) cachedItems.current = items;
 
+    // Obtain syntax styling for search results
     const theme = useTheme();
+    const syntaxStyling = useMemo(() => getHighlightThemeStyle(theme.highlighting), [
+        theme,
+    ]);
+
+    // Return the menu
     return (
         <FillBox
             className="menu"
@@ -75,27 +82,7 @@ export const MenuView: LFC<IMenuViewProps> = ({
             overflow="auto"
             background="bgTertiary"
             zIndex={0}
-            // Add custom scrollbar styling
-            css={{
-                "&::-webkit-scrollbar": {
-                    width: 15,
-                },
-                "&::-webkit-scrollbar-track": {
-                    background: theme.color.bgTertiary,
-                },
-                "&::-webkit-scrollbar-thumb": {
-                    background: theme.color.bgPrimary,
-                    border: "3px solid",
-                    borderColor: "transparent",
-                    backgroundClip: "padding-box",
-                },
-                "&::-webkit-scrollbar-thumb:hover": {
-                    background: theme.color.primary,
-                    border: "3px solid",
-                    borderColor: "transparent",
-                    backgroundClip: "padding-box",
-                },
-            }}>
+            css={syntaxStyling}>
             {cachedItems.current.map((menuItem, i) => {
                 const isCursor = cursorItem == menuItem;
                 return (

@@ -6,18 +6,25 @@ import {IHighlightThemeInput} from "./_types/IHighlightThemeInput";
  */
 export const defaultHighlightTheme: IHighlightThemeInput = theme => ({
     syntax: [
+        // Search highlighting
         {
-            scope: [highlightTags.number, highlightTags.patternMatch],
+            scope: [[highlightTags.searchHighlight, highlightTags.darkBackground]],
             settings: {
+                backgroundColor: theme.color.primary,
+                color: theme.color.fontPrimary,
+                borderRadius: theme.radius.small,
+            },
+        },
+        {
+            scope: [highlightTags.searchHighlight],
+            settings: {
+                backgroundColor: theme.color.bgPrimary,
                 color: theme.color.primary,
+                borderRadius: theme.radius.small,
             },
         },
-        {
-            scope: [highlightTags.operator],
-            settings: {
-                color: theme.color.tertiary,
-            },
-        },
+
+        // Special cases
         {
             scope: [highlightTags.error],
             settings: {
@@ -31,6 +38,20 @@ export const defaultHighlightTheme: IHighlightThemeInput = theme => ({
                 "::before": {
                     content: "' '",
                 },
+            },
+        },
+
+        // General highlighting
+        {
+            scope: [highlightTags.number, highlightTags.patternMatch],
+            settings: {
+                color: theme.color.primary,
+            },
+        },
+        {
+            scope: [highlightTags.operator],
+            settings: {
+                color: theme.color.tertiary,
             },
         },
     ],
