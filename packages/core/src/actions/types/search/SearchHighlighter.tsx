@@ -65,8 +65,8 @@ export const SearchHighlighter: LFC<{
     // Highlight the data
     return (
         <>
-            {normalizedNodes.map(({start, text, tags}) => (
-                <span key={start} className={tags?.join(" ")}>
+            {normalizedNodes.map(({start, end, text, tags}) => (
+                <span key={`${start}-${end}`} className={tags?.join(" ")}>
                     {text}
                 </span>
             ))}

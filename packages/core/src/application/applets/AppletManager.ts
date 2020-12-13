@@ -52,7 +52,11 @@ export class AppletManager {
      * @param appletData The applet data to be disposed
      */
     protected disposeAppletData(appletData: IAppletData): void {
-        appletData.applet.onDispose?.();
+        try {
+            appletData.applet.onDispose?.();
+        } catch (e) {
+            console.error(e);
+        }
         appletData.watcher?.destroy();
     }
 

@@ -1,7 +1,7 @@
 {
     "name": "@launchmenu/applet-settings-manager",
     "version": "0.0.0-alpha.1",
-    "description": "An applet to manage",
+    "description": "An applet to manage settings",
     "types": "build/index.d.ts",
     "files": [
         "build/**/*.{js,d.ts}"

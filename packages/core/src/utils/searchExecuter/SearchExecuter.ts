@@ -72,7 +72,6 @@ export class SearchExecuter<Q, I> {
         this.query.set(query);
 
         // Stop the search, and wait until it fully stopped
-        let s = Date.now();
         this.interruptSearch = true;
         return this.searchPromise.then(() => {
             this.interruptSearch = false;
@@ -225,6 +224,9 @@ export class SearchExecuter<Q, I> {
     protected async nodeUpdate(query: Q, node: ISearchNode<Q, I>): Promise<void> {
         const id = node.searchable.ID;
         node = this.nodes.get(id) || node; // Prefer a newer version of the node if it exists
+
+        // Node was removed before it got to update
+        if (!node) return;
 
         // Create a hook to schedule an update if the node is changed
         node.destroyHook?.();

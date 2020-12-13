@@ -1,4 +1,4 @@
-import {DataCacher, Field, IDataHook, IDataRetriever} from "model-react";
+import {Field, IDataHook, IDataRetriever} from "model-react";
 import {SettingsContext} from "../../settings/SettingsContext";
 import {SettingsFile} from "../../settings/storage/fileTypes/SettingsFile";
 import {ISettingsFolderMenuItem} from "../../settings/_types/ISettingsFolderMenuItem";
@@ -7,6 +7,7 @@ import {IApplet} from "../applets/_types/IApplet";
 import {ISettingsData} from "./_types/ISettingsData";
 import Path from "path";
 import {IAppletData} from "../applets/_types/IAppletData";
+import {DataCacher}from "../../utils/modelReact/DataCacher";
 
 /**
  * Manages the settings within LaunchMenu
@@ -28,6 +29,7 @@ export class SettingsManager {
         appletsSource: IDataRetriever<IAppletData[]>,
         settingsDirectory: string
     ) {
+
         this.appletsSource = appletsSource;
         this.settingsDirectory = settingsDirectory;
     }
@@ -188,7 +190,6 @@ export class SettingsManager {
                     applet,
                 };
             });
-
             return appletSettings;
         }
     );

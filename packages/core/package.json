@@ -12,6 +12,7 @@
         "watch": "lm-build-tools --watch --reexport",
         "dev": "lm-build-tools --build --launch --watch --reexport --entry startup.js",
         "start": "lm-build-tools --launch --production --entry startup.js",
+        "debug": "electron build/startup.js --inspect-brk",
         "start:dev": "lm-build-tools --launch --entry startup.js",
         "clean": "lm-build-tools --cleanup",
         "test": "jest -i",

@@ -54,7 +54,7 @@ export class Observer<T> {
      * @param force Whether to retrieve the data even without listeners
      */
     protected getData(force?: boolean): void {
-        if (this.listeners.length == 0 && !force) return;
+        if (this.isDestroyed || (this.listeners.length == 0 && !force)) return;
 
         this.isLoading = false;
         this.exceptions = [];
@@ -109,6 +109,7 @@ export class Observer<T> {
      * Calls all the listeners with the loaded data
      */
     protected callListeners(): void {
+        if(this.isDestroyed) return;
         if (this.debounce == -1) {
             const meta = {isLoading: this.isLoading, exceptions: this.exceptions};
             this.listeners.forEach(listener =>

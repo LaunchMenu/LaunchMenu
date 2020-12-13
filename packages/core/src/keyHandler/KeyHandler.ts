@@ -14,40 +14,29 @@ export class KeyHandler {
     protected pressedKeys = {} as {[key: string]: IKey};
 
     protected keyListener: (event: KeyboardEvent) => void;
-    protected blurListener: () => void;
     protected target: IKeyHandlerTarget;
     protected id = Math.random(); // TODO: remove after testing
 
     /**
      * Creates a new key handler for the specified target
      * @param target The target to add the listeners to
-     * @param resetOnBlur Whether to reset the pressed keys if the window loses focus
      */
-    public constructor(target: IKeyHandlerTarget, resetOnBlur: boolean = true) {
+    public constructor(target: IKeyHandlerTarget) {
         this.target = target;
-        this.setupListeners(resetOnBlur);
+        this.setupListeners();
     }
 
     /**
      * Sets up the listeners for the target
      * @param resetOnBlur Whether to reset the pressed keys if the window loses focus
      */
-    protected setupListeners(resetOnBlur: boolean): void {
+    protected setupListeners(): void {
         this.keyListener = (e: KeyboardEvent) => {
             const event = KeyHandler.getKeyEvent(e);
             if (event) this.emit(event);
         };
         this.target.addEventListener("keydown", this.keyListener);
         this.target.addEventListener("keyup", this.keyListener);
-
-        this.blurListener = () => {
-            // Release all keys on blur
-            Object.values(this.pressedKeys).forEach(key => {
-                this.emit(new KeyEvent({key, type: "up"}));
-            });
-            this.pressedKeys = {};
-        };
-        if (resetOnBlur) ipcRenderer.on("blur", this.blurListener);
     }
 
     /**
@@ -79,7 +68,17 @@ export class KeyHandler {
     public destroy(): void {
         this.target.removeEventListener("keydown", this.keyListener);
         this.target.removeEventListener("keyup", this.keyListener);
-        ipcRenderer.off("blur", this.blurListener);
+    }
+
+    /**
+     * Releases all currently held keys
+     */
+    public resetKeys(): void {
+        // Release all keys on blur
+        Object.values(this.pressedKeys).forEach(key => {
+            this.emit(new KeyEvent({key, type: "up"}));
+        });
+        this.pressedKeys = {};
     }
 
     /**

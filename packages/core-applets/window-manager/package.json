@@ -1,7 +1,7 @@
 {
-    "name": "@launchmenu/applet-session-manager",
+    "name": "@launchmenu/applet-window-manager",
     "version": "0.0.0-alpha.1",
-    "description": "An applet to manage sessions",
+    "description": "An applet to manage LMs window",
     "types": "build/index.d.ts",
     "files": [
         "build/**/*.{js,d.ts}"
@@ -23,7 +23,7 @@
     },
     "keywords": [
         "LaunchMenu",
-        "Sessions",
+        "Window",
         "Applet",
         "LaunchMenu Applet"
     ],
@@ -37,7 +37,8 @@
     "peerDependencies": {
         "@launchmenu/core": "^0.0.0",
         "model-react": "^3.0.3",
-        "react": "^16.13.0"
+        "react": "^16.13.0",
+        "electron": "^9.3.1"
     },
     "devDependencies": {
         "@launchmenu/build-tools": "^0.0.0",

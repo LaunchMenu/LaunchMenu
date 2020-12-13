@@ -1,4 +1,4 @@
-import {DataCacher, Field, IDataHook, IDataRetriever, Loader} from "model-react";
+import {Field, IDataHook, IDataRetriever, Loader} from "model-react";
 import React from "react";
 import {IOContext} from "../../context/IOContext";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
@@ -29,6 +29,8 @@ import {IActionBinding} from "../../actions/_types/IActionBinding";
 import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
 import {IStandardUILayerData} from "../../uiLayers/standardUILayer/_types/IStandardUILayerData";
 import {Content} from "../../content/Content";
+import {proxyHook} from "../../utils/modelReact/proxyHook";
+import {DataCacher} from "../../utils/modelReact/DataCacher";
 
 /**
  * An application session
@@ -108,9 +110,10 @@ export class LMSession {
         });
 
         // Retrieve the settings context from LM which includes all base settings data, and listen for changes
-        this.observers.settingsContext = new Observer(h =>
-            this.LM.getSettingsManager().getSettingsContext(h)
-        ).listen(settingsContext => {
+        this.observers.settingsContext = new Observer(h => {
+            this.LM.getAppletManager().getApplets(h);
+            return this.LM.getSettingsManager().getSettingsContext(h);
+        }).listen(settingsContext => {
             this.context.settings = settingsContext;
         }, true);
     }
@@ -176,8 +179,14 @@ export class LMSession {
                     children: this.getSearchables(hook),
                 }),
             },
-            onAdd: item => this.menu.addItem(item),
-            onRemove: item => this.menu.removeItem(item),
+            onAdd: item => {
+                // console.log("Added", item);
+                this.menu.addItem(item);
+            },
+            onRemove: item => {
+                // console.log("Removed", item);
+                this.menu.removeItem(item);
+            },
         });
 
         // Return the UI to be shown:
@@ -327,32 +336,35 @@ export class LMSession {
      * The applet data obtained from the applet manager
      */
     public appletData = new DataCacher<
-        {applet: IApplet; initializedApplet: IApplet; searchable?: IMenuSearchable}[]
+        {
+            applet: IApplet;
+            initializedApplet: IApplet;
+            version: IUUID;
+            searchable?: IMenuSearchable;
+        }[]
     >((h, currentAppletData = []) => {
-        const managerApplets = this.LM.getAppletManager().getApplets(h);
+        const managerApplets = this.LM.getAppletManager().getAppletsData(h);
 
         // Dispose the sessions related data for any applet that will no longer exist
         currentAppletData.map(appletData => {
             const stillExists = managerApplets.find(
-                applet => applet == appletData.applet
+                ({applet}) => applet == appletData.applet
             );
             if (!stillExists) appletData.initializedApplet.onCloseSession?.();
         });
 
         // Obtain the new applet data list
-        return managerApplets.map(applet => {
+        const newData = managerApplets.map(({applet, version}) => {
             let updated = false;
-            let searchableID = applet.ID;
+            let searchableID = `${applet.ID}-${version}`;
 
             // Find the current data for this applet
             const current = currentAppletData.find(({applet: {ID}}) => ID == applet.ID);
             if (current) {
-                // If the applet hasn't updated return the current data
-                const hasUpdated = current.applet != applet;
-                if (!hasUpdated) return current;
+                updated = current.version != version;
+                if (!updated) return current;
 
                 // If it has updated, change the search id
-                updated = true;
                 if (current.searchable?.ID == searchableID)
                     searchableID = "updated-" + searchableID;
             }
@@ -365,8 +377,9 @@ export class LMSession {
             const searchable =
                 initializedApplet.search &&
                 this.getAppletSearchWithCategory(initializedApplet, searchableID);
-            return {initializedApplet, applet, searchable};
+            return {initializedApplet, applet, searchable, version};
         });
+        return newData;
     });
 
     /**

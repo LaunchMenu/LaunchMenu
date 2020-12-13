@@ -132,8 +132,8 @@ export abstract class AbstractUILayer implements IUILayer {
         hook?: IDataHook,
         extendData: IUILayerMenuData[] = []
     ): IUILayerMenuData[] {
-        return this.layerConfig.showNodataOverlay && extendData.length == 0
-            ? [this.UIMissingData]
+        return this.layerConfig.showNodataOverlay
+            ? [this.UIMissingData, ...extendData]
             : extendData;
     }
 
@@ -147,8 +147,8 @@ export abstract class AbstractUILayer implements IUILayer {
         hook?: IDataHook,
         extendData: IUILayerFieldData[] = []
     ): IUILayerFieldData[] {
-        return this.layerConfig.showNodataOverlay && extendData.length == 0
-            ? [this.UIMissingData]
+        return this.layerConfig.showNodataOverlay
+            ? [this.UIMissingData, ...extendData]
             : extendData;
     }
 
@@ -185,9 +185,13 @@ export abstract class AbstractUILayer implements IUILayer {
         hook: IDataHook = null,
         extendData: IUILayerContentData[] = []
     ): IUILayerContentData[] {
-        const itemContents = [...extendData, ...this.menuItemContents.get(hook)];
-        return this.layerConfig.showNodataOverlay && itemContents.length == 0
-            ? [this.UIMissingData]
+        const itemContents = [...extendData];
+        this.menuItemContents.get(hook).forEach(item => {
+            // If data of other layers has been added directly, their menu item content may already be present (E.g. when using a MenuSearch layer in another layer)
+            if (!itemContents.find(({ID}) => item.ID)) itemContents.push(item);
+        });
+        return this.layerConfig.showNodataOverlay
+            ? [this.UIMissingData, ...itemContents]
             : itemContents;
     }
 

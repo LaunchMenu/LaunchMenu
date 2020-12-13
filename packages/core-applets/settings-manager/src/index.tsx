@@ -5,6 +5,7 @@ import {
     createSettingsFolder,
     declare,
     Menu,
+    ProxiedMenu,
     searchAction,
     settingPatternMatcher,
     UILayer,
@@ -50,13 +51,13 @@ export default declare({
         // Return the search, opening and context items data
         return {
             async search(query, h) {
-                if (settingPatternMatcher(query)) return recursiveRootSearchables.get(h);
-                return rootSearchables.get(h);
+                // if (settingPatternMatcher(query)) return recursiveRootSearchables.get(h);
+                // return rootSearchables.get(h);
+                return recursiveRootSearchables.get(h);
             },
             open({context, onClose}) {
-                // TODO: add listener for the folders to update menu on changes
-                const menu = new Menu(context, settingsFolders.get(null));
-                context.open(new UILayer(() => ({menu, onClose})));
+                const menu = new ProxiedMenu(context, h => settingsFolders.get(h));
+                context.open(new UILayer(() => ({menu, onClose}), {path: "./settings"}));
             },
             withSession: session => ({
                 // Retrieve a prioritized menu item to open global and selected applet setting

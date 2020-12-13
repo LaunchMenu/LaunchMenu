@@ -68,4 +68,5 @@ export const cssSpacingMappers = createMapper(mapSpacing, {
     columnWidth: true,
     lineHeight: true,
     outlineOffset: true,
+    gap: true,
 });

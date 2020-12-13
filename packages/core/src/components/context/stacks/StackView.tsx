@@ -6,6 +6,7 @@ import {getViewStackItemElement} from "./getViewStackItemElement";
 import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {LFC} from "../../../_types/LFC";
 import {IUUID} from "../../../_types/IUUID";
+import {v4 as uuid} from "uuid";
 import {
     IViewStackItem,
     IViewStackItemView,
@@ -51,7 +52,7 @@ function updateChildren(
 ): void {
     const {added, removed} = findStackChanges(prevItems, items);
     removed.forEach(({item}) => {
-        const child = children.find(({id}) => id == item.ID);
+        const child = children.find(({id, element}) => id == item.ID && element);
         if (child) child.element = undefined;
     });
     added.forEach(({index, item}) => {
@@ -86,7 +87,7 @@ function updateChildren(
             currentChild.transitions = {...defaultTransitions, ...transitions};
         } else {
             children.splice(childIndex, 0, {
-                key: item.ID,
+                key: uuid(),
                 id: item.ID,
                 element: view,
                 closing: false,
@@ -99,8 +100,10 @@ function updateChildren(
         }
     });
     removed.forEach(({item}) => {
-        const child = children.find(({id}) => id == item.ID);
-        if (child && !child.element) child.closing = true;
+        const child = children.find(
+            ({id, closing, element}) => id == item.ID && !closing && !element
+        );
+        if (child) child.closing = true;
     });
 }
 
