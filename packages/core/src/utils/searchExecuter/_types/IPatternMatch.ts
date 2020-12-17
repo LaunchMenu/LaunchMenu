@@ -11,6 +11,8 @@ export type IPatternMatch = {
     name: string;
     /** A unique identifier for pattern comparisons */
     id?: IUUID;
+    /** The remaining text that should be used for the search (search text minus pattern identifier) */
+    searchText?: string;
     /** Syntax highlighting information to show the pattern */
     highlight?: (IHighlightNode | ITextSelection)[];
     /** A syntax highlighter to use to highlight the search field */

@@ -706,14 +706,12 @@ describe("Menu", () => {
             expect(deselectCount).toBe(1);
         });
         it("Removes all items", () => {
-            expect(menu.getItems()).toEqual([
-                items[0],
-                items[1],
-                someCategory.item,
-                items[2],
-            ]);
+            // Logically the items are removed, but for rendering purposes they are still obtainable
+            // One shouldn't logically rely on these items if the menu indicates it has been destroyed however
+            const ci = [items[0], items[1], someCategory.item, items[2]];
+            expect(menu.getItems()).toEqual(ci);
             menu.destroy();
-            expect(menu.getItems()).toEqual([]);
+            expect(menu.getItems()).toEqual(ci);
         });
         it("Blocks changing the cursor", () => {
             let selectCount = 0;

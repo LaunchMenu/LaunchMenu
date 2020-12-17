@@ -129,6 +129,8 @@ describe("PrioritizedMenu", () => {
             const listener = jest.fn();
             new Observer(h => menu.getItems(h)).listen(listener, true);
             await wait(20);
+
+            expect(listener.mock.calls.length).toBe(2);
             // First observer call there weren't any items, second call contains all items
             expect(listener.mock.calls[0][0]).toEqual([]);
             expect(listener.mock.calls[1][0]).toEqual([
@@ -707,15 +709,13 @@ describe("PrioritizedMenu", () => {
             expect(menu.getCursor()).toEqual(null);
             expect(deselectCount).toBe(1);
         });
-        it("Removes all items", () => {
-            expect(menu.getItems()).toEqual([
-                items[0].item,
-                items[1].item,
-                someCategory.item,
-                items[2].item,
-            ]);
+        it("Doesn't remove all items", () => {
+            // Logically the items are removed, but for rendering purposes they are still obtainable
+            // One shouldn't logically rely on these items if the menu indicates it has been destroyed however
+            const ci = [items[0].item, items[1].item, someCategory.item, items[2].item];
+            expect(menu.getItems()).toEqual(ci);
             menu.destroy();
-            expect(menu.getItems()).toEqual([]);
+            expect(menu.getItems()).toEqual(ci);
         });
         it("Blocks changing the cursor", () => {
             let selectCount = 0;
