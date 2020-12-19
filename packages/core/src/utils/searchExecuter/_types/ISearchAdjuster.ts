@@ -1,7 +1,8 @@
 import {IDataHook} from "model-react";
-import {SearchExecuter} from "../SearchExecuter";
 import {IPatternMatch} from "./IPatternMatch";
 import {ISearchable, ISearchableResult} from "./ISearchable";
+import {IUUID} from "../../../_types/IUUID";
+import {SearchExecuter} from "../SearchExecuter";
 
 /**
  * A function that is used to adjust a given searchable result
@@ -15,6 +16,8 @@ export type ISearchableAdjuster<Q, I> =
           children?: ISearchableAdjusterFunc<Q, I, ISearchable<Q, I>[]>;
           /** A function to adjust the pattern match */
           patternMatch?: ISearchableAdjusterFunc<Q, I, IPatternMatch | undefined>;
+          /** A function to adjust the ID of the searchable */
+          ID?: (original: IUUID) => IUUID;
       };
 
 /**

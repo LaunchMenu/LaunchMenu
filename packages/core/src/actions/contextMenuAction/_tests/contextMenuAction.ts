@@ -96,7 +96,7 @@ describe("contextMenuAction", () => {
 
             expect(contextItems).toHaveLength(1);
             expect(menuItemMock.mock.calls).toHaveLength(1);
-            menuItemMock.mock.calls[0][0].data();
+            menuItemMock.mock.calls[0][0][0].data();
             expect(result).toEqual("yes,no,maybe");
         });
         it("Should show the parent if it has bindings", () => {
@@ -168,7 +168,7 @@ describe("contextMenuAction", () => {
             expect(contextItems[0].item.view).toBe(menuItem2.item.view);
             expect(menuItemMock.mock.calls).toHaveLength(0);
             expect(menuItemMock2.mock.calls).toHaveLength(1);
-            menuItemMock2.mock.calls[0][0].data();
+            menuItemMock2.mock.calls[0][0][0].data();
             expect(result).toEqual("yes+no+maybe");
             expect(result2).toEqual(undefined);
 
@@ -188,7 +188,7 @@ describe("contextMenuAction", () => {
             expect(contextItems2[0].item.view).toBe(menuItem.item.view);
             expect(menuItemMock.mock.calls).toHaveLength(1);
             expect(menuItemMock2.mock.calls).toHaveLength(1);
-            menuItemMock.mock.calls[0][0].data();
+            menuItemMock.mock.calls[0][0][0].data();
             expect(result).toEqual("yes+maybe,no");
             expect(result2).toEqual(undefined);
         });
@@ -291,7 +291,7 @@ describe("contextMenuAction", () => {
             expect(menuItemMock.mock.calls).toHaveLength(1);
             expect(menuItemMock2.mock.calls).toHaveLength(0);
             expect(menuItemMock3.mock.calls).toHaveLength(0);
-            menuItemMock.mock.calls[0][0].data();
+            menuItemMock.mock.calls[0][0][0].data();
             expect(result).toEqual("yes+maybe,no");
             expect(result2).toEqual(undefined);
 
@@ -312,7 +312,7 @@ describe("contextMenuAction", () => {
             expect(menuItemMock.mock.calls).toHaveLength(1);
             expect(menuItemMock2.mock.calls).toHaveLength(1);
             expect(menuItemMock3.mock.calls).toHaveLength(0);
-            menuItemMock2.mock.calls[0][0].data();
+            menuItemMock2.mock.calls[0][0][0].data();
             expect(result).toEqual("yes+no+maybe");
             expect(result2).toEqual(undefined);
 
@@ -333,7 +333,7 @@ describe("contextMenuAction", () => {
             expect(menuItemMock.mock.calls).toHaveLength(1);
             expect(menuItemMock2.mock.calls).toHaveLength(1);
             expect(menuItemMock3.mock.calls).toHaveLength(1);
-            menuItemMock3.mock.calls[0][0].data();
+            menuItemMock3.mock.calls[0][0][0].data();
             expect(result).toEqual("yes*no*maybe");
             expect(result2).toEqual(undefined);
         });

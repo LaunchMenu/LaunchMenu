@@ -1,4 +1,4 @@
-import React from "react";
+import React, {memo} from "react";
 import {IQuery} from "../../../menus/menu/_types/IQuery";
 import {useBackgroundColor} from "../../../styling/backgroundColorContext";
 import {highlightTags} from "../../../textFields/syntax/utils/highlightTags";
@@ -8,7 +8,6 @@ import {getHooked} from "../../../utils/subscribables/getHooked";
 import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {LFC} from "../../../_types/LFC";
 import {ISearchHighlighter} from "./_types/ISearchHighlighter";
-import {ISearchHighlighterProps} from "./_types/ISearchHighlighterProps";
 
 /**
  * A search highlighter that can be used to highlighter text in search results
@@ -16,17 +15,19 @@ import {ISearchHighlighterProps} from "./_types/ISearchHighlighterProps";
 export const SearchHighlighter: LFC<{
     /** The text to be highlighter */
     text: ISubscribable<string>;
+    /** The text to search for and highlight */
+    searchText: string;
     /** The query to use for highlighting */
     query: IQuery;
-    /** The search higlighter to be used */
+    /** The search highlighter to be used */
     searchHighlighter: ISearchHighlighter;
-}> = ({text: inpText, query, searchHighlighter}) => {
+}> = memo(({text: inpText, query, searchHighlighter, searchText}) => {
     const [h] = useDataHook();
     const {isDark} = useBackgroundColor();
 
     // Get the highlight data
     const text = getHooked(inpText, h);
-    const nodes = searchHighlighter(text, query);
+    const nodes = searchHighlighter(text, searchText, query);
 
     // Normalize the data, filling any gaps
     nodes.sort(({end: a}, {end: b}) => a - b);
@@ -72,4 +73,4 @@ export const SearchHighlighter: LFC<{
             ))}
         </>
     );
-};
+});

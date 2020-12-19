@@ -18,7 +18,22 @@ export type ISimpleSearchMethod = {
     /** The way to represent the search executor in the settings */
     view: IMenuItem;
     /** A function to grade the item's search data */
-    rate?: (data: ISimpleSearchGradeFields, query: IQuery, hook: IDataHook) => IPriority;
+    rate?: {
+        /**
+         * Retrieves the priority for the given data
+         * @param data The data to be rated
+         * @param search The search text to be used for grading
+         * @param query The original query (text may still contain patterns that shouldn't be used for grading)
+         * @param hook The data hook to subscribe to changes
+         * @returns The found priority
+         */
+        (
+            data: ISimpleSearchGradeFields,
+            search: string,
+            query: IQuery,
+            hook: IDataHook
+        ): IPriority;
+    };
     /** A function to completely override the default search behavior */
     getSearchable?: ISimpleSearchExecutor;
     /** Highlights a given piece of text with this method */

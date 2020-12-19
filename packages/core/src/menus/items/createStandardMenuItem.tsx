@@ -43,7 +43,9 @@ export function createStandardMenuItem({
                         }
                         name={
                             <Box font="header">
-                                <simpleSearchHandler.Highlighter query={highlight}>
+                                <simpleSearchHandler.Highlighter
+                                    query={highlight}
+                                    pattern={bindingData.searchPattern}>
                                     {nameV}
                                 </simpleSearchHandler.Highlighter>
                             </Box>
@@ -52,7 +54,9 @@ export function createStandardMenuItem({
                         description={
                             descriptionV && (
                                 <Truncated title={descriptionV}>
-                                    <simpleSearchHandler.Highlighter query={highlight}>
+                                    <simpleSearchHandler.Highlighter
+                                        query={highlight}
+                                        pattern={bindingData.searchPattern}>
                                         {descriptionV}
                                     </simpleSearchHandler.Highlighter>
                                 </Truncated>

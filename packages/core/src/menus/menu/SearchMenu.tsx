@@ -9,10 +9,10 @@ import {IIOContext} from "../../context/_types/IIOContext";
 import {IPrioritizedMenuCategoryConfig} from "./_types/IAsyncMenuCategoryConfig";
 import {InstantOpenTransition} from "../../components/context/stacks/transitions/open/InstantOpenTransition";
 import {InstantCloseTransition} from "../../components/context/stacks/transitions/close/InstantCloseTransition";
-import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 import {IUUID} from "../../_types/IUUID";
 import {IPatternMatch} from "../../utils/searchExecuter/_types/IPatternMatch";
 import {searchAction} from "../../actions/types/search/searchAction";
+import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 
 /**
  * A menu that can be used to perform a search on a collection of items
@@ -153,6 +153,6 @@ export class SearchMenu extends PrioritizedMenu {
      * @returns The patterns in searches
      */
     public getPatternMatches(hook: IDataHook = null): IPatternMatch[] {
-        return this.executer.getPatternMatches(hook);
+        return this.executer.getPatterns(hook);
     }
 }
