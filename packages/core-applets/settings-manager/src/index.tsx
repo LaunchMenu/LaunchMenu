@@ -45,15 +45,20 @@ export default declare({
             children: recursiveRootSearchables
                 .get(h)
                 .children // Get rid of the children, making the search not recursive
-                .map(searchable => adjustSearchable(searchable, {children: () => []})),
+                .map(searchable =>
+                    adjustSearchable(searchable, {
+                        children: () => [],
+                        // Make the ID different, such that the searcher notices these are different nodes
+                        ID: ID => `capped-${ID}`,
+                    })
+                ),
         }));
 
         // Return the search, opening and context items data
         return {
             async search(query, h) {
-                // if (settingPatternMatcher(query)) return recursiveRootSearchables.get(h);
-                // return rootSearchables.get(h);
-                return recursiveRootSearchables.get(h);
+                if (settingPatternMatcher(query)) return recursiveRootSearchables.get(h);
+                return rootSearchables.get(h);
             },
             open({context, onClose}) {
                 const menu = new ProxiedMenu(context, h => settingsFolders.get(h));

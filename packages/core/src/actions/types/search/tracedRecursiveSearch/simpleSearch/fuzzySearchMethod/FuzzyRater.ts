@@ -126,17 +126,18 @@ export class FuzzyRater {
     /**
      * Get the rater for a given query
      * @param query The query to get the rater for
+     * @param search The search text (may differ from the query search, if pattern match text has been removed)
      * @returns the fuzzy rater for this query
      */
     public static getRater(
-        query: IQuery & {[fuzzyRaterSymbol]?: FuzzyRater}
+        query: IQuery & {[fuzzyRaterSymbol]?: {[search: string]: FuzzyRater}},
+        search: string = query.search
     ): FuzzyRater {
-        let rater = query[fuzzyRaterSymbol];
+        let raters = query[fuzzyRaterSymbol];
+        if (!raters) raters = query[fuzzyRaterSymbol] = {};
+        let rater = raters[search];
         if (!rater)
-            rater = query[fuzzyRaterSymbol] = new FuzzyRater(
-                query.search,
-                query.context.settings
-            );
+            rater = raters[search] = new FuzzyRater(search, query.context.settings);
         return rater;
     }
 }

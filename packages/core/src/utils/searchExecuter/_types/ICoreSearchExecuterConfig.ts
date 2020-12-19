@@ -1,4 +1,5 @@
 import {IUUID} from "../../../_types/IUUID";
+import {SearchExecuter} from "../SearchExecuter";
 import {IPatternMatch} from "./IPatternMatch";
 import {ISearchable} from "./ISearchable";
 
@@ -35,4 +36,6 @@ export type ICoreSearchExecuterConfig<Q, I> = {
     onRemove: (ID: IUUID, oldResult: ICoreSearchResult<I>) => void;
     /** The searchable root node */
     searchable: ISearchable<Q, I>;
+    /** The search executer to pass to searchables */
+    executer?: SearchExecuter<Q, I>;
 };

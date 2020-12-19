@@ -107,7 +107,9 @@ export function createFolderMenuItem<
                             }
                             name={
                                 <Box font="header">
-                                    <simpleSearchHandler.Highlighter query={highlight}>
+                                    <simpleSearchHandler.Highlighter
+                                        query={highlight}
+                                        pattern={rest.searchPattern}>
                                         {nameV}
                                     </simpleSearchHandler.Highlighter>
                                 </Box>
@@ -117,7 +119,8 @@ export function createFolderMenuItem<
                                 descriptionV && (
                                     <Truncated title={descriptionV}>
                                         <simpleSearchHandler.Highlighter
-                                            query={highlight}>
+                                            query={highlight}
+                                            pattern={rest.searchPattern}>
                                             {descriptionV}
                                         </simpleSearchHandler.Highlighter>
                                     </Truncated>

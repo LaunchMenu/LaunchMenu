@@ -1,9 +1,8 @@
 import {IDataHook} from "model-react";
 import {IMenuItem} from "../../../../../../menus/items/_types/IMenuItem";
-import {IQuery} from "../../../../../../menus/menu/_types/IQuery";
-import {IPatternMatch} from "../../../../../../utils/searchExecuter/_types/IPatternMatch";
 import {ISubscribable} from "../../../../../../utils/subscribables/_types/ISubscribable";
 import {IUUID} from "../../../../../../_types/IUUID";
+import {ISimpleSearchPatternMatcher} from "../../../_types/ISimpleSearchPatternMatcher";
 import {IShowChildInParent} from "../../_types/IShowChildInParent";
 
 /**
@@ -29,11 +28,3 @@ export type ISimpleSearchData = {
     /** An identifier for the searchable */
     id: IUUID;
 };
-
-/**
- * A pattern matcher that can be passed with the simple search data
- */
-export type ISimpleSearchPatternMatcher = (
-    search: IQuery,
-    hook: IDataHook
-) => IPatternMatch | undefined;

@@ -9,7 +9,6 @@ import {TextField} from "../../textFields/TextField";
 import {createHighlighterWithSearchPattern} from "../../uiLayers/types/menuSearch/createHighlighterWithSearchPattern";
 import {UndoRedoFacility} from "../../undoRedo/UndoRedoFacility";
 import {Observer} from "../../utils/modelReact/Observer";
-import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 import {ApplicationLayout} from "../components/ApplicationLayout";
 import {LaunchMenu} from "../LaunchMenu";
 import {v4 as uuid} from "uuid";
@@ -29,8 +28,8 @@ import {IActionBinding} from "../../actions/_types/IActionBinding";
 import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
 import {IStandardUILayerData} from "../../uiLayers/standardUILayer/_types/IStandardUILayerData";
 import {Content} from "../../content/Content";
-import {proxyHook} from "../../utils/modelReact/proxyHook";
 import {DataCacher} from "../../utils/modelReact/DataCacher";
+import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 
 /**
  * An application session
@@ -218,7 +217,7 @@ export class LMSession {
             }
         );
         const highlighter = createHighlighterWithSearchPattern(h =>
-            this.searchExecuter.getPatternMatches(h)
+            this.searchExecuter.getPatterns(h)
         );
 
         // Return the UI to be shown
@@ -420,7 +419,7 @@ export class LMSession {
                               ...result.item,
                               actionBindings: adjustSubscribable(
                                   result.item.actionBindings,
-                                  bindings => [categoryBinding, ...bindings]
+                                  bindings => [...bindings, categoryBinding] //search category takes priority
                               ),
                           },
                       }

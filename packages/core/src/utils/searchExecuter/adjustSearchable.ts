@@ -14,7 +14,7 @@ export function adjustSearchable<Q, I>(
     recurse: boolean = true
 ): ISearchable<Q, I> {
     return {
-        ID: searchable.ID,
+        ID: "ID" in modify && modify.ID ? modify.ID(searchable.ID) : searchable.ID,
         async search(query, hook, executer) {
             let original = await searchable.search(query, hook, executer);
             if (recurse && original.children)

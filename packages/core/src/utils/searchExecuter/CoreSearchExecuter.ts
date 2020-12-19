@@ -9,6 +9,7 @@ import {
     ICoreSearchExecuterConfig,
     ICoreSearchResult,
 } from "./_types/ICoreSearchExecuterConfig";
+import {SearchExecuter} from "./SearchExecuter";
 
 /**
  * The core of the search executer that will obtain all the results
@@ -21,6 +22,7 @@ export class CoreSearchExecuter<Q, I> {
         oldResult: ICoreSearchResult<I>
     ) => void;
     protected onRemove: (ID: IUUID, oldResult: ICoreSearchResult<I>) => void;
+    protected executer?: SearchExecuter<Q, I>;
 
     protected query = new Field(null as Q | null);
 
@@ -47,10 +49,12 @@ export class CoreSearchExecuter<Q, I> {
         searchable,
         onUpdate,
         onRemove,
+        executer,
     }: ICoreSearchExecuterConfig<Q, I>) {
         this.rootSearchable = searchable;
         this.onUpdate = onUpdate;
         this.onRemove = onRemove;
+        this.executer = executer;
 
         // Add the root searchable, with itself as its own parent
         this.scheduleAddition(searchable, searchable.ID, true);
@@ -273,7 +277,11 @@ export class CoreSearchExecuter<Q, I> {
         node.destroyHook?.();
 
         const [hook, destroyHook] = createCallbackHook(() => this.scheduleUpdate(ID));
-        const {children, item, patternMatch} = await node.searchable.search(query, hook);
+        const {children, item, patternMatch} = await node.searchable.search(
+            query,
+            hook,
+            this.executer
+        );
 
         node.destroyHook = destroyHook;
         if (node.deleted || node.executeVersion == version) return;

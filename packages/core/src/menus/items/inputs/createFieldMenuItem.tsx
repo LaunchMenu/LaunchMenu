@@ -94,7 +94,9 @@ export function createFieldMenuItem<D extends IJSON, T = D>({
                         }
                         name={
                             <Box font="header">
-                                <simpleSearchHandler.Highlighter query={highlight}>
+                                <simpleSearchHandler.Highlighter
+                                    query={highlight}
+                                    pattern={rest.searchPattern}>
                                     {name}
                                 </simpleSearchHandler.Highlighter>
                             </Box>
@@ -104,7 +106,9 @@ export function createFieldMenuItem<D extends IJSON, T = D>({
                         description={
                             descriptionV && (
                                 <Truncated title={descriptionV}>
-                                    <simpleSearchHandler.Highlighter query={highlight}>
+                                    <simpleSearchHandler.Highlighter
+                                        query={highlight}
+                                        pattern={rest.searchPattern}>
                                         {descriptionV}
                                     </simpleSearchHandler.Highlighter>
                                 </Truncated>

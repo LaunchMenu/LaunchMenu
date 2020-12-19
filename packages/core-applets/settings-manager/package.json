@@ -10,8 +10,6 @@
     "scripts": {
         "build": "lm-build-tools --build --production",
         "dev": "lm-build-tools --watch",
-        "start": "lm-build-tools --launch --production",
-        "start:dev": "lm-build-tools --launch",
         "clean": "lm-build-tools --cleanup",
         "test": "jest -i",
         "test-watch": "jest --watch -i",
