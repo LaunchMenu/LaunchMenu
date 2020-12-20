@@ -1,7 +1,6 @@
 import {app} from "electron";
 import {WindowController} from "./WindowController";
 import hmr from "@launchmenu/hmr";
-import {GlobalShortcutManager} from "./GlobalShortcutManager";
 
 global.DEV = process.env.NODE_ENV == "dev";
 
@@ -11,9 +10,7 @@ global.DEV = process.env.NODE_ENV == "dev";
 export function launch() {
     // app.allowRendererProcessReuse = false;
     app.whenReady().then(() => {
-        const globalShortcutManager = new GlobalShortcutManager();
-
-        let windowController = new WindowController(globalShortcutManager);
+        let windowController = new WindowController();
         if (DEV) {
             // Watch within the windowManager dir for changes, and reload if changes are detected
             hmr(
@@ -25,7 +22,7 @@ export function launch() {
                     }: typeof import("./WindowController") = require("./WindowController");
 
                     // Reinitialize the window
-                    let newController = new WindowController(globalShortcutManager);
+                    let newController = new WindowController();
                     windowController.destroy();
                     windowController = newController;
                 },

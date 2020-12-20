@@ -21,6 +21,7 @@ export function setupVisibilityControls(
         window.focus();
     };
     const hideWindow = () => {
+        if (!window.isVisible()) return;
         window.hide();
         onHide();
     };

@@ -4,6 +4,7 @@ import {settings, settingsBrowserWindow} from "./settings";
 import {setupPositionSettingSyncer} from "./position/setupPositionSettingSyncer";
 import {setupSizeSettingSyncer} from "./size/setupSizeSettingSyncer";
 import {setupVisibilityControls} from "./visibility/setupVisibilityControls";
+import {returnFocus} from "./visibility/returnFocus";
 
 export const info = {
     name: "Window manager",
@@ -25,6 +26,7 @@ export default declare({
             settingsManager,
             window,
             () => {
+                returnFocus();
                 LM.getKeyHandler().resetKeys();
             }
         );

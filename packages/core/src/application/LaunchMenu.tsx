@@ -12,7 +12,6 @@ import {SettingsFile} from "../settings/storage/fileTypes/SettingsFile";
 import {baseSettings} from "./settings/baseSettings/baseSettings";
 import {SessionManager} from "./LMSession/SessionManager";
 import {SettingsManager} from "./settings/SettingsManager";
-import {WindowManager} from "./window/WindowManager";
 import {Observer} from "../utils/modelReact/Observer";
 import {Box} from "../styling/box/Box";
 import {IApplet} from "./applets/_types/IApplet";
@@ -30,7 +29,6 @@ export class LaunchMenu {
     protected appletManager: AppletManager;
     protected sessionManager: SessionManager;
     protected settingsManager: SettingsManager;
-    protected windowManager: WindowManager;
     protected appletObserver: Observer<IApplet[]>;
 
     /***
@@ -48,7 +46,6 @@ export class LaunchMenu {
             this.appletManager,
             this.sessionManager,
             this.sessionManager,
-            this.windowManager,
             this.appletObserver,
         ];
 
@@ -68,7 +65,6 @@ export class LaunchMenu {
      */
     public async setup(): Promise<void> {
         if (this.keyHandler as any) throw Error("Instance has already been set up");
-        this.windowManager = new WindowManager();
         this.setupKeyHandler();
         this.setupTheme();
         this.setupApplets();
@@ -94,10 +90,6 @@ export class LaunchMenu {
             const top = this.sessionManager?.getSelectedSession();
             return top?.emit(key);
         });
-
-        new Observer(h => this.windowManager.isVisible(h)).listen(() =>
-            this.keyHandler.resetKeys()
-        );
     }
 
     /**
@@ -203,13 +195,5 @@ export class LaunchMenu {
      */
     public getSettingsManager(): SettingsManager {
         return this.settingsManager;
-    }
-
-    /**
-     * Retrieves the window manager that manages the window this instance renders in
-     * @returns The window manager
-     */
-    public getWindowManager(): WindowManager {
-        return this.windowManager;
     }
 }

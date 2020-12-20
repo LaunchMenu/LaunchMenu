@@ -1,6 +1,7 @@
 import {
     contextMenuAction,
     createStandardMenuItem,
+    globalContextFolderHandler,
     IActionBinding,
 } from "@launchmenu/core";
 import {settings} from "../settings";
@@ -11,7 +12,7 @@ import {settings} from "../settings";
  * @returns An action binding for the context menu to hide the window
  */
 export function createExitContextMenuBinding(onExecute: () => void): IActionBinding {
-    return contextMenuAction.createBinding({
+    return globalContextFolderHandler.createBinding({
         action: null,
         preventCountCategory: true,
         item: {
