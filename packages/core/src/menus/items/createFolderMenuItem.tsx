@@ -74,7 +74,7 @@ export function createFolderMenuItem<
             ...rest,
             actionBindings: adjustBindings(actionBindings ?? [], extraBindings),
             searchChildren: getChildList(searchChildren),
-            showChild: async ({parent, child, context}) => {
+            onShowChild: async ({parent, child, context}) => {
                 if (parent)
                     return openMenuExecuteHandler
                         .get([parent])

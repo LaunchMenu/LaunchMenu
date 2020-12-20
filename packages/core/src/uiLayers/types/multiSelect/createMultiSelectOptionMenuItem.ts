@@ -10,7 +10,7 @@ import {createStandardMenuItem} from "../../../menus/items/createStandardMenuIte
  * @param config The data for the standard menu item
  * @returns The menu item
  */
-export function createMultiSelectMenuItem(
+export function createMultiSelectOptionMenuItem(
     isSelected: (hook?: IDataHook) => boolean,
     {name, ...rest}: IStandardMenuItemData
 ): IMenuItem {

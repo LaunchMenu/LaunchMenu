@@ -1,3 +1,4 @@
+import {IDataHook} from "model-react";
 import {IIOContext} from "../../../../context/_types/IIOContext";
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {IUUID} from "../../../../_types/IUUID";
@@ -8,7 +9,7 @@ import {IExecutable} from "../../execute/_types/IExecutable";
  * The data used to create a shortcut handler
  */
 export type IItemShortcutHandler = {
-    shortcut: KeyPattern | ((context: IIOContext) => KeyPattern);
+    shortcut: KeyPattern | ((context: IIOContext, hook?: IDataHook) => KeyPattern);
 } & (
     | {
           onExecute: IActionBinding | IExecutable;

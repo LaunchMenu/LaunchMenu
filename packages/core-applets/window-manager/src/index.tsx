@@ -1,17 +1,9 @@
-import React from "react";
-import {
-    contextMenuAction,
-    createSettings,
-    createSettingsFolder,
-    createStandardMenuItem,
-    declare,
-    Observer,
-    scrollableContentHandler,
-    WindowManager,
-} from "@launchmenu/core";
-import {Field} from "model-react";
-import {createWindowPositionSetting} from "./createWindowPositionSetting";
-import {PositionInputContent} from "./PositionInputContent";
+import {declare} from "@launchmenu/core";
+import {remote} from "electron";
+import {settings, settingsBrowserWindow} from "./settings";
+import {setupPositionSettingSyncer} from "./position/setupPositionSettingSyncer";
+import {setupSizeSettingSyncer} from "./size/setupSizeSettingSyncer";
+import {setupVisibilityControls} from "./visibility/setupVisibilityControls";
 
 export const info = {
     name: "Window manager",
@@ -20,84 +12,34 @@ export const info = {
     icon: "search", // TODO: add some appropriate icon
 };
 
-const windowManagerField = new Field(null as null | WindowManager);
-export const settings = createSettings({
-    version: "0.0.0",
-    settings: () =>
-        createSettingsFolder({
-            ...info,
-            children: {
-                position: createWindowPositionSetting({
-                    name: "Window position",
-                    actionBindings: field => [
-                        scrollableContentHandler.createBinding(
-                            <PositionInputContent
-                                windowManager={windowManagerField}
-                                field={field}
-                            />
-                        ),
-                    ],
-                }),
-            },
-        }),
-});
-
 export default declare({
     info,
     settings,
     withLM: LM => {
-        const windowManager = LM.getWindowManager();
+        const window = remote.getCurrentWindow();
+        settingsBrowserWindow.set(window);
+        const settingsManager = LM.getSettingsManager();
+
+        // Setup visibility controls
+        const {destroy: destroyVisibilityControls, exitBinding} = setupVisibilityControls(
+            settingsManager,
+            window,
+            () => {
+                LM.getKeyHandler().resetKeys();
+            }
+        );
 
         // Setup the position setting
-        windowManagerField.set(windowManager);
-        // console.log(
-        //     LM.getSettingsManager().getSettingsContext().get(settings).position.get()
-        // );
-        // setTimeout(() => {
-        //     console.log(
-        //         "hoi",
-        //         LM.getSettingsManager().getSettingsContext().get(settings).position.get()
-        //     );
-        // }, 1000);
-        // new Observer(
-        //     h =>
-        //         LM.getSettingsManager()
-        //             .getSettingsContext(h)
-        //             .get(settings)
-        //             .position.get(h),
-        //     {debounce: -1}
-        // ).listen(console.log);
-        const positionSettingObserver = new Observer(h =>
-            LM.getSettingsManager().getSettingsContext(h).get(settings).position.get(h)
-        ).listen(position => {
-            windowManager.setPosition(position);
-        });
+        const destroyPositionSyncer = setupPositionSettingSyncer(settingsManager, window);
 
-        const blurListener = () => windowManager.setVisible(false);
-        // windowManager.on("blur", blurListener);
-
-        const listener = () => windowManager.setVisible(true);
-        const shortcut = "Super+Escape";
-        windowManager.addGlobalShortcut(shortcut, listener);
+        // Setup the size setting
+        const destroySizeSyncer = setupSizeSettingSyncer(settingsManager, window);
         return {
-            globalContextMenuBindings: [
-                contextMenuAction.createBinding({
-                    action: null,
-                    preventCountCategory: true,
-                    item: {
-                        priority: 2,
-                        item: createStandardMenuItem({
-                            name: "Exit",
-                            onExecute: () => windowManager.setVisible(false),
-                        }),
-                    },
-                }),
-            ],
+            globalContextMenuBindings: [exitBinding],
             onDispose: () => {
-                // Dispose all listeners
-                positionSettingObserver.destroy();
-                windowManager.removeGlobalShortcut(shortcut, listener);
-                windowManager.off("blur", blurListener);
+                destroyVisibilityControls();
+                destroyPositionSyncer();
+                destroySizeSyncer();
             },
         };
     },

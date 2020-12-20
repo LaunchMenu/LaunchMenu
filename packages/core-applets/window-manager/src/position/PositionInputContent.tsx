@@ -1,50 +1,46 @@
-import {
-    Box,
-    Button,
-    IField,
-    IPosition,
-    Observer,
-    useDataHook,
-    WindowManager,
-} from "@launchmenu/core";
+import {Box, Button, IField, IPosition, useDataHook} from "@launchmenu/core";
+import {BrowserWindow, remote} from "electron";
 import React, {FC, useEffect} from "react";
 
 /**
  * A component for showing content to control the window position
  */
 export const PositionInputContent: FC<{
-    windowManager: IField<null | WindowManager>;
+    browserWindowField: IField<null | BrowserWindow>;
     field: IField<IPosition>;
-}> = ({windowManager, field}) => {
+}> = ({browserWindowField, field}) => {
     const [h] = useDataHook();
-    const manager = windowManager.get(h);
+    const browserWindow = browserWindowField.get(h);
     useEffect(() => {
-        if (!manager) return;
-        const observer = new Observer(h => manager.getPosition(h)).listen(position =>
-            field.set(position)
-        );
-        return () => observer.destroy();
-    }, [manager]);
+        if (!browserWindow) return;
+        const positionListener = () => {
+            const [x, y] = browserWindow.getPosition();
+            field.set({x, y});
+        };
+        browserWindow.on("move", positionListener);
+        return () => void browserWindow.removeListener("move", positionListener);
+    }, [browserWindow]);
 
     const setPosition = (position: IPosition) => {
-        if (!manager) return;
+        if (!browserWindow) return;
+        const displays = remote.screen.getAllDisplays().map(display => display.bounds);
+
         // Find the display to put the window in
-        const displays = manager.getDisplays();
         const {x, y} = field.get();
         const display =
-            displays.all.find(
+            displays.find(
                 display =>
                     display.x <= x &&
                     display.x + display.width > x &&
                     display.y <= y &&
                     display.y + display.height > y
-            ) || displays.primary;
+            ) || remote.screen.getPrimaryDisplay().bounds;
 
         // Find the exact coordinates
         const windowWidth = window.document.body.clientWidth;
         const windowHeight = window.document.body.clientHeight;
-        const newX = display.x + (display.width - windowWidth) * position.x;
-        const newY = display.y + (display.height - windowHeight) * position.y;
+        const newX = Math.round(display.x + (display.width - windowWidth) * position.x);
+        const newY = Math.round(display.y + (display.height - windowHeight) * position.y);
 
         // Update the position
         field.set({x: newX, y: newY});

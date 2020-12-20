@@ -1,4 +1,4 @@
-import {BrowserWindow, OpenDevToolsOptions} from "electron";
+import {BrowserWindow, OpenDevToolsOptions, shell} from "electron";
 import Path from "path";
 import {IPosition} from "../application/window/_types/IPosition";
 import {ISize} from "../application/window/_types/ISize";
@@ -35,7 +35,9 @@ export class WindowController {
             height: 450,
             frame: false,
             transparent: true,
+            resizable: false,
             webPreferences: {
+                enableRemoteModule: true,
                 nodeIntegration: true,
             },
         });
@@ -45,6 +47,12 @@ export class WindowController {
         const indexPath = Path.join(__dirname, "index.html");
         this.window.loadURL(indexPath);
         if (DEV) this.window.webContents.openDevTools({mode: "detach"});
+
+        // Handle links
+        this.window.webContents.on("new-window", (event, url) => {
+            event.preventDefault();
+            shell.openExternal(url);
+        });
 
         // Setup all listeners
         this.setup();
@@ -73,6 +81,9 @@ export class WindowController {
                 if (Date.now() - resizeTime <= 100) return;
                 latestProgrammaticResize = size;
                 this.window.setSize(size.width, size.height);
+            },
+            "window-set-resizable": (resizable: boolean) => {
+                this.window.setResizable(resizable);
             },
             "window-set-visible": (visible: boolean) => {
                 if (visible) {
@@ -115,13 +126,13 @@ export class WindowController {
                 primary: screen.getPrimaryDisplay().bounds,
             }),
         };
-        wc.on("ipc-message", (event, channel, ...args) => {
-            (listeners as any)[channel]?.(...args);
-        });
-        wc.on("ipc-message-sync", (event, channel, ...args) => {
-            const resp = (listeners as any)[channel]?.(...args);
-            event.returnValue = resp;
-        });
+        // wc.on("ipc-message", (event, channel, ...args) => {
+        //     (listeners as any)[channel]?.(...args);
+        // });
+        // wc.on("ipc-message-sync", (event, channel, ...args) => {
+        //     const resp = (listeners as any)[channel]?.(...args);
+        //     event.returnValue = resp;
+        // });
 
         // Setup window event listeners
         this.window.on("blur", () => wc.send("window-blur"));

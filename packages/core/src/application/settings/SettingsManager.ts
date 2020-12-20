@@ -7,7 +7,7 @@ import {IApplet} from "../applets/_types/IApplet";
 import {ISettingsData} from "./_types/ISettingsData";
 import Path from "path";
 import {IAppletData} from "../applets/_types/IAppletData";
-import {DataCacher}from "../../utils/modelReact/DataCacher";
+import {DataCacher} from "../../utils/modelReact/DataCacher";
 
 /**
  * Manages the settings within LaunchMenu
@@ -29,7 +29,6 @@ export class SettingsManager {
         appletsSource: IDataRetriever<IAppletData[]>,
         settingsDirectory: string
     ) {
-
         this.appletsSource = appletsSource;
         this.settingsDirectory = settingsDirectory;
     }
@@ -50,10 +49,7 @@ export class SettingsManager {
      * @param hook A hook to subscribe to changes
      * @returns The settings data
      */
-    public getSettingsData(
-        ID: IUUID,
-        hook: IDataHook = null
-    ): ISettingsData | null {
+    public getSettingsData(ID: IUUID, hook: IDataHook = null): ISettingsData | null {
         return this.getAllSettingsData(hook).find(({ID: OID}) => OID == ID) ?? null;
     }
 
@@ -62,9 +58,7 @@ export class SettingsManager {
      * @param hook A hook to subscribe to changes
      * @returns The settings data
      */
-    public getAllSettingsData(
-        hook: IDataHook = null
-    ): ISettingsData[] {
+    public getAllSettingsData(hook: IDataHook = null): ISettingsData[] {
         return [...this.extraFiles.get(hook), ...this.appletSettings.get(hook)];
     }
 
@@ -164,7 +158,7 @@ export class SettingsManager {
             // })
 
             // Obtain the new applet settings
-            const appletSettings = applets.map(({applet, version}) => {
+            const appletSettings = applets.flatMap(({applet, version}) => {
                 const current = prevAppletSettings.find(
                     p => p.appletVersion == version && p.ID == applet.ID
                 );
@@ -173,22 +167,27 @@ export class SettingsManager {
                 const settings = applet.settings;
                 settings.ID = applet.ID;
 
-                const settingsFile = new SettingsFile({
-                    ...settings,
-                    path: Path.join(
-                        this.settingsDirectory,
-                        "applets",
-                        applet.ID + ".json"
-                    ),
-                });
-                settingsFile.load();
+                try {
+                    const settingsFile = new SettingsFile({
+                        ...settings,
+                        path: Path.join(
+                            this.settingsDirectory,
+                            "applets",
+                            applet.ID + ".json"
+                        ),
+                    });
+                    settingsFile.load();
 
-                return {
-                    ID: applet.ID,
-                    file: settingsFile,
-                    appletVersion: version,
-                    applet,
-                };
+                    return {
+                        ID: applet.ID,
+                        file: settingsFile,
+                        appletVersion: version,
+                        applet,
+                    };
+                } catch (e) {
+                    console.error(e);
+                    return [];
+                }
             });
             return appletSettings;
         }

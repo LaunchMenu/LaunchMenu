@@ -58,5 +58,5 @@ export type IStandardActionBindingData = {
     searchChildren?: ISubscribable<IMenuItem[]>;
 
     /** Shows a given child in the list of children */
-    showChild?: IShowChildInParent;
+    onShowChild?: IShowChildInParent;
 };

@@ -10,7 +10,6 @@ import {getHooked} from "../../../utils/subscribables/getHooked";
 import {IDataHook} from "model-react";
 import {copyItem} from "./copyItem";
 import {IPrioritizedMenuItem} from "../../../menus/menu/_types/IPrioritizedMenuItem";
-import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
 
 /**
  * An action to retrieve the identity of an item (usually the item itself, but allows for overrides)
@@ -107,6 +106,15 @@ export const identityAction = createAction({
                 ...item,
                 item: identityAction.copyItem(item.item, bindings),
             };
+        },
+
+        /**
+         * Retrieves the identity of an target
+         * @param item The item to get the identity for
+         * @returns The found identity
+         */
+        getIdentity(item: IActionTarget): IUUID | undefined {
+            return [...identityAction.get([item]).keys()][0];
         },
     },
 });
