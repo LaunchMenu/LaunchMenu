@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/core",
-    "version": "0.0.5-alpha.3",
+    "version": "0.0.5-alpha.4",
     "description": "An environment for visual keyboard controlled applets",
     "types": "build/index.d.ts",
     "main": "build/index.js",
@@ -37,7 +37,7 @@
     "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
     "dependencies": {
         "@emotion/core": "^10.0.28",
-        "@launchmenu/hmr": "^0.0.5-alpha.3",
+        "@launchmenu/hmr": "^0.0.5-alpha.4",
         "ace-builds": "^1.4.12",
         "bezier-js": "^2.6.1",
         "chevrotain": "^7.0.1",
@@ -72,6 +72,6 @@
         "typescript": "4.0.2"
     },
     "publishConfig": {
-      "access": "public"
+        "access": "public"
     }
 }

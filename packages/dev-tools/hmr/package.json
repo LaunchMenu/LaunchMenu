@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/hmr",
-    "version": "0.0.5-alpha.3",
+    "version": "0.0.5-alpha.4",
     "main": "build/index.js",
     "scripts": {
         "watch": "lm-build-tools --watch",
@@ -25,8 +25,8 @@
     "devDependencies": {
         "@launchmenu/build-tools": "^0.0.0"
     },
-    "gitHead": "022dbc089423d10ee0528697003769d2d3aeb7d4", 
+    "gitHead": "022dbc089423d10ee0528697003769d2d3aeb7d4",
     "publishConfig": {
-      "access": "public"
+        "access": "public"
     }
 }
