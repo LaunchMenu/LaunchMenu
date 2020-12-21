@@ -5,6 +5,7 @@ import {setupPositionSettingSyncer} from "./position/setupPositionSettingSyncer"
 import {setupSizeSettingSyncer} from "./size/setupSizeSettingSyncer";
 import {setupVisibilityControls} from "./visibility/setupVisibilityControls";
 import {returnFocus} from "./visibility/returnFocus";
+import {setupStartupController} from "./startup/setupStartupController";
 
 export const info = {
     name: "Window manager",
@@ -31,6 +32,9 @@ export default declare({
             }
         );
 
+        // Setup startup controls
+        const destroyWindowController = setupStartupController(settingsManager);
+
         // Setup the position setting
         const destroyPositionSyncer = setupPositionSettingSyncer(settingsManager, window);
 
@@ -39,6 +43,7 @@ export default declare({
         return {
             globalContextMenuBindings: [exitBinding],
             onDispose: () => {
+                destroyWindowController();
                 destroyVisibilityControls();
                 destroyPositionSyncer();
                 destroySizeSyncer();

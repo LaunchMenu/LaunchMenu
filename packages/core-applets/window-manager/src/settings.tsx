@@ -83,6 +83,10 @@ export const settings = createSettings({
                         }),
                     },
                 }),
+                automaticStartup: createBooleanSetting({
+                    name: "Automatic startup",
+                    init: true,
+                }),
             },
         }),
 });
