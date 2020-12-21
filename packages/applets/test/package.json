@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-test",
-    "version": "0.0.5-alpha.3",
+    "version": "0.0.5-alpha.6",
     "private": true,
     "description": "A test applet for LaunchMenu",
     "types": "build/index.d.ts",

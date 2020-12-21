@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-settings-manager",
-    "version": "0.0.5-alpha.4",
+    "version": "0.0.5-alpha.6",
     "description": "An applet to manage settings",
     "types": "build/index.d.ts",
     "files": [
