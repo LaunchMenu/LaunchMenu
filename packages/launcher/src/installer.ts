@@ -23,7 +23,7 @@ export function install(packageName: string, ...packages: string[]): Promise<voi
                 if (err) {
                     rej(err);
                 } else {
-                    let Installer = require("npm/lib/install.js").Installer;
+                    const {Installer} = require("npm/lib/install.js");
                     let oInstaller = new Installer(prefix, false, packages, {
                         global: false,
                     });

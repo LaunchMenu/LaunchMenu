@@ -35,6 +35,7 @@ async function firstTimeSetup(): Promise<void> {
             "@launchmenu/applet-applet-manager@alpha",
             "@launchmenu/applet-session-manager@alpha",
             "@launchmenu/applet-settings-manager@alpha",
+            "@launchmenu/applet-window-manager@alpha",
             ...chosenApplets,
         ] as string[];
         const packages = ["@launchmenu/core@alpha", ...applets];
@@ -71,7 +72,7 @@ async function firstTimeSetup(): Promise<void> {
 }
 
 /*********************************************
- * Some helpers to perform the initial setup
+ * Some helpers to perform the initial setup *
  *********************************************/
 async function setupDirs(): Promise<void> {
     const dirs = ["node_modules", "data/settings"];

@@ -7,8 +7,13 @@
         "packages/dev-tools/*",
         "packages/launcher*"
     ],
+    "scripts": {
+        "updated": "lerna updated",
+        "publish-all": "lerna publish"
+    },
     "devDependencies": {
         "@launchmenu/build-tools": "^0.0.2",
+        "lerna": "^3.22.1",
         "rimraf": "^3.0.2"
     }
 }
