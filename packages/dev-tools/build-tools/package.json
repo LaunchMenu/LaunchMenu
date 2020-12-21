@@ -24,5 +24,9 @@
         "cross-spawn-promise": "0.10.2",
         "rimraf": "^3.0.2",
         "typescript": "4.0.2"
+    },
+    "gitHead": "022dbc089423d10ee0528697003769d2d3aeb7d4", 
+    "publishConfig": {
+      "access": "public"
     }
 }
