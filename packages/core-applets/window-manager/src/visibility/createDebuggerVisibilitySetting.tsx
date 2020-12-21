@@ -13,7 +13,7 @@ import {Loader} from "model-react";
  */
 export function createDebuggerVisibilitySetting() {
     return createFieldMenuItem({
-        init: "true" as string,
+        init: "if running dev" as string,
         data: field => ({
             name: "Show debugger",
             resetUndoable: true,

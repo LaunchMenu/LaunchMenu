@@ -18,7 +18,9 @@ launch();
  */
 async function launch(): Promise<void> {
     if (!isInstalled("@launchmenu/core")) await firstTimeSetup();
-    require(getInstalledPath("@launchmenu/core/build/windowManager/launcher")).launch();
+    require(getInstalledPath(
+        "@launchmenu/core/build/windowController/launcher"
+    )).launch();
 }
 
 async function firstTimeSetup(): Promise<void> {
