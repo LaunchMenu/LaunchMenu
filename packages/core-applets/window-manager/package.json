@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-window-manager",
-    "version": "0.0.0-alpha.1",
+    "version": "0.0.5-alpha.3",
     "description": "An applet to manage LMs window",
     "types": "build/index.d.ts",
     "files": [
@@ -33,12 +33,11 @@
         "url": "https://github.com/LaunchMenu/LaunchMenu/issues"
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
-    "dependencies": {},
     "peerDependencies": {
         "@launchmenu/core": "^0.0.0",
+        "electron": "^9.3.1",
         "model-react": "^3.0.3",
-        "react": "^16.13.0",
-        "electron": "^9.3.1"
+        "react": "^16.13.0"
     },
     "devDependencies": {
         "@launchmenu/build-tools": "^0.0.0",

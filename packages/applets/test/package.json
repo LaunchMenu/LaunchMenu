@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-test",
-    "version": "0.0.0",
+    "version": "0.0.5-alpha.3",
     "private": true,
     "description": "A test applet for LaunchMenu",
     "types": "build/index.d.ts",
@@ -34,7 +34,6 @@
         "url": "https://github.com/LaunchMenu/LaunchMenu/issues"
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
-    "dependencies": {},
     "peerDependencies": {
         "@launchmenu/core": "^0.0.0",
         "react": "^16.13.0"
