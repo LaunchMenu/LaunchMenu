@@ -9,7 +9,8 @@
     ],
     "scripts": {
         "updated": "lerna updated",
-        "publish-all": "lerna publish"
+        "publish-all": "lerna publish",
+        "publish-all-alpha": "lerna publish --dist-tag alpha"
     },
     "devDependencies": {
         "@launchmenu/build-tools": "^0.0.2",

@@ -64,6 +64,7 @@ async function firstTimeSetup(): Promise<void> {
             e.toString(),
             "utf8"
         );
+        console.error(e);
         await new Promise(res => setTimeout(res, 5000));
     }
 
