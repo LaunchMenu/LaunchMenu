@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/hmr",
-    "version": "0.0.5-alpha.6",
+    "version": "0.0.5-alpha.8",
     "main": "build/index.js",
     "scripts": {
         "watch": "lm-build-tools --watch",
