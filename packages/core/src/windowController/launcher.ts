@@ -1,4 +1,4 @@
-import {app} from "electron";
+import {app, ipcMain} from "electron";
 import {WindowController} from "./WindowController";
 import hmr from "@launchmenu/hmr";
 
@@ -8,26 +8,38 @@ global.DEV = process.env.NODE_ENV == "dev";
  * Launches the application
  */
 export function launch() {
+    app.on("will-quit", event => event.preventDefault());
+
     // app.allowRendererProcessReuse = false;
     app.whenReady().then(() => {
         let windowController = new WindowController();
+
+        /** A function to restart LaunchMenu */
+        let restartPromise = Promise.resolve();
+        let lastUpdate: number | undefined;
+        const restart = async () => {
+            const updateTime = Date.now();
+            lastUpdate = updateTime;
+            restartPromise = restartPromise.then(async () => {
+                // Make sure this is the last requested update
+                if (lastUpdate != updateTime) return;
+
+                // Dispose the old window
+                await windowController.destroy();
+
+                // Get a fresh instance of the class and reinitialize the window
+                const {
+                    WindowController,
+                }: typeof import("./WindowController") = require("./WindowController");
+                windowController = new WindowController();
+            });
+        };
+
+        ipcMain.on("restart", restart);
+
         if (DEV) {
             // Watch within the windowManager dir for changes, and reload if changes are detected
-            hmr(
-                __dirname,
-                () => {
-                    // Get a fresh instance of the class
-                    const {
-                        WindowController,
-                    }: typeof import("./WindowController") = require("./WindowController");
-
-                    // Reinitialize the window
-                    let newController = new WindowController();
-                    windowController.destroy();
-                    windowController = newController;
-                },
-                {target: require.resolve("./WindowController")}
-            );
+            hmr(__dirname, restart, {target: require.resolve("./WindowController")});
         }
     });
 }

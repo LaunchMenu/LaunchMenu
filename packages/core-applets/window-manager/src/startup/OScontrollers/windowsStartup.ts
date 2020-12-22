@@ -15,10 +15,14 @@ function getTargetPath(inputLocation: string): string {
 export const windowStartup: IStartupController = {
     register: async location => {
         return new Promise((res, rej) => {
-            ws.create(getTargetPath(location), location, error => {
-                if (error) rej(error);
-                else res();
-            });
+            ws.create(
+                getTargetPath(location),
+                {target: location, workingDir: Path.dirname(location)},
+                error => {
+                    if (error) rej(error);
+                    else res();
+                }
+            );
         });
     },
     deregister: async location => promisify(FS.unlink)(getTargetPath(location)),

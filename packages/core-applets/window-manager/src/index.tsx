@@ -23,14 +23,13 @@ export default declare({
         const settingsManager = LM.getSettingsManager();
 
         // Setup visibility controls
-        const {destroy: destroyVisibilityControls, exitBinding} = setupVisibilityControls(
-            settingsManager,
-            window,
-            () => {
-                returnFocus();
-                LM.getKeyHandler().resetKeys();
-            }
-        );
+        const {
+            destroy: destroyVisibilityControls,
+            exitBindings,
+        } = setupVisibilityControls(LM, window, () => {
+            returnFocus();
+            LM.getKeyHandler().resetKeys();
+        });
 
         // Setup startup controls
         const destroyWindowController = setupStartupController(settingsManager);
@@ -41,7 +40,7 @@ export default declare({
         // Setup the size setting
         const destroySizeSyncer = setupSizeSettingSyncer(settingsManager, window);
         return {
-            globalContextMenuBindings: [exitBinding],
+            globalContextMenuBindings: exitBindings,
             onDispose: () => {
                 destroyWindowController();
                 destroyVisibilityControls();

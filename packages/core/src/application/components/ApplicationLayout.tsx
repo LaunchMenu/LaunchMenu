@@ -12,6 +12,7 @@ import {
     SlideLeftOpenTransition,
     SlideDownOpenTransition,
 } from "../../components/context/stacks/transitions/open/slideOpen/slideOpenDirectionts";
+import {FillBox} from "../../components/FillBox";
 import {IOContextProvider} from "../../context/react/IOContextContext";
 import {getContextContentStack} from "../../context/uiExtracters/getContextContentStack";
 import {getContextFieldStack} from "../../context/uiExtracters/getContextFieldStack";
@@ -101,12 +102,11 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
             : 0) * size.width;
     return (
         <IOContextProvider value={context}>
-            <Box
+            <FillBox
                 className="frame"
                 elRef={layoutRef}
                 display="flex"
                 flexDirection="column"
-                height="100%"
                 overflow="hidden">
                 <Box
                     className="searchSection"
@@ -187,7 +187,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                         </Box>
                     </Box>
                 </Box>
-            </Box>
+            </FillBox>
         </IOContextProvider>
     );
 };

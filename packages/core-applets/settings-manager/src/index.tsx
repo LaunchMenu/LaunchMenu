@@ -1,10 +1,12 @@
 import {
     adjustSearchable,
     contextMenuAction,
+    createGlobalContextBinding,
     createSettings,
     createSettingsFolder,
     declare,
     Menu,
+    Priority,
     ProxiedMenu,
     searchAction,
     settingPatternMatcher,
@@ -71,16 +73,12 @@ export default declare({
                     const settingsData =
                         selectedApplet && manager.getSettingsData(selectedApplet.ID);
                     return [
-                        contextMenuAction.createBinding({
-                            action: null,
-                            preventCountCategory: true,
-                            item: {
-                                priority: 1,
-                                item: createSettingsContextMenuItem({
-                                    settings: settingsFolders.get(h),
-                                    appletSettings: settingsData?.file.settings,
-                                }),
-                            },
+                        createGlobalContextBinding({
+                            priority: [Priority.LOW, Priority.LOW],
+                            item: createSettingsContextMenuItem({
+                                settings: settingsFolders.get(h),
+                                appletSettings: settingsData?.file.settings,
+                            }),
                         }),
                     ];
                 },

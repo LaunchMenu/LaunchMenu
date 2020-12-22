@@ -1,6 +1,7 @@
 import ReactDOM from "react-dom";
 import Path from "path";
 import hmr from "@launchmenu/hmr";
+import {ipcRenderer} from "electron";
 
 export function startApplication() {
     global.DEV = process.env.NODE_ENV == "dev";
@@ -16,6 +17,13 @@ export function startApplication() {
         ReactDOM.render(lm.view, document.getElementById("root"));
     }
     let prevStartup = startup();
+
+    // Listen for dispose requests, to properly dispose of all data
+    ipcRenderer.on("LM-dispose", async () => {
+        await prevStartup;
+        await lm.destroy();
+        ipcRenderer.send("LM-disposed");
+    });
 
     if (DEV) {
         // Reload the contents whenever something changes

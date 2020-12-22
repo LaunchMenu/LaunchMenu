@@ -8,17 +8,26 @@ import {Note} from "../Note";
 /**
  * A label for a given shortcut
  */
-export const ShortcutLabel: LFC<{shortcut: IShortcutInput}> = ({shortcut}) => {
+export const ShortcutLabel: LFC<{
+    shortcut: IShortcutInput;
+    /** Whether to explicitly show that the pattern is empty */
+    explicitEmpty?: boolean;
+}> = ({shortcut, explicitEmpty}) => {
     const ioContext = useIOContext();
     const [h] = useDataHook();
+    const sc =
+        shortcut instanceof Function
+            ? ioContext
+                ? shortcut(ioContext, h)
+                : undefined
+            : shortcut;
     return (
         <Note>
-            {(shortcut instanceof Function
-                ? ioContext
-                    ? shortcut(ioContext, h)
+            {sc?.patterns.length == 0
+                ? explicitEmpty
+                    ? "None"
                     : ""
-                : shortcut
-            ).toString()}
+                : sc?.toString() ?? ""}
         </Note>
     );
 };

@@ -9,7 +9,7 @@ export const RenderCounter = createContext(0);
 export const SessionPreview: LFC<{session: LMSession}> = ({session}) => {
     // Prevent rendering an infinite loop
     const count = useContext(RenderCounter);
-    if (count >= 3) return <Box />;
+    if (count >= 1) return <Box />;
     return (
         <RenderCounter.Provider value={count + 1}>{session.view}</RenderCounter.Provider>
     );

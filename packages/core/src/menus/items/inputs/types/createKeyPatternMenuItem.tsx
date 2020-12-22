@@ -8,6 +8,7 @@ import {keyInputExecuteHandler} from "../handlers/keyPattern/keyInputExecuteHand
 import {advancedKeyInputEditAction} from "../handlers/keyPattern/advancedKeyInputEditAction";
 import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
 import {IKeyArrayPatternData} from "../handlers/keyPattern/_types/IKeyPatternData";
+import {ShortcutLabel} from "../../../../components/items/ShortcutLabel";
 
 /**
  * Creates a new key pattern menu item
@@ -36,7 +37,11 @@ export function createKeyPatternMenuItem({
         field: serializableField,
         data: field => ({
             name,
-            valueView: <Loader>{h => field.get(h).toString()}</Loader>,
+            valueView: (
+                <Loader>
+                    {h => <ShortcutLabel shortcut={field.get(h)} explicitEmpty />}
+                </Loader>
+            ),
             tags: adjustSubscribable(tags, (tags, h) => [
                 "field",
                 ...tags,

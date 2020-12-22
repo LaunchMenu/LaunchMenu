@@ -4,7 +4,8 @@
     "description": "An applet to manage LMs window",
     "types": "build/index.d.ts",
     "files": [
-        "build/**/*.{js,d.ts}"
+        "build/**/*.{js,d.ts}",
+        "images/**/*"
     ],
     "main": "build/index.js",
     "scripts": {

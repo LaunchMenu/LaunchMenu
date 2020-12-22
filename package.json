@@ -9,6 +9,7 @@
     ],
     "scripts": {
         "updated": "lerna updated",
+        "build": "lerna run build",
         "publish-all": "lerna publish",
         "publish-all-alpha": "lerna publish --dist-tag alpha"
     },

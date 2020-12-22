@@ -22,9 +22,6 @@
     "dependencies": {
         "chokidar": "^3.4.2"
     },
-    "devDependencies": {
-        "@launchmenu/build-tools": "^0.0.0"
-    },
     "gitHead": "022dbc089423d10ee0528697003769d2d3aeb7d4",
     "publishConfig": {
         "access": "public"

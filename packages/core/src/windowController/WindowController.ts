@@ -38,7 +38,19 @@ export class WindowController {
     /**
      * Destroy the window manager and the window(s) it is managing
      */
-    public destroy(): void {
+    public async destroy(): Promise<void> {
+        // Listen for the window to finish disposing
+        const disposePromise = new Promise(res => {
+            this.window.webContents.on("ipc-message", (event, message) => {
+                if (message == "LM-disposed") return res();
+            });
+            setTimeout(res, 10000);
+        });
+
+        // Send a command to the window to dispose everything
+        this.window.webContents.send("LM-dispose");
+        await disposePromise;
+
         this.window.destroy();
     }
 }

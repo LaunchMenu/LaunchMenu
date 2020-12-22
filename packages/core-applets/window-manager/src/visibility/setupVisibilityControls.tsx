@@ -1,21 +1,22 @@
-import {IActionBinding, Observer, SettingsManager} from "@launchmenu/core";
+import {IActionBinding, LaunchMenu, Observer, SettingsManager} from "@launchmenu/core";
 import {Tray, remote, nativeImage, BrowserWindow} from "electron";
 import Path from "path";
 import {settings} from "../settings";
-import {createExitContextMenuBinding} from "./createExitContextMenuBinding";
+import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
 
 /**
  * Sets up all listeners and UI to control window visibility
- * @param settingsManager The settings manager to obtain the settings from
+ * @param LM The launchmenu instance to do stuff with
  * @param window The window to control the visibility of
  * @param onHide A callback for when the window hides
  * @returns A function to remove the listeners and a context menu binding
  */
 export function setupVisibilityControls(
-    settingsManager: SettingsManager,
+    LM: LaunchMenu,
     window: BrowserWindow,
     onHide: () => void
-): {destroy: () => void; exitBinding: IActionBinding} {
+): {destroy: () => void; exitBindings: IActionBinding[]} {
+    const settingsManager = LM.getSettingsManager();
     const showWindow = () => {
         window.show();
         window.focus();
@@ -54,11 +55,11 @@ export function setupVisibilityControls(
     }, true);
 
     // Shortcut handler
-    let lastShortcut: null | string = null;
+    let latestShortcut: null | string = null;
     const shortcutSettingObserver = new Observer(h =>
         settingsManager.getSettingsContext(h).get(settings).controls.open.get(h)
     ).listen(pattern => {
-        lastShortcut = pattern;
+        latestShortcut = pattern;
         remote.globalShortcut.register(pattern, showWindow);
     }, true);
 
@@ -84,8 +85,8 @@ export function setupVisibilityControls(
             shortcutSettingObserver.destroy();
             hideSettingObserver.destroy();
             debugSettingObvserver.destroy();
-            if (lastShortcut) remote.globalShortcut.unregister(lastShortcut);
+            if (latestShortcut) remote.globalShortcut.unregister(latestShortcut);
         },
-        exitBinding: createExitContextMenuBinding(hideWindow),
+        exitBindings: createExitContextMenuBinding(LM, hideWindow),
     };
 }

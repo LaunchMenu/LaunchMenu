@@ -9,7 +9,7 @@ import {IDeletable} from "./_types/IDeletable";
  * The default delete action of any menu item
  */
 export const deleteAction = createContextAction({
-    name: "delete",
+    name: "Delete",
     contextItem: {
         priority: [Priority.HIGH, 5],
     },

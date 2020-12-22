@@ -15,6 +15,7 @@ import {SettingsManager} from "./settings/SettingsManager";
 import {Observer} from "../utils/modelReact/Observer";
 import {Box} from "../styling/box/Box";
 import {IApplet} from "./applets/_types/IApplet";
+import {ipcRenderer} from "electron";
 
 /**
  * The main LM class
@@ -154,6 +155,14 @@ export class LaunchMenu {
             path: Path.join(this.settingsDirectory, "baseSettings.json"),
         });
         this.settingsManager.addSettings(baseSettings.ID, settings);
+    }
+
+    // Utils
+    /**
+     * Fully restarts the LaunchMenu window
+     */
+    public restart(): void {
+        ipcRenderer.send("restart");
     }
 
     // General getters
