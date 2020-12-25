@@ -10,6 +10,8 @@ import Path from "path";
 import {promisify} from "util";
 import {InstallerWindow} from "./installerWindow/InstallerWindow";
 
+global.DEV = process.env.NODE_ENV == "dev";
+
 launch();
 
 /**

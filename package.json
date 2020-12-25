@@ -1,10 +1,10 @@
 {
     "private": true,
     "workspaces": [
+        "packages/dev-tools/*",
         "packages/core",
         "packages/applets/*",
         "packages/core-applets/*",
-        "packages/dev-tools/*",
         "packages/launcher*"
     ],
     "scripts": {

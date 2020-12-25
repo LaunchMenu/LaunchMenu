@@ -32,16 +32,18 @@
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
     "peerDependencies": {
-        "@launchmenu/core": "^0.0.0",
+        "@launchmenu/core": "^0.0.5-alpha.8",
         "model-react": "^3.0.3",
-        "react": "^16.13.0"
+        "react": "^17.0.0"
     },
     "devDependencies": {
-        "@launchmenu/build-tools": "^0.0.0",
+        "@launchmenu/core": "^0.0.5-alpha.8",
+        "model-react": "^3.0.3",
+        "react": "^17.0.0",
         "@testing-library/jest-dom": "^5.5.0",
         "@testing-library/react": "^10.0.3",
         "@types/jest": "^26.0.0",
-        "@types/react": "^16.9.35",
+        "@types/react": "^17.0.0",
         "jest": "^26.0.1",
         "ts-jest": "^26.1.0"
     },

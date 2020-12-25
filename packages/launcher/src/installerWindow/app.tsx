@@ -1,19 +1,21 @@
-import {createTheme, ThemeProvider} from "@deity/falcon-ui";
+import {createMuiTheme, ThemeProvider} from "@material-ui/core";
 import React from "react";
 import ReactDOM from "react-dom";
 import {WindowUI} from "./WindowUI";
 
 function startApplication() {
-    const theme = createTheme({
-        colors: {
-            primary: "#44E",
-            primaryLight: "#99F",
-            primaryDark: "#00A",
+    const theme = createMuiTheme({
+        palette: {
+            primary: {
+                main: "#44E",
+                light: "#99F",
+                dark: "#00A",
+            }
         },
     });
 
     ReactDOM.render(
-        <ThemeProvider theme={theme} globalCss={{".themed-root": {height: "100%"}}}>
+        <ThemeProvider theme={theme}>
             <WindowUI />
         </ThemeProvider>,
         document.getElementById("root")
