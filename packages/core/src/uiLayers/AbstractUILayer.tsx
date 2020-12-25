@@ -11,6 +11,7 @@ import {v4 as uuid} from "uuid";
 import {getContentAction} from "../actions/types/content/getContentAction";
 import {IUILayerBaseConfig} from "./_types/IUILayerBaseConfig";
 import {catchAllKeyHandler} from "../keyHandler/utils/catchAllKeyHandler";
+import {IMenu} from "../menus/menu/_types/IMenu";
 
 /**
  * An abstract class that can be used as a foundation for a UILayer
@@ -153,13 +154,22 @@ export abstract class AbstractUILayer implements IUILayer {
     }
 
     /**
+     * Retrieves the menus to obtain the menu item content for
+     * @param hook The hook to subscribe to changes
+     * @returns The menus to get the content for
+     */
+    protected getContentMenus(hook: IDataHook): IMenu[] {
+        return this.getMenuData(hook)
+            .filter(({menu, hideItemContent}) => menu && !hideItemContent)
+            .map(({menu}) => menu) as IMenu[];
+    }
+
+    /**
      * Contents that are visible from the currently selected menu items
      */
     protected menuItemContents = new DataCacher(h =>
-        this.getMenuData(h).flatMap(data => {
-            if (!("menu" in data) || !data.menu) return [];
-
-            const cursor = data.menu.getCursor(h);
+        this.getContentMenus(h).flatMap(menu => {
+            const cursor = menu.getCursor(h);
             if (!cursor) return [];
 
             const cursorContents = getContentAction.get([cursor], h);

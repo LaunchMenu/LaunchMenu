@@ -3,6 +3,8 @@ import {IMenu} from "../../../../menus/menu/_types/IMenu";
 import {IMenuItemExecuteCallback} from "../../../../menus/menu/_types/IMenuItemExecuteCallback";
 import {IHighlighter} from "../../../../textFields/syntax/_types/IHighlighter";
 import {ITextSelection} from "../../../../textFields/_types/ITextSelection";
+import {IUILayerMenuData} from "../../../_types/IUILayerMenuData";
+import {IDataHook} from "model-react";
 
 /** The configuration */
 export type IMenuSearchConfig = {
@@ -14,9 +16,10 @@ export type IMenuSearchConfig = {
     text?: string;
     /** Initial text selection */
     selection?: ITextSelection;
-
     /** The menu this field should search in */
     menu: IMenu;
+    /** The menu to be shown when no search term is provided */
+    defaultMenu?: IUILayerMenuData | ((hook: IDataHook) => IUILayerMenuData);
     /** Category configuration for the search results */
     categoryConfig?: IPrioritizedMenuCategoryConfig;
     /** The callback to make when an item is executed */
