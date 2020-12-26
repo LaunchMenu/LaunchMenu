@@ -1,30 +1,52 @@
 import {IStartupController} from "../_types/IStartupController";
-import Path from "path";
-import FS from "fs";
-import {promisify} from "util";
-import ws from "windows-shortcuts";
+import regedit from "./regedit";
 
-const startupFolder =
-    "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\StartUp";
-function getTargetPath(inputLocation: string): string {
-    const fileName = Path.basename(inputLocation);
-    const shortcutName = fileName.replace(/\.[^.]*$/, ".lnk");
-    return Path.join(startupFolder, shortcutName);
-}
-
-export const windowStartup: IStartupController = {
-    register: async location => {
-        return new Promise((res, rej) => {
-            ws.create(
-                getTargetPath(location),
-                {target: location, workingDir: Path.dirname(location)},
+const loc = "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+const key = "LaunchMenu";
+const windowStartup: IStartupController = {
+    register: async location =>
+        new Promise((res, rej) => {
+            regedit.putValue(
+                {
+                    [loc]: {
+                        [key]: {
+                            type: "REG_SZ",
+                            value: location,
+                        },
+                    },
+                },
                 error => {
                     if (error) rej(error);
                     else res();
                 }
             );
-        });
-    },
-    deregister: async location => promisify(FS.unlink)(getTargetPath(location)),
-    isRegistered: async location => FS.existsSync(getTargetPath(location)),
+        }),
+    deregister: async location =>
+        new Promise((res, rej) => {
+            regedit.putValue(
+                {
+                    [loc]: {
+                        [key]: {
+                            type: "REG_SZ",
+                            value: "",
+                        },
+                    },
+                },
+                error => {
+                    if (error) rej(error);
+                    else res();
+                }
+            );
+        }),
+    isRegistered: async location =>
+        new Promise((res, rej) => {
+            regedit.list([loc], (error, value) => {
+                if (error) rej(error);
+                else {
+                    const entry = value[loc].values[key];
+                    res(entry?.value == location);
+                }
+            });
+        }),
 };
+export default windowStartup;

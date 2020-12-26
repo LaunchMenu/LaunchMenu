@@ -1,16 +1,16 @@
 import {Observer, SettingsManager} from "@launchmenu/core";
 import {settings} from "../settings";
-import {windowStartup} from "./OScontrollers/windowsStartup";
 import {IStartupController} from "./_types/IStartupController";
 import Path from "path";
+
+const testing = false;
 
 /**
  * Sets up the startup controller that syncs with the setting
  * @param settingsManager The settings manager to get the setting from
  */
 export function setupStartupController(settingsManager: SettingsManager): () => void {
-    const installer: IStartupController | undefined =
-        startupControllers[process.platform as keyof typeof startupControllers];
+    const installer = startupControllers[process.platform]?.();
 
     const exePath = Path.join(process.cwd(), "LaunchMenu.exe");
     let changingPromise = Promise.resolve();
@@ -21,7 +21,7 @@ export function setupStartupController(settingsManager: SettingsManager): () => 
         changingPromise = changingPromise.then(async () => {
             if (
                 // TODO: get dev from a LM property
-                !(global as any).DEV &&
+                (!(global as any).DEV || testing) &&
                 installer &&
                 (await installer.isRegistered(exePath)) != automaticStartup
             ) {
@@ -34,6 +34,6 @@ export function setupStartupController(settingsManager: SettingsManager): () => 
     return () => observer.destroy();
 }
 
-const startupControllers = {
-    win32: windowStartup,
-};
+const startupControllers = ({
+    win32: () => require("./OScontrollers/windowsStartup").default,
+} as any) as {[key: string]: (() => IStartupController) | undefined};
