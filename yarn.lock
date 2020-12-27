@@ -685,6 +685,19 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
+"@launchmenu/build-tools@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@launchmenu/build-tools/-/build-tools-0.0.2.tgz#692c9b94556c981c330305f89306f30c1913b9a6"
+  integrity sha512-MYxcDjm6l8LyDORQc1n1gPzcIO2KBc7EsDCcS/nz6kGMlXnN2O14Uj6Hc1UAsqoEZLFAuHweMAKgpEgQbzw/PQ==
+  dependencies:
+    args "^5.0.1"
+    chalk "^4.1.0"
+    chokidar "^3.4.2"
+    cpx "^1.5.0"
+    cross-spawn-promise "0.10.2"
+    rimraf "^3.0.2"
+    typescript "4.0.2"
+
 "@lerna/add@3.21.0":
   version "3.21.0"
   resolved "https://registry.yarnpkg.com/@lerna/add/-/add-3.21.0.tgz#27007bde71cc7b0a2969ab3c2f0ae41578b4577b"
