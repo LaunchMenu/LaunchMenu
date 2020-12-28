@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-window-manager",
-    "version": "0.0.5-alpha.9",
+    "version": "0.0.5-alpha.10",
     "description": "An applet to manage LMs window",
     "types": "build/index.d.ts",
     "files": [
