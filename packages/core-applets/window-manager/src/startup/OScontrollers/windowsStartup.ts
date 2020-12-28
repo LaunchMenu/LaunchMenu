@@ -1,7 +1,9 @@
 import {IStartupController} from "../_types/IStartupController";
 import regedit from "./regedit";
 
-const loc = "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+// Reference for future improvement: https://stackoverflow.com/questions/5427673/how-to-run-a-program-automatically-as-admin-on-windows-7-at-startup
+// Reference current solution: https://stackoverflow.com/a/10201281/8521718
+const loc = "HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run";
 const key = "LaunchMenu";
 const windowStartup: IStartupController = {
     register: async location =>
