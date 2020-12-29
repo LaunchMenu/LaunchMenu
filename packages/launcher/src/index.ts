@@ -19,6 +19,8 @@ launch();
  * Launching the application will actually install a number of packages beforehand in the same directory as the exe is in if they aren't there yet. Afterwards it will run the launcher of core to start LM.
  */
 async function launch(): Promise<void> {
+    setupWorkingDir();
+
     if (!isInstalled("@launchmenu/core")) await firstTimeSetup();
     require(getInstalledPath(
         "@launchmenu/core/build/windowController/launcher"
@@ -112,4 +114,14 @@ async function initAppletsFile(applet: string[]): Promise<void> {
         } catch (e) {}
     });
     await promisify(FS.writeFile)(path, JSON.stringify(file, null, 4), "utf8");
+}
+
+function setupWorkingDir(): void {
+    const regex = /workingDir=(.*)/;
+    const dir = process.argv.reduce((cur, arg) => {
+        const match = regex.exec(arg);
+        if (match) return match[1];
+        return cur;
+    }, Path.dirname(process.argv[0]));
+    process.chdir(dir);
 }

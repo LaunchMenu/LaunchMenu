@@ -10,7 +10,12 @@ function startApplication() {
                 main: "#44E",
                 light: "#99F",
                 dark: "#00A",
-            }
+            },
+            secondary: {
+                main: "#44E",
+                light: "#99F",
+                dark: "#00A",
+            },
         },
     });
 
