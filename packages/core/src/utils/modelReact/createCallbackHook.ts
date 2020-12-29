@@ -11,13 +11,16 @@ export function createCallbackHook(
     forceRefreshTime?: number
 ): [IDataHook, () => void] {
     let hookListenerRemovers = [] as (() => void)[];
+    let destroyed = false;
     const remove = () => {
+        destroyed = true;
         hookListenerRemovers.forEach(remover => remover());
         hookListenerRemovers = [];
     };
     return [
         {
             call: () => {
+                if (destroyed) return;
                 remove();
                 callback();
             },

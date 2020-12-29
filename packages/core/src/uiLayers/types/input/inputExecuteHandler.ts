@@ -5,7 +5,6 @@ import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {createAction, createStandardBinding} from "../../../actions/createAction";
 import {sequentialExecuteHandler} from "../../../actions/types/execute/sequentialExecuteHandler";
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
-import {IExecutable} from "../../../actions/types/execute/_types/IExecutable";
 import {IAction} from "../../../actions/_types/IAction";
 import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
 

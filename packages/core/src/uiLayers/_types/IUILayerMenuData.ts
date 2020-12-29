@@ -18,6 +18,8 @@ export type IUILayerMenuData = {
     onExecute?: IMenuItemExecuteCallback;
     /** Whether a search field should be generated for the passed menu (defaults to true) */
     searchable?: boolean;
+    /** Whether the content of this menu should be displayed */
+    hideItemContent?: boolean;
     /** Whether to destroy the menu when closing this layer (defaults to true) */
     destroyOnClose?: boolean;
     /** The overlay group to use, making sure that only the bottom view with the same group in a continuous sequence is shown */

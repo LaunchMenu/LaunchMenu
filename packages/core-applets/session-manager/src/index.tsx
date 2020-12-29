@@ -1,5 +1,4 @@
 import {
-    createFolderMenuItem,
     createSettings,
     createSettingsFolder,
     createStandardCategory,
@@ -11,7 +10,7 @@ import {
     createKeyPatternSetting,
     createContextFolderMenuItem,
     UILayer,
-    contextMenuAction,
+    createGlobalContextBinding,
 } from "@launchmenu/core";
 import {DataCacher, IDataHook} from "model-react";
 import {SessionData} from "./SessionData";
@@ -31,7 +30,7 @@ export const settings = createSettings({
             children: {
                 openMenu: createKeyPatternSetting({
                     name: "Open session switcher",
-                    init: new KeyPattern("ctrl+q"),
+                    init: new KeyPattern("ctrl+w"),
                 }),
                 newSession: createKeyPatternSetting({
                     name: "Create a new session",
@@ -104,18 +103,14 @@ export default declare({
                 );
             },
             globalContextMenuBindings: [
-                contextMenuAction.createBinding({
-                    action: null,
-                    preventCountCategory: true,
-                    item: {
-                        priority: [Priority.LOW, Priority.LOW],
-                        item: createContextFolderMenuItem({
-                            name: "Switch session",
-                            children: getSessionMenuItems,
-                            shortcut: context =>
-                                context.settings.get(settings).openMenu.get(),
-                        }),
-                    },
+                createGlobalContextBinding({
+                    priority: Priority.LOW,
+                    item: createContextFolderMenuItem({
+                        name: "Switch session",
+                        children: getSessionMenuItems,
+                        shortcut: context =>
+                            context.settings.get(settings).openMenu.get(),
+                    }),
                 }),
             ],
             development: {

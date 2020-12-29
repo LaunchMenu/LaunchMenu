@@ -12,6 +12,10 @@ import {SettingsFile} from "../settings/storage/fileTypes/SettingsFile";
 import {baseSettings} from "./settings/baseSettings/baseSettings";
 import {SessionManager} from "./LMSession/SessionManager";
 import {SettingsManager} from "./settings/SettingsManager";
+import {Observer} from "../utils/modelReact/Observer";
+import {Box} from "../styling/box/Box";
+import {IApplet} from "./applets/_types/IApplet";
+import {ipcRenderer} from "electron";
 
 /**
  * The main LM class
@@ -26,6 +30,7 @@ export class LaunchMenu {
     protected appletManager: AppletManager;
     protected sessionManager: SessionManager;
     protected settingsManager: SettingsManager;
+    protected appletObserver: Observer<IApplet[]>;
 
     /***
      * Creates a new instance of the LaunchMenu application,
@@ -37,10 +42,22 @@ export class LaunchMenu {
      * Disposes of all runtime data
      */
     public destroy() {
-        this.keyHandler?.destroy();
-        this.appletManager?.destroy();
-        this.sessionManager?.destroy();
-        this.settingsManager?.destroy();
+        const destroyables = [
+            this.keyHandler,
+            this.appletManager,
+            this.sessionManager,
+            this.sessionManager,
+            this.appletObserver,
+        ];
+
+        // Destroy all items individually, making sure that if 1 item errors, the others still get destroyed
+        for (let destroyable of destroyables) {
+            try {
+                destroyable.destroy();
+            } catch (e) {
+                console.error(e);
+            }
+        }
     }
 
     // Initialization
@@ -51,10 +68,11 @@ export class LaunchMenu {
         if (this.keyHandler as any) throw Error("Instance has already been set up");
         this.setupKeyHandler();
         this.setupTheme();
-        this.setupAppletsManager();
+        this.setupApplets();
         this.setupSettings();
         this.setupView();
-        this.setupSessions();
+        this.sessionManager = new SessionManager(this);
+        this.sessionManager.addSession();
     }
 
     /**
@@ -76,37 +94,49 @@ export class LaunchMenu {
     }
 
     /**
-     * Initializes the available applets
-     */
-    protected setupAppletsManager(): void {
-        this.appletManager = new AppletManager(this, this.settingsDirectory);
-    }
-
-    /**
      * Initializes the the view
      */
     protected setupView(): void {
         this.view = (
             <ThemeProvider>
-                <FillBox font="paragraph">
-                    <Loader>
-                        {h => (
-                            <Transition>
-                                {this.sessionManager.getSelectedSession(h)?.view}
-                            </Transition>
-                        )}
-                    </Loader>
+                <FillBox
+                    className="Application"
+                    font="paragraph"
+                    boxSizing="border-box"
+                    display="flex"
+                    css={{padding: 18}}>
+                    <Box
+                        position="relative"
+                        borderRadius="medium"
+                        overflow="hidden"
+                        flex="1 1 auto"
+                        css={{
+                            boxShadow: "0px 3px 20px -10px rgba(0,0,0,0.8)",
+                        }}>
+                        <Loader>
+                            {h => (
+                                <Transition>
+                                    {this.sessionManager.getSelectedSession(h)?.view}
+                                </Transition>
+                            )}
+                        </Loader>
+                    </Box>
                 </FillBox>
             </ThemeProvider>
         );
     }
 
     /**
-     * Initializes the sessions
+     * Initializes the applets manager
      */
-    protected setupSessions(): void {
-        this.sessionManager = new SessionManager(this);
-        this.sessionManager.addSession();
+    protected setupApplets(): void {
+        this.appletManager = new AppletManager(this, this.settingsDirectory);
+
+        // Add an observer, making sure that applets always instantly reload, even if no other component requests them.
+        // This is important because applets can have side effects, so even if nothing needs the applet, the applet may affect the system.
+        this.appletObserver = new Observer(h =>
+            this.appletManager.getApplets(h)
+        ).listen(() => {});
     }
 
     /**
@@ -125,6 +155,14 @@ export class LaunchMenu {
             path: Path.join(this.settingsDirectory, "baseSettings.json"),
         });
         this.settingsManager.addSettings(baseSettings.ID, settings);
+    }
+
+    // Utils
+    /**
+     * Fully restarts the LaunchMenu window
+     */
+    public restart(): void {
+        ipcRenderer.send("restart");
     }
 
     // General getters

@@ -116,7 +116,7 @@ export function createTheme(
         },
         radius: {
             small: themeInput.radius?.small || 4,
-            normal: themeInput.radius?.normal || 8,
+            medium: themeInput.radius?.normal || 8,
             large: themeInput.radius?.large || 16,
             round: themeInput.radius?.round || 100000,
         },

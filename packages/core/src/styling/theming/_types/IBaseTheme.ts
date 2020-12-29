@@ -42,7 +42,7 @@ export type IBaseTheme = {
     };
     radius: {
         small: number;
-        normal: number;
+        medium: number;
         large: number;
         round: number;
     };

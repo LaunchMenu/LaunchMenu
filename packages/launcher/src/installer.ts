@@ -7,6 +7,9 @@ import Path from "path";
  * @param packages Additional packages to install
  */
 export function install(packageName: string, ...packages: string[]): Promise<void> {
+    // Fake installation if in dev mode
+    if (DEV) return new Promise(res => setTimeout(res, 500));
+
     packages = [packageName, ...packages];
     packages = packages.filter(p => !isInstalled(getPackageNameWithoutVersion(p)));
     if (packages.length == 0) return Promise.resolve();
@@ -23,7 +26,7 @@ export function install(packageName: string, ...packages: string[]): Promise<voi
                 if (err) {
                     rej(err);
                 } else {
-                    let Installer = require("npm/lib/install.js").Installer;
+                    const {Installer} = require("npm/lib/install.js");
                     let oInstaller = new Installer(prefix, false, packages, {
                         global: false,
                     });

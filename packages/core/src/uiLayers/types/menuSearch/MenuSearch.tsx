@@ -21,6 +21,7 @@ import {MenuView} from "../../../components/menu/MenuView";
 import {IViewStackItem} from "../../_types/IViewStackItem";
 import {InstantOpenTransition} from "../../../components/context/stacks/transitions/open/InstantOpenTransition";
 import {InstantCloseTransition} from "../../../components/context/stacks/transitions/close/InstantCloseTransition";
+import {getHooked} from "../../../utils/subscribables/getHooked";
 
 export class MenuSearch extends AbstractUILayer {
     protected data: IMenuSearchConfig;
@@ -41,9 +42,17 @@ export class MenuSearch extends AbstractUILayer {
     /** @override */
     public getMenuData(hook: IDataHook = null): IUILayerMenuData[] {
         const menuData = this.menuData.get(hook);
+
+        const hasSearch = this.isMenuOpen.get(hook);
+        const sourceMenuLayer = this.data.defaultMenu && {
+            ...getHooked(this.data.defaultMenu, hook),
+            hideItemContent: hasSearch,
+        };
+        const standardLayers = sourceMenuLayer ? [sourceMenuLayer] : [];
+
         return super.getMenuData(
             hook,
-            menuData && this.isMenuOpen.get(hook) ? [menuData] : []
+            menuData && hasSearch ? [...standardLayers, menuData] : standardLayers
         );
     }
 
@@ -141,7 +150,10 @@ export class MenuSearch extends AbstractUILayer {
      */
     protected getMenuView(menu: SearchMenu): IViewStackItem {
         return {
-            transitions: {Open: InstantOpenTransition, Close: InstantCloseTransition},
+            transitions: {
+                Open: InstantOpenTransition,
+                Close: InstantCloseTransition,
+            },
             view: <MenuView menu={menu} onExecute={this.data.onExecute} />,
         };
     }
@@ -159,5 +171,14 @@ export class MenuSearch extends AbstractUILayer {
             useContextItemKeyHandlers: this.data.useContextItemKeyHandlers,
             onExit,
         });
+    }
+
+    /**
+     * Retrieves whether the search menu is opened
+     * @param hook The hook to subscribe to changes
+     * @returns Whether the search menu is opened
+     */
+    public hasSearch(hook: IDataHook): boolean {
+        return this.isMenuOpen.get(hook);
     }
 }

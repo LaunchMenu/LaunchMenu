@@ -10,6 +10,8 @@ import Path from "path";
 import {promisify} from "util";
 import {InstallerWindow} from "./installerWindow/InstallerWindow";
 
+global.DEV = process.env.NODE_ENV == "dev";
+
 launch();
 
 /**
@@ -17,8 +19,12 @@ launch();
  * Launching the application will actually install a number of packages beforehand in the same directory as the exe is in if they aren't there yet. Afterwards it will run the launcher of core to start LM.
  */
 async function launch(): Promise<void> {
+    setupWorkingDir();
+
     if (!isInstalled("@launchmenu/core")) await firstTimeSetup();
-    require(getInstalledPath("@launchmenu/core/build/windowManager/launcher")).launch();
+    require(getInstalledPath(
+        "@launchmenu/core/build/windowController/launcher"
+    )).launch();
 }
 
 async function firstTimeSetup(): Promise<void> {
@@ -35,6 +41,7 @@ async function firstTimeSetup(): Promise<void> {
             "@launchmenu/applet-applet-manager@alpha",
             "@launchmenu/applet-session-manager@alpha",
             "@launchmenu/applet-settings-manager@alpha",
+            "@launchmenu/applet-window-manager@alpha",
             ...chosenApplets,
         ] as string[];
         const packages = ["@launchmenu/core@alpha", ...applets];
@@ -63,6 +70,7 @@ async function firstTimeSetup(): Promise<void> {
             e.toString(),
             "utf8"
         );
+        console.error(e);
         await new Promise(res => setTimeout(res, 5000));
     }
 
@@ -71,7 +79,7 @@ async function firstTimeSetup(): Promise<void> {
 }
 
 /*********************************************
- * Some helpers to perform the initial setup
+ * Some helpers to perform the initial setup *
  *********************************************/
 async function setupDirs(): Promise<void> {
     const dirs = ["node_modules", "data/settings"];
@@ -106,4 +114,14 @@ async function initAppletsFile(applet: string[]): Promise<void> {
         } catch (e) {}
     });
     await promisify(FS.writeFile)(path, JSON.stringify(file, null, 4), "utf8");
+}
+
+function setupWorkingDir(): void {
+    const regex = /workingDir=(.*)/;
+    const dir = process.argv.reduce((cur, arg) => {
+        const match = regex.exec(arg);
+        if (match) return match[1];
+        return cur;
+    }, Path.dirname(process.argv[0]));
+    process.chdir(dir);
 }

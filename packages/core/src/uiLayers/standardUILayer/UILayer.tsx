@@ -79,7 +79,7 @@ export class UILayer extends UnifiedAbstractUILayer {
         if (data instanceof Function) data = data(context, close);
 
         const ID = uuid();
-        const res = {ID, ...data} as IStandardUILayerDataObject & {onClose?: () => void};
+        let res = {ID} as IStandardUILayerDataObject & {onClose?: () => void};
         let extra: IUILayerData[] = [];
 
         let empty = true;
@@ -87,47 +87,83 @@ export class UILayer extends UnifiedAbstractUILayer {
         // Create the standard menu data
         if (data.menu) {
             const menu = data.menu;
-            empty = false;
-            if (!data.menuView)
-                res.menuView = <MenuView menu={data.menu} onExecute={data.onExecute} />;
-            if (!data.menuHandler)
-                res.menuHandler = createMenuKeyHandler(data.menu, {
-                    onExit: close,
-                    onExecute: data.onExecute,
-                });
             if (data.destroyOnClose != false)
                 res.onClose = mergeCallbacks([res.onClose, () => menu.destroy()]);
-            if (data.searchable !== false)
-                extra.push(new MenuSearch({menu: data.menu, onExecute: data.onExecute}));
+            const menuLayerData = {
+                ID,
+                menu,
+                menuView: data.menuView ?? (
+                    <MenuView menu={data.menu} onExecute={data.onExecute} />
+                ),
+                menuHandler:
+                    data.menuHandler ??
+                    createMenuKeyHandler(data.menu, {
+                        onExit: close,
+                        onExecute: data.onExecute,
+                    }),
+            };
+
+            // If a search menu is requested, add it as an extra layer, otherwise just add the menu
+            if (data.searchable !== false) {
+                extra.push(
+                    new MenuSearch({
+                        menu: data.menu,
+                        defaultMenu: menuLayerData,
+                        onExecute: data.onExecute,
+                    })
+                );
+            } else {
+                empty = false;
+                res = {
+                    ...menuLayerData,
+                    ...res,
+                };
+            }
         }
 
         // Create the standard field data
         if (data.field) {
             empty = false;
-            if (!data.fieldView)
-                res.fieldView = (
+            const {field} = data;
+            res = {
+                field,
+                fieldView: data.fieldView ?? (
                     <TextFieldView
-                        field={data.field}
+                        field={field}
                         highlighter={data.highlighter}
                         icon={data.icon}
                     />
-                );
-            if (!data.fieldHandler)
-                res.fieldHandler = createTextFieldKeyHandler(data.field, context);
+                ),
+                fieldHandler:
+                    data.fieldHandler ?? createTextFieldKeyHandler(field, context),
+                ...res,
+            };
         }
 
         // Create the content data
         if (data.content) {
             empty = false;
-            if (!data.contentView)
-                res.contentView = <ContentView content={data.content} />;
-            if (!data.contentHandler)
-                res.contentHandler = createContentKeyHandler(data.content, context);
+            const {content} = data;
+            res = {
+                content,
+                contentView: data.contentView ?? <ContentView content={content} />,
+                contentHandler:
+                    data.contentHandler ?? createContentKeyHandler(content, context),
+                ...res,
+            };
         }
-        if (empty && !res.contentView) res.contentView = undefined;
+
+        // Check for only a key handler
+        if (data.contentHandler && empty) {
+            empty = false;
+            res = {
+                contentView: undefined,
+                ...res,
+            };
+        }
 
         // Return the data
-        return [res as IUILayerData, ...extra];
+        return empty ? extra : [res as IUILayerData, ...extra];
     }
 
     /** @override */

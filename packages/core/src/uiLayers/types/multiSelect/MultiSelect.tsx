@@ -39,6 +39,7 @@ import {searchAction} from "../../../actions/types/search/searchAction";
 import {isActionBindingFor} from "../../../actions/utils/isActionBindingFor";
 import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
 import {menuItemIdentityAction} from "../../../actions/types/identity/menuItemIdentityAction";
+import {identityAction} from "../../../actions/types/identity/identityAction";
 
 export function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -602,6 +603,11 @@ export class MultiSelect<T> extends AbstractUILayer {
      * @returns Whether custom input is selected
      */
     public isCustomSelected(hook: IDataHook = null): boolean {
-        return this.menu.getCursor(hook) == this.customItem;
+        const cursor = this.menu.getCursor(hook);
+        if (!cursor || !this.customItem) return false;
+        return (
+            identityAction.getIdentity(cursor) ==
+            identityAction.getIdentity(this.customItem)
+        );
     }
 }

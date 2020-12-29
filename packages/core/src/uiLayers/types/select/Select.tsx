@@ -24,6 +24,7 @@ import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChan
 import {isActionBindingFor} from "../../../actions/utils/isActionBindingFor";
 import {searchAction} from "../../../actions/types/search/searchAction";
 import {menuItemIdentityAction} from "../../../actions/types/identity/menuItemIdentityAction";
+import {identityAction} from "../../../actions/types/identity/identityAction";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -84,10 +85,13 @@ export class Select<T> extends Input<T> {
         };
 
         // Retrieve and store the options
-        this.options = this.config.options.map(option => ({
-            ...(isSelectObject(option) ? option : {value: option, disabled: false}),
-            view: this.getOptionItem(option),
-        }));
+        this.options = this.config.options.map(option => {
+            const view = this.getOptionItem(option);
+            return {
+                ...(isSelectObject(option) ? option : {value: option, disabled: false}),
+                view,
+            };
+        });
         const optionItems = this.options.map(option => option.view);
 
         // Create a custom item if enabled
@@ -186,20 +190,40 @@ export class Select<T> extends Input<T> {
 
     /** @override */
     protected checkError(text?: string): IInputError | null {
-        return this.isCustomSelected() ? super.checkError(text) : null;
+        if (this.isCustomSelected()) return super.checkError(text);
+        const option = this.getSelected();
+        if (!option)
+            return {
+                message: "The selected item isn't valid",
+                ranges: [],
+            };
+        return null;
     }
 
     /** @override */
     public getValue(hook: IDataHook = null): T | IInputError {
         if (this.isCustomSelected(hook)) return super.getValue(hook);
-        const cursor = this.menu.getCursor();
-        const option = this.options.find(({view}) => view == cursor);
+        const option = this.getSelected();
         return option
             ? option.value
             : {
                   message: "The selected item isn't valid",
                   ranges: [],
               };
+    }
+
+    /**
+     * Retrieves the currently selected value
+     * @returns The selected value, if any
+     */
+    protected getSelected(): ISelectOptionData<T> | undefined {
+        const cursor = this.menu.getCursor();
+        if (!cursor) return undefined;
+        const option = this.options.find(
+            ({view}) =>
+                identityAction.getIdentity(view) == identityAction.getIdentity(cursor)
+        );
+        return option;
     }
 
     // Custom value menu item handling
@@ -262,6 +286,11 @@ export class Select<T> extends Input<T> {
      * @returns Whether custom input is selected
      */
     public isCustomSelected(hook: IDataHook = null): boolean {
-        return this.menu.getCursor(hook) == this.customItem;
+        const cursor = this.menu.getCursor(hook);
+        if (!cursor || !this.customItem) return false;
+        return (
+            identityAction.getIdentity(cursor) ==
+            identityAction.getIdentity(this.customItem)
+        );
     }
 }

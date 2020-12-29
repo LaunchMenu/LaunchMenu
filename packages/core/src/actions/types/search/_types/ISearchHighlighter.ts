@@ -8,6 +8,8 @@ import {TPartialBy} from "../../../../_types/TPartialBy";
 export type ISearchHighlighter = (
     /** The text to be highlighted */
     text: string,
+    /** The text to be searched for */
+    searchText: string,
     /** The query to highlight with */
     query: IQuery
 ) => /** The sections to be highlighted */ ISearchHighlighterNode[];

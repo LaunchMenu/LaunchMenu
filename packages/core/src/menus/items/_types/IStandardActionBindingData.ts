@@ -1,8 +1,8 @@
 import {IDataHook} from "model-react";
 import {ICategory} from "../../../actions/types/category/_types/ICategory";
 import {IExecutableFunction} from "../../../actions/types/execute/_types/IExecutable";
-import {ISimpleSearchPatternMatcher} from "../../../actions/types/search/tracedRecursiveSearch/simpleSearch/_types/ISimpleSearchData";
 import {IShowChildInParent} from "../../../actions/types/search/tracedRecursiveSearch/_types/IShowChildInParent";
+import {ISimpleSearchPatternMatcher} from "../../../actions/types/search/_types/ISimpleSearchPatternMatcher";
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {IViewStackItemView} from "../../../uiLayers/_types/IViewStackItem";
 import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
@@ -58,5 +58,5 @@ export type IStandardActionBindingData = {
     searchChildren?: ISubscribable<IMenuItem[]>;
 
     /** Shows a given child in the list of children */
-    showChild?: IShowChildInParent;
+    onShowChild?: IShowChildInParent;
 };

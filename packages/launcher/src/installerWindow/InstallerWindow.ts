@@ -33,7 +33,7 @@ export class InstallerWindow {
             });
 
             this.window.loadFile(Path.join(__dirname, "index.html"));
-            // this.window.webContents.openDevTools();
+            if (DEV) this.window.webContents.openDevTools();
         });
     }
 

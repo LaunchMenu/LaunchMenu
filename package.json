@@ -1,14 +1,21 @@
 {
     "private": true,
     "workspaces": [
+        "packages/dev-tools/*",
         "packages/core",
         "packages/applets/*",
         "packages/core-applets/*",
-        "packages/dev-tools/*",
         "packages/launcher*"
     ],
+    "scripts": {
+        "updated": "lerna updated",
+        "build": "lerna run build",
+        "publish-all": "lerna publish",
+        "publish-all-alpha": "lerna publish --dist-tag alpha"
+    },
     "devDependencies": {
         "@launchmenu/build-tools": "^0.0.2",
+        "lerna": "^3.22.1",
         "rimraf": "^3.0.2"
     }
 }

@@ -12,11 +12,13 @@ import {
     SlideLeftOpenTransition,
     SlideDownOpenTransition,
 } from "../../components/context/stacks/transitions/open/slideOpen/slideOpenDirectionts";
+import {FillBox} from "../../components/FillBox";
 import {IOContextProvider} from "../../context/react/IOContextContext";
 import {getContextContentStack} from "../../context/uiExtracters/getContextContentStack";
 import {getContextFieldStack} from "../../context/uiExtracters/getContextFieldStack";
 import {getContextMenuStack} from "../../context/uiExtracters/getContextMenuStack";
 import {Box} from "../../styling/box/Box";
+import {useWindowSize} from "../../utils/hooks/useWindowSize";
 import {LFC} from "../../_types/LFC";
 import {usePaneIsVisible} from "../hooks/usePaneIsVisible";
 import {IApplicationLayoutProps} from "./_types/IApplicationLayoutProps";
@@ -85,10 +87,11 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
     const [animating, setAnimating] = useState(false); // Skip animating on first render
     const layoutRef = useRef<HTMLElement>();
     const [size, setSize] = useState({width: 0, height: 0});
+    const {width: windowWidth, height: windowHeight} = useWindowSize();
     useLayoutEffect(() => {
         if (layoutRef.current) setSize(layoutRef.current.getBoundingClientRect());
         setTimeout(() => setAnimating(true));
-    }, [layoutRef.current]);
+    }, [layoutRef.current, windowWidth, windowHeight]);
 
     // Return the layout with transition animations
     const horizontalDivision =
@@ -99,14 +102,14 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
             : 0) * size.width;
     return (
         <IOContextProvider value={context}>
-            <Box
+            <FillBox
+                className="frame"
                 elRef={layoutRef}
                 display="flex"
                 flexDirection="column"
-                height="100%"
-                borderRadius="normal"
                 overflow="hidden">
                 <Box
+                    className="searchSection"
                     position="relative"
                     elevation="medium"
                     zIndex={100}
@@ -119,7 +122,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                         stackGetter={fieldStackGetter}
                     />
                 </Box>
-                <Box>
+                <Box className="pathSection" background="bgPrimary">
                     <UIPathView
                         context={context}
                         pathTransitionDuration={defaultTransitionDuration}
@@ -154,6 +157,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                             }
                             width={horizontalDivision}>
                             <Box
+                                className="menuSection"
                                 minWidth={size.width * menuWidthFraction}
                                 width="100%"
                                 height="100%"
@@ -172,6 +176,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                             flexShrink={1}
                             background="bgSecondary">
                             <Box
+                                className="contentSection"
                                 width={size.width * (1 - menuWidthFraction)}
                                 height="100%">
                                 <StackView
@@ -182,7 +187,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                         </Box>
                     </Box>
                 </Box>
-            </Box>
+            </FillBox>
         </IOContextProvider>
     );
 };

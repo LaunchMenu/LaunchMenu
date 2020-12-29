@@ -39,7 +39,7 @@ export function createStandardActionBindings(
         onCursor,
         onMenuChange,
         searchChildren,
-        showChild,
+        onShowChild: showChild,
     }: IStandardActionBindingData,
     item: () => IMenuItem,
     connectionGroup: Symbol | undefined = standardConnectionGroup

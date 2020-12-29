@@ -1,6 +1,6 @@
 import React, {FC, useCallback, useEffect, useRef} from "react";
 import {IContent} from "../../content/_types/IContent";
-import {Box} from "../../styling/box/Box";
+import {IBoxProps} from "../../styling/box/_types/IBoxProps";
 import {useSmoothScroll} from "../../utils/hooks/useSmoothScroll";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {FillBox} from "../FillBox";
@@ -8,7 +8,11 @@ import {FillBox} from "../FillBox";
 /**
  * An element that takes care of scrolling the content properly
  */
-export const ContentScroller: FC<{content: IContent}> = ({content, children}) => {
+export const ContentScroller: FC<{content: IContent} & IBoxProps> = ({
+    content,
+    children,
+    ...rest
+}) => {
     const scrollHeightRef = useRef(0);
 
     // Sets the content size on every render, TODO: actively listen for size changes in content
@@ -29,7 +33,7 @@ export const ContentScroller: FC<{content: IContent}> = ({content, children}) =>
 
     // Render a simple box element
     return (
-        <FillBox elRef={[setRef, scrollRef]} overflow="auto">
+        <FillBox elRef={[setRef, scrollRef]} overflow="auto" {...rest}>
             {children}
         </FillBox>
     );

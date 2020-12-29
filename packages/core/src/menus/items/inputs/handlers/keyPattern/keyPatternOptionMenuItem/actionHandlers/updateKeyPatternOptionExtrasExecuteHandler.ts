@@ -4,7 +4,7 @@ import {IDataHook} from "model-react";
 import {IUpdateKeyPatternOptionExtrasExecuteData} from "../_types/IUpdateKeyPatternOptionExtrasExecuteData";
 import {IKeyName, keyNames} from "../../../../../../../keyHandler/keyIdentifiers/names";
 import {multiSelectExecuteHandler} from "../../../../../../../uiLayers/types/multiSelect/multiSelectExecuteHandler";
-import {createMultiSelectMenuItem} from "../../../../../../../uiLayers/types/multiSelect/createMultiSelectMenuItem";
+import {createMultiSelectOptionMenuItem} from "../../../../../../../uiLayers/types/multiSelect/createMultiSelectOptionMenuItem";
 import {createAction} from "../../../../../../../actions/createAction";
 
 /**
@@ -45,7 +45,7 @@ export const updateKeyPatternOptionExtrasExecuteHandler = createAction({
                 liveUpdate,
                 options: Object.values(keyNames),
                 createOptionView: (option, isSelected) =>
-                    createMultiSelectMenuItem(isSelected, {name: option}),
+                    createMultiSelectOptionMenuItem(isSelected, {name: option}),
             })
         ),
     }),

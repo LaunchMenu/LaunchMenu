@@ -16,66 +16,60 @@ export const updateKeyPatternOptionExecuteHandler = createAction({
     name: "Update key pattern",
     parents: [sequentialExecuteHandler],
     core: (data: IUpdateKeyPatternOptionExecuteData[]) => ({
-        children: data.map(
-            ({option, patternField, undoable, insertIfDeleted: insertIfDelete}) =>
-                sequentialExecuteHandler.createBinding(
-                    ({context}) =>
-                        new Promise<ICommand | void>(res => {
-                            const textField = new TextField();
-                            context.open(
-                                new UILayer((context, close) => ({
-                                    field: textField,
-                                    fieldHandler: createKeyPatternFieldKeyHandler(
-                                        textField,
-                                        () => {
-                                            const newOptionPattern = textField.get();
-                                            const newOption = {
-                                                ...option,
-                                                pattern: newOptionPattern,
-                                            };
-                                            const pattern = patternField.get(null);
-                                            const newIndex = getKeyPatternOptionIndex(
-                                                pattern,
-                                                option
+        children: data.map(({option, patternField, undoable, insertIfDeleted}) =>
+            sequentialExecuteHandler.createBinding(
+                ({context}) =>
+                    new Promise<ICommand | void>(res => {
+                        const textField = new TextField();
+                        context.open(
+                            new UILayer((context, close) => ({
+                                field: textField,
+                                fieldHandler: createKeyPatternFieldKeyHandler(
+                                    textField,
+                                    () => {
+                                        const newOptionPattern = textField.get();
+                                        const newOption = {
+                                            ...option,
+                                            pattern: newOptionPattern,
+                                        };
+                                        const pattern = patternField.get(null);
+                                        const newIndex = getKeyPatternOptionIndex(
+                                            pattern,
+                                            option
+                                        );
+
+                                        if (newIndex != -1 || insertIfDeleted) {
+                                            const newPatternData =
+                                                newIndex != -1
+                                                    ? pattern.patterns.map((v, i) =>
+                                                          i == newIndex ? newOption : v
+                                                      )
+                                                    : [...pattern.patterns, newOption];
+
+                                            const newPattern = new KeyPattern(
+                                                newPatternData
                                             );
-
-                                            if (newIndex != -1 || insertIfDelete) {
-                                                const newPatternData =
-                                                    newIndex != -1
-                                                        ? pattern.patterns.map((v, i) =>
-                                                              i == newIndex
-                                                                  ? newOption
-                                                                  : v
-                                                          )
-                                                        : [
-                                                              ...pattern.patterns,
-                                                              newOption,
-                                                          ];
-
-                                                const newPattern = new KeyPattern(
-                                                    newPatternData
+                                            if (undoable) {
+                                                res(
+                                                    new SetFieldCommand(
+                                                        patternField,
+                                                        newPattern
+                                                    )
                                                 );
-                                                if (undoable) {
-                                                    res(
-                                                        new SetFieldCommand(
-                                                            patternField,
-                                                            newPattern
-                                                        )
-                                                    );
-                                                } else {
-                                                    patternField.set(newPattern);
-                                                    res();
-                                                }
                                             } else {
+                                                patternField.set(newPattern);
                                                 res();
                                             }
-                                            close();
+                                        } else {
+                                            res();
                                         }
-                                    ),
-                                }))
-                            );
-                        })
-                )
+                                        close();
+                                    }
+                                ),
+                            }))
+                        );
+                    })
+            )
         ),
     }),
 });

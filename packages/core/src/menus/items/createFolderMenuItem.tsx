@@ -74,7 +74,7 @@ export function createFolderMenuItem<
             ...rest,
             actionBindings: adjustBindings(actionBindings ?? [], extraBindings),
             searchChildren: getChildList(searchChildren),
-            showChild: async ({parent, child, context}) => {
+            onShowChild: async ({parent, child, context}) => {
                 if (parent)
                     return openMenuExecuteHandler
                         .get([parent])
@@ -107,7 +107,9 @@ export function createFolderMenuItem<
                             }
                             name={
                                 <Box font="header">
-                                    <simpleSearchHandler.Highlighter query={highlight}>
+                                    <simpleSearchHandler.Highlighter
+                                        query={highlight}
+                                        pattern={rest.searchPattern}>
                                         {nameV}
                                     </simpleSearchHandler.Highlighter>
                                 </Box>
@@ -117,7 +119,8 @@ export function createFolderMenuItem<
                                 descriptionV && (
                                     <Truncated title={descriptionV}>
                                         <simpleSearchHandler.Highlighter
-                                            query={highlight}>
+                                            query={highlight}
+                                            pattern={rest.searchPattern}>
                                             {descriptionV}
                                         </simpleSearchHandler.Highlighter>
                                     </Truncated>

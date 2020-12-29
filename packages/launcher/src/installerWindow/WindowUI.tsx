@@ -1,4 +1,4 @@
-import {Box, Button, Checkbox} from "@deity/falcon-ui";
+import {Box, Button, Checkbox} from "@material-ui/core";
 import {ipcRenderer} from "electron/renderer";
 import React, {FC, useEffect, useState} from "react";
 import PuffLoader from "react-spinners/PuffLoader";
@@ -33,7 +33,7 @@ export const WindowUI: FC = () => {
             {state.type == "loading" ? (
                 <>
                     {state.name}
-                    <Box mt="xs" css={{width: 70}}>
+                    <Box mt={1} css={{width: 70}}>
                         <PuffLoader color="#00F" size={60} />
                     </Box>
                 </>
@@ -66,13 +66,12 @@ const InstallSelectionHandler: FC = () => {
             Please select the applets you want to install
             <Box>
                 {Object.keys(applets).map((name, i) => (
-                    <Box m="xs" mt={i == 0 ? "xs" : "none"} key={name}>
+                    <Box key={name}>
                         <Checkbox
                             checked={selectedApplets.includes(name)}
                             onChange={() => toggleApplet(name)}
-                            mr="xs"
                         />
-                        <Box display="inline" css={{verticalAlign: "top"}}>
+                        <Box display="inline" style={{verticalAlign: "middle"}}>
                             {name}
                         </Box>
                     </Box>

@@ -1,10 +1,13 @@
 import {
     adjustSearchable,
     contextMenuAction,
+    createGlobalContextBinding,
     createSettings,
     createSettingsFolder,
     declare,
     Menu,
+    Priority,
+    ProxiedMenu,
     searchAction,
     settingPatternMatcher,
     UILayer,
@@ -44,7 +47,13 @@ export default declare({
             children: recursiveRootSearchables
                 .get(h)
                 .children // Get rid of the children, making the search not recursive
-                .map(searchable => adjustSearchable(searchable, {children: () => []})),
+                .map(searchable =>
+                    adjustSearchable(searchable, {
+                        children: () => [],
+                        // Make the ID different, such that the searcher notices these are different nodes
+                        ID: ID => `capped-${ID}`,
+                    })
+                ),
         }));
 
         // Return the search, opening and context items data
@@ -54,9 +63,8 @@ export default declare({
                 return rootSearchables.get(h);
             },
             open({context, onClose}) {
-                // TODO: add listener for the folders to update menu on changes
-                const menu = new Menu(context, settingsFolders.get(null));
-                context.open(new UILayer(() => ({menu, onClose})));
+                const menu = new ProxiedMenu(context, h => settingsFolders.get(h));
+                context.open(new UILayer(() => ({menu, onClose}), {path: "./settings"}));
             },
             withSession: session => ({
                 // Retrieve a prioritized menu item to open global and selected applet setting
@@ -65,16 +73,12 @@ export default declare({
                     const settingsData =
                         selectedApplet && manager.getSettingsData(selectedApplet.ID);
                     return [
-                        contextMenuAction.createBinding({
-                            action: null,
-                            preventCountCategory: true,
-                            item: {
-                                priority: 1,
-                                item: createSettingsContextMenuItem({
-                                    settings: settingsFolders.get(h),
-                                    appletSettings: settingsData?.file.settings,
-                                }),
-                            },
+                        createGlobalContextBinding({
+                            priority: [Priority.LOW, Priority.LOW],
+                            item: createSettingsContextMenuItem({
+                                settings: settingsFolders.get(h),
+                                appletSettings: settingsData?.file.settings,
+                            }),
                         }),
                     ];
                 },

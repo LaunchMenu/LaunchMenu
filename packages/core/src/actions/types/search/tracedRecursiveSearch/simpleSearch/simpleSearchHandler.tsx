@@ -124,16 +124,18 @@ export const simpleSearchHandler = createAction({
         /**
          * The search highlight component
          */
-        Highlighter: (({query, children: text}) => {
+        Highlighter: (({query, pattern, children: text}) => {
             const [h] = useDataHook();
             const highlighter = query?.context.settings
                 .get(baseSettings)
                 .search.simpleSearchMethod.get(h).highlight;
             if (!query || !highlighter) return <>{getHooked(text, h)}</>;
+            const searchText = pattern?.(query, h)?.searchText ?? query.search;
             return (
                 <SearchHighlighter
                     query={query}
                     text={text}
+                    searchText={searchText}
                     searchHighlighter={highlighter}
                 />
             );
@@ -165,6 +167,7 @@ function getSimpleSearchMethod(
         query,
         hook
     ) => {
+        const patternMatch = patternMatcher?.(query, hook);
         const priority =
             method.rate?.(
                 {
@@ -173,10 +176,10 @@ function getSimpleSearchMethod(
                     content: content && getHooked(content, hook),
                     tags: tags && getHooked(tags, hook),
                 },
+                patternMatch?.searchText ?? query.search,
                 query,
                 hook
             ) || 0;
-        const patternMatch = patternMatcher?.(query, hook);
 
         const item = getItem();
         return {

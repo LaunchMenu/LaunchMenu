@@ -63,32 +63,6 @@ describe("SearchMenu", () => {
             menu.flushBatch();
             expect(menu.getItems()).toEqual([item]);
         });
-        it("Properly stops previous searches", async () => {
-            const item = createDummySearchableMenuItem({
-                searchDelay: 50,
-                searchPriorities: {something: 1},
-            });
-            menu.addSearchItem(item);
-            const item2 = createDummySearchableMenuItem({
-                searchDelay: 50,
-                searchPriorities: {something: 2, stuff: 3},
-            });
-            menu.addSearchItem(item2);
-
-            menu.setSearch("something");
-            await wait(35);
-            menu.flushBatch();
-            expect(menu.getItems()).toEqual([]);
-
-            menu.setSearch("stuff");
-            await wait(35); // Should interrupt, but not have finished filtering out `item` yet
-            menu.flushBatch();
-            expect(menu.getItems()).toEqual([item]);
-
-            await wait(150); // Should finish filter + started search
-            menu.flushBatch();
-            expect(menu.getItems()).toEqual([item2]);
-        });
     });
     describe("SearchMenu.removeSearchItem -> SearchMenu.setSearch", () => {
         it("Doesn't include removed items in new search results", async () => {

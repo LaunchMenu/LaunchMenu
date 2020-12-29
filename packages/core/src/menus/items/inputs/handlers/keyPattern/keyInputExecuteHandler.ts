@@ -27,6 +27,7 @@ export const keyInputExecuteHandler = createAction({
                                             {
                                                 patternField: binding.field,
                                                 option: pattern.patterns[0],
+                                                insertIfDeleted: true,
                                                 ...binding,
                                             }
                                         ),
