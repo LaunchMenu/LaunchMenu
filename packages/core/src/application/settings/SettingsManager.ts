@@ -63,6 +63,23 @@ export class SettingsManager {
     }
 
     /**
+     * Retrieves the settings data in the manager for all files that have unsaved changes
+     * @param hook A hook to subscribe to changes
+     * @returns The settings data that hasn't been saved
+     */
+    public getAllDirtySettingsData(hook: IDataHook = null): ISettingsData[] {
+        return this.dirtySettingsData.get(hook);
+    }
+
+    /**
+     * Retrieves the settings files that are dirty
+     */
+    protected dirtySettingsData = new DataCacher(h => {
+        const settingsData = this.getAllSettingsData(h);
+        return settingsData.filter(({file}) => file.isDirty(h));
+    });
+
+    /**
      * Retrieves a settings context that contains all settings in this manager
      * @param hook A hook to subscribe to changes
      * @returns The context that includes all settings
@@ -131,15 +148,18 @@ export class SettingsManager {
      * Reloads all the settings
      */
     public async reloadAll(): Promise<void> {
-        await Promise.all(this.getAllSettingsData(null).map(({file}) => file.load()));
+        await Promise.all(
+            this.getAllDirtySettingsData(null).map(({file}) => file.load())
+        );
     }
 
     /**
      * Saves all settings in the session
      */
     public async saveAll(): Promise<void> {
-        // TODO: add observers to all properties of all settings files, and track what files are dirty in order to only save those files.
-        await Promise.all(this.getAllSettingsData(null).map(({file}) => file.save()));
+        await Promise.all(
+            this.getAllDirtySettingsData(null).map(({file}) => file.save())
+        );
     }
 
     // Applet settings management
@@ -151,11 +171,13 @@ export class SettingsManager {
             const destroyed = this.destroyed.get(h);
             const applets = destroyed ? [] : this.appletsSource(h);
 
-            // Remove any old applets // TODO: uncomment once destroy is needed
-            // prevAppletSettings.forEach(({ID, file, appletVersion})=>{
-            //     const used = applets.find(({applet, version})=>applet.ID == ID && version == appletVersion);
-            //     if(!used) file.destroy();
-            // })
+            // Remove any old applets settings
+            prevAppletSettings.forEach(({ID, file, appletVersion}) => {
+                const used = applets.find(
+                    ({applet, version}) => applet.ID == ID && version == appletVersion
+                );
+                if (!used) file.destroy();
+            });
 
             // Obtain the new applet settings
             const appletSettings = applets.flatMap(({applet, version}) => {

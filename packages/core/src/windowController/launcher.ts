@@ -36,6 +36,11 @@ export function launch() {
         };
 
         ipcMain.on("restart", restart);
+        ipcMain.on("shutdown", async () => {
+            await windowController.destroy();
+            app.quit();
+            close();
+        });
 
         if (DEV) {
             // Watch within the windowManager dir for changes, and reload if changes are detected

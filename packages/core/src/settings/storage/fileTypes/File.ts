@@ -9,7 +9,6 @@ import {
 import FS from "fs";
 import Path from "path";
 import mkdirp from "mkdirp";
-import {promisify} from "util";
 import {ISavable} from "./_types/ISavable";
 
 /**

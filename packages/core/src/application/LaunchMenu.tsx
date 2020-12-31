@@ -165,6 +165,13 @@ export class LaunchMenu {
         ipcRenderer.send("restart");
     }
 
+    /**
+     * Fully shutdown LaunchMenu
+     */
+    public shutdown(): void {
+        ipcRenderer.send("shutdown");
+    }
+
     // General getters
     /**
      * Retrieves the key handler that listens for keyboard events and dispatches them

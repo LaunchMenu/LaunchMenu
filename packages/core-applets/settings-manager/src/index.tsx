@@ -1,19 +1,19 @@
 import {
     adjustSearchable,
-    contextMenuAction,
-    createGlobalContextBinding,
+    createBooleanSetting,
+    createKeyPatternSetting,
     createSettings,
     createSettingsFolder,
     declare,
-    Menu,
-    Priority,
+    KeyPattern,
     ProxiedMenu,
     searchAction,
     settingPatternMatcher,
     UILayer,
 } from "@launchmenu/core";
-import {DataCacher, Field} from "model-react";
-import {createSettingsContextMenuItem} from "./createSettingsContextMenuItem";
+import {DataCacher} from "model-react";
+import {createGlobalSettingsBindings} from "./createGlobalSettingsBindings";
+import {setupAutoSaveHandler} from "./setupAutoSaveHandler";
 
 export const info = {
     name: "Settings manager",
@@ -27,7 +27,22 @@ export const settings = createSettings({
     settings: () =>
         createSettingsFolder({
             ...info,
-            children: {},
+            children: {
+                autoSave: createBooleanSetting({name: "Auto save", init: true}),
+                controls: createSettingsFolder({
+                    name: "Controls",
+                    children: {
+                        save: createKeyPatternSetting({
+                            name: "Save settings",
+                            init: new KeyPattern("ctrl+s"),
+                        }),
+                        load: createKeyPatternSetting({
+                            name: "Reload settings",
+                            init: new KeyPattern([]),
+                        }),
+                    },
+                }),
+            },
         }),
 });
 
@@ -35,8 +50,11 @@ export default declare({
     info,
     settings,
     withLM: LM => {
-        // Get data from the settings manager
+        // Setup an auto save handler
         const manager = LM.getSettingsManager();
+        const disposeAutoSave = setupAutoSaveHandler(manager);
+
+        // Get data from the settings manager
         const settingsFolders = new DataCacher(h => {
             return manager.getAllSettingsData(h).map(settings => settings.file.settings);
         });
@@ -72,17 +90,20 @@ export default declare({
                     const selectedApplet = session.selectedApplet.get(h);
                     const settingsData =
                         selectedApplet && manager.getSettingsData(selectedApplet.ID);
-                    return [
-                        createGlobalContextBinding({
-                            priority: [Priority.LOW, Priority.LOW],
-                            item: createSettingsContextMenuItem({
-                                settings: settingsFolders.get(h),
-                                appletSettings: settingsData?.file.settings,
-                            }),
-                        }),
-                    ];
+                    return createGlobalSettingsBindings({
+                        settingsFolder: settingsFolders.get(h),
+                        selectedAppletSettingsFolder: settingsData?.file.settings,
+                        settingsManager: manager,
+                        fileControls: !manager
+                            .getSettingsContext(h)
+                            .get(settings)
+                            .autoSave.get(h),
+                    });
                 },
             }),
+            onDispose() {
+                disposeAutoSave();
+            },
         };
     },
 });

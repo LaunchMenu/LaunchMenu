@@ -100,6 +100,7 @@ export function setupContextMenuHandler(
             // Open the menu if requested
             if (isMenuOpenEvent) {
                 const items = contextData.items;
+
                 if (items && items.length > 0 && !contextData.menu) {
                     const menu = (contextData.menu = new PrioritizedMenu(ioContext, {
                         sortCategories: sortContextCategories,
@@ -107,9 +108,8 @@ export function setupContextMenuHandler(
                     menu.addItems(items);
 
                     // Dynamically load the contextMenuLayer to deal with a dependency cycle (contextMenuLayer -> UILayer -> createMenuKeyHandler -> setupContextMenuHandler)
-                    const {
-                        ContextMenuLayer,
-                    } = require("../../../../uiLayers/types/context/ContextMenuLayer");
+                    const ContextMenuLayer: typeof import("../../../../uiLayers/types/context/ContextMenuLayer").ContextMenuLayer = require("../../../../uiLayers/types/context/ContextMenuLayer")
+                        .ContextMenuLayer;
                     contextData.close = await ioContext.open(
                         new ContextMenuLayer({
                             menu,

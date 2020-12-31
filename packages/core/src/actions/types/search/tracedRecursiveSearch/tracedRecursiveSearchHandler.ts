@@ -1,6 +1,6 @@
-import {getHooked} from "../../../../utils/subscribables/getHooked";
 import {createAction} from "../../../createAction";
 import {IActionBinding} from "../../../_types/IActionBinding";
+import {IActionTarget} from "../../../_types/IActionTarget";
 import {identityAction} from "../../identity/identityAction";
 import {getSearchIdentity, searchAction} from "../searchAction";
 import {IMenuSearchable} from "../_types/IMenuSearchable";
@@ -22,63 +22,14 @@ export const tracedRecursiveSearchHandler = createAction({
              * @param getTrace Retrieves the trace so far
              * @returns The searchables
              */
-            getSearchables: (getTrace: () => ISearchTraceNode[]): IMenuSearchable[] => {
-                return searchers.map(
-                    ({itemID, searchable: search, children, showChild}) => ({
-                        ID: search.ID,
-                        async search(query, hook, executer) {
-                            const {
-                                item,
-                                patternMatch,
-                                children: originalChildren = [],
-                            } = await search.search(query, hook, executer);
-
-                            // Get the trace for this item
-                            const getExtendedTrace = () => {
-                                const item = getSearchIdentity(
-                                    itemID,
-                                    query,
-                                    targets,
-                                    hook
-                                );
-                                return item
-                                    ? [...getTrace(), {item, showChild}]
-                                    : getTrace();
-                            };
-
-                            // Recursively retrieve the child searchers
-                            const childSearches =
-                                (children &&
-                                    tracedRecursiveSearchHandler
-                                        .get(getHooked(children, hook))
-                                        .getSearchables(getExtendedTrace)) ??
-                                [];
-
-                            // Get the extra bindings for the item
-                            const locationBindings = (bindings: IActionBinding[]) => {
-                                const trace = getExtendedTrace();
-                                if (trace.length < 2) return bindings;
-                                return [
-                                    ...bindings,
-                                    openAtTraceAction.createBinding(trace),
-                                    openInParentAction.createBinding(trace),
-                                ];
-                            };
-
-                            return {
-                                item: item
-                                    ? identityAction.copyPrioritizedItem(
-                                          item,
-                                          locationBindings
-                                      )
-                                    : item,
-                                patternMatch,
-                                children: [...originalChildren, ...childSearches],
-                            };
-                        },
-                    })
-                );
-            },
+            getSearchables: (getTrace: () => ISearchTraceNode[]): IMenuSearchable[] =>
+                searchers.map(data =>
+                    getMenuSearchableFromTracedRecursiveSearchData(
+                        getTrace,
+                        data,
+                        targets
+                    )
+                ),
         };
         return {
             result,
@@ -88,3 +39,70 @@ export const tracedRecursiveSearchHandler = createAction({
         };
     },
 });
+
+/**
+ * Retrieves a standard searchable given a trace retriever and
+ * @param getTrace THe trace retriever
+ * @param searchData The searchable data
+ * @param targets The list of action targets that this searchable was obtained from
+ * @returns The menu searchable
+ */
+export function getMenuSearchableFromTracedRecursiveSearchData(
+    getTrace: () => ISearchTraceNode[],
+    searchData: ITracedRecursiveSearchData,
+    targets: IActionTarget[]
+): IMenuSearchable {
+    if ("itemID" in searchData) {
+        const {itemID, searchable: search, children, showChild} = searchData;
+        return {
+            ID: search.ID,
+            async search(query, hook, executer) {
+                const {
+                    item,
+                    patternMatch,
+                    children: originalChildren = [],
+                } = await search.search(query, hook, executer);
+
+                // Get the trace for this item
+                const getExtendedTrace = () => {
+                    const item = getSearchIdentity(itemID, query, targets, hook);
+                    return item ? [...getTrace(), {item, showChild}] : getTrace();
+                };
+
+                // Recursively retrieve the child searchers
+                // TODO: consider also adding other search actions, without the trace data
+                const childSearches =
+                    (children &&
+                        tracedRecursiveSearchHandler
+                            .get(
+                                children instanceof Function
+                                    ? children(query, hook)
+                                    : children
+                            )
+                            .getSearchables(getExtendedTrace)) ??
+                    [];
+
+                // Get the extra bindings for the item
+                const locationBindings = (bindings: IActionBinding[]) => {
+                    const trace = getExtendedTrace();
+                    if (trace.length < 2) return bindings;
+                    return [
+                        ...bindings,
+                        openAtTraceAction.createBinding(trace),
+                        openInParentAction.createBinding(trace),
+                    ];
+                };
+
+                return {
+                    item: item
+                        ? identityAction.copyPrioritizedItem(item, locationBindings)
+                        : item,
+                    patternMatch,
+                    children: [...originalChildren, ...childSearches],
+                };
+            },
+        };
+    } else {
+        return searchData(getTrace);
+    }
+}

@@ -1,4 +1,4 @@
-import {ActionState, Field, getExceptions, isLoading} from "model-react";
+import {ActionState, Field, getExceptions, IDataHook, isLoading} from "model-react";
 import {IFieldsTree} from "./_types/IFieldsTree";
 import FS from "fs";
 import {IJSON} from "../../../../_types/IJSON";
@@ -6,14 +6,23 @@ import {ExtendedObject} from "../../../../utils/ExtendedObject";
 import mkdirp from "mkdirp";
 import Path from "path";
 import {ISavable} from "../_types/ISavable";
+import {IFieldFileChangeListener} from "./_types/IFieldsFileChangeListener";
+import {Observer} from "../../../../utils/modelReact/Observer";
+import {IField} from "../../../../_types/IField";
+import {ISerializeField} from "./_types/ISerializedField";
 
 /**
  * A file that stores the value of the fields
  */
 export class FieldsFile<F extends IFieldsTree> implements ISavable {
     protected filePath: string;
+
     protected loading = new ActionState<void>();
     protected loadTime: number = 0;
+    protected dirty = new Field(false);
+
+    protected observers: Observer<any>[] = [];
+    protected listeners: IFieldFileChangeListener[] = [];
 
     // The fields to interact with (equivalent to the input fields)
     public fields: F;
@@ -30,6 +39,7 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
     }) {
         this.filePath = data.path;
         this.fields = data.fields;
+        this.setupFieldListeners(this.fields);
     }
 
     /**
@@ -68,7 +78,10 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
                     "utf8",
                     err => {
                         if (err) rej(err);
-                        else res();
+                        else {
+                            if (this.dirty.get(null)) this.dirty.set(false);
+                            res();
+                        }
                     }
                 );
             } catch (e) {
@@ -106,6 +119,7 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
                         this.loadTime = Date.now();
                         try {
                             this.setData(JSON.parse(data));
+                            if (this.dirty.get(null)) this.dirty.set(false);
                             res();
                         } catch (e) {
                             rej(e);
@@ -140,12 +154,12 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
      */
     protected encode(data: IFieldsTree): IJSON {
         return ExtendedObject.map(data, f => {
-            if ("getSerialized" in f && f.getSerialized instanceof Function) {
+            if (isSerializeField(f)) {
                 return f.getSerialized(null);
-            } else if ("get" in f && f.get instanceof Function) {
+            } else if (isField(f)) {
                 return f.get(null);
             } else {
-                return this.encode(f as IFieldsTree);
+                return this.encode(f);
             }
         });
     }
@@ -178,4 +192,99 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
             }
         });
     }
+
+    // Change listener setup
+    /**
+     * Registers a listener that gets called when any of the fields have been updated
+     * @param onChange The listener to be registered
+     */
+    public addChangeListener(onChange: IFieldFileChangeListener): void {
+        if (!this.listeners.includes(onChange)) this.listeners.push(onChange);
+    }
+
+    /**
+     * Removes a listener that was listening for field changes
+     * @param onChange The listener to be removed
+     */
+    public removeChangeListener(onChange: IFieldFileChangeListener): void {
+        const index = this.listeners.indexOf(onChange);
+        if (index != -1) this.listeners.splice(index, 1);
+    }
+
+    /**
+     * Sets up all the observers to listen for field changes
+     * @param data The fields tree to setup listeners for
+     * @param path The path so far
+     */
+    protected setupFieldListeners(data: IFieldsTree, path: string = ""): void {
+        Object.entries(data).forEach(([key, f]) => {
+            const childPath = path ? `${path}.${key}` : key;
+            if (isSerializeField(f)) {
+                this.observers.push(
+                    new Observer(h => f.getSerialized(h)).listen(() =>
+                        this.emitChange(f, childPath)
+                    )
+                );
+            } else if (isField(f)) {
+                this.observers.push(
+                    new Observer(h => f.get(h)).listen(() =>
+                        this.emitChange(f, childPath)
+                    )
+                );
+            } else {
+                this.setupFieldListeners(f);
+            }
+        });
+    }
+
+    /**
+     * Emits a change event
+     * @param field The field that changed
+     * @param path The path of the field that changed
+     */
+    protected emitChange(
+        field: ISerializeField<IJSON> | IField<IJSON>,
+        path: string
+    ): void {
+        if (!this.dirty.get(null)) this.dirty.set(true);
+        this.listeners.forEach(listener => listener(field, path));
+    }
+
+    /**
+     * Retrieves whether there are any changes that aren't synced to the file on disk
+     * @param hook The hook to subscribe to changes
+     * @returns Whether there are any unsaved changes
+     */
+    public isDirty(hook: IDataHook = null): boolean {
+        return this.dirty.get(hook);
+    }
+
+    /**
+     * Disposes all of the field listeners
+     */
+    public destroy(): void {
+        this.observers.forEach(observer => observer.destroy());
+    }
+}
+
+/**
+ * Checks whether the given data is a serialize field
+ * @param data The data to check
+ * @returns Whether it's a serialize field
+ */
+function isSerializeField(
+    data: IFieldsTree | IField<IJSON> | ISerializeField<IJSON>
+): data is ISerializeField<IJSON> {
+    return "getSerialized" in data && data.getSerialized instanceof Function;
+}
+
+/**
+ * Checks whether the given data is a field
+ * @param data The data to check
+ * @returns Whether it's a field
+ */
+function isField(
+    data: IFieldsTree | IField<IJSON> | ISerializeField<IJSON>
+): data is IField<IJSON> {
+    return "get" in data && data.get instanceof Function;
 }

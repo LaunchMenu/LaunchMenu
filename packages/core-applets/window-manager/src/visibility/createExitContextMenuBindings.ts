@@ -47,7 +47,7 @@ export function createExitContextMenuBinding(
                 priority: 1,
                 item: createStandardMenuItem({
                     name: "Shutdown",
-                    onExecute: close,
+                    onExecute: () => LM.shutdown(),
                     shortcut: context =>
                         context.settings.get(settings).controls.shutdown.get(),
                 }),

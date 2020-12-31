@@ -34,7 +34,8 @@
     "peerDependencies": {
         "@launchmenu/core": "^0.0.5-alpha.8",
         "model-react": "^3.0.3",
-        "react": "^17.0.0"
+        "react": "^17.0.0",
+        "uuid": "^8.2.0"
     },
     "devDependencies": {
         "@launchmenu/core": "^0.0.5-alpha.9",

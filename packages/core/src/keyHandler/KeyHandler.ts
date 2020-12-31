@@ -3,7 +3,6 @@ import {IKeyHandlerTarget} from "./_types/IKeyHandlerTarget";
 import {IKey} from "./_types/IKey";
 import {KeyEvent} from "./KeyEvent";
 import {keyboardLayout} from "./keyboardLayouts/qwerty";
-import {ipcRenderer} from "electron";
 
 /**
  * A key handler class
