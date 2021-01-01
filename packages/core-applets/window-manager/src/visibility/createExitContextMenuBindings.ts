@@ -3,6 +3,8 @@ import {
     createStandardMenuItem,
     IActionBinding,
     LaunchMenu,
+    LMSession,
+    Priority,
 } from "@launchmenu/core";
 import {settings} from "../settings";
 import {windowManagementFolderHandler} from "./windowManagementFolderHandler";
@@ -20,10 +22,14 @@ export function createExitContextMenuBinding(
     return [
         createGlobalContextBinding(
             {
-                priority: 3,
+                priority: Priority.HIGH,
                 item: createStandardMenuItem({
                     name: "Exit",
-                    onExecute: hideWindow,
+                    onExecute: () => {
+                        const session = LM.getSessionManager().getSelectedSession();
+                        if (session) resetSession(session);
+                        hideWindow();
+                    },
                     shortcut: context =>
                         context.settings.get(settings).controls.exit.get(),
                 }),
@@ -32,7 +38,19 @@ export function createExitContextMenuBinding(
         ),
         createGlobalContextBinding(
             {
-                priority: 1,
+                priority: Priority.MEDIUM,
+                item: createStandardMenuItem({
+                    name: "Exit keep state",
+                    onExecute: hideWindow,
+                    shortcut: context =>
+                        context.settings.get(settings).controls.exitState.get(),
+                }),
+            },
+            windowManagementFolderHandler
+        ),
+        createGlobalContextBinding(
+            {
+                priority: Priority.LOW,
                 item: createStandardMenuItem({
                     name: "Restart",
                     onExecute: () => LM.restart(),
@@ -44,7 +62,7 @@ export function createExitContextMenuBinding(
         ),
         createGlobalContextBinding(
             {
-                priority: 1,
+                priority: [Priority.LOW, Priority.LOW],
                 item: createStandardMenuItem({
                     name: "Shutdown",
                     onExecute: () => LM.shutdown(),
@@ -55,4 +73,15 @@ export function createExitContextMenuBinding(
             windowManagementFolderHandler
         ),
     ];
+}
+
+/**
+ * Resets a given LM session
+ * @param session The session to be reset
+ */
+export async function resetSession(session: LMSession): Promise<void> {
+    const {context} = session;
+    const layers = context.getUI().slice(1).reverse();
+    for (let layer of layers) await context.close(layer);
+    session.searchField.set("");
 }
