@@ -1,12 +1,14 @@
 import {IDataHook, IDataRetriever} from "model-react";
 import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
+import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {DataCacher} from "../../utils/modelReact/DataCacher";
 import {TRequired} from "../../_types/TRequired";
 import {isItemSelectable} from "../items/isItemSelectable";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {AbstractMenu} from "./AbstractMenu";
+import {createCategoryGetter} from "./standardConfig/createCategoryGetter";
 import {IMenuCategoryConfig} from "./_types/IMenuCategoryConfig";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 
@@ -34,12 +36,14 @@ export class ProxiedMenu extends AbstractMenu {
     ) {
         super(context);
         this.itemSource = itemSource;
+        const menuSettings = context.settings.get(baseSettings).menu;
         this.categoryConfig = {
-            getCategory: config?.getCategory || getCategoryAction.getCategory,
+            getCategory: config?.getCategory || createCategoryGetter(context),
             sortCategories:
                 config?.sortCategories ||
                 (categories => categories.map(({category}) => category)),
-            maxCategoryItemCount: config?.maxCategoryItemCount || Infinity,
+            maxCategoryItemCount:
+                config?.maxCategoryItemCount ?? menuSettings.maxCategorySize.get(),
         };
     }
 

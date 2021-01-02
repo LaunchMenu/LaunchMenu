@@ -7,6 +7,8 @@ import {LFC} from "../../_types/LFC";
 import {useTheme} from "../../styling/theming/ThemeContext";
 import {getHighlightThemeStyle} from "../../styling/theming/highlighting/getHighlightThemeStyle";
 import {useDataHook} from "../../utils/modelReact/useDataHook";
+import {useIOContext} from "../../context/react/useIOContext";
+import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
 
 /**
  * A standard simple view for a menu
@@ -14,11 +16,24 @@ import {useDataHook} from "../../utils/modelReact/useDataHook";
 export const MenuView: LFC<IMenuViewProps> = ({
     menu,
     onExecute,
-    cursorItemScrollPadding = 50,
-    cursorItemScrollDuration = {far: 200, near: 70},
+    cursorItemScrollPadding,
+    cursorItemScrollDuration,
     smoothScrollDuration,
 }) => {
+    // Default settings
     const [h] = useDataHook();
+    const context = useIOContext();
+    const menuSettings = useMemo(() => context?.settings.get(baseSettings).menu, [
+        context,
+    ]);
+    const normalizedCursorItemScrollPadding =
+        cursorItemScrollPadding ?? menuSettings?.scrollPadding.get() ?? 50;
+    const normalizedCursorItemScrollDuration = cursorItemScrollDuration ?? {
+        far: menuSettings?.scrollWrapSpeed.get() ?? 200,
+        near: menuSettings?.scrollSpeed.get() ?? 70,
+    };
+
+    // Menu data
     const items = menu.getItems(h);
     const selectedItems = menu.getSelected(h);
     const cursorItem = menu.getCursor(h);
@@ -42,8 +57,8 @@ export const MenuView: LFC<IMenuViewProps> = ({
 
             // Calculate the top and bottom item positions in parent (with padding)
             const itemPos = itemPageOffset - menuPageOffset + scrollTop;
-            const itemTop = itemPos - cursorItemScrollPadding;
-            const itemBottom = itemPos + itemHeight + cursorItemScrollPadding;
+            const itemTop = itemPos - normalizedCursorItemScrollPadding;
+            const itemBottom = itemPos + itemHeight + normalizedCursorItemScrollPadding;
 
             // Scroll to the item if needed
             let scrollTarget: number | undefined;
@@ -55,7 +70,7 @@ export const MenuView: LFC<IMenuViewProps> = ({
                 const dist = Math.abs(scrollTop - scrollTarget);
                 setScroll(
                     {top: scrollTarget},
-                    cursorItemScrollDuration[dist > 200 ? "far" : "near"]
+                    normalizedCursorItemScrollDuration[dist > 200 ? "far" : "near"]
                 );
             }
         }

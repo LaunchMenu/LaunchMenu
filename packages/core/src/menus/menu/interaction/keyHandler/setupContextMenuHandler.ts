@@ -4,7 +4,7 @@ import {IKeyEventListenerObject} from "../../../../keyHandler/_types/IKeyEventLi
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
 import {PrioritizedMenu} from "../../PrioritizedMenu";
-import {sortContextCategories} from "../../../../actions/contextMenuAction/sortContextCategories";
+import {createContextCategoriesSorter} from "../../../../actions/contextMenuAction/createContextCategoriesSorter";
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {getHooked} from "../../../../utils/subscribables/getHooked";
@@ -103,7 +103,7 @@ export function setupContextMenuHandler(
 
                 if (items && items.length > 0 && !contextData.menu) {
                     const menu = (contextData.menu = new PrioritizedMenu(ioContext, {
-                        sortCategories: sortContextCategories,
+                        sortCategories: createContextCategoriesSorter(ioContext),
                     }));
                     menu.addItems(items);
 

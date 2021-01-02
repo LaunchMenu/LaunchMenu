@@ -6,16 +6,17 @@ import {constGetter} from "../../../utils/constGetter";
 import {createContentControlsSettingsFolder} from "./controls/createContentControlsSettingsFolder";
 import {
     createFieldControlsSettingsFolder,
-    fieldControlsFolderCategories,
+    getFieldControlsFolderCategories,
 } from "./controls/createFieldControlsSettingsFolder";
 import {createMenuControlsSettingsFolder} from "./controls/createMenuControlsSettingsFolder";
-import {createSearchSettingsFolder} from "./createSearchSettingsFolder";
+import {createMenuSettingsFolder} from "./general/createMenuSettingsFolder";
+import {createSearchSettingsFolder} from "./general/createSearchSettingsFolder";
 
 /**
  * Categories in the base settings
  */
 export const settingsCategories = constGetter(() => ({
-    field: fieldControlsFolderCategories(),
+    field: getFieldControlsFolderCategories(),
 }));
 
 /**
@@ -49,6 +50,7 @@ export const baseSettings = createSettings({
                     },
                 }),
                 search: createSearchSettingsFolder(),
+                menu: createMenuSettingsFolder(),
             },
         }),
 });

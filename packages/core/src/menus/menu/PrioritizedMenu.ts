@@ -5,7 +5,7 @@ import {IPrioritizedMenuCategoryConfig} from "./_types/IAsyncMenuCategoryConfig"
 import {SortedList} from "../../utils/SortedList";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
 import {isItemSelectable} from "../items/isItemSelectable";
-import {sortPrioritizedCategories} from "./SortPrioritizedCategories";
+import {createPrioritizedCategoriesSorter} from "./standardConfig/createPrioritizedCategoriesSorter";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 import {AbstractMenu} from "./AbstractMenu";
 import {IIOContext} from "../../context/_types/IIOContext";
@@ -14,6 +14,8 @@ import {hasHigherOrEqualPriority} from "./priority/hasHigherOrEqualPriority";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
+import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
+import {createCategoryGetter} from "./standardConfig/createCategoryGetter";
 
 type CategoryData = {
     items: SortedList<IPrioritizedMenuItem>;
@@ -85,14 +87,20 @@ export class PrioritizedMenu extends AbstractMenu {
         if (!(items instanceof Array)) categoryConfig = items;
 
         // Create the category config
+        const menuSettings = context.settings.get(baseSettings).menu;
         this.categoryConfig = {
-            getCategory: categoryConfig?.getCategory || getCategoryAction.getCategory,
-            sortCategories: categoryConfig?.sortCategories || sortPrioritizedCategories,
-            maxCategoryItemCount: categoryConfig?.maxCategoryItemCount || Infinity,
+            getCategory: categoryConfig?.getCategory || createCategoryGetter(context),
+            sortCategories:
+                categoryConfig?.sortCategories ||
+                createPrioritizedCategoriesSorter(context),
+            maxCategoryItemCount:
+                categoryConfig?.maxCategoryItemCount ??
+                menuSettings.maxCategorySize.get(),
             batchInterval: categoryConfig?.batchInterval || 100,
             isLoading: categoryConfig?.isLoading || new Field(false),
         };
 
+        (window as any).menuSettings = menuSettings;
         if (items instanceof Array) this.addItems(items);
     }
 
@@ -114,27 +122,35 @@ export class PrioritizedMenu extends AbstractMenu {
 
         // Create a hook to move the item when the category is updated
         const [categoryChangeCallback, destroyHook] = createCallbackHook(() => {
-            const inMenu = this.categoriesRaw[categoryIndex]?.items.find(item) != -1;
-            const categoryChanged = category != this.categoryConfig.getCategory(item);
-            // In addition, updating the category is only supported if the item provided an ID
-            if (inMenu && item.ID && categoryChanged) {
-                this.removeItem(
-                    item as IPrioritizedMenuItem & {id: number | string},
-                    category
+            const categoryData = this.categoriesRaw.find(
+                ({category: c}) => c == category
+            );
+            // const inMenu = categoryData?.items.find(item) != -1;
+            const inMenu = categoryData?.items
+                .get()
+                .find(
+                    testItem => testItem == item || (item.ID && item.ID == testItem.ID)
                 );
-                this.addItem(item);
-            } else this.categoryConfig.getCategory(item, categoryChangeCallback);
+            if (inMenu && categoryData?.batch?.remove.includes(inMenu)) return;
+
+            const categoryChanged = category != this.categoryConfig.getCategory(item);
+            console.log(inMenu, item, category, this.categoryConfig.getCategory(item));
+            // In addition, updating the category is only supported if the item provided an ID
+            if (categoryChanged) {
+                this.removeItem(item, category);
+                if (inMenu) this.addItem(item);
+            } else if (inMenu)
+                this.categoryConfig.getCategory(item, categoryChangeCallback);
         }); // TODO: store the destroyHook somewhere and call it when item gets removed
 
         // Obtain the category
         const category = this.categoryConfig.getCategory(item, categoryChangeCallback);
-        let categoryIndex = this.categoriesRaw.findIndex(
+        const categoryIndex = this.categoriesRaw.findIndex(
             ({category: c}) => c == category
         );
 
         // Add the item to a new or existing category
         if (categoryIndex == -1) {
-            categoryIndex = this.categoriesRaw.length;
             this.categoriesRaw.push({
                 category,
                 items: createSortedList(this.menuChangeEvents),
@@ -186,6 +202,7 @@ export class PrioritizedMenu extends AbstractMenu {
 
         // Add the item to a new or existing category
         if (categoryIndex == -1) {
+            // TODO: Can we just ignore this case?
             this.categoriesRaw.push({
                 category,
                 items: createSortedList(this.menuChangeEvents),
@@ -235,12 +252,12 @@ export class PrioritizedMenu extends AbstractMenu {
                 const adds = categoryData.batch.add;
                 const removes = categoryData.batch.remove;
 
-                const keys = {} as {[key: string]: boolean};
-                adds.forEach(({ID: id}) => id && (keys[id] = true));
-                removes.forEach(({ID: id}) => id && (keys[id] = true));
+                const filterOutKeys = {} as {[key: string]: boolean};
+                adds.forEach(({ID: id}) => id && (filterOutKeys[id] = true));
+                removes.forEach(({ID: id}) => id && (filterOutKeys[id] = true));
                 categoryData.items.filter(({ID: id, item}) =>
                     id
-                        ? !keys[id]
+                        ? !filterOutKeys[id]
                         : !(
                               adds.find(({item: it}) => item == it) ||
                               removes.find(({item: it}) => item == it)

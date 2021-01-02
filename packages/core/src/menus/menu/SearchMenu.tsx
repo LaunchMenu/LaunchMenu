@@ -9,10 +9,10 @@ import {IIOContext} from "../../context/_types/IIOContext";
 import {IPrioritizedMenuCategoryConfig} from "./_types/IAsyncMenuCategoryConfig";
 import {InstantOpenTransition} from "../../components/context/stacks/transitions/open/InstantOpenTransition";
 import {InstantCloseTransition} from "../../components/context/stacks/transitions/close/InstantCloseTransition";
-import {IUUID} from "../../_types/IUUID";
 import {IPatternMatch} from "../../utils/searchExecuter/_types/IPatternMatch";
 import {searchAction} from "../../actions/types/search/searchAction";
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
+import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
 
 /**
  * A menu that can be used to perform a search on a collection of items
@@ -28,7 +28,7 @@ export class SearchMenu extends PrioritizedMenu {
             }),
         },
         onAdd: (item: IPrioritizedMenuItem) => this.addItem(item),
-        onRemove: (item: IPrioritizedMenuItem & {id: IUUID}) => this.removeItem(item),
+        onRemove: (item: IPrioritizedMenuItem) => this.removeItem(item),
     });
 
     /**
@@ -45,6 +45,9 @@ export class SearchMenu extends PrioritizedMenu {
     ) {
         super(context, {
             ...config,
+            maxCategoryItemCount: context.settings
+                .get(baseSettings)
+                .menu.maxSearchCategorySize.get(),
             // Forward the loading state from the search executer
             isLoading: {
                 get: hook => {
