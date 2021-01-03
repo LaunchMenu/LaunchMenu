@@ -47,6 +47,15 @@ export const MenuItemFrame: FC<{
             zIndex={1}
             position="relative">
             <BackgroundColorProvider color={mainBgColor}>
+                {connectBgPrevious && (
+                    <Box
+                        marginLeft="medium"
+                        marginRight="medium"
+                        borderTopColor="bgSecondary"
+                        borderTopStyle="solid"
+                        borderWidth={1}
+                    />
+                )}
                 <Box
                     background={mainBgColor}
                     marginLeft="medium"

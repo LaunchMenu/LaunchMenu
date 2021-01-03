@@ -14,8 +14,18 @@ export function createContentKeyHandler(
     content: IContent,
     context: IIOContext
 ): IKeyEventListener {
-    const settings = context.settings.get(baseSettings).controls.content;
+    const controlsSettings = context.settings.get(baseSettings).controls.content;
+    const generalSettings = context.settings.get(baseSettings).content;
+
     return e => {
-        if (handleContentScrollInput(e, content, settings)) return true;
+        if (
+            handleContentScrollInput(
+                e,
+                content,
+                controlsSettings,
+                generalSettings.scrollSpeed.get()
+            )
+        )
+            return true;
     };
 }

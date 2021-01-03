@@ -8,6 +8,8 @@ import {
     getFieldControlsFolderCategories,
 } from "./controls/createFieldControlsSettingsFolder";
 import {createMenuControlsSettingsFolder} from "./controls/createMenuControlsSettingsFolder";
+import {createContentSettingsFolder} from "./general/createContentSettingsFolder";
+import {createFieldSettingsFolder} from "./general/createFieldSettingsFolder";
 import {createMenuSettingsFolder} from "./general/createMenuSettingsFolder";
 import {createSearchSettingsFolder} from "./general/createSearchSettingsFolder";
 
@@ -49,6 +51,8 @@ export function createBaseSettingsFolder() {
             }),
             search: createSearchSettingsFolder(),
             menu: createMenuSettingsFolder(),
+            field: createFieldSettingsFolder(),
+            content: createContentSettingsFolder(),
         },
     });
 }

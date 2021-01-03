@@ -3,13 +3,11 @@ import {IIOContext} from "../../../context/_types/IIOContext";
 import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
 import {ProxiedMenu} from "../../../menus/menu/ProxiedMenu";
 import {UILayer} from "../../../uiLayers/standardUILayer/UILayer";
-import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {waitFor} from "../../../utils/modelReact/waitFor";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {createContextAction} from "../../contextMenuAction/createContextAction";
 import {executeAction} from "./executeAction";
 import {sequentialExecuteHandler} from "./sequentialExecuteHandler";
-import {IExecutable} from "./_types/IExecutable";
 import {IOpenMenuExecuteData} from "./_types/IOpenMenuExecuteData";
 
 /**
