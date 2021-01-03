@@ -82,8 +82,15 @@ export const openMenuExecuteHandler = createContextAction({
                         (context, close) => ({
                             menu,
                             onExecute: items => {
-                                if (containsClosingItem(data, items)) close();
-                                callback?.();
+                                if (containsClosingItem(data, items)) {
+                                    close();
+                                    /*
+                                        TODO: always execute callback, but add data for whether to close the menu
+                                        in order to generalize it. 
+                                        Rethink this system in general since it's quite confusing atm.
+                                     */
+                                    callback?.();
+                                }
                             },
                             onClose: res,
                         }),

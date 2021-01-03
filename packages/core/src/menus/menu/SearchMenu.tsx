@@ -1,18 +1,18 @@
 import React from "react";
-import {PrioritizedMenu} from "./PrioritizedMenu";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {Field, IDataHook} from "model-react";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
 import {IQuery} from "./_types/IQuery";
 import {MenuView} from "../../components/menu/MenuView";
 import {IIOContext} from "../../context/_types/IIOContext";
-import {IPrioritizedMenuCategoryConfig} from "./_types/IAsyncMenuCategoryConfig";
 import {InstantOpenTransition} from "../../components/context/stacks/transitions/open/InstantOpenTransition";
 import {InstantCloseTransition} from "../../components/context/stacks/transitions/close/InstantCloseTransition";
 import {IPatternMatch} from "../../utils/searchExecuter/_types/IPatternMatch";
 import {searchAction} from "../../actions/types/search/searchAction";
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
+import {PrioritizedMenu} from "./PrioritizedMenu";
+import {IPrioritizedMenuConfig} from "./_types/IPrioritizedMenuConfig";
 
 /**
  * A menu that can be used to perform a search on a collection of items
@@ -38,16 +38,14 @@ export class SearchMenu extends PrioritizedMenu {
      */
     public constructor(
         context: IIOContext,
-        config?: IPrioritizedMenuCategoryConfig & {
+        config?: IPrioritizedMenuConfig & {
             /** Whether to show all items when the set search is empty (defaults to false) */
             showAllOnEmptySearch?: boolean;
         }
     ) {
         super(context, {
             ...config,
-            maxCategoryItemCount: context.settings
-                .get(baseSettings)
-                .menu.maxSearchCategorySize.get(),
+            maxItemCount: context.settings.get(baseSettings).menu.maxSearchMenuSize.get(),
             // Forward the loading state from the search executer
             isLoading: {
                 get: hook => {

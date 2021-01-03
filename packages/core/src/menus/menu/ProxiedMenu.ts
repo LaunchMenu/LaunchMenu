@@ -43,7 +43,7 @@ export class ProxiedMenu extends AbstractMenu {
                 config?.sortCategories ||
                 (categories => categories.map(({category}) => category)),
             maxCategoryItemCount:
-                config?.maxCategoryItemCount ?? menuSettings.maxCategorySize.get(),
+                config?.maxCategoryItemCount ?? menuSettings.maxMenuSize.get(),
         };
     }
 

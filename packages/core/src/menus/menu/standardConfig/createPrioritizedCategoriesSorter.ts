@@ -1,4 +1,3 @@
-import {SortedList} from "../../../utils/SortedList";
 import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
 import {hasHigherOrEqualPriority} from "../priority/hasHigherOrEqualPriority";
 import {ICategory} from "../../../actions/types/category/_types/ICategory";
@@ -21,7 +20,7 @@ export function createPrioritizedCategoriesSorter(
     (
         categories: {
             category: ICategory | undefined;
-            items: SortedList<IPrioritizedMenuItem>;
+            items: {item: IPrioritizedMenuItem; index: number}[];
         }[]
     ): (ICategory | undefined)[];
 } {
@@ -30,8 +29,7 @@ export function createPrioritizedCategoriesSorter(
         const sortType = menuSettings.categoryOrder.get();
         const categoryData = categories
             .filter(({category}) => category)
-            .map(({category, items: itemsGetter}) => {
-                const items = itemsGetter.get();
+            .map(({category, items}) => {
                 return {
                     category,
                     priority:
@@ -41,10 +39,12 @@ export function createPrioritizedCategoriesSorter(
                                 : sortType == "middle"
                                 ? Math.floor(items.length / 2)
                                 : items.length - 1
-                        ]?.priority || 0,
+                        ]?.index ?? 0,
                 };
             });
-        categoryData.sort((a, b) => -hasHigherOrEqualPriority(a.priority, b.priority));
+        categoryData.sort((a, b) =>
+            hasHigherOrEqualPriority(a.priority, b.priority) ? 1 : -1
+        );
         return [undefined, ...categoryData.map(({category}) => category)];
     };
 }

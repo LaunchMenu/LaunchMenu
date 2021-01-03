@@ -1,107 +1,110 @@
-import {IDataHook, Field} from "model-react";
-import {IMenuItem} from "../items/_types/IMenuItem";
-import {TRequired} from "../../_types/TRequired";
-import {IPrioritizedMenuCategoryConfig} from "./_types/IAsyncMenuCategoryConfig";
-import {SortedList} from "../../utils/SortedList";
-import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
-import {isItemSelectable} from "../items/isItemSelectable";
-import {createPrioritizedCategoriesSorter} from "./standardConfig/createPrioritizedCategoriesSorter";
-import {IMenuCategoryData} from "./_types/IMenuCategoryData";
-import {AbstractMenu} from "./AbstractMenu";
+import {Field, IDataHook} from "model-react";
+import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
+import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
+import {SortedList} from "../../utils/SortedList";
+import {getHooked} from "../../utils/subscribables/getHooked";
+import {IUUID} from "../../_types/IUUID";
+import {TRequired} from "../../_types/TRequired";
+import {isItemSelectable} from "../items/isItemSelectable";
+import {IMenuItem} from "../items/_types/IMenuItem";
+import {AbstractMenu} from "./AbstractMenu";
+import {MenuItemCategorizer} from "./MenuItemCategorizer";
 import {hasHigherOrEqualPriority} from "./priority/hasHigherOrEqualPriority";
-import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
-import {ICategory} from "../../actions/types/category/_types/ICategory";
-import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
-import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
+import {Priority} from "./priority/Priority";
 import {createCategoryGetter} from "./standardConfig/createCategoryGetter";
+import {createPrioritizedCategoriesSorter} from "./standardConfig/createPrioritizedCategoriesSorter";
+import {IMenuCategoryData} from "./_types/IMenuCategoryData";
+import {IPrioritizedMenuConfig} from "./_types/IPrioritizedMenuConfig";
+import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
 
-type CategoryData = {
-    items: SortedList<IPrioritizedMenuItem>;
-    category: ICategory | undefined;
-    batch?: {
-        add: IPrioritizedMenuItem[];
-        remove: IPrioritizedMenuItem[];
-        clear?: boolean;
-    };
+type IBatchData = {
+    add: Set<IPrioritizedMenuItem>;
+    addIDs: Map<IUUID, IPrioritizedMenuItem>;
+    remove: Set<IPrioritizedMenuItem>;
+    removeIDs: Map<IUUID, IPrioritizedMenuItem>;
 };
 
-const createSortedList = (changeList: {
-    added: IMenuItem[];
-    removed: IMenuItem[];
-}): SortedList<IPrioritizedMenuItem> =>
-    new SortedList({
-        condition: (a, b) => hasHigherOrEqualPriority(a.priority, b.priority),
-        onAdd: ({item}) => changeList.added.push(item),
-        onRemove: ({item}) => changeList.removed.push(item),
-    });
-
 /**
- * A menu class to control menu items and their state
+ * A prioritized menu
  */
 export class PrioritizedMenu extends AbstractMenu {
-    protected categoryConfig: TRequired<IPrioritizedMenuCategoryConfig>;
+    protected config: TRequired<IPrioritizedMenuConfig>;
+
+    protected items: SortedList<IPrioritizedMenuItem>;
+    protected categorizer: MenuItemCategorizer<IPrioritizedMenuItem>;
 
     // Batching tracking
-    protected batchTimeout: NodeJS.Timeout | undefined;
+    protected batchTimeout: NodeJS.Timeout | null = null;
+    protected batch: IBatchData = {
+        add: new Set(),
+        addIDs: new Map(),
+        remove: new Set(),
+        removeIDs: new Map(),
+    };
+    protected maxCountHookDestroyer?: () => void;
     protected menuChangeEvents = {added: [] as IMenuItem[], removed: [] as IMenuItem[]};
-
-    // Tracking menu items
-    protected categoriesRaw = [
-        {
-            items: createSortedList(this.menuChangeEvents),
-            category: undefined,
-        },
-    ] as CategoryData[];
-    protected categories = new Field([] as IMenuCategoryData[]);
-    protected items = new Field([] as IMenuItem[]); // Flat structure containing items (as IMenuItems) and categories headers (as IMenuItems)
 
     /**
      * Creates a new menu
      * @param context The context to be used by menu items
-     * @param categoryConfig The configuration for category options
+     * @param config The configuration for category options
      */
-    public constructor(
-        context: IIOContext,
-        categoryConfig?: IPrioritizedMenuCategoryConfig
-    );
+    public constructor(context: IIOContext, config?: IPrioritizedMenuConfig);
 
     /**
      * Creates a new menu
      * @param context The context to be used by menu items
      * @param items The initial items to store
-     * @param categoryConfig The configuration for category options
+     * @param config The configuration for category options
      */
     public constructor(
         context: IIOContext,
         items: IPrioritizedMenuItem[],
-        categoryConfig?: IPrioritizedMenuCategoryConfig
+        config?: IPrioritizedMenuConfig
     );
     public constructor(
         context: IIOContext,
-        items: IPrioritizedMenuItem[] | IPrioritizedMenuCategoryConfig | undefined,
-        categoryConfig?: IPrioritizedMenuCategoryConfig
+        items: IPrioritizedMenuItem[] | IPrioritizedMenuConfig | undefined,
+        config?: IPrioritizedMenuConfig
     ) {
         super(context);
-        if (!(items instanceof Array)) categoryConfig = items;
+        if (!(items instanceof Array)) config = items;
 
         // Create the category config
         const menuSettings = context.settings.get(baseSettings).menu;
-        this.categoryConfig = {
-            getCategory: categoryConfig?.getCategory || createCategoryGetter(context),
+        this.config = {
+            getCategory: config?.getCategory || createCategoryGetter(context),
             sortCategories:
-                categoryConfig?.sortCategories ||
-                createPrioritizedCategoriesSorter(context),
-            maxCategoryItemCount:
-                categoryConfig?.maxCategoryItemCount ??
-                menuSettings.maxCategorySize.get(),
-            batchInterval: categoryConfig?.batchInterval || 100,
-            isLoading: categoryConfig?.isLoading || new Field(false),
+                config?.sortCategories || createPrioritizedCategoriesSorter(context),
+            maxItemCount: config?.maxItemCount ?? menuSettings.maxMenuSize.get(), // TODO: change setting to menu instead of category size
+            batchInterval: config?.batchInterval || 100,
+            isLoading: config?.isLoading || new Field(false),
         };
 
-        (window as any).menuSettings = menuSettings;
+        // Create the list of items
+        this.items = new SortedList({
+            condition: (a, b) => hasHigherOrEqualPriority(a.priority, b.priority),
+            onAdd: ({item}) => this.menuChangeEvents.added.push(item),
+            onRemove: ({item}) => this.menuChangeEvents.removed.push(item),
+        });
+
+        // Offload categorization
+        this.categorizer = new MenuItemCategorizer(h => this.items.get(h), {
+            ...this.config,
+            getItem: ({item}) => item,
+        });
+
         if (items instanceof Array) this.addItems(items);
+    }
+
+    /**
+     * Destroys the menu
+     */
+    public destroy(): boolean {
+        this.maxCountHookDestroyer?.();
+        return super.destroy();
     }
 
     // Item management
@@ -118,62 +121,15 @@ export class PrioritizedMenu extends AbstractMenu {
      * @param item The item to be added
      */
     public addItem(item: IPrioritizedMenuItem): void {
-        if (item.priority == 0) return;
+        // Adds the item to the add queue
+        if (item.ID) this.batch.addIDs.set(item.ID, item);
+        else this.batch.add.add(item);
 
-        // Create a hook to move the item when the category is updated
-        const [categoryChangeCallback, destroyHook] = createCallbackHook(() => {
-            const categoryData = this.categoriesRaw.find(
-                ({category: c}) => c == category
-            );
-            // const inMenu = categoryData?.items.find(item) != -1;
-            const inMenu = categoryData?.items
-                .get()
-                .find(
-                    testItem => testItem == item || (item.ID && item.ID == testItem.ID)
-                );
-            if (inMenu && categoryData?.batch?.remove.includes(inMenu)) return;
+        // Remove the item from the remove queue
+        if (item.ID) this.batch.removeIDs.delete(item.ID);
+        else this.batch.remove.delete(item);
 
-            const categoryChanged = category != this.categoryConfig.getCategory(item);
-            console.log(inMenu, item, category, this.categoryConfig.getCategory(item));
-            // In addition, updating the category is only supported if the item provided an ID
-            if (categoryChanged) {
-                this.removeItem(item, category);
-                if (inMenu) this.addItem(item);
-            } else if (inMenu)
-                this.categoryConfig.getCategory(item, categoryChangeCallback);
-        }); // TODO: store the destroyHook somewhere and call it when item gets removed
-
-        // Obtain the category
-        const category = this.categoryConfig.getCategory(item, categoryChangeCallback);
-        const categoryIndex = this.categoriesRaw.findIndex(
-            ({category: c}) => c == category
-        );
-
-        // Add the item to a new or existing category
-        if (categoryIndex == -1) {
-            this.categoriesRaw.push({
-                category,
-                items: createSortedList(this.menuChangeEvents),
-                batch: {
-                    remove: [],
-                    add: [item],
-                },
-            });
-        } else {
-            const categoryData = this.categoriesRaw[categoryIndex];
-            if (!categoryData.batch) categoryData.batch = {add: [], remove: []};
-
-            // If the batch contains an outdated version, remove it
-            const index = categoryData.batch.add.findIndex(
-                ({ID: id}) => id && id == item.ID
-            );
-            if (index != -1) categoryData.batch.add.splice(index, 1);
-
-            // Update the new version
-            categoryData.batch.add.push(item);
-        }
-
-        // Schedule an update if required
+        // Update the menu
         this.scheduleUpdate();
     }
 
@@ -190,38 +146,16 @@ export class PrioritizedMenu extends AbstractMenu {
      * @param item The item to remove
      * @param oldCategory The category that item was in (null to use the items' latest category)
      */
-    public removeItem(
-        item: IPrioritizedMenuItem,
-        oldCategory: ICategory | null = null
-    ): void {
-        const category =
-            oldCategory != null ? oldCategory : this.categoryConfig.getCategory(item);
-        const categoryIndex = this.categoriesRaw.findIndex(
-            ({category: c}) => c == category
-        );
+    public removeItem(item: IPrioritizedMenuItem): void {
+        // Adds the item to the remove queue
+        if (item.ID) this.batch.removeIDs.set(item.ID, item);
+        else this.batch.remove.add(item);
 
-        // Add the item to a new or existing category
-        if (categoryIndex == -1) {
-            // TODO: Can we just ignore this case?
-            this.categoriesRaw.push({
-                category,
-                items: createSortedList(this.menuChangeEvents),
-                batch: {
-                    add: [],
-                    remove: [item],
-                },
-            });
-        } else {
-            const categoryData = this.categoriesRaw[categoryIndex];
-            if (!categoryData.batch) categoryData.batch = {add: [], remove: []};
-            categoryData.batch.remove.push(item);
+        // Remove the item from the add queue
+        if (item.ID) this.batch.addIDs.delete(item.ID);
+        else this.batch.add.delete(item);
 
-            // Make sure the item won't get added afterwards (unless the addItem call is made later)
-            const addIndex = categoryData.batch.add.indexOf(item);
-            if (addIndex != -1) categoryData.batch.add.splice(addIndex, 1);
-        }
-
-        // Schedule an update if required
+        // Update the menu
         this.scheduleUpdate();
     }
 
@@ -232,89 +166,67 @@ export class PrioritizedMenu extends AbstractMenu {
         if (!this.batchTimeout)
             this.batchTimeout = setTimeout(() => {
                 this.flushBatch();
-            }, this.categoryConfig.batchInterval);
+            }, this.config.batchInterval);
     }
 
     /**
-     * Adds the batch items to the categories, and updates the items list afterwards
+     * Flushes the batch to make sure that any items that are queued to be added or removed are added/removed.
+     *
+     * Note that this also automatically happens with some delay after calling add or remove item.
      */
     public flushBatch(): void {
         if (!this.batchTimeout) return;
         clearTimeout(this.batchTimeout);
-        this.batchTimeout = undefined;
-        this.categoriesRaw = this.categoriesRaw.filter(categoryData => {
-            if (categoryData.batch) {
-                // Reset the category if specified
-                if (categoryData.batch.clear)
-                    categoryData.items = createSortedList(this.menuChangeEvents);
+        this.batchTimeout = null;
 
-                // Filters out old items (including previous versions of current items)
-                const adds = categoryData.batch.add;
-                const removes = categoryData.batch.remove;
+        // Remove all removed and updated (/added) items
+        const addedItems = [...this.batch.add, ...this.batch.addIDs.values()];
+        const filterPrioritizedItems = [
+            ...addedItems,
+            ...this.batch.remove,
+            ...this.batch.removeIDs.values(),
+        ];
+        const filterItems = new Set(filterPrioritizedItems.map(({item}) => item));
+        const filterIDs = new Set([
+            ...this.batch.addIDs.keys(),
+            ...this.batch.removeIDs.keys(),
+        ]);
+        this.batch = {
+            add: new Set(),
+            remove: new Set(),
+            addIDs: new Map(),
+            removeIDs: new Map(),
+        };
 
-                const filterOutKeys = {} as {[key: string]: boolean};
-                adds.forEach(({ID: id}) => id && (filterOutKeys[id] = true));
-                removes.forEach(({ID: id}) => id && (filterOutKeys[id] = true));
-                categoryData.items.filter(({ID: id, item}) =>
-                    id
-                        ? !filterOutKeys[id]
-                        : !(
-                              adds.find(({item: it}) => item == it) ||
-                              removes.find(({item: it}) => item == it)
-                          )
-                );
+        this.items.filter(
+            ({ID, item}) => (!ID || !filterIDs.has(ID)) && !filterItems.has(item)
+        );
 
-                // Adds the new items
-                categoryData.items.add(
-                    categoryData.batch.add,
-                    this.categoryConfig.maxCategoryItemCount
-                );
-
-                // Resets the batch and decide whether to keep the category
-                categoryData.batch = undefined;
-                return categoryData.items.get().length > 0;
-            }
-            return true;
-        });
-        this.updateItemsList();
-    }
-
-    /**
-     * Synchronizes the item list to be up to date with the categories data
-     */
-    protected updateItemsList(): void {
-        const order = this.categoryConfig.sortCategories(this.categoriesRaw);
-
-        // Combine the items and categories into a single list
-        const items = [] as IMenuItem[];
-        const categories = [] as IMenuCategoryData[];
-        order.forEach(category => {
-            const categoryData = this.categoriesRaw.find(
-                ({category: c}) => c == category
-            );
-            const categoryItems = categoryData?.items.get().map(({item}) => item);
-            if (categoryItems) {
-                categories.push({category, items: categoryItems});
-                if (category) items.push(category.item, ...categoryItems);
-                else items.push(...categoryItems);
-            }
-        });
-        this.categories.set(categories);
-        this.items.set(items);
-        this.deselectRemovedItems();
+        // Add all updated (/added) items (and listen for max item count changes)
+        this.maxCountHookDestroyer?.();
+        const [hook, destroyer] = createCallbackHook(() => this.scheduleUpdate());
+        this.maxCountHookDestroyer = destroyer;
+        this.items.add(
+            addedItems.filter(({priority}) => Priority.isPositive(priority)),
+            getHooked(this.config.maxItemCount, hook)
+        );
 
         // Fire the menu change events
         onMenuChangeAction.get(this.menuChangeEvents.added).onMenuChange(this, true);
         this.menuChangeEvents.added = [];
         onMenuChangeAction.get(this.menuChangeEvents.removed).onMenuChange(this, false);
         this.menuChangeEvents.removed = [];
+
+        // Deselect the items that were removed
+        this.deselectRemovedItems();
     }
 
+    // Selection management
     /**
      * Checks whether the selected items are still present, and deselects them if not
      */
     protected deselectRemovedItems(): void {
-        const items = this.items.get(null);
+        const items = this.items.get(null).map(({item}) => item);
         const selected = this.selected.get(null);
         const remaining = selected.filter(item => items.includes(item));
         if (selected.length != remaining.length) {
@@ -361,11 +273,11 @@ export class PrioritizedMenu extends AbstractMenu {
     public getItems(hook: IDataHook = null): IMenuItem[] {
         if (this.isDestroyed(hook))
             // Whenever the menu is destroyed, we no longer inform about item changes
-            return this.items.get(null);
+            return this.categorizer.getItems(null);
 
-        if (hook && "markIsLoading" in hook && this.categoryConfig.isLoading.get(hook))
+        if (hook && "markIsLoading" in hook && this.config.isLoading.get(hook))
             hook.markIsLoading?.();
-        return this.items.get(hook);
+        return this.categorizer.getItems(hook);
     }
 
     /**
@@ -376,10 +288,10 @@ export class PrioritizedMenu extends AbstractMenu {
     public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
         if (this.isDestroyed(hook))
             // Whenever the menu is destroyed, we no longer inform about category changes
-            return this.categories.get(null);
+            return this.categorizer.getCategories(null);
 
-        if (hook && "markIsLoading" in hook && this.categoryConfig.isLoading.get(hook))
+        if (hook && "markIsLoading" in hook && this.config.isLoading.get(hook))
             hook.markIsLoading?.();
-        return this.categories.get(hook);
+        return this.categorizer.getCategories(hook);
     }
 }

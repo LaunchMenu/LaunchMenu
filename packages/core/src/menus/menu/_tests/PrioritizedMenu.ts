@@ -1,17 +1,17 @@
-import {PrioritizedMenu} from "../PrioritizedMenu";
-import {createDummyPrioritizedMenuItem} from "./PrioritizedMenuItem.helper";
-import {wait} from "../../../_tests/wait.helper";
-import {Observer} from "../../../utils/modelReact/Observer";
-import {createDummyMenuItem} from "./MenuItem.helper";
-import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
-import {dummyContext} from "../../../_tests/context.helper";
 import {Field} from "model-react";
-import {Priority} from "../priority/Priority";
 import {getCategoryAction} from "../../../actions/types/category/getCategoryAction";
+import {ICategory} from "../../../actions/types/category/_types/ICategory";
+import {onCursorAction} from "../../../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
 import {onSelectAction} from "../../../actions/types/onSelect/onSelectAction";
-import {onCursorAction} from "../../../actions/types/onCursor/onCursorAction";
-import {ICategory} from "../../../actions/types/category/_types/ICategory";
+import {Observer} from "../../../utils/modelReact/Observer";
+import {dummyContext} from "../../../_tests/context.helper";
+import {wait} from "../../../_tests/wait.helper";
+import {PrioritizedMenu} from "../PrioritizedMenu";
+import {Priority} from "../priority/Priority";
+import {IPrioritizedMenuItem} from "../_types/IPrioritizedMenuItem";
+import {createDummyMenuItem} from "./MenuItem.helper";
+import {createDummyPrioritizedMenuItem} from "./PrioritizedMenuItem.helper";
 
 const createMenu = (items?: IPrioritizedMenuItem[]) => {
     const menu = new PrioritizedMenu(dummyContext, {
@@ -494,7 +494,6 @@ describe("PrioritizedMenu", () => {
             expect(menu.getItems()).toEqual([item.item]);
         });
     });
-
     describe("PrioritizedMenu.setSelected / PrioritizedMenu.getSelected", () => {
         const items = [
             createDummyPrioritizedMenuItem({priority: 3}),
@@ -557,7 +556,6 @@ describe("PrioritizedMenu", () => {
             expect(menu.getSelected()).toEqual([]);
         });
     });
-
     describe("PrioritizedMenu.setCursor / PrioritizedMenu.getCursor", () => {
         const someCategory: ICategory = {
             name: "Bob",
@@ -591,7 +589,9 @@ describe("PrioritizedMenu", () => {
                     }),
                 ],
             });
-            const menu = createMenu([...items, item]);
+            const menu = createMenu(items);
+            menu.addItem(item);
+            menu.flushBatch();
             expect(selectCount).toBe(0);
             expect(deselectCount).toBe(0);
             menu.setCursor(item.item);
@@ -871,7 +871,7 @@ describe("PrioritizedMenu", () => {
     });
 
     describe("categoryConfig", () => {
-        describe("categoryConfig.maxCategoryItemCount", () => {
+        describe("categoryConfig.maxItemCount", () => {
             const items = [
                 createDummyPrioritizedMenuItem({priority: 2}),
                 createDummyPrioritizedMenuItem({priority: 1}),
@@ -879,23 +879,23 @@ describe("PrioritizedMenu", () => {
             ];
             let menu: PrioritizedMenu;
             beforeEach(() => {
-                menu = new PrioritizedMenu(dummyContext, {maxCategoryItemCount: 2});
+                menu = new PrioritizedMenu(dummyContext, {maxItemCount: 2});
             });
             it("Allows the number of items for each category to be limited", () => {
                 items.forEach(item => menu.addItem(item));
                 menu.flushBatch();
                 expect(menu.getItems()).toEqual([items[2].item, items[0].item]);
             });
-            it("Considers separate categories", () => {
+            it("Doesn't considers categories separately", () => {
                 const someCategory: ICategory = {
                     name: "Bob",
                     description: "some category for Bob",
                     item: createDummyMenuItem(),
                 };
-                const menu = new PrioritizedMenu(dummyContext, {maxCategoryItemCount: 2});
+                const menu = new PrioritizedMenu(dummyContext, {maxItemCount: 2});
 
                 const items2 = [
-                    createDummyPrioritizedMenuItem({category: someCategory}),
+                    createDummyPrioritizedMenuItem({category: someCategory, priority: 4}),
                     createDummyPrioritizedMenuItem({category: someCategory}),
                     createDummyPrioritizedMenuItem({category: someCategory}),
                 ];
@@ -904,9 +904,8 @@ describe("PrioritizedMenu", () => {
                 menu.flushBatch();
                 expect(menu.getItems()).toEqual([
                     items[2].item,
-                    items[0].item,
                     someCategory.item,
-                    ...items2.slice(0, 2).map(({item}) => item),
+                    items2[0].item,
                 ]);
             });
             describe("OnMenuChange", () => {

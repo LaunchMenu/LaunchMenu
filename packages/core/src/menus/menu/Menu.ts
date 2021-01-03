@@ -8,10 +8,11 @@ import {AbstractMenu} from "./AbstractMenu";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
-import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
 import {createCategoryGetter} from "./standardConfig/createCategoryGetter";
+
+// TODO: start using the MenuItemCategorizer to separate/offload concerns
 
 /**
  * A menu class to control menu items and their state,
@@ -64,7 +65,7 @@ export class Menu extends AbstractMenu {
                 config?.sortCategories ||
                 (categories => categories.map(({category}) => category)),
             maxCategoryItemCount:
-                config?.maxCategoryItemCount ?? menuSettings.maxCategorySize.get(),
+                config?.maxCategoryItemCount ?? menuSettings.maxMenuSize.get(),
         };
 
         // Add the default items

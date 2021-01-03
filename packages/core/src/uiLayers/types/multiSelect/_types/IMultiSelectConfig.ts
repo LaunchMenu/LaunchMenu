@@ -1,7 +1,7 @@
 import {IDataHook} from "model-react";
 import {ReactElement} from "react";
 import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
-import {IPrioritizedMenuCategoryConfig} from "../../../../menus/menu/_types/IAsyncMenuCategoryConfig";
+import {IPrioritizedMenuConfig} from "../../../../menus/menu/_types/IPrioritizedMenuConfig";
 import {IThemeIcon} from "../../../../styling/theming/_types/IBaseTheme";
 import {IHighlighter} from "../../../../textFields/syntax/_types/IHighlighter";
 import {IInputError} from "../../input/_types/IInputError";
@@ -19,7 +19,7 @@ export type IMultiSelectConfig<T> = {
     /** A check whether two values are equal, used to highlight the currently selected option */
     equals?: (a: T, b: T) => boolean;
     /** Menu category configuration for the search results */
-    categoryConfig?: IPrioritizedMenuCategoryConfig;
+    categoryConfig?: IPrioritizedMenuConfig;
     /** The item to use for custom input */
     createCustomView?: (getText: (hook?: IDataHook) => string | null) => IMenuItem;
     /** Checks whether the given input is valid */

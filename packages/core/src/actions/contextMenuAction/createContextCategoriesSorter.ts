@@ -1,4 +1,3 @@
-import {SortedList} from "../../utils/SortedList";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
 import {ICategory} from "../types/category/_types/ICategory";
 import {IContextCategory} from "./_types/IContextCategory";
@@ -18,7 +17,7 @@ export function createContextCategoriesSorter(
             /** The category */
             category: ICategory | undefined;
             /** The items in this category */
-            items: SortedList<IPrioritizedMenuItem>;
+            items: {item: IPrioritizedMenuItem; index: number}[];
         }[]
     ) => (undefined | ICategory)[] = createPrioritizedCategoriesSorter(context)
 ): {
@@ -30,7 +29,7 @@ export function createContextCategoriesSorter(
     (
         categories: {
             category: ICategory | undefined;
-            items: SortedList<IPrioritizedMenuItem>;
+            items: {item: IPrioritizedMenuItem; index: number}[];
         }[]
     ): (ICategory | undefined)[];
 } {

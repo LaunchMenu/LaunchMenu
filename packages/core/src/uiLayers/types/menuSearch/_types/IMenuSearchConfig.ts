@@ -1,10 +1,10 @@
-import {IPrioritizedMenuCategoryConfig} from "../../../../menus/menu/_types/IAsyncMenuCategoryConfig";
 import {IMenu} from "../../../../menus/menu/_types/IMenu";
 import {IMenuItemExecuteCallback} from "../../../../menus/menu/_types/IMenuItemExecuteCallback";
 import {IHighlighter} from "../../../../textFields/syntax/_types/IHighlighter";
 import {ITextSelection} from "../../../../textFields/_types/ITextSelection";
 import {IUILayerMenuData} from "../../../_types/IUILayerMenuData";
 import {IDataHook} from "model-react";
+import {IPrioritizedMenuConfig} from "../../../../menus/menu/_types/IPrioritizedMenuConfig";
 
 /** The configuration */
 export type IMenuSearchConfig = {
@@ -21,7 +21,7 @@ export type IMenuSearchConfig = {
     /** The menu to be shown when no search term is provided */
     defaultMenu?: IUILayerMenuData | ((hook: IDataHook) => IUILayerMenuData);
     /** Category configuration for the search results */
-    categoryConfig?: IPrioritizedMenuCategoryConfig;
+    categoryConfig?: IPrioritizedMenuConfig;
     /** The callback to make when an item is executed */
     onExecute?: IMenuItemExecuteCallback;
     /** Whether to use key handler of items in the menu search menu */

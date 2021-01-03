@@ -29,34 +29,36 @@ export function createMenuSettingsFolder() {
         name: "Menu",
         children: {
             // Categories
-            maxSearchCategorySize: createNumberSetting({
-                name: "Max search category size",
-                init: 100,
+            maxSearchMenuSize: createNumberSetting({
+                name: "Max number of search results",
+                init: 200,
+                min: 5,
+                content: (
+                    <>The maximum number of items to show when performing a search.</>
+                ),
+                category: getMenuControlsFolderCategories().categories,
+            }),
+            maxMenuSize: createNumberSetting({
+                name: "Max number of menu items",
+                init: 200,
                 min: 5,
                 content: (
                     <>
-                        The maximum number of items to show per category when performing a
-                        search
+                        The maximum number of items to show in a menu, excluding the
+                        search menu.
                     </>
                 ),
                 category: getMenuControlsFolderCategories().categories,
             }),
-            maxCategorySize: createNumberSetting({
-                name: "Max category size",
-                init: 100,
-                min: 5,
-                content: <>The maximum number of items to show per category in menus</>,
-                category: getMenuControlsFolderCategories().categories,
-            }),
             categoryOrder: createCategorySortingSetting({
                 name: "Category sort item",
-                content: <>What item sorting the categories in the menu is based on</>,
+                content: <>What item sorting the categories in the menu is based on.</>,
                 category: getMenuControlsFolderCategories().categories,
             }),
             showCategories: createBooleanSetting({
                 name: "Show categories",
                 init: true,
-                content: <>Whether to show the category labels in the menu</>,
+                content: <>Whether to show the category labels in the menu.</>,
                 category: getMenuControlsFolderCategories().categories,
             }),
             // Cursor

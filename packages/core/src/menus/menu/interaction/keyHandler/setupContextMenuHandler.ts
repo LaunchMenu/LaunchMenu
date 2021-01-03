@@ -3,7 +3,6 @@ import {Observer} from "../../../../utils/modelReact/Observer";
 import {IKeyEventListenerObject} from "../../../../keyHandler/_types/IKeyEventListener";
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
-import {PrioritizedMenu} from "../../PrioritizedMenu";
 import {createContextCategoriesSorter} from "../../../../actions/contextMenuAction/createContextCategoriesSorter";
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
@@ -11,6 +10,7 @@ import {getHooked} from "../../../../utils/subscribables/getHooked";
 import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
 import {contextMenuAction} from "../../../../actions/contextMenuAction/contextMenuAction";
 import {keyHandlerAction} from "../../../../actions/types/keyHandler/keyHandlerAction";
+import {PrioritizedMenu} from "../../PrioritizedMenu";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
