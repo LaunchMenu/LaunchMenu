@@ -8,7 +8,10 @@ global.DEV = process.env.NODE_ENV == "dev";
  * Launches the application
  */
 export function launch() {
-    app.on("will-quit", event => event.preventDefault());
+    let allowQuit = false;
+    app.on("will-quit", event => {
+        if (!allowQuit) event.preventDefault();
+    });
 
     // app.allowRendererProcessReuse = false;
     app.whenReady().then(() => {
@@ -38,8 +41,8 @@ export function launch() {
         ipcMain.on("restart", restart);
         ipcMain.on("shutdown", async () => {
             await windowController.destroy();
+            allowQuit = true;
             app.quit();
-            close();
         });
 
         if (DEV) {
