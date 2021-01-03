@@ -87,4 +87,14 @@ export class IOContext implements IIOContext {
         this.uiStack.set([...layers.slice(0, index), ...layers.slice(index + 1)]);
         await p;
     }
+
+    /**
+     * Removes all layers from this context, properly destroying it
+     */
+    public async destroy(): Promise<void> {
+        const layers = this.uiStack.get(null).reverse();
+        for (let {layer} of layers) {
+            await this.close(layer);
+        }
+    }
 }

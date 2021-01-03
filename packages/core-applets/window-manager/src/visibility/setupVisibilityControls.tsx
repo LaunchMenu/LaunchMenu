@@ -77,6 +77,15 @@ export function setupVisibilityControls(
         }
     }, true);
 
+    // Setup a listener to hide the window when hitting escape when in the home screen
+    const exitListener = hideWindow;
+    const sessionObserver = new Observer(h =>
+        LM.getSessionManager().getSessions(h)
+    ).listen(sessions => {
+        // Sessions can't register duplicate listeners, so calling it more often does no harm
+        sessions.forEach(session => session.addCloseListener(exitListener));
+    }, true);
+
     // Return a function to dispose all listeners
     return {
         destroy: () => {
@@ -85,6 +94,10 @@ export function setupVisibilityControls(
             shortcutSettingObserver.destroy();
             hideSettingObserver.destroy();
             debugSettingObvserver.destroy();
+            sessionObserver.destroy();
+            LM.getSessionManager()
+                .getSessions()
+                .forEach(session => session.removeCloseListener(exitListener));
             if (latestShortcut) remote.globalShortcut.unregister(latestShortcut);
         },
         exitBindings: createExitContextMenuBinding(LM, hideWindow),

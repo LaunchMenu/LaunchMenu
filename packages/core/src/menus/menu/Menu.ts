@@ -8,8 +8,11 @@ import {AbstractMenu} from "./AbstractMenu";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
-import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
+import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
+import {createCategoryGetter} from "./standardConfig/createCategoryGetter";
+
+// TODO: start using the MenuItemCategorizer to separate/offload concerns
 
 /**
  * A menu class to control menu items and their state,
@@ -55,12 +58,14 @@ export class Menu extends AbstractMenu {
         else config = items;
 
         // Create the category config
+        const menuSettings = context.settings.get(baseSettings).menu;
         this.categoryConfig = {
-            getCategory: config?.getCategory || getCategoryAction.getCategory,
+            getCategory: config?.getCategory || createCategoryGetter(context),
             sortCategories:
                 config?.sortCategories ||
                 (categories => categories.map(({category}) => category)),
-            maxCategoryItemCount: config?.maxCategoryItemCount || Infinity,
+            maxCategoryItemCount:
+                config?.maxCategoryItemCount ?? menuSettings.maxMenuSize.get(),
         };
 
         // Add the default items
@@ -109,9 +114,12 @@ export class Menu extends AbstractMenu {
     ): boolean {
         // Create a hook to move the item when the category is updated
         const [categoryChangeCallback, destroyHook] = createCallbackHook(() => {
-            const inMenu = destination[categoryIndex]?.items.includes(item);
+            const categoryData = destination.find(({category: c}) => c == category);
+            const inMenu = categoryData?.items.includes(item);
+            if (!inMenu) return;
+
             const categoryChanged = category != this.categoryConfig.getCategory(item);
-            if (inMenu && categoryChanged) {
+            if (categoryChanged) {
                 this.removeItems([item], category);
                 this.addItem(item);
             } else this.categoryConfig.getCategory(item, categoryChangeCallback);
@@ -119,11 +127,10 @@ export class Menu extends AbstractMenu {
 
         // Obtain the category
         const category = this.categoryConfig.getCategory(item, categoryChangeCallback);
-        let categoryIndex = destination.findIndex(({category: c}) => c == category);
+        const categoryIndex = destination.findIndex(({category: c}) => c == category);
 
         // Add the item to a new or existing category
         if (categoryIndex == -1) {
-            categoryIndex = destination.length;
             destination.push({category, items: [item]});
         } else {
             const {items} = destination[categoryIndex];

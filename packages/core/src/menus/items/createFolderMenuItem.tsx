@@ -17,7 +17,9 @@ import {Box} from "../../styling/box/Box";
 import {ShortcutLabel} from "../../components/items/ShortcutLabel";
 import {ThemeIcon} from "../../components/ThemeIcon";
 import {simpleSearchHandler} from "../../actions/types/search/tracedRecursiveSearch/simpleSearch/simpleSearchHandler";
-import {identityAction} from "../../actions/types/identity/identityAction";
+import {IQuery} from "../menu/_types/IQuery";
+import {IRecursiveSearchChildren} from "../../actions/types/search/tracedRecursiveSearch/_types/IRecursiveSearchChildren";
+import { IDataHook } from "model-react";
 
 /**
  * Retrieves the children in (subscribable) list form
@@ -25,10 +27,10 @@ import {identityAction} from "../../actions/types/identity/identityAction";
  * @returns The children list
  */
 export function getChildList<
-    S extends {[key: string]: IMenuItem} | ISubscribable<IMenuItem[]>
->(children: S): ISubscribable<IMenuItem[]> {
+    S extends {[key: string]: IMenuItem} | ((...args: any[])=>IMenuItem[]) | IMenuItem[], 
+>(children: S): Exclude<S, {[key: string]: IMenuItem}> {
     return children instanceof Function || children instanceof Array
-        ? (children as ISubscribable<IMenuItem[]>)
+        ? children as any
         : Object.values(children);
 }
 
@@ -39,13 +41,13 @@ export function getChildList<
  */
 export function createFolderMenuItem<
     T extends {[key: string]: IMenuItem} | ISubscribable<IMenuItem[]>,
-    S extends {[key: string]: IMenuItem} | ISubscribable<IMenuItem[]> = T
+    S extends {[key: string]: IMenuItem} | IRecursiveSearchChildren = T extends {[key: string]: IMenuItem} ? T : IRecursiveSearchChildren
 >({
     actionBindings,
     children,
     closeOnExecute = false,
     forwardKeyEvents = false,
-    searchChildren = (children as any) as S,
+    searchChildren,
     name,
     pathName = getHooked(name),
     ...rest
@@ -68,6 +70,8 @@ export function createFolderMenuItem<
                 }),
             })
         );
+
+    if(!searchChildren) searchChildren = (children instanceof Function ? ((query: IQuery, hook?: IDataHook)=>(children as any)(hook)) : children as any) as S;
     const bindings = createStandardActionBindings(
         {
             name,

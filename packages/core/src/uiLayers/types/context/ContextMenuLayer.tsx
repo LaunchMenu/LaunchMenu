@@ -33,7 +33,7 @@ export class ContextMenuLayer extends UILayer {
                     },
                 },
             }),
-            {path: "context"}
+            {path: "Context"}
         );
     }
 }

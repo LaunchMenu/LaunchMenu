@@ -1,5 +1,6 @@
 import {ICategory} from "../../../../../actions/types/category/_types/ICategory";
 import {ISimpleSearchPatternMatcher} from "../../../../../actions/types/search/_types/ISimpleSearchPatternMatcher";
+import {IViewStackItemView} from "../../../../../uiLayers/_types/IViewStackItem";
 import {ISubscribable} from "../../../../../utils/subscribables/_types/ISubscribable";
 import {ISubscribableActionBindings} from "../../../_types/ISubscribableActionBindings";
 
@@ -19,6 +20,8 @@ export type IInputTypeMenuItemData = {
     tags?: ISubscribable<string[]>;
     /** The category to show the input in */
     category?: ICategory;
+    /** Content to show when this item is selected */
+    content?: IViewStackItemView;
     /** The extra action bindings */
     actionBindings?: ISubscribableActionBindings;
     /** Whether the field should be resetable to the initial value, defaults to false */

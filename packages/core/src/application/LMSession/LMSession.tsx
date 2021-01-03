@@ -39,8 +39,10 @@ export class LMSession {
     public view: JSX.Element;
     /** The IO context for this session */
     public context: IOContext;
+    /** The home UI layer */
+    public homeLayer: UILayer;
     /** The unique runtime id of this session */
-    public readonly id = uuid();
+    public readonly ID = uuid();
 
     /** The LaunchMenu runtime instance this session is part of */
     public LM: LaunchMenu;
@@ -68,6 +70,9 @@ export class LMSession {
         menuCursor?: Observer<IMenuItem | null>;
     } = {};
 
+    /** Listeners that listen for close events */
+    protected closeListeners: (() => void)[] = [];
+
     /**
      * Creates a new app session
      * @param lm The LM instance this is a session for
@@ -87,6 +92,7 @@ export class LMSession {
         this.observers.search?.destroy();
         this.observers.settingsContext?.destroy();
         this.observers.menuCursor?.destroy();
+        this.context?.destroy();
     }
 
     /**
@@ -134,7 +140,7 @@ export class LMSession {
      * Initializes the view for this session
      */
     protected setupView(): void {
-        this.view = <ApplicationLayout key={this.id} context={this.context} />;
+        this.view = <ApplicationLayout key={this.ID} context={this.context} />;
     }
 
     // Sets up the interface
@@ -145,7 +151,8 @@ export class LMSession {
         const content = await this.setupContent();
         const menu = await this.setupMenu();
         const field = await this.setupField();
-        this.context.open(new UILayer([...content, ...menu, ...field]));
+        this.homeLayer = new UILayer([...content, ...menu, ...field]);
+        this.context.open(this.homeLayer);
     }
 
     /**
@@ -195,7 +202,8 @@ export class LMSession {
                 searchable: false,
                 menuHandler: createMenuKeyHandler(this.menu, {
                     onExit: () => {
-                        console.log("detect");
+                        if (this.searchField.get() == "") this.emitClose();
+                        else this.searchField.set("");
                     },
                 }),
             },
@@ -304,6 +312,44 @@ export class LMSession {
                 ),
             },
         ];
+    }
+
+    // Close listeners
+    /**
+     * Adds a listener that listens for close events
+     * @param listener The listener to be added
+     */
+    public addCloseListener(listener: () => void): void {
+        if (!this.closeListeners.includes(listener)) this.closeListeners.push(listener);
+    }
+
+    /**
+     * Removes a listener that listens for close events
+     * @param listener The listener to be removed
+     */
+    public removeCloseListener(listener: () => void): void {
+        const index = this.closeListeners.indexOf(listener);
+        if (index != -1) this.closeListeners.splice(index, 1);
+    }
+
+    /**
+     * Emits the close event
+     */
+    protected emitClose(): void {
+        this.closeListeners.forEach(listener => listener());
+    }
+
+    /**
+     * Checks whether this session is on the "home screen", I.e. has no menu opens on top
+     * @param hook The hook to subscribe to changes
+     * @returns Whether on the home screen
+     */
+    public isHome(hook: IDataHook = null): boolean {
+        const layers = this.context.getUI(hook);
+        return (
+            layers[layers.length - 1] == this.homeLayer &&
+            this.searchField?.get(hook) == ""
+        );
     }
 
     // Applet management

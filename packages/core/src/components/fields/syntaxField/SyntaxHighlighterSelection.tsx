@@ -3,6 +3,10 @@ import {ISyntaxHighlighterSelectionProps} from "./_types/ISyntaxHighlighterSelec
 import {Box} from "../../../styling/box/Box";
 import {FillBox} from "../../FillBox";
 import {getFrameSize} from "./getFrameSize";
+import {useIOContext} from "../../../context/react/useIOContext";
+import {baseSettings} from "../../../application/settings/baseSettings/baseSettings";
+import {useDataHook} from "../../../utils/modelReact/useDataHook";
+import {ITextSelection} from "../../../textFields/_types/ITextSelection";
 
 /**
  * Retrieves the pixel size of the text
@@ -63,6 +67,9 @@ export const SyntaxHighlighterSelection: FC<ISyntaxHighlighterSelectionProps> = 
         });
     }, [selection.start, selection.end, syntaxEl]);
 
+    // Cursor blinking
+    const cursorVisible = useCursorBlink(selection);
+
     // Selection and measurement rendering
     const cursorPos = selectionPixelRange?.end ?? selectionPixelRange?.start;
     const selectionLeft = Math.min(
@@ -79,7 +86,7 @@ export const SyntaxHighlighterSelection: FC<ISyntaxHighlighterSelectionProps> = 
                 {children}
             </Box>
             <FillBox pointerEvents="none" className="selectionHandler">
-                {cursorPos != undefined && (
+                {cursorPos != undefined && cursorVisible && (
                     <Box
                         className="cursor"
                         position="absolute"
@@ -101,4 +108,45 @@ export const SyntaxHighlighterSelection: FC<ISyntaxHighlighterSelectionProps> = 
             </FillBox>
         </>
     );
+};
+
+// TODO: replace by some css animation magic for better performance
+const useCursorBlink = (selection: ITextSelection) => {
+    const ioContext = useIOContext();
+    const [h] = useDataHook();
+    const settings = ioContext?.settings.get(baseSettings).field;
+    const blinkDelay = settings?.blinkDelay.get(h) ?? 100;
+    const blinkOnTime = settings?.blinkSpeed.onTime.get(h) ?? 1000;
+    const blinkOffTime = settings?.blinkSpeed.offTime.get(h) ?? 1000;
+    const [blinking, setBlinking] = useState(false);
+    const [cursorVisible, setCursorVisible] = useState(true);
+    useEffect(() => {
+        setBlinking(false);
+        const ID = setTimeout(() => {
+            setBlinking(true);
+        }, blinkDelay);
+        return () => clearTimeout(ID);
+    }, [blinkDelay, selection.start, selection.end]);
+    useEffect(() => {
+        if (!blinking) {
+            setCursorVisible(true);
+        } else {
+            let destroyed = false;
+
+            const blink = () => {
+                setCursorVisible(false);
+                setTimeout(() => {
+                    if (!destroyed) setCursorVisible(true);
+                }, blinkOffTime);
+            };
+            const ID = setInterval(blink, blinkOnTime + blinkOffTime);
+            blink();
+
+            return () => {
+                destroyed = true;
+                clearInterval(ID);
+            };
+        }
+    }, [blinking]);
+    return cursorVisible;
 };

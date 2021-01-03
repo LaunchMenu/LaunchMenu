@@ -7,7 +7,7 @@ import {constGetter} from "../../../../utils/constGetter";
 /**
  * The categories used for the field folder
  */
-export const fieldControlsFolderCategories = constGetter(() => ({
+export const getFieldControlsFolderCategories = constGetter(() => ({
     jumps: createStandardCategory({name: "Cursor jumps"}),
     clipboard: createStandardCategory({name: "Clipboard interaction"}),
     textNavigation: createStandardCategory({name: "Text navigation"}),
@@ -15,7 +15,7 @@ export const fieldControlsFolderCategories = constGetter(() => ({
 }));
 
 /**
- * Creates a new settings folder with field settings
+ * Creates a new settings folder with field controls settings
  * @returns The created field controls folder
  */
 export function createFieldControlsSettingsFolder() {
@@ -26,17 +26,17 @@ export function createFieldControlsSettingsFolder() {
             copy: createKeyPatternSetting({
                 name: "Copy text",
                 init: new KeyPattern("ctrl+c"),
-                category: fieldControlsFolderCategories().clipboard,
+                category: getFieldControlsFolderCategories().clipboard,
             }),
             paste: createKeyPatternSetting({
                 name: "Paste text",
                 init: new KeyPattern("ctrl+v"),
-                category: fieldControlsFolderCategories().clipboard,
+                category: getFieldControlsFolderCategories().clipboard,
             }),
             cut: createKeyPatternSetting({
                 name: "Cut text",
                 init: new KeyPattern("ctrl+x"),
-                category: fieldControlsFolderCategories().clipboard,
+                category: getFieldControlsFolderCategories().clipboard,
             }),
 
             // Jumps
@@ -45,19 +45,19 @@ export function createFieldControlsSettingsFolder() {
                 init: new KeyPattern([
                     {pattern: "home", type: "down", allowExtra: ["shift"]},
                 ]),
-                category: fieldControlsFolderCategories().jumps,
+                category: getFieldControlsFolderCategories().jumps,
             }),
             end: createKeyPatternSetting({
                 name: "Jump to the end of the input",
                 init: new KeyPattern([
                     {pattern: "end", type: "down", allowExtra: ["shift"]},
                 ]),
-                category: fieldControlsFolderCategories().jumps,
+                category: getFieldControlsFolderCategories().jumps,
             }),
             selectAll: createKeyPatternSetting({
                 name: "Select all of the text",
                 init: new KeyPattern("ctrl+a"),
-                category: fieldControlsFolderCategories().jumps,
+                category: getFieldControlsFolderCategories().jumps,
             }),
 
             // Text navigation
@@ -66,14 +66,14 @@ export function createFieldControlsSettingsFolder() {
                 init: new KeyPattern([
                     {pattern: ["left"], type: "down or repeat", allowExtra: ["shift"]},
                 ]),
-                category: fieldControlsFolderCategories().textNavigation,
+                category: getFieldControlsFolderCategories().textNavigation,
             }),
             right: createKeyPatternSetting({
                 name: "Move to the right",
                 init: new KeyPattern([
                     {pattern: ["right"], type: "down or repeat", allowExtra: ["shift"]},
                 ]),
-                category: fieldControlsFolderCategories().textNavigation,
+                category: getFieldControlsFolderCategories().textNavigation,
             }),
             up: createKeyPatternSetting({
                 name: "Move the cursor a line up",
@@ -81,7 +81,7 @@ export function createFieldControlsSettingsFolder() {
                 init: new KeyPattern([
                     {pattern: ["up"], type: "down or repeat", allowExtra: ["shift"]},
                 ]),
-                category: fieldControlsFolderCategories().textNavigation,
+                category: getFieldControlsFolderCategories().textNavigation,
             }),
             down: createKeyPatternSetting({
                 name: "Move the cursor a line down",
@@ -89,13 +89,13 @@ export function createFieldControlsSettingsFolder() {
                 init: new KeyPattern([
                     {pattern: ["down"], type: "down or repeat", allowExtra: ["shift"]},
                 ]),
-                category: fieldControlsFolderCategories().textNavigation,
+                category: getFieldControlsFolderCategories().textNavigation,
             }),
             expandSelection: createKeyPatternSetting({
                 name: "Expand selection",
                 description: "Only pattern is used", // TODO: create a class + UI for modifier patterns
                 init: new KeyPattern("shift"),
-                category: fieldControlsFolderCategories().textNavigation,
+                category: getFieldControlsFolderCategories().textNavigation,
             }),
 
             // Text insertion and deletion
@@ -108,14 +108,14 @@ export function createFieldControlsSettingsFolder() {
                         allowExtra: ["shift"],
                     },
                 ]),
-                category: fieldControlsFolderCategories().insertDelete,
+                category: getFieldControlsFolderCategories().insertDelete,
             }),
             delete: createKeyPatternSetting({
                 name: "Remove the character behind the cursor",
                 init: new KeyPattern([
                     {pattern: ["delete"], type: "down or repeat", allowExtra: ["shift"]},
                 ]),
-                category: fieldControlsFolderCategories().insertDelete,
+                category: getFieldControlsFolderCategories().insertDelete,
             }),
             insertLine: createKeyPatternSetting({
                 name: "Insert a new line",
@@ -123,7 +123,7 @@ export function createFieldControlsSettingsFolder() {
                 init: new KeyPattern([
                     {pattern: ["enter"], type: "down or repeat", allowExtra: ["shift"]},
                 ]),
-                category: fieldControlsFolderCategories().insertDelete,
+                category: getFieldControlsFolderCategories().insertDelete,
             }),
         },
     });

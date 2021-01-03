@@ -10,6 +10,7 @@ import {IContextMenuItemData} from "../_types/IContextMenuItemData";
 import {IContextFolderAction} from "./_types/IContextFolderAction";
 import {IContextFolderHandlerConfig} from "./_types/IContextFolderHandlerConfig";
 import {Priority} from "../../../menus/menu/priority/Priority";
+import {IQuery} from "../../../menus/menu/_types/IQuery";
 
 /**
  * Creates a context menu handler that adds an folder to the (context) menu
@@ -40,14 +41,18 @@ export function createContextFolderHandler(
                     .filter(target => !("view" in target))
                     .flatMap(({actionBindings}) => getHooked(actionBindings, h));
                 const items = collectContextMenuItems(itemData, sources, extra, h);
-                const positiveItems = items.filter(({priority}) => Priority.isPositive(priority) );
+                const positiveItems = items.filter(({priority}) =>
+                    Priority.isPositive(priority)
+                );
                 positiveItems.sort((a, b) =>
                     hasHigherOrEqualPriority(a.priority, b.priority) ? -1 : 1
                 );
                 return positiveItems.map(({item}) => item);
             });
             const itemsGetter = (h: IDataHook) => itemsSource.get(h);
-            const searchItems = contextItemData?.preventSearch ? [] : itemsGetter;
+            const searchItems = contextItemData?.preventSearch
+                ? []
+                : (query: IQuery, hook: IDataHook) => itemsGetter(hook);
 
             // Create the item
             const item = createFolderMenuItem({

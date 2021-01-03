@@ -2,7 +2,7 @@ import {IDataRetriever} from "model-react";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {Observer} from "../../utils/modelReact/Observer";
 import {PrioritizedMenu} from "./PrioritizedMenu";
-import {IPrioritizedMenuCategoryConfig} from "./_types/IAsyncMenuCategoryConfig";
+import {IPrioritizedMenuConfig} from "./_types/IPrioritizedMenuConfig";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";
 
 /**
@@ -15,7 +15,7 @@ export class ProxiedPrioritizedMenu extends PrioritizedMenu {
     public constructor(
         context: IIOContext,
         itemSource: IDataRetriever<IPrioritizedMenuItem[]>,
-        config?: IPrioritizedMenuCategoryConfig
+        config?: IPrioritizedMenuConfig
     ) {
         super(context, config);
         this.itemSource = itemSource;

@@ -129,4 +129,14 @@ export class DataCacher<T> extends AbstractDataSource<T> implements IDataSource<
         this.forwardState(hook);
         return this.cached;
     }
+
+    /**
+     * Destroys any potential data hook, making sure there are no memory leaks.
+     * Note that this hook would clean itself up when being called anyhow, so calling destroy is not strictly necessary,
+     * but it prevents potential build up of huge listener arrays that could cause a lag spike when initially called.
+     */
+    public destroy(): void {
+        this.dependencyRemovers.forEach(remove => remove());
+        this.dependencyRemovers = [];
+    }
 }

@@ -11,9 +11,11 @@ import {
     createContextFolderMenuItem,
     UILayer,
     createGlobalContextBinding,
+    createBooleanSetting,
 } from "@launchmenu/core";
 import {DataCacher, IDataHook} from "model-react";
 import {SessionData} from "./SessionData";
+import {setupSessionDisposer} from "./setupSessionDisposer";
 
 export const info = {
     name: "Session manager",
@@ -28,13 +30,26 @@ export const settings = createSettings({
         createSettingsFolder({
             ...info,
             children: {
-                openMenu: createKeyPatternSetting({
-                    name: "Open session switcher",
-                    init: new KeyPattern("ctrl+w"),
+                autoCloseEmpty: createBooleanSetting({
+                    name: "Auto close empty sessions",
+                    init: true,
                 }),
-                newSession: createKeyPatternSetting({
-                    name: "Create a new session",
-                    init: new KeyPattern("ctrl+n"),
+                controls: createSettingsFolder({
+                    name: "Controls",
+                    children: {
+                        openMenu: createKeyPatternSetting({
+                            name: "Open session switcher",
+                            init: new KeyPattern("ctrl+w"),
+                        }),
+                        newSession: createKeyPatternSetting({
+                            name: "Create a new session",
+                            init: new KeyPattern("ctrl+n"),
+                        }),
+                        toggleSession: createKeyPatternSetting({
+                            name: "Toggle between sessions",
+                            init: new KeyPattern("ctrl+r"),
+                        }),
+                    },
                 }),
             },
         }),
@@ -45,6 +60,9 @@ export default declare({
     settings,
     withLM: LM => {
         const sessionManager = LM.getSessionManager();
+
+        const disposeSessionDisposer = setupSessionDisposer(LM);
+
         /** Keep track of the sessions with some extra interface data the user can attach */
         const sessionsData = new DataCacher<SessionData[]>((h, curSessionData = []) => {
             // Find the currently highest session ID (in name)
@@ -81,9 +99,20 @@ export default declare({
         const addSessionItem = createStandardMenuItem({
             name: "Add session",
             category: sessionsControlsCategory,
-            shortcut: context => context.settings.get(settings).newSession.get(),
+            shortcut: context => context.settings.get(settings).controls.newSession.get(),
             onExecute: () => {
                 const session = sessionManager.addSession();
+            },
+        });
+        const toggleSessionsItem = createStandardMenuItem({
+            name: "Toggle sessions",
+            category: sessionsControlsCategory,
+            shortcut: context =>
+                context.settings.get(settings).controls.toggleSession.get(),
+            onExecute: () => {
+                const sessions = sessionManager.getSessions();
+                const prevSession = sessions[sessions.length - 2];
+                if (prevSession) sessionManager.selectSession(prevSession);
             },
         });
 
@@ -91,6 +120,7 @@ export default declare({
         const getSessionMenuItems = (h: IDataHook = null) => [
             ...sessionsData.get(h).map(({sessionInterface}) => sessionInterface),
             addSessionItem,
+            toggleSessionsItem,
         ];
 
         return {
@@ -109,15 +139,11 @@ export default declare({
                         name: "Switch session",
                         children: getSessionMenuItems,
                         shortcut: context =>
-                            context.settings.get(settings).openMenu.get(),
+                            context.settings.get(settings).controls.openMenu.get(),
                     }),
                 }),
             ],
-            development: {
-                onReload(): void {
-                    // session.searchField.set("or");
-                },
-            },
+            onDispose: () => disposeSessionDisposer(),
         };
     },
 });

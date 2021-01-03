@@ -64,25 +64,29 @@ export class UILayer extends UnifiedAbstractUILayer {
 
     /**
      * Processes the layer data
-     * @param data The layer data to be processed
+     * @param inpData The layer data to be processed
      * @param context The context that can be used by
      * @param close A function that closes this layer in the specified context
      * @returns The processed data
      */
     protected processLayerItem(
-        data: IStandardUILayerData,
+        inpData: IStandardUILayerData,
         context: IIOContext,
         close: () => void
     ): IUILayerData[] {
         // Return the data if it's a UILayer
-        if ("getKeyHandlers" in data) return [data];
-        if (data instanceof Function) data = data(context, close);
+        if ("getKeyHandlers" in inpData) return [inpData];
+
+        const data: IStandardUILayerDataObject & {onClose?: () => void} =
+            inpData instanceof Function ? inpData(context, close) : inpData;
 
         const ID = uuid();
-        let res = {ID} as IStandardUILayerDataObject & {onClose?: () => void};
+        let res = {ID, onClose: data.onClose} as IStandardUILayerDataObject & {
+            onClose?: () => void;
+        };
         let extra: IUILayerData[] = [];
 
-        let empty = true;
+        let empty = !data.onClose;
 
         // Create the standard menu data
         if (data.menu) {

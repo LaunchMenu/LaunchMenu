@@ -3,14 +3,14 @@ import {Observer} from "../../../../utils/modelReact/Observer";
 import {IKeyEventListenerObject} from "../../../../keyHandler/_types/IKeyEventListener";
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
-import {PrioritizedMenu} from "../../PrioritizedMenu";
-import {sortContextCategories} from "../../../../actions/contextMenuAction/sortContextCategories";
+import {createContextCategoriesSorter} from "../../../../actions/contextMenuAction/createContextCategoriesSorter";
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {getHooked} from "../../../../utils/subscribables/getHooked";
 import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
 import {contextMenuAction} from "../../../../actions/contextMenuAction/contextMenuAction";
 import {keyHandlerAction} from "../../../../actions/types/keyHandler/keyHandlerAction";
+import {PrioritizedMenu} from "../../PrioritizedMenu";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
@@ -100,16 +100,16 @@ export function setupContextMenuHandler(
             // Open the menu if requested
             if (isMenuOpenEvent) {
                 const items = contextData.items;
+
                 if (items && items.length > 0 && !contextData.menu) {
                     const menu = (contextData.menu = new PrioritizedMenu(ioContext, {
-                        sortCategories: sortContextCategories,
+                        sortCategories: createContextCategoriesSorter(ioContext),
                     }));
                     menu.addItems(items);
 
                     // Dynamically load the contextMenuLayer to deal with a dependency cycle (contextMenuLayer -> UILayer -> createMenuKeyHandler -> setupContextMenuHandler)
-                    const {
-                        ContextMenuLayer,
-                    } = require("../../../../uiLayers/types/context/ContextMenuLayer");
+                    const ContextMenuLayer: typeof import("../../../../uiLayers/types/context/ContextMenuLayer").ContextMenuLayer = require("../../../../uiLayers/types/context/ContextMenuLayer")
+                        .ContextMenuLayer;
                     contextData.close = await ioContext.open(
                         new ContextMenuLayer({
                             menu,

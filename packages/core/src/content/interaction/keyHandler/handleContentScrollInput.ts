@@ -11,6 +11,7 @@ import {isContentControlsSettingsFolder} from "./isContentControlsSettingsFolder
  * @param event The event to test
  * @param content The content to be scrolled
  * @param patterns The key patterns to detect, or the base settings to extract them from
+ * @param scrollSpeed The speed to scroll with
  * @returns Whether the event was caught
  */
 export function handleContentScrollInput(
@@ -18,7 +19,8 @@ export function handleContentScrollInput(
     content: IContent,
     patterns:
         | {contentUp: KeyPattern; contentDown: KeyPattern}
-        | TSettingsFromFactory<typeof createContentControlsSettingsFolder>
+        | TSettingsFromFactory<typeof createContentControlsSettingsFolder>,
+    scrollSpeed: number = 30
 ): void | boolean {
     if (isContentControlsSettingsFolder(patterns))
         patterns = {
@@ -27,8 +29,8 @@ export function handleContentScrollInput(
         };
 
     if (patterns.contentUp.matches(event)) {
-        scrollContent(content, -30); // TODO: add settings for scroll speed
+        scrollContent(content, -scrollSpeed);
     } else if (patterns.contentDown.matches(event)) {
-        scrollContent(content, 30); // TODO: add settings for scroll speed
+        scrollContent(content, scrollSpeed);
     }
 }

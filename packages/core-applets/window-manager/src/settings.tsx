@@ -81,6 +81,10 @@ export const settings = createSettings({
                             name: "Exit LaunchMenu",
                             init: new KeyPattern("ctrl+q"),
                         }),
+                        exitState: createKeyPatternSetting({
+                            name: "Exit LaunchMenu keep state",
+                            init: new KeyPattern("ctrl+shift+q"),
+                        }),
                         restart: createKeyPatternSetting({
                             name: "Restart LaunchMenu",
                             init: new KeyPattern([]),

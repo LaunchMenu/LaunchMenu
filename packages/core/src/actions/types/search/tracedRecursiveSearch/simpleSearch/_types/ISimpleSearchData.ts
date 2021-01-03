@@ -1,9 +1,8 @@
-import {IDataHook} from "model-react";
-import {IMenuItem} from "../../../../../../menus/items/_types/IMenuItem";
 import {ISubscribable} from "../../../../../../utils/subscribables/_types/ISubscribable";
 import {IUUID} from "../../../../../../_types/IUUID";
 import {ISimpleSearchPatternMatcher} from "../../../_types/ISimpleSearchPatternMatcher";
 import {IShowChildInParent} from "../../_types/IShowChildInParent";
+import {IRecursiveSearchChildren} from "../../_types/IRecursiveSearchChildren";
 
 /**
  * Data for simple item searches
@@ -16,7 +15,7 @@ export type ISimpleSearchData = {
     /** The tags of the item */
     tags?: ISubscribable<string[] | undefined>;
     /** Any number of children that can be matched */
-    children?: ISubscribable<IMenuItem[]>;
+    children?: IRecursiveSearchChildren;
     /** Opens any required UI in order to show the specified child within its parent */
     showChild?: IShowChildInParent;
     /** The content text data (should be relatively small for efficiency) */

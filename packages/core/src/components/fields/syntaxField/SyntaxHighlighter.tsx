@@ -11,6 +11,8 @@ import {useHorizontalScroll} from "../../../utils/hooks/useHorizontalScroll";
 import {useCursorScroll} from "./useCursorScroll";
 import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {LFC} from "../../../_types/LFC";
+import {useIOContext} from "../../../context/react/useIOContext";
+import {baseSettings} from "../../../application/settings/baseSettings/baseSettings";
 
 /**
  * A simple component to render syntax highlighted using a passed highlighter
@@ -33,7 +35,14 @@ export const SyntaxHighlighter: LFC<ISyntaxHighlighterProps> = ({
     // Obtain the highlight nodes
     let nodes: IHighlightNode[];
     if ("value" in rest) {
+        const ioContext = useIOContext();
+        const highlighting = ioContext?.settings
+            .get(baseSettings)
+            .field.highlightingEnabled.get(h);
         nodes = useMemo(() => {
+            if (!highlighting)
+                return [{start: 0, end: rest.value.length, text: rest.value, tags: []}];
+
             // Highlight the text including error tags
             const {nodes, errors} = rest.highlighter.highlight(rest.value, h);
             if (rest.setErrors) rest.setErrors(errors);
@@ -42,7 +51,7 @@ export const SyntaxHighlighter: LFC<ISyntaxHighlighterProps> = ({
 
             // Return all nodes
             return errorHighlighted;
-        }, [rest.value, rest.highlightErrors, highlightChangeID.current]);
+        }, [rest.value, rest.highlightErrors, highlightChangeID.current, highlighting]);
     } else {
         nodes = rest.nodes;
     }

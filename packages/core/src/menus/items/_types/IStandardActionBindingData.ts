@@ -7,7 +7,7 @@ import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {IViewStackItemView} from "../../../uiLayers/_types/IViewStackItem";
 import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {IMenu} from "../../menu/_types/IMenu";
-import {IMenuItem} from "./IMenuItem";
+import {IRecursiveSearchChildren} from "../../../actions/types/search/tracedRecursiveSearch/_types/IRecursiveSearchChildren";
 import {IShortcutInput} from "./IShortcutInput";
 
 /**
@@ -55,7 +55,7 @@ export type IStandardActionBindingData = {
     onMenuChange?: (menu: IMenu, added: boolean) => void;
 
     /** The children that should be included in searches, defaults to undefined*/
-    searchChildren?: ISubscribable<IMenuItem[]>;
+    searchChildren?: IRecursiveSearchChildren;    
 
     /** Shows a given child in the list of children */
     onShowChild?: IShowChildInParent;
