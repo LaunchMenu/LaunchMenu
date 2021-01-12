@@ -13,7 +13,7 @@ import {IActionTarget} from "../_types/IActionTarget";
 export function hasActionBindingFor(
     action: IAction,
     targets: IActionTarget[] | IActionTarget,
-    hook: IDataHook = null
+    hook?: IDataHook
 ): boolean {
     if (!(targets instanceof Array)) targets = [targets];
 

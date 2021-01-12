@@ -22,7 +22,7 @@ class Test {
 const createTestField = (value: Test) => {
     const field = new Field(value);
     return {
-        get: (h: IDataHook) => field.get(h),
+        get: (h?: IDataHook) => field.get(h),
         set: (value: Test) => field.set(value),
         getSerialized: (h: IDataHook) => field.get(h).serialize(),
         setSerialized: ({name}: {name: string}) => field.set(Test.deserialize({name})),
@@ -147,11 +147,11 @@ describe("FieldsFile", () => {
                 fields: createFieldsCustom(),
             });
             await file.load();
-            expect(file.fields.oranges.get(null)).toEqual("no");
-            expect(file.fields.potatoes.get(null)).toEqual(41);
-            expect(file.fields.shit.get(null)).toEqual({test: 32});
-            expect(file.fields.stuff.potatoes.get(null)).toEqual(false);
-            const t = file.fields.stuff.sub.sub.potatoes.get(null);
+            expect(file.fields.oranges.get()).toEqual("no");
+            expect(file.fields.potatoes.get()).toEqual(41);
+            expect(file.fields.shit.get()).toEqual({test: 32});
+            expect(file.fields.stuff.potatoes.get()).toEqual(false);
+            const t = file.fields.stuff.sub.sub.potatoes.get();
             expect(t.name).toEqual("bob");
             expect(t).toBeInstanceOf(Test);
         });

@@ -1,12 +1,11 @@
 import React from "react";
-import {Field, IDataHook} from "model-react";
+import {Field, IDataHook, Observer} from "model-react";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {IOContext} from "../../../context/IOContext";
 import {SearchMenu} from "../../../menus/menu/SearchMenu";
 import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
 import {TextField} from "../../../textFields/TextField";
 import {createHighlighterWithSearchPattern} from "./createHighlighterWithSearchPattern";
-import {Observer} from "../../../utils/modelReact/Observer";
 import {AbstractUILayer} from "../../AbstractUILayer";
 import {IUILayerFieldData} from "../../_types/IUILayerFieldData";
 import {IUILayerMenuData} from "../../_types/IUILayerMenuData";
@@ -40,7 +39,7 @@ export class MenuSearch extends AbstractUILayer {
     }
 
     /** @override */
-    public getMenuData(hook: IDataHook = null): IUILayerMenuData[] {
+    public getMenuData(hook?: IDataHook): IUILayerMenuData[] {
         const menuData = this.menuData.get(hook);
 
         const hasSearch = this.isMenuOpen.get(hook);
@@ -57,14 +56,14 @@ export class MenuSearch extends AbstractUILayer {
     }
 
     /** @override */
-    public getFieldData(hook: IDataHook = null): IUILayerFieldData[] {
+    public getFieldData(hook?: IDataHook): IUILayerFieldData[] {
         const fieldData = this.fieldData.get(hook);
         return super.getFieldData(hook, fieldData ? [fieldData] : []);
     }
 
     /** @override */
     protected initialize(context: IOContext, close: () => void): () => void {
-        if (this.menuData.get(null))
+        if (this.menuData.get())
             throw Error("A MenuSearch can only be opened in 1 context");
 
         // Create the menu and field data models

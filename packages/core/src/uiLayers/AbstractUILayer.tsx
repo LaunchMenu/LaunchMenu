@@ -86,7 +86,7 @@ export abstract class AbstractUILayer implements IUILayer {
      * @param hook The data hook to subscribe to changes
      * @returns The path
      */
-    public getPath(hook: IDataHook = null): IUILayerPathNode[] {
+    public getPath(hook?: IDataHook): IUILayerPathNode[] {
         return this.absolutePath.get(hook);
     }
 
@@ -158,7 +158,7 @@ export abstract class AbstractUILayer implements IUILayer {
      * @param hook The hook to subscribe to changes
      * @returns The menus to get the content for
      */
-    protected getContentMenus(hook: IDataHook): IMenu[] {
+    protected getContentMenus(hook?: IDataHook): IMenu[] {
         return this.getMenuData(hook)
             .filter(({menu, hideItemContent}) => menu && !hideItemContent)
             .map(({menu}) => menu) as IMenu[];
@@ -192,7 +192,7 @@ export abstract class AbstractUILayer implements IUILayer {
      * @returns The content data of this layer
      */
     public getContentData(
-        hook: IDataHook = null,
+        hook?: IDataHook,
         extendData: IUILayerContentData[] = []
     ): IUILayerContentData[] {
         const itemContents = [...extendData];
@@ -225,7 +225,7 @@ export abstract class AbstractUILayer implements IUILayer {
      * @param hook The hook to subscribe to changes
      * @returns Whether this layer is on top
      */
-    protected isOnTop(hook: IDataHook = null): boolean {
+    protected isOnTop(hook?: IDataHook): boolean {
         const context = this.context.get(hook);
         if (!context) return false;
         const layers = context.getUI(hook);

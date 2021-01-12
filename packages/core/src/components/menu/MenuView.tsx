@@ -6,9 +6,9 @@ import {useVerticalScroll} from "../../utils/hooks/useVerticalScroll";
 import {LFC} from "../../_types/LFC";
 import {useTheme} from "../../styling/theming/ThemeContext";
 import {getHighlightThemeStyle} from "../../styling/theming/highlighting/getHighlightThemeStyle";
-import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {useIOContext} from "../../context/react/useIOContext";
 import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
+import {useDataHook} from "model-react";
 
 /**
  * A standard simple view for a menu

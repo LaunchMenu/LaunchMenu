@@ -8,10 +8,9 @@ import {KeyEvent} from "../../keyHandler/KeyEvent";
 import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
 import {IItemExecuteCallback} from "../../actions/types/execute/_types/IItemExecuteCallback";
 import {executeAction} from "../../actions/types/execute/executeAction";
-import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {getConnectionGroupAction} from "../../actions/types/connectionGroup/getConnectionGroupAction";
-import {useTheme} from "../../styling/theming/ThemeContext";
 import {BackgroundColorProvider} from "../../styling/backgroundColorContext";
+import {useDataHook} from "model-react";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution

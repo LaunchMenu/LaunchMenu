@@ -1,7 +1,6 @@
-import {IDataHook} from "model-react";
+import {DataCacher, IDataHook} from "model-react";
 import {createFolderMenuItem} from "../../../menus/items/createFolderMenuItem";
 import {hasHigherOrEqualPriority} from "../../../menus/menu/priority/hasHigherOrEqualPriority";
-import {DataCacher} from "../../../utils/modelReact/DataCacher";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {createAction} from "../../createAction";
 import {collectContextMenuItems} from "../collectContextMenuItems";

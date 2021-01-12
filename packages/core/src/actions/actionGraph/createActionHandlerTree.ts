@@ -14,7 +14,7 @@ import {IIndexedActionBinding} from "../_types/IIndexedActionBinding";
  */
 export function createActionGraph<T extends boolean = false>(
     targets: IActionTarget[],
-    hook: IDataHook = null,
+    hook?: IDataHook,
     collectTargets?: T
 ): (T extends true ? IActionNodeWithTargets : IActionNode)[] {
     // Retrieve all actions and their bindings
@@ -91,7 +91,7 @@ export function createActionGraph<T extends boolean = false>(
 export function createActionHandlerTree<T extends boolean = false>(
     rootAction: IAction,
     targets: IActionTarget[],
-    hook: IDataHook = null,
+    hook?: IDataHook,
     collectTargets?: T
 ): T extends true ? IActionNodeWithTargets : IActionNode {
     const nodes = createActionGraph<T>(targets, hook, collectTargets);

@@ -67,7 +67,7 @@ export default declare({
         const sessionsData = new DataCacher<SessionData[]>((h, curSessionData = []) => {
             // Find the currently highest session ID (in name)
             let highestSessionID = curSessionData.reduce((cur, sessionData) => {
-                const match = sessionData.name.get(null).match(/session-(\d+)/);
+                const match = sessionData.name.get().match(/session-(\d+)/);
                 return match ? Math.max(Number(match[1]), cur) : cur;
             }, 0);
 
@@ -117,7 +117,7 @@ export default declare({
         });
 
         // Collect the items for in the menu
-        const getSessionMenuItems = (h: IDataHook = null) => [
+        const getSessionMenuItems = (h?: IDataHook) => [
             ...sessionsData.get(h).map(({sessionInterface}) => sessionInterface),
             addSessionItem,
             toggleSessionsItem,

@@ -3,7 +3,6 @@ import {IStackViewProps} from "./_types/IStackViewProps";
 import {IIdentifiedItem} from "../../../_types/IIdentifiedItem";
 import {defaultTransitions, Transition} from "./transitions/Transition";
 import {getViewStackItemElement} from "./getViewStackItemElement";
-import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {LFC} from "../../../_types/LFC";
 import {IUUID} from "../../../_types/IUUID";
 import {v4 as uuid} from "uuid";
@@ -13,6 +12,7 @@ import {
 } from "../../../uiLayers/_types/IViewStackItem";
 import {IViewTransitions} from "../../../uiLayers/_types/IViewTransitions";
 import {findStackChanges} from "../../../context/findStackChanges";
+import {useDataHook} from "model-react";
 
 type IStackViewChild = {
     /** A key for this specific transition element */

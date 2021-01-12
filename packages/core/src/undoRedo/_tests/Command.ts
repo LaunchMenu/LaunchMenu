@@ -2,7 +2,7 @@ import {TestCommand} from "./TestCommand.helper";
 import {wait} from "../../_tests/wait.helper";
 import {Resource} from "../dependencies/Resource";
 import {UndoRedoFacility} from "../UndoRedoFacility";
-import {Observer} from "../../utils/modelReact/Observer";
+import {Observer} from "model-react";
 
 describe("Command", () => {
     describe("new Command", () => {

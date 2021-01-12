@@ -1,6 +1,6 @@
 import React from "react";
 import Path from "path";
-import {Loader} from "model-react";
+import {Loader, Observer} from "model-react";
 import {KeyHandler} from "../keyHandler/KeyHandler";
 import {ThemeProvider} from "../styling/theming/ThemeContext";
 import {loadTheme} from "../styling/theming/loadTheme";
@@ -12,7 +12,6 @@ import {SettingsFile} from "../settings/storage/fileTypes/SettingsFile";
 import {baseSettings} from "./settings/baseSettings/baseSettings";
 import {SessionManager} from "./LMSession/SessionManager";
 import {SettingsManager} from "./settings/SettingsManager";
-import {Observer} from "../utils/modelReact/Observer";
 import {Box} from "../styling/box/Box";
 import {IApplet} from "./applets/_types/IApplet";
 import {ipcRenderer} from "electron";

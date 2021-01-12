@@ -50,17 +50,17 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
         this.config = config;
 
         if (config.liveUpdate) this.value = field;
-        else this.value = new Field(field.get(null));
+        else this.value = new Field(field.get());
     }
 
     /** @override */
-    public getFieldData(hook: IDataHook = null): IUILayerFieldData[] {
+    public getFieldData(hook?: IDataHook): IUILayerFieldData[] {
         const menuSearch = this.menuSearch.get(hook);
         return menuSearch ? menuSearch.getFieldData(hook) : [];
     }
 
     /** @override */
-    public getContentData(hook: IDataHook = null): IUILayerContentData[] {
+    public getContentData(hook?: IDataHook): IUILayerContentData[] {
         const contentData = this.contentData.get(hook);
         return [
             ...(contentData ? [contentData] : []),
@@ -69,7 +69,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
     }
 
     /** @override */
-    public getMenuData(hook: IDataHook = null): IUILayerMenuData[] {
+    public getMenuData(hook?: IDataHook): IUILayerMenuData[] {
         const menuData = this.menuData.get(hook);
         return [
             ...(menuData ? [menuData] : []),
@@ -82,8 +82,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
         context: IIOContext,
         close: () => void
     ): Promise<() => void> {
-        if (this.menuData.get(null))
-            throw Error("An input can only be opened in 1 context");
+        if (this.menuData.get()) throw Error("An input can only be opened in 1 context");
 
         // Create the list of items for in the menu
         const controls = [this.getAddPatternItem(), this.getSubmitItem()];
@@ -184,7 +183,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
      */
     public submit(context: IIOContext): void {
         // Set the new value
-        const value = this.value.get(null);
+        const value = this.value.get();
         if (this.config.onSubmit) this.config.onSubmit(value);
         else if (this.config.undoable)
             context.undoRedo.execute(new SetFieldCommand(this.target, value));

@@ -1,7 +1,7 @@
-import {Observer} from "../Observer";
-import {wait} from "../../../_tests/wait.helper";
-import {Field, DataLoader} from "model-react";
+import {wait} from "../../_tests/wait.helper";
+import {Field, DataLoader, Observer} from "model-react";
 
+// Observer is part of model-react by now, but that contains no unit tests yet. So I will keep it here for now
 describe("Observer", () => {
     describe("new Observer", () => {
         it("Properly creates an observer", () => {

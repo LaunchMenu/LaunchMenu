@@ -1,5 +1,5 @@
 import React from "react";
-import {Field, IDataHook} from "model-react";
+import {Field, IDataHook, Observer} from "model-react";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {adjustBindings} from "../../../menus/items/adjustBindings";
 import {createStandardMenuItem} from "../../../menus/items/createStandardMenuItem";
@@ -11,7 +11,6 @@ import {Input} from "../input/Input";
 import {IInputConfig} from "../input/_types/IInputConfig";
 import {ISelectConfig} from "./_types/ISelectConfig";
 import {v4 as uuid} from "uuid";
-import {Observer} from "../../../utils/modelReact/Observer";
 import {IInputError} from "../input/_types/IInputError";
 import {IViewStackItem} from "../../_types/IViewStackItem";
 import {MenuView} from "../../../components/menu/MenuView";
@@ -53,7 +52,7 @@ export class Select<T> extends Input<T> {
     /** @override */
     protected validateConfig() {
         if (
-            typeof this.target.get(null) != "string" &&
+            typeof this.target.get() != "string" &&
             this.config.allowCustomInput &&
             (!this.config.serialize || !this.config.serialize)
         )
@@ -63,7 +62,7 @@ export class Select<T> extends Input<T> {
     }
 
     /** @override */
-    public getMenuData(hook: IDataHook = null): IUILayerMenuData[] {
+    public getMenuData(hook?: IDataHook): IUILayerMenuData[] {
         const menuData = this.menuData.get(hook);
         return super.getMenuData(hook, menuData ? [menuData] : []);
     }
@@ -115,7 +114,7 @@ export class Select<T> extends Input<T> {
 
         // Observe the input
         const fieldObserver = new Observer(h =>
-            this.fieldData.get(null)?.field?.get(h)
+            this.fieldData.get(h)?.field?.get(h)
         ).listen(search => {
             if (search !== undefined) this.menu.setSearch(search);
         });
@@ -174,7 +173,7 @@ export class Select<T> extends Input<T> {
                       executeAction.createBinding(({context}) => this.submit(context)),
                       // Select this item when added to menu
                       onMenuChangeAction.createBinding((menu, added) => {
-                          const v = this.target.get(null);
+                          const v = this.target.get();
                           if (
                               menu == this.menu &&
                               added &&
@@ -201,7 +200,7 @@ export class Select<T> extends Input<T> {
     }
 
     /** @override */
-    public getValue(hook: IDataHook = null): T | IInputError {
+    public getValue(hook?: IDataHook): T | IInputError {
         if (this.isCustomSelected(hook)) return super.getValue(hook);
         const option = this.getSelected();
         return option
@@ -285,7 +284,7 @@ export class Select<T> extends Input<T> {
      * @param hook The hook to subscribe to changes
      * @returns Whether custom input is selected
      */
-    public isCustomSelected(hook: IDataHook = null): boolean {
+    public isCustomSelected(hook?: IDataHook): boolean {
         const cursor = this.menu.getCursor(hook);
         if (!cursor || !this.customItem) return false;
         return (

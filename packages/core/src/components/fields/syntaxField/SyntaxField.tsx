@@ -2,11 +2,11 @@ import React, {useCallback, useState} from "react";
 import {ISyntaxFieldProps} from "./_types/ISyntaxFieldProps";
 import {SyntaxHighlighter} from "./SyntaxHighlighter";
 import {useTheme} from "../../../styling/theming/ThemeContext";
-import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {ITextSelection} from "../../../textFields/_types/ITextSelection";
 import {useUpdateEffect} from "../../../utils/hooks/useUpdateEffect";
 import {mergeStyles} from "../../../utils/mergeStyles";
 import {LFC} from "../../../_types/LFC";
+import {useDataHook} from "model-react";
 
 export const SyntaxField: LFC<ISyntaxFieldProps> = ({
     field,

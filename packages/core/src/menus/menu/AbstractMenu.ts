@@ -56,8 +56,8 @@ export abstract class AbstractMenu implements IMenu {
      * @param selected Whether to select or deselect
      */
     public setSelected(item: IMenuItem, selected: boolean = true): void {
-        if (this.getItems().includes(item) && !this.destroyed.get(null)) {
-            const selectedItems = this.selected.get(null);
+        if (this.getItems().includes(item) && !this.destroyed.get()) {
+            const selectedItems = this.selected.get();
             if (selected) {
                 if (!selectedItems.includes(item) && isItemSelectable(item)) {
                     this.selected.set([...selectedItems, item]);
@@ -79,9 +79,9 @@ export abstract class AbstractMenu implements IMenu {
     public setCursor(item: IMenuItem | null): void {
         if (
             (!item || (this.getItems().includes(item) && isItemSelectable(item))) &&
-            !this.destroyed.get(null)
+            !this.destroyed.get()
         ) {
-            const currentCursor = this.cursor.get(null);
+            const currentCursor = this.cursor.get();
             if (currentCursor) onCursorAction.get([currentCursor]).onCursor(false, this);
 
             this.cursor.set(item);
@@ -95,7 +95,7 @@ export abstract class AbstractMenu implements IMenu {
      * @param hook The hook to subscribe to changes
      * @returns The selected menu items
      */
-    public getSelected(hook: IDataHook = null): IMenuItem[] {
+    public getSelected(hook?: IDataHook): IMenuItem[] {
         if (this.isDestroyed(hook)) return [];
         return this.selected.get(hook);
     }
@@ -105,7 +105,7 @@ export abstract class AbstractMenu implements IMenu {
      * @param hook The hook to subscribe to changes
      * @returns The cursor item
      */
-    public getCursor(hook: IDataHook = null): IMenuItem | null {
+    public getCursor(hook?: IDataHook): IMenuItem | null {
         if (this.isDestroyed(hook)) return null;
         return this.cursor.get(hook);
     }
@@ -115,7 +115,7 @@ export abstract class AbstractMenu implements IMenu {
      * @param hook The hook to subscribe to changes
      * @returns The selected items including the cursor
      */
-    public getAllSelected(hook: IDataHook = null): IMenuItem[] {
+    public getAllSelected(hook?: IDataHook): IMenuItem[] {
         if (this.isDestroyed(hook)) return [];
         const cursor = this.cursor.get(hook);
         const selected = this.getSelected(hook);
@@ -128,13 +128,13 @@ export abstract class AbstractMenu implements IMenu {
      * Destroys the menu, making sure that all items are unselected
      */
     public destroy(): boolean {
-        if (this.destroyed.get(null) == true) return false;
+        if (this.destroyed.get() == true) return false;
 
         // Select the selection
-        onSelectAction.get(this.selected.get(null)).onSelect(false, this);
+        onSelectAction.get(this.selected.get()).onSelect(false, this);
 
         // Decursor the cursor
-        const cursor = this.cursor.get(null);
+        const cursor = this.cursor.get();
         if (cursor) onCursorAction.get([cursor]).onCursor(false, this);
 
         // Remove the items from the menu
@@ -149,7 +149,7 @@ export abstract class AbstractMenu implements IMenu {
      * @param hook The hook to subscribe to changes
      * @returns Whether the menu was destroyed
      */
-    public isDestroyed(hook: IDataHook = null): boolean {
+    public isDestroyed(hook?: IDataHook): boolean {
         return this.destroyed.get(hook);
     }
 }

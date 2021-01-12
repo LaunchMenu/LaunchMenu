@@ -32,7 +32,7 @@ export const updateKeyPatternOptionExecuteHandler = createAction({
                                             ...option,
                                             pattern: newOptionPattern,
                                         };
-                                        const pattern = patternField.get(null);
+                                        const pattern = patternField.get();
                                         const newIndex = getKeyPatternOptionIndex(
                                             pattern,
                                             option

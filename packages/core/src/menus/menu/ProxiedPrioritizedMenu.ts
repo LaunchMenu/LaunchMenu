@@ -1,6 +1,5 @@
-import {IDataRetriever} from "model-react";
+import {IDataRetriever, Observer} from "model-react";
 import {IIOContext} from "../../context/_types/IIOContext";
-import {Observer} from "../../utils/modelReact/Observer";
 import {PrioritizedMenu} from "./PrioritizedMenu";
 import {IPrioritizedMenuConfig} from "./_types/IPrioritizedMenuConfig";
 import {IPrioritizedMenuItem} from "./_types/IPrioritizedMenuItem";

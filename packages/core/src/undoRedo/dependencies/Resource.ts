@@ -30,7 +30,7 @@ export class Resource {
      * @param hook A hook to subscribe to changes
      * @returns Whether the resource is locked
      */
-    public isLocked(hook: IDataHook = null): boolean {
+    public isLocked(hook?: IDataHook): boolean {
         return this.semaphore.isLocked(hook);
     }
 

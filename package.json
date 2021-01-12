@@ -17,5 +17,8 @@
         "@launchmenu/build-tools": "^0.0.2",
         "lerna": "^3.22.1",
         "rimraf": "^3.0.2"
+    },
+    "dependencies": {
+        "model-react": "^4.0.1"
     }
 }

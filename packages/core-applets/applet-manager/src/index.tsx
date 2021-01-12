@@ -1,13 +1,10 @@
 import {
     createSettings,
     createSettingsFolder,
-    createStandardMenuItem,
     declare,
-    IMenuItem,
-    Observer,
     searchAction,
 } from "@launchmenu/core";
-import {DataCacher, Field} from "model-react";
+import {DataCacher} from "model-react";
 import {createAppletMenuItem} from "./createAppletMenuItem";
 
 export const info = {

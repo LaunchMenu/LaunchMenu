@@ -1,9 +1,8 @@
-import {IDataHook} from "model-react";
+import {IDataHook, waitFor} from "model-react";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
 import {ProxiedMenu} from "../../../menus/menu/ProxiedMenu";
 import {UILayer} from "../../../uiLayers/standardUILayer/UILayer";
-import {waitFor} from "../../../utils/modelReact/waitFor";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {createContextAction} from "../../contextMenuAction/createContextAction";
 import {executeAction} from "./executeAction";
@@ -41,7 +40,7 @@ export const openMenuExecuteHandler = createContextAction({
     override: executeAction,
     parents: [sequentialExecuteHandler],
     core: (data: IOpenMenuExecuteData[]) => {
-        const childrenGetter = (h: IDataHook = null) =>
+        const childrenGetter = (h?: IDataHook) =>
             data.flatMap(d => ("items" in d ? getHooked(d.items, h) : getHooked(d, h)));
 
         /**

@@ -15,7 +15,7 @@ export const keyInputExecuteHandler = createAction({
         children: data.map((binding, i) =>
             sequentialExecuteHandler.createBinding({
                 execute: ({context}) => {
-                    const pattern = binding.field.get(null);
+                    const pattern = binding.field.get();
 
                     // Execute the update pattern action if there is only 1 pattern
                     if (pattern.patterns.length <= 1) {

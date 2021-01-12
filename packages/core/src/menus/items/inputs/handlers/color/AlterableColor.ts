@@ -50,7 +50,7 @@ export class AlterableColor extends Field<Color> {
      * @param hook The hook to subscribe to changes
      * @returns The color
      */
-    public get(hook: IDataHook = null): Color {
+    public get(hook?: IDataHook): Color {
         return this.get(hook);
     }
 }

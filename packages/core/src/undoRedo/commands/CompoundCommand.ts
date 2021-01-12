@@ -93,7 +93,7 @@ export class CompoundCommand implements ICommand {
      * @param hook The hook to subscribe to changes
      * @returns The state of this command
      */
-    public getState(hook: IDataHook = null): ICommandState {
+    public getState(hook?: IDataHook): ICommandState {
         return this.stateGetter.get(hook).overall;
     }
 }

@@ -1,5 +1,4 @@
-import {Field, IDataHook} from "model-react";
-import {Observer} from "../../../utils/modelReact/Observer";
+import {Field, IDataHook, Observer} from "model-react";
 import {wait} from "../../../_tests/wait.helper";
 import {IAction} from "../../_types/IAction";
 import {IActionNode} from "../../_types/IActionNode";

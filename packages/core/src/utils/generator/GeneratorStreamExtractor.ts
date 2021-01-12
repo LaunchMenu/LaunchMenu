@@ -35,21 +35,21 @@ export class GeneratorStreamExtractor<T> {
      * @returns A promise that resolves when extraction finished or was stopped
      */
     public start(): Promise<void> {
-        if (this.stopped.get(null))
+        if (this.stopped.get())
             throw Error(
                 "Item extraction can't continue after having finished or been stopped"
             );
 
-        if (!this.started.get(null)) {
+        if (!this.started.get()) {
             // If extraction hasn't started yet, start it
             this.started.set(true);
             this.generatorResult = new Promise(res => (this.resolveStart = res));
             this.generator(item => {
-                if (this.paused.get(null)) {
+                if (this.paused.get()) {
                     // Don't pass item to callback since generation was already paused
                     this.pausedItem = item;
                     return new Promise(res => (this.continueExtraction = res));
-                } else if (!this.stopped.get(null)) {
+                } else if (!this.stopped.get()) {
                     // On standard stream mode, forward the item and return a resolved promise
                     this.itemCallback(item);
                     return Promise.resolve(false);
@@ -68,7 +68,7 @@ export class GeneratorStreamExtractor<T> {
                     this.resolveStart = null;
                 }
             });
-        } else if (this.paused.get(null)) {
+        } else if (this.paused.get()) {
             // Continue execution
             this.paused.set(false);
 
@@ -86,7 +86,7 @@ export class GeneratorStreamExtractor<T> {
      * Pauses item extraction, which may be continued later
      */
     public pause(): void {
-        if (this.started.get(null) && !this.stopped.get(null)) this.paused.set(true);
+        if (this.started.get() && !this.stopped.get()) this.paused.set(true);
     }
 
     /**
@@ -98,7 +98,7 @@ export class GeneratorStreamExtractor<T> {
             this.resolveStart();
             this.resolveStart = null;
         }
-        if (this.paused.get(null)) {
+        if (this.paused.get()) {
             this.paused.set(false);
             if (this.continueExtraction) {
                 this.sentStopSignal = true;
@@ -114,7 +114,7 @@ export class GeneratorStreamExtractor<T> {
      * @param hook The hook to subscribe to changes
      * @returns Whether started
      */
-    public hasStarted(hook: IDataHook = null): boolean {
+    public hasStarted(hook?: IDataHook): boolean {
         return this.started.get(hook);
     }
 
@@ -123,7 +123,7 @@ export class GeneratorStreamExtractor<T> {
      * @param hook The hook to subscribe to changes
      * @returns Whether paused
      */
-    public isPaused(hook: IDataHook = null): boolean {
+    public isPaused(hook?: IDataHook): boolean {
         return this.paused.get(hook);
     }
 
@@ -132,7 +132,7 @@ export class GeneratorStreamExtractor<T> {
      * @param hook The hook to subscribe to changes
      * @returns Whether the generator extracted all items, or the extractor was stopped
      */
-    public hasFinished(hook: IDataHook = null): boolean {
+    public hasFinished(hook?: IDataHook): boolean {
         return this.stopped.get(hook);
     }
 }

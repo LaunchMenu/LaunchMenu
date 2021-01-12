@@ -1,10 +1,10 @@
 import {
     Field,
-    ActionState,
     isLoading,
     getExceptions,
     IDataHook,
     isDataLoadRequest,
+    ExecutionState,
 } from "model-react";
 import FS from "fs";
 import Path from "path";
@@ -16,7 +16,8 @@ import {ISavable} from "./_types/ISavable";
  */
 export class File<T = string, I extends T = T> extends Field<T> implements ISavable {
     protected filePath: string;
-    protected loading = new ActionState<T>();
+    protected loading = new ExecutionState();
+    protected loadPromise: Promise<T> | null = null;
     protected loadTime: number = 0;
     protected encoding: BufferEncoding;
 
@@ -68,42 +69,41 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
      */
     public async load(allowFileNotFound: boolean = true): Promise<T> {
         // Don't reload the data if it's already loading, instead return the same result
-        if (isLoading(h => this.loading.get(h))) {
+        if (isLoading(h => this.loading.get(h)) && this.loadPromise) {
             const errors = getExceptions(h => this.loading.get(h));
             if (errors.length > 0) throw errors[0];
-            return this.loading.getLatest(null) as T;
+            return this.loadPromise;
         }
 
         // If the data isn't loading currently, reload it
         this.loadTime = Date.now();
-        return this.loading.addAction(
-            new Promise(async (res, rej) => {
-                try {
-                    if (!FS.existsSync(this.filePath)) {
-                        return res();
-                    }
-                    FS.readFile(this.filePath, this.encoding, (err, data) => {
-                        if (err) rej(err);
-                        else if (data) {
-                            try {
-                                // Calling set automatically resets the loading state
-                                if (isLoading(h => this.loading.get(h)))
-                                    this.set(this.decode(data));
-                                res();
-                            } catch (e) {
-                                rej(e);
-                            }
-                        } else res();
-                    });
-                } catch (e) {
-                    if (!allowFileNotFound) rej(e);
-                    else {
-                        console.error(e);
-                        res();
-                    }
+        this.loadPromise = new Promise(async (res, rej) => {
+            try {
+                if (!FS.existsSync(this.filePath)) {
+                    return res();
                 }
-            })
-        );
+                FS.readFile(this.filePath, this.encoding, (err, data) => {
+                    if (err) rej(err);
+                    else if (data) {
+                        try {
+                            // Calling set automatically resets the loading state
+                            if (isLoading(h => this.loading.get(h)))
+                                this.set(this.decode(data));
+                            res();
+                        } catch (e) {
+                            rej(e);
+                        }
+                    } else res();
+                });
+            } catch (e) {
+                if (!allowFileNotFound) rej(e);
+                else {
+                    console.error(e);
+                    res();
+                }
+            }
+        });
+        return this.loading.add(this.loadPromise);
     }
 
     /**
@@ -156,7 +156,7 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
      */
     public set(data: T): void {
         super.set(data);
-        this.loading.reset();
+        if (this.loadPromise) this.loading.remove(this.loadPromise);
     }
 
     /**
@@ -164,7 +164,7 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
      * @param hook The hook to subscribe to changes and possibly indicate to reload the data
      * @returns The current data
      */
-    public get(hook: IDataHook = null): T {
+    public get(hook?: IDataHook): T {
         // Load the data if requested
         if (
             isDataLoadRequest(hook) &&

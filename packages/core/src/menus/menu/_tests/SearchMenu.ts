@@ -2,7 +2,7 @@ import {SearchMenu} from "../SearchMenu";
 import {createDummySearchableMenuItem} from "./MenuItem.helper";
 import {wait} from "../../../_tests/wait.helper";
 import {dummyContext} from "../../../_tests/context.helper";
-import {Observer} from "../../../utils/modelReact/Observer";
+import {Observer} from "model-react";
 
 describe("SearchMenu", () => {
     describe("new SearchMenu", () => {

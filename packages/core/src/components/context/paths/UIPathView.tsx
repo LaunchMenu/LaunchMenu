@@ -1,8 +1,8 @@
+import {useDataHook} from "model-react";
 import React, {useMemo, useRef} from "react";
 import {getContextTopLayer} from "../../../context/uiExtracters/getContextTopLayer";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {Box} from "../../../styling/box/Box";
-import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {LFC} from "../../../_types/LFC";
 import {Transition} from "../stacks/transitions/Transition";
 import {Breadcumbs} from "./Breadcrumbs";

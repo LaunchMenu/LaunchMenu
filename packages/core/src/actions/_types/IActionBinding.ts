@@ -15,7 +15,7 @@ export type IActionBinding<A extends IAction = IAction> = {
     | {
           /** A function to retrieve the actual action input data */
           subscribableData: (
-              hook: IDataHook
+              hook?: IDataHook
           ) => A extends IAction<infer I, any, any> ? I : never;
       }
 );

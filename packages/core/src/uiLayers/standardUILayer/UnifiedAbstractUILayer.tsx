@@ -75,7 +75,7 @@ export abstract class UnifiedAbstractUILayer extends AbstractUILayer implements 
      * @param hook The data hook to subscribe to changes
      * @returns The content data of this layer
      */
-    public getContentData(hook: IDataHook = null): IUILayerContentData[] {
+    public getContentData(hook?: IDataHook): IUILayerContentData[] {
         const content = this.getAll(hook)
             .flatMap((item): IUILayerData[] =>
                 "getContentData" in item ? item.getContentData(hook) : [item]

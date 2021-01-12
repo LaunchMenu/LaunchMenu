@@ -1,5 +1,6 @@
-import {Box, IField, ISize, useDataHook} from "@launchmenu/core";
+import {Box, IField, ISize} from "@launchmenu/core";
 import {BrowserWindow} from "electron";
+import {useDataHook} from "model-react";
 import React, {FC, useEffect} from "react";
 
 /**

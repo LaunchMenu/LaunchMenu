@@ -1,9 +1,8 @@
-import {IDataHook, IDataRetriever} from "model-react";
+import {DataCacher, IDataHook, IDataRetriever} from "model-react";
 import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
 import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
 import {IIOContext} from "../../context/_types/IIOContext";
-import {DataCacher} from "../../utils/modelReact/DataCacher";
 import {TRequired} from "../../_types/TRequired";
 import {isItemSelectable} from "../items/isItemSelectable";
 import {IMenuItem} from "../items/_types/IMenuItem";
@@ -105,7 +104,7 @@ export class ProxiedMenu extends AbstractMenu {
      */
     protected deselectRemovedCursor(): void {
         const items = this.getItems();
-        const cursor = this.cursor.get(null);
+        const cursor = this.cursor.get();
         updateCursor: if (cursor == null || !items.includes(cursor)) {
             for (let i = 0; i < items.length; i++)
                 if (isItemSelectable(items[i])) {
@@ -122,10 +121,10 @@ export class ProxiedMenu extends AbstractMenu {
      * @param hook The hook to subscribe to changes
      * @returns The menu items
      */
-    public getItems(hook: IDataHook = null): IMenuItem[] {
+    public getItems(hook?: IDataHook): IMenuItem[] {
         if (this.isDestroyed(hook))
             // Whenever the menu is destroyed, we no longer inform about item changes
-            return this.itemsList.get(null);
+            return this.itemsList.get();
         return this.itemsList.get(hook);
     }
 
@@ -134,10 +133,10 @@ export class ProxiedMenu extends AbstractMenu {
      * @param hook The hook to subscribe to changes
      * @returns The categories and their items
      */
-    public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
+    public getCategories(hook?: IDataHook): IMenuCategoryData[] {
         if (this.isDestroyed(hook))
             // Whenever the menu is destroyed, we no longer inform about category changes
-            return this.categories.get(null).categories;
+            return this.categories.get().categories;
         return this.categories.get(hook).categories;
     }
 }

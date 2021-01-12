@@ -1,10 +1,9 @@
-import {Field} from "model-react";
+import {Field, Observer} from "model-react";
 import {getCategoryAction} from "../../../actions/types/category/getCategoryAction";
 import {ICategory} from "../../../actions/types/category/_types/ICategory";
 import {onCursorAction} from "../../../actions/types/onCursor/onCursorAction";
 import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
 import {onSelectAction} from "../../../actions/types/onSelect/onSelectAction";
-import {Observer} from "../../../utils/modelReact/Observer";
 import {dummyContext} from "../../../_tests/context.helper";
 import {wait} from "../../../_tests/wait.helper";
 import {PrioritizedMenu} from "../PrioritizedMenu";
@@ -203,7 +202,7 @@ describe("PrioritizedMenu", () => {
                 const item = createDummyPrioritizedMenuItem({
                     generateID: true,
                     actionBindings: h => {
-                        return [getCategoryAction.createBinding(category.get(h ?? null))];
+                        return [getCategoryAction.createBinding(category.get(h))];
                     },
                     name: "item",
                 });

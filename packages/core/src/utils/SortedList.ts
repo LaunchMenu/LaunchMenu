@@ -34,7 +34,7 @@ export class SortedList<T> {
      * @returns The list of items
      */
     public get(hook?: IDataHook): T[] {
-        return this.list.get(hook || null);
+        return this.list.get(hook);
     }
 
     /**
@@ -55,7 +55,7 @@ export class SortedList<T> {
     public find(
         checkItem: ((item: T) => -1 | 0 | 1) | T
     ): number | {index: number; item: T} | {index: -1} {
-        const l = this.list.get(null);
+        const l = this.list.get();
         let start = 0;
         let end = l.length - 1;
         if (checkItem instanceof Function) {
@@ -91,7 +91,7 @@ export class SortedList<T> {
      */
     public add(items: T[], maxItems?: number): void;
     public add(items: T[] | T, maxItems?: number): void {
-        const curItems = this.list.get(null);
+        const curItems = this.list.get();
         const lastItem = curItems[curItems.length - 1];
         let out: T[];
 
@@ -147,7 +147,7 @@ export class SortedList<T> {
         items: T[] | T,
         equals: (a: T, b: T) => boolean = (a, b) => a == b
     ): void | boolean {
-        const curItems = this.list.get(null);
+        const curItems = this.list.get();
         const lastItem = curItems[curItems.length - 1];
         let out: T[] = new Array();
 
@@ -194,7 +194,7 @@ export class SortedList<T> {
      */
     public removeIndex(index: number): void;
     public removeIndex(indices: number[] | number) {
-        const curItems = this.list.get(null);
+        const curItems = this.list.get();
         let out: T[] = new Array(curItems.length);
 
         if (!(indices instanceof Array)) indices = [indices];
@@ -227,7 +227,7 @@ export class SortedList<T> {
      * @returns Whether any items were returned
      */
     public filter(include: (item: T) => boolean): boolean {
-        const curItems = this.list.get(null);
+        const curItems = this.list.get();
 
         // Filter the items
         let removed = [] as T[];

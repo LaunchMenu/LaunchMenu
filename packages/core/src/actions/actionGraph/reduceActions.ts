@@ -17,7 +17,7 @@ import {IIndexedActionBinding} from "../_types/IIndexedActionBinding";
 export function reduceActions(
     actions: IActionNode[],
     items: IActionTarget[],
-    hook: IDataHook = null,
+    hook?: IDataHook,
     getActionResultIndex: (bindings: IIndexedActionBinding[]) => number = bindings =>
         bindings[0] ? bindings[0].index : Infinity
 ): IActionResult<any, any> | undefined {
@@ -81,7 +81,7 @@ export function getAllActionBindings(actionNode: IActionNode): IIndexedActionBin
  */
 export function getBindingData<A extends IAction<I, any, any>, I>(
     binding: IActionBinding<A>,
-    hook: IDataHook
+    hook?: IDataHook
 ): I {
     if ("data" in binding) return binding.data;
     else return binding.subscribableData(hook);

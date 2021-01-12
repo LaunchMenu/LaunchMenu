@@ -12,12 +12,12 @@ import {selectExecuteHandler} from "../../../../../uiLayers/types/select/selectE
  */
 export function createSimpleSearchHandlerMethodSetting() {
     const field = new Field(null as ISimpleSearchMethod | null);
-    const get = (hook: IDataHook = null) =>
+    const get = (hook?: IDataHook) =>
         field.get(hook) || simpleSearchHandler.getSearchMethods()[0];
     const serializedField = {
         get,
         set: (value: ISimpleSearchMethod) => field.set(value),
-        getSerialized: (hook: IDataHook = null) => get(hook).ID,
+        getSerialized: (hook?: IDataHook) => get(hook).ID,
         setSerialized: (value: IUUID) => {
             const methods = simpleSearchHandler.getSearchMethods();
             const method = methods.find(({ID}) => ID == value) || methods[0];

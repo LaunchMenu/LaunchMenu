@@ -1,4 +1,11 @@
-import {Field, IDataHook, IDataRetriever, Loader} from "model-react";
+import {
+    DataCacher,
+    Field,
+    IDataHook,
+    IDataRetriever,
+    Loader,
+    Observer,
+} from "model-react";
 import React from "react";
 import {IOContext} from "../../context/IOContext";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
@@ -8,7 +15,6 @@ import {KeyEvent} from "../../keyHandler/KeyEvent";
 import {TextField} from "../../textFields/TextField";
 import {createHighlighterWithSearchPattern} from "../../uiLayers/types/menuSearch/createHighlighterWithSearchPattern";
 import {UndoRedoFacility} from "../../undoRedo/UndoRedoFacility";
-import {Observer} from "../../utils/modelReact/Observer";
 import {ApplicationLayout} from "../components/ApplicationLayout";
 import {LaunchMenu} from "../LaunchMenu";
 import {v4 as uuid} from "uuid";
@@ -28,7 +34,6 @@ import {IActionBinding} from "../../actions/_types/IActionBinding";
 import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
 import {IStandardUILayerData} from "../../uiLayers/standardUILayer/_types/IStandardUILayerData";
 import {Content} from "../../content/Content";
-import {DataCacher} from "../../utils/modelReact/DataCacher";
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 
 /**
@@ -344,7 +349,7 @@ export class LMSession {
      * @param hook The hook to subscribe to changes
      * @returns Whether on the home screen
      */
-    public isHome(hook: IDataHook = null): boolean {
+    public isHome(hook?: IDataHook): boolean {
         const layers = this.context.getUI(hook);
         return (
             layers[layers.length - 1] == this.homeLayer &&
@@ -358,7 +363,7 @@ export class LMSession {
      * @param hook The hook to subscribe to changes
      * @returns The initialized applets
      */
-    public getApplets(hook: IDataHook = null): IApplet[] {
+    public getApplets(hook?: IDataHook): IApplet[] {
         return [
             ...this.appletData.get(hook).map(({initializedApplet}) => initializedApplet),
             ...this.extraApplets.get(hook),
@@ -370,7 +375,7 @@ export class LMSession {
      * @param hook The hook to subscribe to changes
      * @returns The searchables
      */
-    public getSearchables(hook: IDataHook = null): IMenuSearchable[] {
+    public getSearchables(hook?: IDataHook): IMenuSearchable[] {
         return [
             ...this.appletData.get(hook).flatMap(({searchable}) => searchable ?? []),
             ...this.extraSearchables.get(hook),

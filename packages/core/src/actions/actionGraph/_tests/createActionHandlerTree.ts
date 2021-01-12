@@ -1,5 +1,4 @@
-import {Field} from "model-react";
-import {Observer} from "../../../utils/modelReact/Observer";
+import {Field, Observer} from "model-react";
 import {wait} from "../../../_tests/wait.helper";
 import {IAction} from "../../_types/IAction";
 import {IActionBinding} from "../../_types/IActionBinding";
@@ -198,7 +197,7 @@ describe("createActionHandlerTree", () => {
         const targets: IActionTarget[] = [
             {actionBindings: actions.slice(0, 4).map(a => createBinding(a))},
             {
-                actionBindings: h => bindings.get(h ?? null),
+                actionBindings: h => bindings.get(h),
             },
         ];
 

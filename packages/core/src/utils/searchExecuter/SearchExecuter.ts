@@ -46,7 +46,7 @@ export class SearchExecuter<Q, I> {
      * @param hook The hook to subscribe to changes
      * @returns The current query
      */
-    public getQuery(hook: IDataHook = null): Q | null {
+    public getQuery(hook?: IDataHook): Q | null {
         return this.executer.getQuery(hook);
     }
 
@@ -55,7 +55,7 @@ export class SearchExecuter<Q, I> {
      * @param hook The hook to subscribe to changes
      * @returns Whether any search is in progress
      */
-    public isSearching(hook: IDataHook = null): boolean {
+    public isSearching(hook?: IDataHook): boolean {
         return this.executer.isSearching(hook);
     }
 
@@ -64,7 +64,7 @@ export class SearchExecuter<Q, I> {
      * @param hook The hook to subscribe to changes
      * @returns The patterns that were found
      */
-    public getPatterns(hook: IDataHook = null): IPatternMatch[] {
+    public getPatterns(hook?: IDataHook): IPatternMatch[] {
         return this.filter.getPatterns(hook);
     }
 

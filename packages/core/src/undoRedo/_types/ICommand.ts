@@ -26,5 +26,5 @@ export type ICommand = {
      * @param hook The hook to subscribe to changes
      * @returns The current state of the command
      */
-    getState(hook: IDataHook): ICommandState;
+    getState(hook?: IDataHook): ICommandState;
 };

@@ -1,6 +1,6 @@
+import {Observer} from "model-react";
 import {wait} from "../../../_tests/wait.helper";
 import {Semaphore} from "../Semaphore";
-import {Observer} from "../../../utils/modelReact/Observer";
 
 describe("Semaphore", () => {
     describe("new Semaphore", () => {

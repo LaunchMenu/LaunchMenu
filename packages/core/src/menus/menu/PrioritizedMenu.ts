@@ -2,7 +2,7 @@ import {Field, IDataHook} from "model-react";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
 import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
 import {IIOContext} from "../../context/_types/IIOContext";
-import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
+import {createCallbackHook} from "../../utils/createCallbackHook";
 import {SortedList} from "../../utils/SortedList";
 import {getHooked} from "../../utils/subscribables/getHooked";
 import {IUUID} from "../../_types/IUUID";
@@ -226,15 +226,15 @@ export class PrioritizedMenu extends AbstractMenu {
      * Checks whether the selected items are still present, and deselects them if not
      */
     protected deselectRemovedItems(): void {
-        const items = this.items.get(null).map(({item}) => item);
-        const selected = this.selected.get(null);
+        const items = this.items.get().map(({item}) => item);
+        const selected = this.selected.get();
         const remaining = selected.filter(item => items.includes(item));
         if (selected.length != remaining.length) {
             this.selected.set(remaining);
         }
 
         // Sets the current cursor if there isn't any yet
-        const cursor = this.cursor.get(null);
+        const cursor = this.cursor.get();
         updateCursor: if (cursor == null || !items.includes(cursor)) {
             for (let i = 0; i < items.length; i++)
                 if (isItemSelectable(items[i])) {
@@ -270,10 +270,10 @@ export class PrioritizedMenu extends AbstractMenu {
      * @param hook The hook to subscribe to changes
      * @returns The menu items
      */
-    public getItems(hook: IDataHook = null): IMenuItem[] {
+    public getItems(hook?: IDataHook): IMenuItem[] {
         if (this.isDestroyed(hook))
             // Whenever the menu is destroyed, we no longer inform about item changes
-            return this.categorizer.getItems(null);
+            return this.categorizer.getItems();
 
         if (hook && "markIsLoading" in hook && this.config.isLoading.get(hook))
             hook.markIsLoading?.();
@@ -285,10 +285,10 @@ export class PrioritizedMenu extends AbstractMenu {
      * @param hook The hook to subscribe to changes
      * @returns The categories and their items
      */
-    public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
+    public getCategories(hook?: IDataHook): IMenuCategoryData[] {
         if (this.isDestroyed(hook))
             // Whenever the menu is destroyed, we no longer inform about category changes
-            return this.categorizer.getCategories(null);
+            return this.categorizer.getCategories();
 
         if (hook && "markIsLoading" in hook && this.config.isLoading.get(hook))
             hook.markIsLoading?.();

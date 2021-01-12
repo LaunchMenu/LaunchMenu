@@ -2,8 +2,8 @@ import React, {useCallback} from "react";
 import {AceEditor} from "./AceEditor";
 import {IEditorFieldProps} from "./_types/IEditorFieldProps";
 import {mergeStyles} from "../../../utils/mergeStyles";
-import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {LFC} from "../../../_types/LFC";
+import {useDataHook} from "model-react";
 
 /**
  * An editor field that uses ace to highlight text

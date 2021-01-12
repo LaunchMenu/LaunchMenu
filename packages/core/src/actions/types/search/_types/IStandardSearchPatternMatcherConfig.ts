@@ -13,7 +13,7 @@ export type IStandardSearchPatternMatcherConfig = {
         | RegExp
         | ((
               query: IQuery,
-              hook: IDataHook
+              hook?: IDataHook
           ) => RegExp | ITextSelection[] | Partial<IPatternMatch> | undefined);
     /** A syntax highlighter to use to highlight the search field */
     highlighter?: IHighlighter;

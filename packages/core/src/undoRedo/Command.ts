@@ -127,7 +127,7 @@ export abstract class Command implements ICommand {
      * @param hook The hook to subscribe to changes
      * @returns The state of the command
      */
-    public getState(hook: IDataHook = null): ICommandState {
+    public getState(hook?: IDataHook): ICommandState {
         return this.state.get(hook);
     }
 

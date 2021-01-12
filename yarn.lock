@@ -7330,10 +7330,10 @@ mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@^0.5.4, mkdirp@^0.5.5, mkdirp@~0.5.0:
   dependencies:
     minimist "^1.2.5"
 
-model-react@^3.0.2, model-react@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/model-react/-/model-react-3.0.3.tgz#70ac2583cb68d4d5b7faa5bdf986013359616824"
-  integrity sha512-SZaLe0R/gNmBHTbEOuHxFjNIw+oR8TKsOMp2KqM139Yal127vrBbm6E3Z94vMXgngoPFWeSxTvGL7RJJUsWyGQ==
+model-react@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/model-react/-/model-react-4.0.1.tgz#d00f1993d775d83b329a5263ef3b18deb1c41d10"
+  integrity sha512-8gJaKAHRejqQNbuayaqIDShCJC68L7qC64VtNKNn/9H1Kq9UagbQDa4BFYPgDfr9gcHxlDcD0pB/t9docw2QnQ==
 
 modify-values@^1.0.0:
   version "1.0.1"

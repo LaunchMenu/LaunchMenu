@@ -1,5 +1,5 @@
 import hmr, {HMRWatcher} from "@launchmenu/hmr";
-import {Field, IDataHook} from "model-react";
+import {DataCacher, Field, IDataHook} from "model-react";
 import {IAppletConfig} from "./_types/IAppletConfig";
 import {IAppletSource} from "./_types/IAppletSource";
 import Path from "path";
@@ -10,7 +10,6 @@ import {IUUID} from "../../_types/IUUID";
 import {createAppletResultCategory} from "./createAppletResultCategory";
 import {withLM} from "./declaration/withLM";
 import {JSONFile} from "../../settings/storage/fileTypes/JSONFile";
-import {DataCacher} from "../../utils/modelReact/DataCacher";
 import {IAppletData} from "./_types/IAppletData";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 
@@ -66,7 +65,7 @@ export class AppletManager {
     public destroy(): void {
         this.destroyed.set(true);
         // Force retrieve the applets to uninitialize old applets
-        this.applets.get(null);
+        this.applets.get();
         this.extraApplets.set([]);
     }
 
@@ -76,7 +75,7 @@ export class AppletManager {
      * @param hook The hook to subscribe to changes
      * @returns The applets data
      */
-    public getAppletsData(hook: IDataHook = null): IAppletData[] {
+    public getAppletsData(hook?: IDataHook): IAppletData[] {
         return [...this.applets.get(hook), ...this.extraApplets.get(hook)];
     }
 
@@ -85,7 +84,7 @@ export class AppletManager {
      * @param hook The hook to subscribe to changes
      * @returns The applets
      */
-    public getApplets(hook: IDataHook = null): IApplet[] {
+    public getApplets(hook?: IDataHook): IApplet[] {
         return this.getAppletsData(hook).map(({applet}) => applet);
     }
 
@@ -95,7 +94,7 @@ export class AppletManager {
      * @param hook The hook to subscribe to changes
      * @returns The applet if found
      */
-    public getApplet(ID: IUUID, hook: IDataHook = null): IApplet | null {
+    public getApplet(ID: IUUID, hook?: IDataHook): IApplet | null {
         return (
             this.getAppletsData(hook).find(({applet}) => applet.ID == ID)?.applet || null
         );
@@ -107,7 +106,7 @@ export class AppletManager {
      * @returns The applets and categories
      */
     public getAppletCategories(
-        hook: IDataHook = null
+        hook?: IDataHook
     ): {applet: IApplet; category: ICategory}[] {
         return this.getAppletsData(hook);
     }
@@ -118,10 +117,7 @@ export class AppletManager {
      * @param hook The hook to subscribe to changes
      * @returns The category
      */
-    public getAppletCategory(
-        applet: IApplet,
-        hook: IDataHook = null
-    ): ICategory | undefined {
+    public getAppletCategory(applet: IApplet, hook?: IDataHook): ICategory | undefined {
         return this.getAppletsData(hook).find(({applet: {ID}}) => ID == applet.ID)
             ?.category;
     }
@@ -168,7 +164,7 @@ export class AppletManager {
         const watcher = hmr(watchDir, () => {
             try {
                 // Update the version number in order to force a new instance to be initialized
-                const oldVersions = this.appletVersions.get(null);
+                const oldVersions = this.appletVersions.get();
                 this.appletVersions.set({
                     ...oldVersions,
                     [source.ID]: (oldVersions[source.ID] ?? 0) + 1,

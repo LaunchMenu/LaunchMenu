@@ -1,4 +1,4 @@
-import {Field, IDataHook, IDataRetriever} from "model-react";
+import {DataCacher, Field, IDataHook, IDataRetriever} from "model-react";
 import {SettingsContext} from "../../settings/SettingsContext";
 import {SettingsFile} from "../../settings/storage/fileTypes/SettingsFile";
 import {ISettingsFolderMenuItem} from "../../settings/_types/ISettingsFolderMenuItem";
@@ -7,7 +7,6 @@ import {IApplet} from "../applets/_types/IApplet";
 import {ISettingsData} from "./_types/ISettingsData";
 import Path from "path";
 import {IAppletData} from "../applets/_types/IAppletData";
-import {DataCacher} from "../../utils/modelReact/DataCacher";
 
 /**
  * Manages the settings within LaunchMenu
@@ -39,7 +38,7 @@ export class SettingsManager {
     public destroy(): void {
         this.destroyed.set(true);
         // Force retrieve the applets to uninitialize old settings
-        this.appletSettings.get(null);
+        this.appletSettings.get();
     }
 
     // Getters
@@ -49,7 +48,7 @@ export class SettingsManager {
      * @param hook A hook to subscribe to changes
      * @returns The settings data
      */
-    public getSettingsData(ID: IUUID, hook: IDataHook = null): ISettingsData | null {
+    public getSettingsData(ID: IUUID, hook?: IDataHook): ISettingsData | null {
         return this.getAllSettingsData(hook).find(({ID: OID}) => OID == ID) ?? null;
     }
 
@@ -58,7 +57,7 @@ export class SettingsManager {
      * @param hook A hook to subscribe to changes
      * @returns The settings data
      */
-    public getAllSettingsData(hook: IDataHook = null): ISettingsData[] {
+    public getAllSettingsData(hook?: IDataHook): ISettingsData[] {
         return [...this.extraFiles.get(hook), ...this.appletSettings.get(hook)];
     }
 
@@ -67,7 +66,7 @@ export class SettingsManager {
      * @param hook A hook to subscribe to changes
      * @returns The settings data that hasn't been saved
      */
-    public getAllDirtySettingsData(hook: IDataHook = null): ISettingsData[] {
+    public getAllDirtySettingsData(hook?: IDataHook): ISettingsData[] {
         return this.dirtySettingsData.get(hook);
     }
 
@@ -84,7 +83,7 @@ export class SettingsManager {
      * @param hook A hook to subscribe to changes
      * @returns The context that includes all settings
      */
-    public getSettingsContext(hook: IDataHook = null): SettingsContext {
+    public getSettingsContext(hook?: IDataHook): SettingsContext {
         const data = {} as {[id: string]: ISettingsFolderMenuItem};
         this.getAllSettingsData(hook).forEach(({ID, file}) => {
             data[ID] = file.settings;
@@ -101,7 +100,7 @@ export class SettingsManager {
      */
     public addSettings(ID: IUUID, settings: SettingsFile<any>, applet?: IApplet): void {
         this.extraFiles.set([
-            ...this.extraFiles.get(null),
+            ...this.extraFiles.get(),
             {
                 ID,
                 file: settings,
@@ -122,7 +121,7 @@ export class SettingsManager {
         settings: SettingsFile<any>,
         applet?: IApplet
     ): void {
-        const files = this.extraFiles.get(null);
+        const files = this.extraFiles.get();
         this.extraFiles.set([
             ...files.filter(({ID: OID}) => OID != ID),
             {
@@ -139,7 +138,7 @@ export class SettingsManager {
      * @param ID The ID of the settings to remove
      */
     public removeSettings(ID: IUUID): void {
-        const files = this.extraFiles.get(null);
+        const files = this.extraFiles.get();
         this.extraFiles.set(files.filter(({ID: OID}) => OID != ID));
     }
 
@@ -148,18 +147,14 @@ export class SettingsManager {
      * Reloads all the settings
      */
     public async reloadAll(): Promise<void> {
-        await Promise.all(
-            this.getAllDirtySettingsData(null).map(({file}) => file.load())
-        );
+        await Promise.all(this.getAllDirtySettingsData().map(({file}) => file.load()));
     }
 
     /**
      * Saves all settings in the session
      */
     public async saveAll(): Promise<void> {
-        await Promise.all(
-            this.getAllDirtySettingsData(null).map(({file}) => file.save())
-        );
+        await Promise.all(this.getAllDirtySettingsData().map(({file}) => file.save()));
     }
 
     // Applet settings management

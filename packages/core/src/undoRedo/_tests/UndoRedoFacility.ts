@@ -2,8 +2,8 @@ import {UndoRedoFacility} from "../UndoRedoFacility";
 import {TestCommand} from "./TestCommand.helper";
 import {wait} from "../../_tests/wait.helper";
 import {CompoundCommand} from "../commands/CompoundCommand";
-import {Observer} from "../../utils/modelReact/Observer";
 import {ICommand} from "../_types/ICommand";
+import {Observer} from "model-react";
 
 describe("UndoRedoFacility", () => {
     describe("new UndoRedoFacility", () => {

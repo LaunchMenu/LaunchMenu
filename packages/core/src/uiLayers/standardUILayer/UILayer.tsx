@@ -44,7 +44,7 @@ export class UILayer extends UnifiedAbstractUILayer {
         context: IIOContext,
         close: () => void
     ): void | (() => Promise<void>) {
-        if (this.data.get(null).length == 0) {
+        if (this.data.get().length == 0) {
             this.data.set(
                 this.inputData.flatMap(item =>
                     this.processLayerItem(item, context, close)
@@ -54,7 +54,7 @@ export class UILayer extends UnifiedAbstractUILayer {
             return async () => {
                 await Promise.all(
                     this.data
-                        .get(null)
+                        .get()
                         .map(data => ("onClose" in data ? data.onClose?.() : undefined))
                 );
                 this.data.set([]);
@@ -171,7 +171,7 @@ export class UILayer extends UnifiedAbstractUILayer {
     }
 
     /** @override */
-    public getAll(hook: IDataHook = null): IUILayerData[] {
+    public getAll(hook?: IDataHook): IUILayerData[] {
         return this.data.get(hook);
     }
 }

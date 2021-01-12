@@ -1,9 +1,8 @@
 import {createDummyMenuItem} from "./MenuItem.helper";
 import {Menu} from "../Menu";
-import {Observer} from "../../../utils/modelReact/Observer";
 import {wait} from "../../../_tests/wait.helper";
 import {dummyContext} from "../../../_tests/context.helper";
-import {Field} from "model-react";
+import {Field, Observer} from "model-react";
 import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
 import {onSelectAction} from "../../../actions/types/onSelect/onSelectAction";
 import {onCursorAction} from "../../../actions/types/onCursor/onCursorAction";
@@ -268,7 +267,7 @@ describe("Menu", () => {
                 const category = new Field(someCategory);
                 const item = createDummyMenuItem({
                     actionBindings: h => [
-                        getCategoryAction.createBinding(category.get(h ?? null)),
+                        getCategoryAction.createBinding(category.get(h)),
                     ],
                 });
                 menu.addItems([...items, item]);
