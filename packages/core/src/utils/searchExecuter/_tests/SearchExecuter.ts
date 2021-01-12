@@ -1,6 +1,5 @@
-import {Field} from "model-react";
+import {Field, Observer} from "model-react";
 import {wait} from "../../../_tests/wait.helper";
-import {Observer} from "../../modelReact/Observer";
 import {SearchExecuter} from "../SearchExecuter";
 import {createSimpleResultMap, s} from "./createSimpleResultMap.helper";
 import {createSimpleSearch} from "./createSimpleSearch.helper";
@@ -39,24 +38,24 @@ describe("SearchExecuter", () => {
             const search3 = createSimpleSearch({
                 id: "3",
                 m: s => s == "o" || s == "p",
-                children: (s, h = null) => (s == field.get(h) ? [] : [search1, search2]),
+                children: (s, h) => (s == field.get(h) ? [] : [search1, search2]),
             });
             const field3 = new Field("i");
             const search4 = createSimpleSearch({
                 id: "4",
                 m: s => s == "o" || s == "p",
-                children: (s, h = null) => (s == field3.get(h) ? [] : [search3]),
+                children: (s, h) => (s == field3.get(h) ? [] : [search3]),
             });
             const field2 = new Field("m");
             const search5 = createSimpleSearch({
                 id: "5",
-                m: (s, h = null) => s == field2.get(h),
+                m: (s, h) => s == field2.get(h),
             });
             const field4 = new Field("i");
             const search6 = createSimpleSearch({
                 id: "6",
                 m: s => s == "o" || s == "p",
-                children: (s, h = null) => (s == field4.get(h) ? [] : [search3]),
+                children: (s, h) => (s == field4.get(h) ? [] : [search3]),
             });
             const search7 = createSimpleSearch({
                 id: "7",
@@ -152,8 +151,7 @@ describe("SearchExecuter", () => {
             const search3 = createSimpleSearch({
                 id: "3",
                 m: s => s == "o" || s == "p",
-                pattern: (s, h = null) =>
-                    field.get(h) == s ? {name: "something"} : undefined,
+                pattern: (s, h) => (field.get(h) == s ? {name: "something"} : undefined),
                 children: [search1, search2],
             });
             const search4 = createSimpleSearch({
@@ -163,14 +161,13 @@ describe("SearchExecuter", () => {
             });
             const search5 = createSimpleSearch({
                 id: "5",
-                m: (s, h = null) => s == "o",
+                m: (s, h) => s == "o",
             });
             const field2 = new Field("m");
             const search6 = createSimpleSearch({
                 id: "6",
                 m: s => s == "o" || s == "p",
-                pattern: (s, h = null) =>
-                    field2.get(h) == s ? {name: "stuff"} : undefined,
+                pattern: (s, h) => (field2.get(h) == s ? {name: "stuff"} : undefined),
                 children: [search3],
             });
             const search7 = createSimpleSearch({
@@ -240,7 +237,7 @@ describe("SearchExecuter", () => {
             const field = new Field("m");
             const search2 = createSimpleSearch({
                 id: "2",
-                m: (s, h = null) => field.get(h) == s,
+                m: (s, h) => field.get(h) == s,
                 pattern: s => (s == "s" ? {name: "something"} : undefined),
             });
             const search3 = createSimpleSearch({

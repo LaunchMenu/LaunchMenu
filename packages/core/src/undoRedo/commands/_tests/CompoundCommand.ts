@@ -2,7 +2,7 @@ import {CompoundCommand} from "../CompoundCommand";
 import {TestCommand} from "../../_tests/TestCommand.helper";
 import {wait} from "../../../_tests/wait.helper";
 import {Resource} from "../../dependencies/Resource";
-import {Observer} from "../../../utils/modelReact/Observer";
+import {Observer} from "model-react";
 
 describe("CompoundCommand", () => {
     describe("new CompoundCommand", () => {

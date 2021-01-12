@@ -1,4 +1,4 @@
-import {DataCacher} from "../../../utils/modelReact/DataCacher";
+import {DataCacher} from "model-react";
 import {createAction} from "../../createAction";
 import {keyHandlerAction} from "./keyHandlerAction";
 import {IForwardKeyHandlerData} from "./_types/IForwardKeyHandlerData";
@@ -20,7 +20,7 @@ export const forwardKeyEventHandler = createAction({
             children: handlers.map(handler =>
                 keyHandlerAction.createBinding({
                     onKey: (event, menu, onExecute) => {
-                        return handler.get(null).emitRaw(event, menu, onExecute);
+                        return handler.get().emitRaw(event, menu, onExecute);
                     },
                 })
             ),

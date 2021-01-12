@@ -9,10 +9,10 @@ import {SyntaxHighlighterSelection} from "./SyntaxHighlighterSelection";
 import {IHighlightNode} from "../../../textFields/syntax/_types/IHighlightNode";
 import {useHorizontalScroll} from "../../../utils/hooks/useHorizontalScroll";
 import {useCursorScroll} from "./useCursorScroll";
-import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {LFC} from "../../../_types/LFC";
 import {useIOContext} from "../../../context/react/useIOContext";
 import {baseSettings} from "../../../application/settings/baseSettings/baseSettings";
+import {useDataHook} from "model-react";
 
 /**
  * A simple component to render syntax highlighted using a passed highlighter

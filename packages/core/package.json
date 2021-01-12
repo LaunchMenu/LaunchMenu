@@ -44,7 +44,7 @@
         "color": "^3.1.2",
         "fuzzy-rater": "^0.0.0",
         "mkdirp": "^1.0.4",
-        "model-react": "^3.0.2",
+        "model-react": "^4.0.1",
         "react": "^17.0.0",
         "react-dom": "^17.0.0",
         "react-icons": "^3.10.0",

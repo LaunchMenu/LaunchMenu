@@ -1,8 +1,7 @@
 import React, {memo} from "react";
 import {IFieldMenuItemData} from "./_types/IFieldMenuItemData";
 import {IFieldMenuItem} from "./_types/IFieldMenuItem";
-import {Field} from "model-react";
-import {useDataHook} from "../../../utils/modelReact/useDataHook";
+import {Field, IDataHook, useDataHook} from "model-react";
 import {MenuItemFrame} from "../../../components/items/MenuItemFrame";
 import {MenuItemLayout} from "../../../components/items/MenuItemLayout";
 import {MenuItemIcon} from "../../../components/items/MenuItemIcon";
@@ -71,10 +70,10 @@ export function createFieldMenuItem<D extends IJSON, T = D>({
         return "getSerialized" in field;
     }
     const item = {
-        get: (hook = null) => field.get(hook),
+        get: (hook?: IDataHook) => field.get(hook),
         set: (value: T) => field.set(value),
         ...(isSerializeable(field) && {
-            getSerialized: (hook = null) => field.getSerialized(hook),
+            getSerialized: (hook?: IDataHook) => field.getSerialized(hook),
             setSerialized: (value: D) => field.setSerialized(value),
         }),
         view: memo(({highlight, ...props}) => {

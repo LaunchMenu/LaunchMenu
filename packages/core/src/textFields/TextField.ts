@@ -25,7 +25,7 @@ export class TextField implements ITextField {
      */
     public set(text: string): void {
         this.text.set(text);
-        const selection = this.selection.get(null);
+        const selection = this.selection.get();
         if (selection.end > text.length || selection.start > text.length)
             this.selection.set({
                 start: Math.min(selection.start, text.length),
@@ -38,7 +38,7 @@ export class TextField implements ITextField {
      * @param hook The hook to subscribe to changes
      * @returns The current text
      */
-    public get(hook: IDataHook = null): string {
+    public get(hook?: IDataHook): string {
         return this.text.get(hook);
     }
 
@@ -47,11 +47,11 @@ export class TextField implements ITextField {
      * @param selection The new selection
      */
     public setSelection(selection: ITextSelection): void {
-        const text = this.text.get(null);
+        const text = this.text.get();
         const start = Math.max(0, Math.min(selection.start, text.length));
         const end = Math.max(0, Math.min(selection.end, text.length));
 
-        const current = this.selection.get(null);
+        const current = this.selection.get();
         if (current.start != start || current.end != end)
             this.selection.set({start, end});
     }
@@ -61,7 +61,7 @@ export class TextField implements ITextField {
      * @param hook The hook to subscribe to changes
      * @returns The selected range
      */
-    public getSelection(hook: IDataHook = null): ITextSelection {
+    public getSelection(hook?: IDataHook): ITextSelection {
         return this.selection.get(hook);
     }
 }

@@ -1,6 +1,5 @@
-import {IDataHook, IDataRetriever} from "model-react";
+import {DataCacher, IDataHook, IDataRetriever} from "model-react";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
-import {DataCacher} from "../../utils/modelReact/DataCacher";
 import {IMenuItem} from "../items/_types/IMenuItem";
 import {ICategorizerConfig} from "./_types/ICategorizerConfig";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
@@ -110,7 +109,7 @@ export class MenuItemCategorizer<T> {
      * @param hook The hook to subscribe to changes
      * @returns The categories and their items
      */
-    public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
+    public getCategories(hook?: IDataHook): IMenuCategoryData[] {
         return this.categories.get(hook);
     }
 
@@ -119,7 +118,7 @@ export class MenuItemCategorizer<T> {
      * @param hook The hook to subscribe to changes
      * @returns The menu items
      */
-    public getItems(hook: IDataHook = null): IMenuItem[] {
+    public getItems(hook?: IDataHook): IMenuItem[] {
         return this.items.get(hook);
     }
 }

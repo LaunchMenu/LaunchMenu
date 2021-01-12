@@ -1,5 +1,5 @@
 import React, {ReactNode} from "react";
-import {Field, IDataHook} from "model-react";
+import {Field, IDataHook, ManualSourceHelper, Observer} from "model-react";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
 import {IHighlighter} from "../../../textFields/syntax/_types/IHighlighter";
@@ -15,10 +15,8 @@ import {IInputConfig} from "./_types/IInputConfig";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
 import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
 import {IInputError} from "./_types/IInputError";
-import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {IUILayerContentData} from "../../_types/IUILayerContentData";
 import {createContentError} from "../../../components/content/error/createContentError";
-import {Observer} from "../../../utils/modelReact/Observer";
 import {mergeKeyListeners} from "../../../keyHandler/mergeKeyListeners";
 import {baseSettings} from "../../../application/settings/baseSettings/baseSettings";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
@@ -57,7 +55,7 @@ export class Input<T> extends AbstractUILayer {
      */
     protected validateConfig() {
         if (
-            typeof this.target.get(null) != "string" &&
+            typeof this.target.get() != "string" &&
             (!this.config.serialize || !this.config.serialize)
         )
             throw Error(
@@ -66,21 +64,20 @@ export class Input<T> extends AbstractUILayer {
     }
 
     /** @override */
-    public getFieldData(hook: IDataHook = null): IUILayerFieldData[] {
+    public getFieldData(hook?: IDataHook): IUILayerFieldData[] {
         const fieldData = this.fieldData.get(hook);
         return super.getFieldData(hook, fieldData ? [fieldData] : []);
     }
 
     /** @override */
-    public getContentData(hook: IDataHook = null): IUILayerContentData[] {
+    public getContentData(hook?: IDataHook): IUILayerContentData[] {
         const contentData = this.contentData.get(hook);
         return super.getContentData(hook, contentData ? [contentData] : []);
     }
 
     /** @override */
     protected initialize(context: IIOContext, close: () => void): () => void {
-        if (this.fieldData.get(null))
-            throw Error("An input can only be opened in 1 context");
+        if (this.fieldData.get()) throw Error("An input can only be opened in 1 context");
 
         // Create the field data model
         const value = this.getInitialTextValue();
@@ -116,7 +113,7 @@ export class Input<T> extends AbstractUILayer {
      * @returns The initial text field value
      */
     protected getInitialTextValue(): string {
-        const rawValue = this.target.get(null);
+        const rawValue = this.target.get();
         return this.config.serialize?.(rawValue) ?? ((rawValue as any) as string);
     }
 
@@ -190,7 +187,7 @@ export class Input<T> extends AbstractUILayer {
      * @param hook THe data hook to subscribe to changes
      * @returns The text input
      */
-    protected getText(hook: IDataHook = null): string | undefined {
+    protected getText(hook?: IDataHook): string | undefined {
         return this.fieldData.get(hook)?.field?.get(hook) ?? undefined;
     }
 
@@ -199,7 +196,7 @@ export class Input<T> extends AbstractUILayer {
      * @param hook The data hook to subscribe to changes
      * @returns The resulting value, or error
      */
-    public getValue(hook: IDataHook = null): T | IInputError {
+    public getValue(hook?: IDataHook): T | IInputError {
         const inp = this.getText(hook);
         const error = inp !== undefined && this.config.checkValidity?.(inp);
         if (error) return error;
@@ -229,7 +226,7 @@ export class Input<T> extends AbstractUILayer {
      * @param hook The hook to subscribe to changes
      * @returns The error with the current input if any
      */
-    public getError(hook: IDataHook = null): IInputError | null {
+    public getError(hook?: IDataHook): IInputError | null {
         return this.error.get(hook);
     }
 
@@ -239,7 +236,7 @@ export class Input<T> extends AbstractUILayer {
      * @returns The error
      */
     protected checkError(text?: string): IInputError | null {
-        const inpText = text ?? this.getText(null);
+        const inpText = text ?? this.getText();
         return (inpText && this.config.checkValidity?.(inpText)) || null;
     }
 
@@ -251,7 +248,7 @@ export class Input<T> extends AbstractUILayer {
         const error = this.checkError();
         this.error.set(error);
 
-        const context = this.context.get(null);
+        const context = this.context.get();
         if (error && context) {
             let errorView: ReactNode;
             if ("view" in error) errorView = error.view;

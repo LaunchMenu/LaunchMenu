@@ -1,4 +1,11 @@
-import {ActionState, Field, getExceptions, IDataHook, isLoading} from "model-react";
+import {
+    ExecutionState,
+    Field,
+    getExceptions,
+    IDataHook,
+    isLoading,
+    Observer,
+} from "model-react";
 import {IFieldsTree} from "./_types/IFieldsTree";
 import FS from "fs";
 import {IJSON} from "../../../../_types/IJSON";
@@ -7,7 +14,6 @@ import mkdirp from "mkdirp";
 import Path from "path";
 import {ISavable} from "../_types/ISavable";
 import {IFieldFileChangeListener} from "./_types/IFieldsFileChangeListener";
-import {Observer} from "../../../../utils/modelReact/Observer";
 import {IField} from "../../../../_types/IField";
 import {ISerializeField} from "./_types/ISerializedField";
 
@@ -17,7 +23,7 @@ import {ISerializeField} from "./_types/ISerializedField";
 export class FieldsFile<F extends IFieldsTree> implements ISavable {
     protected filePath: string;
 
-    protected loading = new ActionState<void>();
+    protected loading = new ExecutionState();
     protected loadTime: number = 0;
     protected dirty = new Field(false);
 
@@ -79,7 +85,7 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
                     err => {
                         if (err) rej(err);
                         else {
-                            if (this.dirty.get(null)) this.dirty.set(false);
+                            if (this.dirty.get()) this.dirty.set(false);
                             res();
                         }
                     }
@@ -103,7 +109,7 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
         }
 
         // If the data isn't loading currently, reload it
-        return this.loading.addAction(
+        return this.loading.add(
             new Promise((res, rej) => {
                 if (!FS.existsSync(this.filePath)) {
                     const err = Error(`File "${this.filePath}" doesn't exist`);
@@ -119,7 +125,7 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
                         this.loadTime = Date.now();
                         try {
                             this.setData(JSON.parse(data));
-                            if (this.dirty.get(null)) this.dirty.set(false);
+                            if (this.dirty.get()) this.dirty.set(false);
                             res();
                         } catch (e) {
                             rej(e);
@@ -155,9 +161,9 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
     protected encode(data: IFieldsTree): IJSON {
         return ExtendedObject.map(data, f => {
             if (isSerializeField(f)) {
-                return f.getSerialized(null);
+                return f.getSerialized();
             } else if (isField(f)) {
-                return f.get(null);
+                return f.get();
             } else {
                 return this.encode(f);
             }
@@ -179,14 +185,14 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
                 "getSerialized" in field &&
                 field.getSerialized instanceof Function
             ) {
-                if (val != field.getSerialized(null)) field.setSerialized(val);
+                if (val != field.getSerialized()) field.setSerialized(val);
             } else if (
                 "set" in field &&
                 field.set instanceof Function &&
                 "get" in field &&
                 field.get instanceof Function
             ) {
-                if (val != field.get(null)) field.set(val);
+                if (val != field.get()) field.set(val);
             } else if (typeof val == "object") {
                 this.decode(val, field as IFieldsTree);
             }
@@ -246,7 +252,7 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
         field: ISerializeField<IJSON> | IField<IJSON>,
         path: string
     ): void {
-        if (!this.dirty.get(null)) this.dirty.set(true);
+        if (!this.dirty.get()) this.dirty.set(true);
         this.listeners.forEach(listener => listener(field, path));
     }
 
@@ -255,7 +261,7 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
      * @param hook The hook to subscribe to changes
      * @returns Whether there are any unsaved changes
      */
-    public isDirty(hook: IDataHook = null): boolean {
+    public isDirty(hook?: IDataHook): boolean {
         return this.dirty.get(hook);
     }
 

@@ -1,7 +1,6 @@
-import {IDataHook} from "model-react";
+import {IDataHook, useDataHook} from "model-react";
 import {useRef} from "react";
 import {IIdentifiedItem} from "../../_types/IIdentifiedItem";
-import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {IViewStackItem} from "../../uiLayers/_types/IViewStackItem";
 
 /**

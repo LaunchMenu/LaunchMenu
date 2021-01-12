@@ -1,5 +1,5 @@
 import React, {ReactNode} from "react";
-import {Field, IDataHook} from "model-react";
+import {Field, IDataHook, ManualSourceHelper, Observer, waitFor} from "model-react";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
 import {SearchMenu} from "../../../menus/menu/SearchMenu";
@@ -19,7 +19,6 @@ import {createMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/c
 import {IUILayerFieldData} from "../../_types/IUILayerFieldData";
 import {IUILayerContentData} from "../../_types/IUILayerContentData";
 import {AbstractUILayer} from "../../AbstractUILayer";
-import {ManualSourceHelper} from "../../../utils/modelReact/ManualSourceHelper";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {ITextField} from "../../../textFields/_types/ITextField";
 import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
@@ -28,9 +27,7 @@ import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
 import {IHighlighter} from "../../../textFields/syntax/_types/IHighlighter";
 import {createContentError} from "../../../components/content/error/createContentError";
 import {TextField} from "../../../textFields/TextField";
-import {waitFor} from "../../../utils/modelReact/waitFor";
 import {createFinishMenuItem} from "../../../menus/items/createFinishMenuItem";
-import {Observer} from "../../../utils/modelReact/Observer";
 import {IMultiSelectOption} from "./_types/IMultiSelectOption";
 import {IMultiSelectOptionData} from "./_types/IMultiSelectOptionData";
 import {getControlsCategory} from "../../../menus/categories/types/getControlsCategory";
@@ -88,7 +85,7 @@ export class MultiSelect<T> extends AbstractUILayer {
     /** @override */
     protected validateConfig() {
         if (
-            typeof this.target.get(null) != "string" &&
+            typeof this.target.get() != "string" &&
             this.config.allowCustomInput &&
             (!this.config.serialize || !this.config.serialize)
         )
@@ -98,31 +95,30 @@ export class MultiSelect<T> extends AbstractUILayer {
     }
 
     /** @override */
-    public getFieldData(hook: IDataHook = null): IUILayerFieldData[] {
+    public getFieldData(hook?: IDataHook): IUILayerFieldData[] {
         const fieldData = this.fieldData.get(hook);
         return super.getFieldData(hook, fieldData ? [fieldData] : []);
     }
 
     /** @override */
-    public getContentData(hook: IDataHook = null): IUILayerContentData[] {
+    public getContentData(hook?: IDataHook): IUILayerContentData[] {
         const contentData = this.contentData.get(hook);
         return super.getContentData(hook, contentData ? [contentData] : []);
     }
 
     /** @override */
-    public getMenuData(hook: IDataHook = null): IUILayerMenuData[] {
+    public getMenuData(hook?: IDataHook): IUILayerMenuData[] {
         const menuData = this.menuData.get(hook);
         return super.getMenuData(hook, menuData ? [menuData] : []);
     }
 
     /** @override */
     protected initialize(context: IIOContext, close: () => void): () => void {
-        if (this.fieldData.get(null))
-            throw Error("An input can only be opened in 1 context");
+        if (this.fieldData.get()) throw Error("An input can only be opened in 1 context");
 
         // Setup the selection field
         if (this.config.liveUpdate) this.selection = this.target;
-        else this.selection = new Field(this.target.get(null));
+        else this.selection = new Field(this.target.get());
 
         // Create the data models
         const menu = (this.menu = new SearchMenu(context, {
@@ -250,7 +246,7 @@ export class MultiSelect<T> extends AbstractUILayer {
         close: () => void
     ): IKeyEventListener {
         return createTextFieldKeyHandler(field, context, () => {
-            if (this.textField.get(null) != "") this.textField.set("");
+            if (this.textField.get() != "") this.textField.set("");
             else close();
         });
     }
@@ -266,7 +262,7 @@ export class MultiSelect<T> extends AbstractUILayer {
             ? option
             : {value: option, disabled: false};
         const includes = (hook?: IDataHook) =>
-            !!this.getValue(hook ?? null).find(v => this.equals(v, value));
+            !!this.getValue(hook).find(v => this.equals(v, value));
 
         const item = menuItemIdentityAction.copyItem(
             this.config.createOptionView(value, includes, disabled),
@@ -275,7 +271,7 @@ export class MultiSelect<T> extends AbstractUILayer {
                 : [
                       executeAction.createBinding({
                           execute: () => {
-                              const cur = this.getValue(null);
+                              const cur = this.getValue();
                               if (includes()) {
                                   this.selection.set(
                                       cur.filter(v => !this.equals(v, value))
@@ -293,7 +289,7 @@ export class MultiSelect<T> extends AbstractUILayer {
      * Adds the custom options that are currently selected in the field to the menu
      */
     protected addCustomSelectedOptions(): void {
-        const selection = this.selection.get(null);
+        const selection = this.selection.get();
         selection.forEach(value => {
             if (
                 !this.config.options.find(option =>
@@ -325,7 +321,7 @@ export class MultiSelect<T> extends AbstractUILayer {
      * @param hook The hook to subscribe to changes
      * @returns The error with the current input if any
      */
-    public getError(hook: IDataHook = null): IInputError | null {
+    public getError(hook?: IDataHook): IInputError | null {
         return this.error.get(hook);
     }
 
@@ -335,7 +331,7 @@ export class MultiSelect<T> extends AbstractUILayer {
      * @returns The error
      */
     protected checkError(text?: string): IInputError | null {
-        const inpText = text ?? this.getText(null);
+        const inpText = text ?? this.getText();
         return (inpText && this.config.checkValidity?.(inpText)) || null;
     }
 
@@ -347,7 +343,7 @@ export class MultiSelect<T> extends AbstractUILayer {
         const error = this.checkError();
         this.error.set(error);
 
-        const context = this.context.get(null);
+        const context = this.context.get();
         if (error && context) {
             let errorView: ReactNode;
             if ("view" in error) errorView = error.view;
@@ -401,7 +397,7 @@ export class MultiSelect<T> extends AbstractUILayer {
      * @param hook THe data hook to subscribe to changes
      * @returns The text input
      */
-    protected getText(hook: IDataHook = null): string | undefined {
+    protected getText(hook?: IDataHook): string | undefined {
         return this.fieldData.get(hook)?.field?.get(hook) ?? undefined;
     }
 
@@ -410,7 +406,7 @@ export class MultiSelect<T> extends AbstractUILayer {
      * @param hook The hook to subscribe to changes
      * @returns The current selection
      */
-    public getValue(hook: IDataHook = null): T[] {
+    public getValue(hook?: IDataHook): T[] {
         return this.selection.get(hook);
     }
 
@@ -511,7 +507,7 @@ export class MultiSelect<T> extends AbstractUILayer {
             this.menu.removeSearchItem(this.customOptions[index].view);
 
             this.customOptions.splice(index, 1);
-            this.selection.set(this.selection.get(null).filter(v => v != value));
+            this.selection.set(this.selection.get().filter(v => v != value));
             return true;
         }
         return false;
@@ -602,7 +598,7 @@ export class MultiSelect<T> extends AbstractUILayer {
      * @param hook The hook to subscribe to changes
      * @returns Whether custom input is selected
      */
-    public isCustomSelected(hook: IDataHook = null): boolean {
+    public isCustomSelected(hook?: IDataHook): boolean {
         const cursor = this.menu.getCursor(hook);
         if (!cursor || !this.customItem) return false;
         return (

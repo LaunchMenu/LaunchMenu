@@ -1,7 +1,7 @@
+import {useDataHook} from "model-react";
 import React from "react";
 import {useIOContext} from "../../context/react/useIOContext";
 import {IShortcutInput} from "../../menus/items/_types/IShortcutInput";
-import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {LFC} from "../../_types/LFC";
 import {Note} from "../Note";
 

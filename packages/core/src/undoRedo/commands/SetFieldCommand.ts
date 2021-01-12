@@ -39,7 +39,7 @@ export class SetFieldCommand<T> extends Command {
     }
 
     protected async onExecute() {
-        this.prev = this.field.get(null);
+        this.prev = this.field.get();
         this.field.set(this.newValue);
     }
     protected async onRevert() {

@@ -18,7 +18,7 @@ export const updateKeyPatternOptionExtrasExecuteHandler = createAction({
             multiSelectExecuteHandler.createBinding<IKeyName>({
                 field: {
                     set: value => {
-                        const pattern = patternField.get(null);
+                        const pattern = patternField.get();
                         const index = getKeyPatternOptionIndex(pattern, option);
                         if (index != -1) {
                             const newPattern = pattern.patterns.map(

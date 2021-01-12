@@ -1,5 +1,5 @@
+import {Observer} from "model-react";
 import {wait} from "../../../_tests/wait.helper";
-import {Observer} from "../../modelReact/Observer";
 import {SearchPatternFilter} from "../SearchPatternFilter";
 import {IPatternMatch} from "../_types/IPatternMatch";
 import {createSimpleResultMap, s} from "./createSimpleResultMap.helper";

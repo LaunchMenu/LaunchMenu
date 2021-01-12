@@ -35,7 +35,7 @@
     "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
     "peerDependencies": {
         "@launchmenu/core": "^0.0.5-alpha.8",
-        "model-react": "^3.0.3",
+        "model-react": "^4.0.1",
         "react": "^17.0.0"
     },
     "devDependencies": {
@@ -45,7 +45,7 @@
         "@types/jest": "^26.0.0",
         "@types/react": "^17.0.0",
         "jest": "^26.0.1",
-        "model-react": "^3.0.3",
+        "model-react": "^4.0.1",
         "react": "^17.0.0",
         "ts-jest": "^26.1.0"
     },

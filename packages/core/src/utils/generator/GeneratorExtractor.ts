@@ -31,17 +31,17 @@ export class GeneratorExtractor<T> {
      * Extracts the next item of
      */
     public next(): Promise<T | void> {
-        if (this.stopped.get(null)) return Promise.resolve(undefined);
+        if (this.stopped.get()) return Promise.resolve(undefined);
 
         const returnPromise = new Promise<T | void>(res => {
             this.itemCallback = res;
         });
 
-        if (!this.started.get(null)) {
+        if (!this.started.get()) {
             // If extraction hasn't started yet, start it
             this.started.set(true);
             this.generatorResult = this.generator(item => {
-                if (!this.stopped.get(null)) {
+                if (!this.stopped.get()) {
                     // As long as we haven't stopped, return the item
                     if (this.itemCallback) {
                         this.itemCallback(item);
@@ -88,7 +88,7 @@ export class GeneratorExtractor<T> {
      * @param hook The hook to subscribe to changes
      * @returns Whether started
      */
-    public hasStarted(hook: IDataHook = null): boolean {
+    public hasStarted(hook?: IDataHook): boolean {
         return this.started.get(hook);
     }
 
@@ -97,7 +97,7 @@ export class GeneratorExtractor<T> {
      * @param hook The hook to subscribe to changes
      * @returns Whether the generator extracted all items, or the extractor was stopped
      */
-    public hasFinished(hook: IDataHook = null): boolean {
+    public hasFinished(hook?: IDataHook): boolean {
         return this.stopped.get(hook);
     }
 }

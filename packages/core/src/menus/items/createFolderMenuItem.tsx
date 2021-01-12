@@ -5,7 +5,6 @@ import {MenuItemFrame} from "../../components/items/MenuItemFrame";
 import {MenuItemLayout} from "../../components/items/MenuItemLayout";
 import {MenuItemIcon} from "../../components/items/MenuItemIcon";
 import {Truncated} from "../../components/Truncated";
-import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {adjustBindings} from "./adjustBindings";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
 import {getHooked} from "../../utils/subscribables/getHooked";
@@ -19,7 +18,7 @@ import {ThemeIcon} from "../../components/ThemeIcon";
 import {simpleSearchHandler} from "../../actions/types/search/tracedRecursiveSearch/simpleSearch/simpleSearchHandler";
 import {IQuery} from "../menu/_types/IQuery";
 import {IRecursiveSearchChildren} from "../../actions/types/search/tracedRecursiveSearch/_types/IRecursiveSearchChildren";
-import { IDataHook } from "model-react";
+import {IDataHook, useDataHook} from "model-react";
 
 /**
  * Retrieves the children in (subscribable) list form
@@ -27,10 +26,10 @@ import { IDataHook } from "model-react";
  * @returns The children list
  */
 export function getChildList<
-    S extends {[key: string]: IMenuItem} | ((...args: any[])=>IMenuItem[]) | IMenuItem[], 
+    S extends {[key: string]: IMenuItem} | ((...args: any[]) => IMenuItem[]) | IMenuItem[]
 >(children: S): Exclude<S, {[key: string]: IMenuItem}> {
     return children instanceof Function || children instanceof Array
-        ? children as any
+        ? (children as any)
         : Object.values(children);
 }
 
@@ -41,7 +40,11 @@ export function getChildList<
  */
 export function createFolderMenuItem<
     T extends {[key: string]: IMenuItem} | ISubscribable<IMenuItem[]>,
-    S extends {[key: string]: IMenuItem} | IRecursiveSearchChildren = T extends {[key: string]: IMenuItem} ? T : IRecursiveSearchChildren
+    S extends {[key: string]: IMenuItem} | IRecursiveSearchChildren = T extends {
+        [key: string]: IMenuItem;
+    }
+        ? T
+        : IRecursiveSearchChildren
 >({
     actionBindings,
     children,
@@ -71,7 +74,10 @@ export function createFolderMenuItem<
             })
         );
 
-    if(!searchChildren) searchChildren = (children instanceof Function ? ((query: IQuery, hook?: IDataHook)=>(children as any)(hook)) : children as any) as S;
+    if (!searchChildren)
+        searchChildren = (children instanceof Function
+            ? (query: IQuery, hook?: IDataHook) => (children as any)(hook)
+            : (children as any)) as S;
     const bindings = createStandardActionBindings(
         {
             name,

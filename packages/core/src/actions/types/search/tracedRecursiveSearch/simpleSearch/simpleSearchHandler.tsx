@@ -3,7 +3,7 @@ import {getSearchIdentity} from "../../searchAction";
 import {ISimpleSearchData} from "./_types/ISimpleSearchData";
 import {v4 as uuid} from "uuid";
 import {IActionBinding} from "../../../../_types/IActionBinding";
-import {Field, IDataHook} from "model-react";
+import {Field, IDataHook, useDataHook} from "model-react";
 import {IMenuSearchable} from "../../_types/IMenuSearchable";
 import {IQuery} from "../../../../../menus/menu/_types/IQuery";
 import {getHooked} from "../../../../../utils/subscribables/getHooked";
@@ -14,7 +14,6 @@ import {IIOContext} from "../../../../../context/_types/IIOContext";
 import {ISimpleSearchExecutor} from "./_types/ISimpleSearchExecutor";
 import {baseSettings} from "../../../../../application/settings/baseSettings/baseSettings";
 import {SearchHighlighter} from "../../SearchHighlighter";
-import {useDataHook} from "../../../../../utils/modelReact/useDataHook";
 import {LFC} from "../../../../../_types/LFC";
 import {ISearchHighlighterProps} from "../../_types/ISearchHighlighterProps";
 import {Priority} from "../../../../../menus/menu/priority/Priority";
@@ -90,7 +89,7 @@ export const simpleSearchHandler = createAction({
          * @param method The method to be added
          */
         addSearchMethod(method: ISimpleSearchMethod): void {
-            const handlers = searchHandlers.get(null);
+            const handlers = searchHandlers.get();
             if (!handlers.includes(method)) searchHandlers.set([...handlers, method]);
         },
 
@@ -99,7 +98,7 @@ export const simpleSearchHandler = createAction({
          * @param method The method to be added
          */
         removeSearchMethod(method: ISimpleSearchMethod): void {
-            const handlers = searchHandlers.get(null);
+            const handlers = searchHandlers.get();
             const index = handlers.indexOf(method);
             if (index != -1)
                 searchHandlers.set([
@@ -113,7 +112,7 @@ export const simpleSearchHandler = createAction({
          * @param hook A hook to subscribe to changes
          * @returns The search methods
          */
-        getSearchMethods(hook: IDataHook = null): ISimpleSearchMethod[] {
+        getSearchMethods(hook?: IDataHook): ISimpleSearchMethod[] {
             return [
                 ...searchHandlers.get(hook),
                 // Always include fuzzy search, dynamic import to prevent dependency cycle
@@ -151,7 +150,7 @@ export const simpleSearchHandler = createAction({
  */
 function getSimpleSearchMethod(
     context: IIOContext,
-    raterHook: IDataHook = null
+    raterHook?: IDataHook
 ): ISimpleSearchExecutor {
     const method: ISimpleSearchMethod = context.settings
         .get(baseSettings)

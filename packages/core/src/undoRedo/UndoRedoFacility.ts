@@ -104,7 +104,7 @@ export class UndoRedoFacility implements IUndoRedoFacility {
      * @param hook The hook to subscribe to changes
      * @returns The current command facility state
      */
-    public getState(hook: IDataHook = null): IUndoRedoFacilityState {
+    public getState(hook?: IDataHook): IUndoRedoFacilityState {
         const counts = {
             ready: 0,
             executing: 0,
@@ -136,7 +136,7 @@ export class UndoRedoFacility implements IUndoRedoFacility {
      * @param hook The hook to subscribe to changes
      * @returns The currently stored commands
      */
-    public getCommands(hook: IDataHook = null): ICommandsList {
+    public getCommands(hook?: IDataHook): ICommandsList {
         return this.commands.get(hook);
     }
 }

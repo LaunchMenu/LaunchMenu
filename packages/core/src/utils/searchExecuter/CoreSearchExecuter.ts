@@ -1,6 +1,6 @@
 import {Field, IDataHook} from "model-react";
 import {IUUID} from "../../_types/IUUID";
-import {createCallbackHook} from "../modelReact/createCallbackHook";
+import {createCallbackHook} from "../createCallbackHook";
 import {PromiseAll} from "../PromiseAll";
 import {Queue} from "../Queue";
 import {ISearchable} from "./_types/ISearchable";
@@ -66,7 +66,7 @@ export class CoreSearchExecuter<Q, I> {
      * @returns A promise that resolves when the search fully finished
      */
     public async setQuery(query: Q | null): Promise<void> {
-        if (this.destroyed.get(null)) return;
+        if (this.destroyed.get()) return;
 
         this.query.set(query);
         // this.results.forEach(ID => this.queues.searchUpdate.push(ID));
@@ -87,7 +87,7 @@ export class CoreSearchExecuter<Q, I> {
      * @param hook The hook to subscribe to changes
      * @returns The current query
      */
-    public getQuery(hook: IDataHook = null): Q | null {
+    public getQuery(hook?: IDataHook): Q | null {
         return this.query.get(hook);
     }
 
@@ -96,7 +96,7 @@ export class CoreSearchExecuter<Q, I> {
      * @param hook The hook to subscribe to changes
      * @returns Whether any search is in progress
      */
-    public isSearching(hook: IDataHook = null): boolean {
+    public isSearching(hook?: IDataHook): boolean {
         return this.searching.get(hook);
     }
 
@@ -118,7 +118,7 @@ export class CoreSearchExecuter<Q, I> {
      */
     protected initSearch(): void {
         this.continue?.();
-        if (!this.searching.get(null)) this.search();
+        if (!this.searching.get()) this.search();
     }
 
     /**
@@ -133,8 +133,8 @@ export class CoreSearchExecuter<Q, I> {
             this.searching.set(true);
             let running = true;
 
-            while (running && !this.destroyed.get(null)) {
-                const query = this.query.get(null);
+            while (running && !this.destroyed.get()) {
+                const query = this.query.get();
                 let ID: IUUID | undefined;
 
                 if (query != null && (ID = queues.searchUpdate.pop())) {

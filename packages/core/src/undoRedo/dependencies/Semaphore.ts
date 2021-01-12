@@ -53,7 +53,7 @@ export class Semaphore {
      * @param hook A hook to subscribe to changes
      * @returns Whether the semaphore is locked
      */
-    public isLocked(hook: IDataHook = null): boolean {
+    public isLocked(hook?: IDataHook): boolean {
         return this.value.get(hook) <= 0;
     }
 
@@ -82,7 +82,7 @@ export class Semaphore {
         const nextConsumer = this.queue.shift();
 
         if (!nextConsumer) {
-            if (delta != 0) this.value.set(this.value.get(null) + delta);
+            if (delta != 0) this.value.set(this.value.get() + delta);
             return;
         }
 
@@ -94,7 +94,7 @@ export class Semaphore {
             this._dispatch(1);
         };
 
-        const value = this.value.get(null);
+        const value = this.value.get();
         this.value.set(value - 1 + delta);
         nextConsumer([value, this.currentReleaser]);
     }

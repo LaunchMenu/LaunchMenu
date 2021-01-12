@@ -1,7 +1,8 @@
-import {Observer, SettingsManager} from "@launchmenu/core";
+import {SettingsManager} from "@launchmenu/core";
 import {settings} from "../settings";
 import {IStartupController} from "./_types/IStartupController";
 import Path from "path";
+import {Observer} from "model-react";
 
 const testing = false;
 

@@ -86,7 +86,7 @@ export default declare({
             },
             withSession: session => ({
                 // Retrieve a prioritized menu item to open global and selected applet setting
-                globalContextMenuBindings: (h = null) => {
+                globalContextMenuBindings: h => {
                     const selectedApplet = session.selectedApplet.get(h);
                     const settingsData =
                         selectedApplet && manager.getSettingsData(selectedApplet.ID);

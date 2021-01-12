@@ -1,5 +1,5 @@
-import {LaunchMenu, Observer} from "@launchmenu/core";
-import {DataCacher} from "model-react";
+import {LaunchMenu} from "@launchmenu/core";
+import {DataCacher, Observer} from "model-react";
 import {settings} from ".";
 
 /**

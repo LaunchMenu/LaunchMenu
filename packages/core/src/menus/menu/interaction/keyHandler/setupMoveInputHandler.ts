@@ -8,7 +8,7 @@ import {createMenuControlsSettingsFolder} from "../../../../application/settings
 import {TSettingsFromFactory} from "../../../../settings/_types/TSettingsFromFactory";
 import {isMenuControlsSettingsFolder} from "./isMenuControlsSettingsFolder";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
-import {DataCacher} from "../../../../utils/modelReact/DataCacher";
+import {DataCacher} from "model-react";
 
 /**
  * Sets up a key event handler that listens for cursor movement and selection change events
@@ -48,7 +48,7 @@ export function setupMoveInputHandler(
          * @returns Whether the event was caught
          */
         emit(event: KeyEvent): boolean | undefined {
-            const pPatterns = patternsSource.get(null);
+            const pPatterns = patternsSource.get();
 
             // TODO: create system for custom rate repeat
             const isUpKey = pPatterns.up.matches(event);

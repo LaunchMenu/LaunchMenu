@@ -28,7 +28,7 @@ export type IAction<I = any, O = any, P extends IAction = any> = {
     transform(
         bindingData: I[],
         indices: number[],
-        hook: IDataHook,
+        hook: IDataHook | undefined,
         items: IActionTarget[]
     ): IActionResult<IActionBinding<P>, O>;
 

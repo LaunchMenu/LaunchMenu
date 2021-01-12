@@ -1,5 +1,6 @@
-import {Observer, SettingsManager} from "@launchmenu/core";
+import {SettingsManager} from "@launchmenu/core";
 import {BrowserWindow} from "electron";
+import {Observer} from "model-react";
 import {settings} from "../settings";
 
 /**

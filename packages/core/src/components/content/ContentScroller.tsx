@@ -1,8 +1,8 @@
+import {useDataHook} from "model-react";
 import React, {FC, useCallback, useEffect, useRef} from "react";
 import {IContent} from "../../content/_types/IContent";
 import {IBoxProps} from "../../styling/box/_types/IBoxProps";
 import {useSmoothScroll} from "../../utils/hooks/useSmoothScroll";
-import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {FillBox} from "../FillBox";
 
 /**

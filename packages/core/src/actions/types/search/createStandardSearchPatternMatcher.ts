@@ -24,7 +24,7 @@ export function createStandardSearchPatternMatcher({
 } {
     const symbol = Symbol(name);
 
-    return (query: IQuery & {[symbol]?: IPatternMatch | undefined}, hook = null) => {
+    return (query: IQuery & {[symbol]?: IPatternMatch | undefined}, hook) => {
         // If the result wasn't already computed for this query, compute it
         if (!(symbol in query)) {
             // Obtain the matcher

@@ -33,7 +33,7 @@ export class IOContext implements IIOContext {
      * @param hook The hook to subscribe to changes
      * @returns All the opened UI layers
      */
-    public getUI(hook: IDataHook = null): IUILayer[] {
+    public getUI(hook?: IDataHook): IUILayer[] {
         return this.uiStack.get(hook).map(({layer}) => layer);
     }
 
@@ -56,7 +56,7 @@ export class IOContext implements IIOContext {
         const layerOnClose = (await layer.onOpen(this, close)) || undefined;
 
         // Find the index to open the item at
-        const current = this.uiStack.get(null);
+        const current = this.uiStack.get();
         let index = Infinity;
         if (config?.index !== undefined) index = config.index;
 
@@ -80,7 +80,7 @@ export class IOContext implements IIOContext {
      * @param layer The layer of UI data to close
      */
     public async close(layer: IUILayer): Promise<void> {
-        const layers = this.uiStack.get(null);
+        const layers = this.uiStack.get();
         const index = layers.findIndex(({layer: l}) => layer == l);
         if (index == -1) return;
         const p = layers[index].onClose?.();
@@ -92,7 +92,7 @@ export class IOContext implements IIOContext {
      * Removes all layers from this context, properly destroying it
      */
     public async destroy(): Promise<void> {
-        const layers = this.uiStack.get(null).reverse();
+        const layers = this.uiStack.get().reverse();
         for (let {layer} of layers) {
             await this.close(layer);
         }

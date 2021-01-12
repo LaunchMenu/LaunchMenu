@@ -21,7 +21,7 @@ export class LMSessionMenu extends PrioritizedMenu {
      * @param hook The hook to subscribe to changes
      * @returns The highlight data
      */
-    public getQuery(hook: IDataHook = null): IQuery | null {
+    public getQuery(hook?: IDataHook): IQuery | null {
         return this.query.get(hook);
     }
 
@@ -30,7 +30,7 @@ export class LMSessionMenu extends PrioritizedMenu {
      * @param hook The hook to subscribe to changes
      * @returns The highlight data
      */
-    public getHighlight(hook: IDataHook = null): IQuery | null {
+    public getHighlight(hook?: IDataHook): IQuery | null {
         return this.query.get(hook);
     }
 }

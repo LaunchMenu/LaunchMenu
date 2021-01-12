@@ -10,7 +10,7 @@ let selectedTheme = new Field(defaultTheme);
  * @returns The loaded theme
  */
 export function getTheme(hook?: IDataHook): ITheme {
-    return selectedTheme.get(hook || null);
+    return selectedTheme.get(hook);
 }
 
 /**

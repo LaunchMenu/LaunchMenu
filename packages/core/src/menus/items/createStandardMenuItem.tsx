@@ -5,12 +5,12 @@ import {MenuItemFrame} from "../../components/items/MenuItemFrame";
 import {Truncated} from "../../components/Truncated";
 import {MenuItemLayout} from "../../components/items/MenuItemLayout";
 import {MenuItemIcon} from "../../components/items/MenuItemIcon";
-import {useDataHook} from "../../utils/modelReact/useDataHook";
 import {getHooked} from "../../utils/subscribables/getHooked";
 import {Box} from "../../styling/box/Box";
 import {createStandardActionBindings} from "./createStandardActionBindings";
 import {ShortcutLabel} from "../../components/items/ShortcutLabel";
 import {simpleSearchHandler} from "../../actions/types/search/tracedRecursiveSearch/simpleSearch/simpleSearchHandler";
+import {useDataHook} from "model-react";
 
 /**
  * Creates a new standard menu item

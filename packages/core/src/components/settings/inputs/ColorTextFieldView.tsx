@@ -1,9 +1,9 @@
 import React from "react";
 import {ITextFieldViewProps} from "../../fields/_types/ITextFieldViewProps";
-import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {TextFieldView} from "../../fields/TextFieldView";
 import Color from "color";
 import {LFC} from "../../../_types/LFC";
+import {useDataHook} from "model-react";
 
 /**
  * A color text field view that changes the background color to the color of the input text

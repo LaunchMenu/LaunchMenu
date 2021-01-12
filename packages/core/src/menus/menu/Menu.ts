@@ -6,7 +6,7 @@ import {isItemSelectable} from "../items/isItemSelectable";
 import {IMenuCategoryData} from "./_types/IMenuCategoryData";
 import {AbstractMenu} from "./AbstractMenu";
 import {IIOContext} from "../../context/_types/IIOContext";
-import {createCallbackHook} from "../../utils/modelReact/createCallbackHook";
+import {createCallbackHook} from "../../utils/createCallbackHook";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
@@ -160,7 +160,7 @@ export class Menu extends AbstractMenu {
         oldCategory: ICategory | null = null
     ): boolean {
         let removed = [] as IMenuItem[];
-        const selectedItems = this.selected.get(null);
+        const selectedItems = this.selected.get();
 
         items.forEach(item => {
             const category =
@@ -225,8 +225,8 @@ export class Menu extends AbstractMenu {
      * Checks whether the cursor item is still present, and deselects it if not
      */
     protected deselectRemovedCursor(): void {
-        const items = this.items.get(null);
-        const cursor = this.cursor.get(null);
+        const items = this.items.get();
+        const cursor = this.cursor.get();
         updateCursor: if (cursor == null || !items.includes(cursor)) {
             for (let i = 0; i < items.length; i++)
                 if (isItemSelectable(items[i])) {
@@ -243,10 +243,10 @@ export class Menu extends AbstractMenu {
      * @param hook The hook to subscribe to changes
      * @returns The menu items
      */
-    public getItems(hook: IDataHook = null): IMenuItem[] {
+    public getItems(hook?: IDataHook): IMenuItem[] {
         if (this.isDestroyed(hook))
             // Whenever the menu is destroyed, we no longer inform about item changes
-            return this.items.get(null);
+            return this.items.get();
         return this.items.get(hook);
     }
 
@@ -255,10 +255,10 @@ export class Menu extends AbstractMenu {
      * @param hook The hook to subscribe to changes
      * @returns The categories and their items
      */
-    public getCategories(hook: IDataHook = null): IMenuCategoryData[] {
+    public getCategories(hook?: IDataHook): IMenuCategoryData[] {
         if (this.isDestroyed(hook))
             // Whenever the menu is destroyed, we no longer inform about category changes
-            return this.categories.get(null);
+            return this.categories.get();
         return this.categories.get(hook);
     }
 }

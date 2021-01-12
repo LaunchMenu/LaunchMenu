@@ -1,9 +1,9 @@
+import {useDataHook} from "model-react";
 import React, {memo} from "react";
 import {IQuery} from "../../../menus/menu/_types/IQuery";
 import {useBackgroundColor} from "../../../styling/backgroundColorContext";
 import {highlightTags} from "../../../textFields/syntax/utils/highlightTags";
 import {IHighlightNode} from "../../../textFields/syntax/_types/IHighlightNode";
-import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {LFC} from "../../../_types/LFC";

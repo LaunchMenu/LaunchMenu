@@ -21,7 +21,7 @@ export class SessionManager {
      * Disposes of all data in this session manager (destroying sessions)
      */
     public destroy(): void {
-        this.sessions.get(null).forEach(session => session.destroy());
+        this.sessions.get().forEach(session => session.destroy());
     }
 
     // Getters
@@ -30,7 +30,7 @@ export class SessionManager {
      * @param hook The hook to subscribe to changes
      * @returns The sessions that are currently open
      */
-    public getSessions(hook: IDataHook = null): LMSession[] {
+    public getSessions(hook?: IDataHook): LMSession[] {
         return this.sessions.get(hook);
     }
 
@@ -39,7 +39,7 @@ export class SessionManager {
      * @param hook The hook to subscribe to changes
      * @returns The current top session
      */
-    public getSelectedSession(hook: IDataHook = null): LMSession | null {
+    public getSelectedSession(hook?: IDataHook): LMSession | null {
         const sessions = this.sessions.get(hook);
         return sessions[sessions.length - 1] ?? null;
     }
@@ -51,7 +51,7 @@ export class SessionManager {
      * @returns The created and added session
      */
     public addSession(session: LMSession = new LMSession(this.LM)): LMSession {
-        this.sessions.set([...this.sessions.get(null), session]);
+        this.sessions.set([...this.sessions.get(), session]);
         return session;
     }
 
@@ -60,7 +60,7 @@ export class SessionManager {
      * @param session The session to be removed
      */
     public removeSession(session: LMSession): void {
-        const newSessions = this.sessions.get(null).filter(s => s != session);
+        const newSessions = this.sessions.get().filter(s => s != session);
         this.sessions.set(newSessions);
     }
 
@@ -69,9 +69,6 @@ export class SessionManager {
      * @param session The session to be displayed
      */
     public selectSession(session: LMSession): void {
-        this.sessions.set([
-            ...this.sessions.get(null).filter(s => s != session),
-            session,
-        ]);
+        this.sessions.set([...this.sessions.get().filter(s => s != session), session]);
     }
 }

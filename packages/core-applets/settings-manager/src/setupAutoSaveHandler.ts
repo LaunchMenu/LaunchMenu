@@ -1,4 +1,5 @@
-import {ISettingsData, Observer, SettingsFile, SettingsManager} from "@launchmenu/core";
+import {ISettingsData, SettingsFile, SettingsManager} from "@launchmenu/core";
+import {Observer} from "model-react";
 import {settings} from ".";
 
 /**

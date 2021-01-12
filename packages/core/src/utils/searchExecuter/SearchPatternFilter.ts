@@ -48,7 +48,7 @@ export class SearchPatternFilter<I> {
      * @param hook The hook to subscribe to changes
      * @returns The patterns that were found
      */
-    public getPatterns(hook: IDataHook = null): IPatternMatch[] {
+    public getPatterns(hook?: IDataHook): IPatternMatch[] {
         return this.patterns.get(hook);
     }
 

@@ -1,8 +1,6 @@
-import {Field, IDataHook} from "model-react";
+import {Field, IDataHook, ManualSourceHelper, Observer} from "model-react";
 import {wait} from "../../../_tests/wait.helper";
 import {IUUID} from "../../../_types/IUUID";
-import {ManualSourceHelper} from "../../modelReact/ManualSourceHelper";
-import {Observer} from "../../modelReact/Observer";
 import {CoreSearchExecuter} from "../CoreSearchExecuter";
 import {IPatternMatch} from "../_types/IPatternMatch";
 import {ISearchable} from "../_types/ISearchable";
@@ -22,7 +20,7 @@ const createSimpleResultMap = <I>() => {
             nodes[ID] = data;
             listener.callListeners();
         },
-        getItems: (hook: IDataHook = null) => {
+        getItems: (hook?: IDataHook) => {
             listener.addListener(hook);
             return s(
                 Object.values(nodes)
@@ -30,7 +28,7 @@ const createSimpleResultMap = <I>() => {
                     .filter(Boolean)
             ) as I[];
         },
-        getNodes: (hook: IDataHook = null) => {
+        getNodes: (hook?: IDataHook) => {
             listener.addListener(hook);
             return Object.values(nodes);
         },
@@ -420,12 +418,12 @@ describe("CoreSearchExecuter", () => {
                 const field1 = new Field("o");
                 const search1 = createSimpleSearch({
                     id: "1",
-                    m: (s, h) => s == field1.get(h ?? null),
+                    m: (s, h) => s == field1.get(h),
                 });
                 const field2 = new Field("s");
                 const search2 = createSimpleSearch({
                     id: "2",
-                    m: (s, h) => s == field2.get(h ?? null),
+                    m: (s, h) => s == field2.get(h),
                 });
                 const search3 = createSimpleSearch({
                     id: "3",
@@ -466,8 +464,7 @@ describe("CoreSearchExecuter", () => {
                 const search3 = createSimpleSearch({
                     id: "3",
                     m: s => s == "o" || s == "p",
-                    children: (s, h) =>
-                        s == field.get(h ?? null) ? [] : [search1, search2],
+                    children: (s, h) => (s == field.get(h) ? [] : [search1, search2]),
                 });
 
                 const [executer, result] = createCoreExecuter(search3);
@@ -490,12 +487,12 @@ describe("CoreSearchExecuter", () => {
                 const field1 = new Field("o");
                 const search1 = createSimpleSearch({
                     id: "1",
-                    m: (s, h) => s == field1.get(h ?? null),
+                    m: (s, h) => s == field1.get(h),
                 });
                 const field2 = new Field("s");
                 const search2 = createSimpleSearch({
                     id: "2",
-                    m: (s, h) => s == field2.get(h ?? null),
+                    m: (s, h) => s == field2.get(h),
                 });
                 let request = false;
                 const search3 = createSimpleSearch({

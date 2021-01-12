@@ -80,7 +80,7 @@ export class SearchMenu extends PrioritizedMenu {
         const oldQuery = this.executer.getQuery();
         if (this.showAllOnEmptySearch && (oldQuery?.search ?? "") != search) {
             const prioritizedItems = this.searchItems
-                .get(null)
+                .get()
                 .map(item => ({priority: 1, item}));
 
             if (search == "") this.addItems(prioritizedItems);
@@ -101,9 +101,7 @@ export class SearchMenu extends PrioritizedMenu {
      */
     public setSearchItems(items: IMenuItem[]): void {
         if (this.showAllOnEmptySearch && (this.executer.getQuery()?.search ?? "") == "") {
-            this.removeItems(
-                this.searchItems.get(null).map(item => ({item, priority: 1}))
-            );
+            this.removeItems(this.searchItems.get().map(item => ({item, priority: 1})));
             this.addItems(items.map(item => ({item, priority: 1})));
         }
         this.searchItems.set(items);
@@ -114,7 +112,7 @@ export class SearchMenu extends PrioritizedMenu {
      * @param item The item to add
      */
     public addSearchItem(item: IMenuItem): void {
-        this.searchItems.set([...this.searchItems.get(null), item]);
+        this.searchItems.set([...this.searchItems.get(), item]);
         if (this.showAllOnEmptySearch && (this.executer.getQuery()?.search ?? "") == "")
             this.addItem({item, priority: 1});
     }
@@ -124,7 +122,7 @@ export class SearchMenu extends PrioritizedMenu {
      * @param item The item to remove
      */
     public removeSearchItem(item: IMenuItem): void {
-        this.searchItems.set(this.searchItems.get(null).filter(i => i != item));
+        this.searchItems.set(this.searchItems.get().filter(i => i != item));
         if (this.showAllOnEmptySearch && (this.executer.getQuery()?.search ?? "") == "")
             this.removeItem({item, priority: 1});
     }
@@ -135,7 +133,7 @@ export class SearchMenu extends PrioritizedMenu {
      * @param hook The hook to subscribe to changes
      * @returns The search text
      */
-    public getSearch(hook: IDataHook = null): string | null {
+    public getSearch(hook?: IDataHook): string | null {
         return this.executer.getQuery(hook)?.search || null;
     }
 
@@ -144,7 +142,7 @@ export class SearchMenu extends PrioritizedMenu {
      * @param hook The hook to subscribe to changes
      * @returns The highlight data
      */
-    public getHighlight(hook: IDataHook = null): IQuery | null {
+    public getHighlight(hook?: IDataHook): IQuery | null {
         return this.executer.getQuery(hook) || null;
     }
 
@@ -153,7 +151,7 @@ export class SearchMenu extends PrioritizedMenu {
      * @param hook The hook to subscribe to changes
      * @returns The patterns in searches
      */
-    public getPatternMatches(hook: IDataHook = null): IPatternMatch[] {
+    public getPatternMatches(hook?: IDataHook): IPatternMatch[] {
         return this.executer.getPatterns(hook);
     }
 }

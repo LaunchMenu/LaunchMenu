@@ -1,5 +1,6 @@
-import {IActionBinding, LaunchMenu, Observer, SettingsManager} from "@launchmenu/core";
+import {IActionBinding, LaunchMenu} from "@launchmenu/core";
 import {Tray, remote, nativeImage, BrowserWindow} from "electron";
+import {Observer} from "model-react";
 import Path from "path";
 import {settings} from "../settings";
 import {createExitContextMenuBinding} from "./createExitContextMenuBindings";

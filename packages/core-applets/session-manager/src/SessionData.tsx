@@ -36,8 +36,8 @@ export class SessionData {
     protected initInterface(): IMenuItem {
         const manager = this.session.LM.getSessionManager();
         return createStandardMenuItem({
-            name: h => this.name.get(h || null),
-            description: h => this.description.get(h || null) ?? undefined,
+            name: h => this.name.get(h),
+            description: h => this.description.get(h) ?? undefined,
             onExecute: () => {
                 manager.selectSession(this.session);
             },

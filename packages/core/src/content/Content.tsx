@@ -33,7 +33,7 @@ export class Content implements IContent {
      * @param hook The hook to subscribe to changes
      * @returns The scroll height
      */
-    public getScrollHeight(hook: IDataHook = null): number {
+    public getScrollHeight(hook?: IDataHook): number {
         return this.scrollHeight.get(hook);
     }
 
@@ -50,7 +50,7 @@ export class Content implements IContent {
      * @param hook The hook to subscribe to changes
      * @returns The scroll percentage
      */
-    public getScrollPercentage(hook: IDataHook = null): number {
+    public getScrollPercentage(hook?: IDataHook): number {
         return this.scrollPercentage.get(hook);
     }
 
@@ -60,7 +60,7 @@ export class Content implements IContent {
      * @param hook The hook to subscribe to changes
      * @returns The total scroll offset
      */
-    public getScrollOffset(scrollHeight?: number, hook: IDataHook = null): number {
+    public getScrollOffset(scrollHeight?: number, hook?: IDataHook): number {
         if (scrollHeight === undefined) scrollHeight = this.getScrollHeight(hook);
         return this.getScrollPercentage(hook) * scrollHeight;
     }

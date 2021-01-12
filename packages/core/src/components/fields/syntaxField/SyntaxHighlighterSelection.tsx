@@ -5,8 +5,8 @@ import {FillBox} from "../../FillBox";
 import {getFrameSize} from "./getFrameSize";
 import {useIOContext} from "../../../context/react/useIOContext";
 import {baseSettings} from "../../../application/settings/baseSettings/baseSettings";
-import {useDataHook} from "../../../utils/modelReact/useDataHook";
 import {ITextSelection} from "../../../textFields/_types/ITextSelection";
+import {useDataHook} from "model-react";
 
 /**
  * Retrieves the pixel size of the text
