@@ -32,7 +32,9 @@ export default declare({
         });
 
         // Setup startup controls
-        const destroyWindowController = setupStartupController(settingsManager);
+        const destroyWindowController = setupStartupController(settingsManager, h =>
+            LM.isInDevMode(h)
+        );
 
         // Setup the position setting
         const destroyPositionSyncer = setupPositionSettingSyncer(settingsManager, window);

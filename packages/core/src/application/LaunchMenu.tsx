@@ -1,6 +1,6 @@
 import React from "react";
 import Path from "path";
-import {Loader, Observer} from "model-react";
+import {Field, IDataHook, Loader, Observer} from "model-react";
 import {KeyHandler} from "../keyHandler/KeyHandler";
 import {ThemeProvider} from "../styling/theming/ThemeContext";
 import {loadTheme} from "../styling/theming/loadTheme";
@@ -20,6 +20,8 @@ import {ipcRenderer} from "electron";
  * The main LM class
  */
 export class LaunchMenu {
+    protected devMode = new Field(false);
+
     protected settingsDirectory = Path.join(process.cwd(), "data", "settings");
 
     public view: JSX.Element;
@@ -154,6 +156,24 @@ export class LaunchMenu {
             path: Path.join(this.settingsDirectory, "baseSettings.json"),
         });
         this.settingsManager.addSettings(baseSettings.ID, settings);
+    }
+
+    // Dev mode
+    /**
+     * Changes whether LaunchMenu is running in dev-mode
+     * @param enabled Whether in dev-mode
+     */
+    public setDevMode(enabled: boolean): void {
+        this.devMode.set(enabled);
+    }
+
+    /**
+     * Retrieves whether LaunchMenu is running in dev-mode
+     * @param hook The hook to subscribe to changes
+     * @returns Whether dev mode is enabled
+     */
+    public isInDevMode(hook?: IDataHook): boolean {
+        return this.devMode.get(hook);
     }
 
     // Utils

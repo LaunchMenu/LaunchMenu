@@ -65,15 +65,18 @@ export function setupVisibilityControls(
     }, true);
 
     // Debug handler
-    const debugSettingObvserver = new Observer(h =>
-        settingsManager.getSettingsContext(h).get(settings).visibility.showDebugger.get(h)
-    ).listen(visible => {
+    const debugSettingObvserver = new Observer(h => ({
+        visible: settingsManager
+            .getSettingsContext(h)
+            .get(settings)
+            .visibility.showDebugger.get(h),
+        devMode: LM.isInDevMode(h),
+    })).listen(({visible, devMode}) => {
         const wc = window.webContents;
         if (visible == "true") wc.openDevTools({mode: "detach"});
         else if (visible == "false") wc.closeDevTools();
         else {
-            // TODO: add a property to track dev mode in LM
-            if ((global as any).DEV) wc.openDevTools({mode: "detach"});
+            if (devMode) wc.openDevTools({mode: "detach"});
             else wc.closeDevTools();
         }
     }, true);

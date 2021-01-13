@@ -36,6 +36,13 @@ export type IIOContext = {
      */
     close(layer: IUILayer): Promise<void>;
 
+    /**
+     * Whether LM is running in dev mode
+     * @param hook The hook to subscribe to changes
+     * @returns Whether dev mode is enabled
+     */
+    isInDevMode(hook?: IDataHook): boolean;
+
     /** The undo redo facility to undo changes */
     readonly undoRedo: IUndoRedoFacility;
     /** The application settings */

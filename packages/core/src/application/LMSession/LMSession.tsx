@@ -114,6 +114,7 @@ export class LMSession {
      */
     protected setupContext(): void {
         this.context = new IOContext({
+            isInDevMode: h => this.LM.isInDevMode(h),
             undoRedo: new UndoRedoFacility(),
             settings: new SettingsContext(),
             contextMenuBindings: this.getGlobalContextMenuBindings(),
@@ -421,7 +422,8 @@ export class LMSession {
 
             // Initialize the new applet
             const initializedApplet = withSession(applet, this);
-            if (updated && DEV) this.callAppletReload(initializedApplet);
+            if (updated && this.LM.isInDevMode())
+                this.callAppletReload(initializedApplet);
 
             // Obtain the searchable and return the data
             const searchable =
