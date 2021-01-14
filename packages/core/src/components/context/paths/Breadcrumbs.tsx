@@ -8,7 +8,7 @@ import {AnimateWidth} from "./AnimateWidth";
 /**
  * A view to visualize the path of opened UI in the context
  */
-export const Breadcumbs: LFC<{path: string[]; transitionDuration?: number}> = ({
+export const Breadcrumbs: LFC<{path: string[]; transitionDuration?: number}> = ({
     path,
     transitionDuration,
 }) => {
@@ -46,24 +46,42 @@ export const Breadcumbs: LFC<{path: string[]; transitionDuration?: number}> = ({
         <>
             {newNodes.map(({name, id, opened}, i) => {
                 return (
-                    <AnimateWidth
-                        key={id}
-                        duration={transitionDuration}
-                        width={opened ? "auto" : 0}
-                        initialWidth={0}
-                        containerProps={{
-                            onTransitionEnd: !opened
-                                ? () => {
-                                      pathNodes.current = pathNodes.current.filter(
-                                          ({id: idc}) => idc != id
-                                      );
-                                  }
-                                : undefined,
-                        }}>
-                        <Box display="inline-block" marginLeft="extraSmall">
-                            {name}
-                        </Box>
-                    </AnimateWidth>
+                    // This outer container keeps empty elements from stacking the negative margin
+                    <Box display="inline-block" key={id}>
+                        <AnimateWidth
+                            duration={transitionDuration}
+                            width={opened ? "auto" : 0}
+                            initialWidth={0}
+                            containerProps={{
+                                onTransitionEnd: !opened
+                                    ? () => {
+                                          pathNodes.current = pathNodes.current.filter(
+                                              ({id: idc}) => idc != id
+                                          );
+                                      }
+                                    : undefined,
+                                borderRadiusBottomRight: "round",
+                                borderRadiusTopRight: "round",
+                                zIndex: newNodes.length - i,
+                                css: {
+                                    marginRight: -20,
+                                    position: "relative",
+                                    boxShadow: `16px 0 16px -10px rgba(0, 0, 0, 0.4)`,
+                                },
+                            }}>
+                            <Box
+                                display="inline-block"
+                                marginLeft="extraSmall"
+                                background="bgPrimary"
+                                padding="small"
+                                paddingRight="medium"
+                                position="relative"
+                                css={{paddingLeft: 25}}
+                                boxSizing="border-box">
+                                {name}
+                            </Box>
+                        </AnimateWidth>
+                    </Box>
                 );
             })}
         </>

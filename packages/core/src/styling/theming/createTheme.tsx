@@ -122,9 +122,11 @@ export function createTheme(
         },
         border: {
             normal: themeInput.border?.normal || {
+                borderStyle: "solid",
                 borderWidth: 1,
             },
             thick: themeInput.border?.thick || {
+                borderStyle: "solid",
                 borderWidth: 3,
             },
         },

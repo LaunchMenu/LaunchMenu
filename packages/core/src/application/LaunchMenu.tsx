@@ -108,6 +108,7 @@ export class LaunchMenu {
                     css={{padding: 18}}>
                     <Box
                         position="relative"
+                        background="bgPrimary"
                         borderRadius="medium"
                         overflow="hidden"
                         flex="1 1 auto"

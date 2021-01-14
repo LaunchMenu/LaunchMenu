@@ -19,6 +19,11 @@
                 box-sizing: border-box;
                 font-family: Test;
             }
+
+            .noTransition * { 
+                /* Disable the visual transition, while still allowing the transition end event to fire */
+                transition-duration: 0.001s !important; 
+            } 
         </style>
     </head>
     <body>

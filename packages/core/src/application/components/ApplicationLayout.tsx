@@ -30,7 +30,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
     context,
     menuWidthFraction = 0.4,
     fieldHeight = 60,
-    defaultTransitionDuration = 150,
+    defaultTransitionDuration = 200,
 }) => {
     const fieldStackGetter = (h?: IDataHook) => getContextFieldStack(context, h);
     const fieldState = usePaneIsVisible(fieldStackGetter, defaultTransitionDuration);

@@ -1,10 +1,10 @@
 import {IHighlightStyle} from "./IHighlightStyle";
 import {IBaseTheme} from "../../_types/IBaseTheme";
-import {ObjectInterpolation} from "@emotion/core";
+import {CSSObject} from "@emotion/serialize";
 
 type IHighlightThemeInputObject = {
-    selection?: ObjectInterpolation<undefined>;
-    cursor?: ObjectInterpolation<undefined>;
+    selection?: CSSObject;
+    cursor?: CSSObject;
     syntax: IHighlightStyle[];
 };
 

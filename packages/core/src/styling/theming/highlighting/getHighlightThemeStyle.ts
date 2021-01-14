@@ -1,4 +1,4 @@
-import {ObjectInterpolation} from "@emotion/core";
+import {CSSObject} from "@emotion/serialize";
 import {IHighlightTheme} from "./_types/IHighlightTheme";
 
 /**
@@ -6,9 +6,7 @@ import {IHighlightTheme} from "./_types/IHighlightTheme";
  * @param highlightTheme The highlight theme
  * @returns The css json object
  */
-export function getHighlightThemeStyle(
-    highlightTheme: IHighlightTheme
-): ObjectInterpolation<undefined> {
+export function getHighlightThemeStyle(highlightTheme: IHighlightTheme): CSSObject {
     const styles = {} as {[key: string]: any};
     highlightTheme.syntax.forEach(style => {
         styles[

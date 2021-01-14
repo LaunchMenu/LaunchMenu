@@ -27,7 +27,7 @@ import {withSession} from "../applets/declaration/withSession";
 import {UILayer} from "../../uiLayers/standardUILayer/UILayer";
 import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
-import {Breadcumbs} from "../../components/context/paths/Breadcrumbs";
+import {Breadcrumbs} from "../../components/context/paths/Breadcrumbs";
 import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {IMenuSearchable} from "../../actions/types/search/_types/IMenuSearchable";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
@@ -250,13 +250,14 @@ export class LMSession {
     protected async setupContent(): Promise<IStandardUILayerData[]> {
         // await this.context.open(new UILayer({contentView: {close: true}}));
 
-        const setPath = (d: string[]) =>
-            path.set(
-                d.reduce(
-                    (cur, name) => (cur.length == 0 ? [name] : [...cur, "/", name]),
-                    []
-                )
-            );
+        // const setPath = (d: string[]) =>
+        //     path.set(
+        //         d.reduce(
+        //             (cur, name) => (cur.length == 0 ? [name] : [...cur, "/", name]),
+        //             []
+        //         )
+        //     );
+        const setPath = (d: string[]) => path.set(d);
         const path = new Field(["shit", "orange", "bread"]);
         return [
             {
@@ -304,7 +305,7 @@ export class LMSession {
                                             opt6
                                         </button>
                                     </div>
-                                    <Breadcumbs path={path.get(h)} />
+                                    <Breadcrumbs path={path.get(h)} />
                                     {new Array(200).fill(null).map((_, i) => (
                                         <div key={i}>
                                             {i}

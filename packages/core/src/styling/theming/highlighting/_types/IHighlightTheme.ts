@@ -1,11 +1,11 @@
 import {IHighlightStyle} from "./IHighlightStyle";
-import {ObjectInterpolation} from "@emotion/core";
+import {CSSObject} from "@emotion/serialize";
 
 /**
  * A syntax styling theme
  */
 export type IHighlightTheme = {
-    selection: ObjectInterpolation<undefined>;
-    cursor: ObjectInterpolation<undefined>;
+    selection: CSSObject;
+    cursor: CSSObject;
     syntax: IHighlightStyle[];
 };
