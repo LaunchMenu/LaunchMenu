@@ -18,12 +18,24 @@ export function setupVisibilityControls(
     onHide: () => void
 ): {destroy: () => void; exitBindings: IActionBinding[]} {
     const settingsManager = LM.getSettingsManager();
+
+    // Create show and hide functions, that deal with the fact that transitions don't run while the window is hidden
     const showWindow = () => {
+        const pos = settingsManager.getSettingsContext().get(settings).position.get();
+
+        setTimeout(() => {
+            window.setPosition(pos.x, pos.y);
+            document.body.classList.remove("noTransition");
+        }, 100);
+
         window.show();
         window.focus();
     };
     const hideWindow = () => {
         if (!window.isVisible()) return;
+
+        window.setPosition(-5e3, -5e3);
+        document.body.classList.add("noTransition");
         window.hide();
         onHide();
     };
