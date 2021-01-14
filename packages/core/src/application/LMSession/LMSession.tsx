@@ -35,6 +35,7 @@ import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
 import {IStandardUILayerData} from "../../uiLayers/standardUILayer/_types/IStandardUILayerData";
 import {Content} from "../../content/Content";
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
+import {standardOverlayGroup} from "../../uiLayers/UILayerMissingView";
 
 /**
  * An application session
@@ -157,7 +158,11 @@ export class LMSession {
         const content = await this.setupContent();
         const menu = await this.setupMenu();
         const field = await this.setupField();
-        this.homeLayer = new UILayer([...content, ...menu, ...field]);
+        // this.homeLayer = new UILayer([...content, ...menu, ...field]);
+
+        this.homeLayer = new UILayer([...menu, ...field, {contentView: {close: true}}], {
+            showNodataOverlay: false,
+        });
         this.context.open(this.homeLayer);
     }
 

@@ -46,7 +46,11 @@ export class Select<T> extends Input<T> {
      * @param config The configuration for the UI
      */
     public constructor(field: IField<T>, config: ISelectConfig<T>) {
-        super(field, {allowSubmitExitOnError: false, ...config} as IInputConfig<T>);
+        super(field, {
+            allowSubmitExitOnError: false,
+            icon: "select",
+            ...config,
+        } as IInputConfig<T>);
     }
 
     /** @override */

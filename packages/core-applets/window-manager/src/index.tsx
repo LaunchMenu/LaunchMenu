@@ -11,8 +11,8 @@ export const info = {
     name: "Window manager",
     description: "An window to manage LaunchMenu's window",
     version: "0.0.0",
-    icon: "search", // TODO: add some appropriate icon
-};
+    icon: "window",
+} as const;
 
 export default declare({
     info,

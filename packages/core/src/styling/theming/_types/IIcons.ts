@@ -1,9 +1,45 @@
+/**
+ * The type for the available default icons
+ */
 export type IIcons = {
-    search: JSX.Element;
-    arrowUp: JSX.Element;
-    arrowDown: JSX.Element;
-    arrowRight: JSX.Element;
-    arrowLeft: JSX.Element;
-    menu: JSX.Element;
-    settings: JSX.Element;
+    [P in
+        | "search"
+        | "arrowUp"
+        | "arrowDown"
+        | "arrowRight"
+        | "arrowLeft"
+        | "contextMenu"
+        | "settings"
+        | "window"
+        | "select"
+        | "move"
+        | "moveVertical"
+        | "moveHorizontal"
+        | "show"
+        | "hide"
+        | "comment"
+        | "download"
+        | "upload"
+        | "file"
+        | "wifi"
+        | "launch"
+        | "exit"
+        | "edit"
+        | "delete"
+        | "refresh"
+        | "home"
+        | "favorite"
+        | "code"
+        | "terminal"
+        | "send"
+        | "undo"
+        | "redo"
+        | "play"
+        | "pause"
+        | "folder"
+        | "folderOpen"
+        | "open"
+        | "menu"
+        | "session"
+        | "applets"]: JSX.Element;
 };

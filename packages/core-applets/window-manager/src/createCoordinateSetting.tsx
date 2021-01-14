@@ -47,6 +47,7 @@ export function createCoordinateSetting<T extends IPosition | ISize>({
         init: init as any,
         data: (field: IField<T>) => ({
             name,
+            icon: "window",
             valueView: (
                 <Loader>
                     {h => {

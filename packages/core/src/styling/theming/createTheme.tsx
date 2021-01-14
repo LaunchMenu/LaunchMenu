@@ -7,15 +7,47 @@ import {createHighlightTheme} from "./highlighting/createHighlightTheme";
 import {IBaseTheme} from "./_types/IBaseTheme";
 import {GoSearch} from "react-icons/go";
 import Path from "path";
+import {mergeStyles} from "../../utils/mergeStyles";
+
+import {FaCog} from "react-icons/fa";
 import {
-    FiSettings,
+    BiWindow,
+    BiSelectMultiple,
+    BiMove,
+    BiMoveVertical,
+    BiMoveHorizontal,
+    BiShow,
+    BiHide,
+    BiComment,
+    BiListUl,
+    BiWindows,
+} from "react-icons/bi";
+import {IoMdCube, IoMdExit, IoMdPlay, IoMdPause, IoMdOpen} from "react-icons/io";
+import {FaFolderOpen, FaFolder} from "react-icons/fa";
+import {
     FiMenu,
     FiChevronDown,
     FiChevronLeft,
     FiChevronRight,
     FiChevronUp,
+    FiDownload,
+    FiUpload,
+    FiFile,
+    FiWifi,
+    FiTerminal,
 } from "react-icons/fi";
-import {mergeStyles} from "../../utils/mergeStyles";
+import {
+    MdLaunch,
+    MdModeEdit,
+    MdDelete,
+    MdRefresh,
+    MdHome,
+    MdStar,
+    MdCode,
+    MdSend,
+    MdUndo,
+    MdRedo,
+} from "react-icons/md";
 
 /**
  * Creates a new theme from the given input
@@ -140,12 +172,44 @@ export function createTheme(
         },
         icon: {
             search: themeInput.icons?.search || <GoSearch />,
-            settings: themeInput.icons?.settings || <FiSettings />,
-            menu: themeInput.icons?.menu || <FiMenu />,
+            settings: themeInput.icons?.settings || <FaCog />,
+            contextMenu: themeInput.icons?.contextMenu || <FiMenu />,
             arrowDown: themeInput.icons?.arrowDown || <FiChevronDown />,
             arrowUp: themeInput.icons?.arrowUp || <FiChevronUp />,
             arrowLeft: themeInput.icons?.arrowLeft || <FiChevronLeft />,
             arrowRight: themeInput.icons?.arrowRight || <FiChevronRight />,
+            window: themeInput.icons?.window || <BiWindow />,
+            applets: themeInput.icons?.applets || <IoMdCube />,
+            comment: themeInput.icons?.comment || <BiComment />,
+            hide: themeInput.icons?.hide || <BiHide />,
+            show: themeInput.icons?.show || <BiShow />,
+            select: themeInput.icons?.select || <BiSelectMultiple />,
+            move: themeInput.icons?.move || <BiMove />,
+            moveVertical: themeInput.icons?.moveVertical || <BiMoveVertical />,
+            moveHorizontal: themeInput.icons?.moveHorizontal || <BiMoveHorizontal />,
+            exit: themeInput.icons?.exit || <IoMdExit />,
+            download: themeInput.icons?.download || <FiDownload />,
+            upload: themeInput.icons?.upload || <FiUpload />,
+            file: themeInput.icons?.file || <FiFile />,
+            wifi: themeInput.icons?.wifi || <FiWifi />,
+            launch: themeInput.icons?.launch || <MdLaunch />,
+            edit: themeInput.icons?.edit || <MdModeEdit />,
+            delete: themeInput.icons?.delete || <MdDelete />,
+            refresh: themeInput.icons?.refresh || <MdRefresh />,
+            home: themeInput.icons?.home || <MdHome />,
+            favorite: themeInput.icons?.favorite || <MdStar />,
+            code: themeInput.icons?.code || <MdCode />,
+            terminal: themeInput.icons?.terminal || <FiTerminal />,
+            send: themeInput.icons?.send || <MdSend />,
+            undo: themeInput.icons?.undo || <MdUndo />,
+            redo: themeInput.icons?.redo || <MdRedo />,
+            play: themeInput.icons?.play || <IoMdPlay />,
+            pause: themeInput.icons?.pause || <IoMdPause />,
+            open: themeInput.icons?.open || <IoMdOpen />,
+            menu: themeInput.icons?.menu || <BiListUl />,
+            folder: themeInput.icons?.folder || <FaFolder />,
+            folderOpen: themeInput.icons?.folderOpen || <FaFolderOpen />,
+            session: themeInput.icons?.session || <BiWindows />,
         },
         globalCss: mergeStyles(
             {

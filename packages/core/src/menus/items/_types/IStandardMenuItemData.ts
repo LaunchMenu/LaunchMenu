@@ -1,5 +1,6 @@
 import {IDataHook} from "model-react";
-import {ReactNode} from "react";
+import {ReactElement} from "react";
+import {IThemeIcon} from "../../../styling/theming/_types/IBaseTheme";
 import {IStandardActionBindingData} from "./IStandardActionBindingData";
 
 /**
@@ -7,5 +8,8 @@ import {IStandardActionBindingData} from "./IStandardActionBindingData";
  */
 export type IStandardMenuItemData = IStandardActionBindingData & {
     /** The icon of the menu item */
-    icon?: string | ReactNode | ((h?: IDataHook) => string | ReactNode | undefined);
+    icon?:
+        | IThemeIcon
+        | ReactElement
+        | ((h?: IDataHook) => IThemeIcon | ReactElement | undefined);
 };

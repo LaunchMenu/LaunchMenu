@@ -18,5 +18,10 @@ export function createContextFolderMenuItem<
         ? T
         : IRecursiveSearchChildren
 >(data: IFolderMenuItemData<T, S>): IMenuItem & {children: T} {
-    return createFolderMenuItem({closeOnExecute: true, forwardKeyEvents: true, ...data});
+    return createFolderMenuItem({
+        searchIcon: "contextMenu",
+        closeOnExecute: true,
+        forwardKeyEvents: true,
+        ...data,
+    });
 }

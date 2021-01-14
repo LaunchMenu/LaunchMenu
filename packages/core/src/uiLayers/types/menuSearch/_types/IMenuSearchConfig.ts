@@ -5,6 +5,8 @@ import {ITextSelection} from "../../../../textFields/_types/ITextSelection";
 import {IUILayerMenuData} from "../../../_types/IUILayerMenuData";
 import {IDataHook} from "model-react";
 import {IPrioritizedMenuConfig} from "../../../../menus/menu/_types/IPrioritizedMenuConfig";
+import {IThemeIcon} from "../../../../styling/theming/_types/IBaseTheme";
+import {ReactElement} from "react";
 
 /** The configuration */
 export type IMenuSearchConfig = {
@@ -28,4 +30,6 @@ export type IMenuSearchConfig = {
     useItemKeyHandlers?: boolean;
     /** Whether to use key handlers of items in the context menu of the selected item(s) of the search menu */
     useContextItemKeyHandlers?: boolean;
+    /** The icon to use for the search field, defaults to the search icon */
+    icon?: IThemeIcon | ReactElement;
 };

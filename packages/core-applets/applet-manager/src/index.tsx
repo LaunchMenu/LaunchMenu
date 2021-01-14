@@ -11,8 +11,8 @@ export const info = {
     name: "Applets manager",
     description: "An applet to manage all applets within LaunchMenu",
     version: "0.0.0",
-    icon: "search", // TODO: add some kind of management icon
-};
+    icon: "applets",
+} as const;
 
 export const settings = createSettings({
     version: "0.0.0",

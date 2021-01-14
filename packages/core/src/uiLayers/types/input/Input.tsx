@@ -126,7 +126,7 @@ export class Input<T> extends AbstractUILayer {
         return (
             <TextFieldView
                 field={field}
-                icon={this.config.icon}
+                icon={this.config.icon || "edit"}
                 highlighter={this.getHighlighterWithError(this.config.highlighter)}
             />
         );

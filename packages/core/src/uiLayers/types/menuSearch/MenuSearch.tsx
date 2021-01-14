@@ -1,4 +1,4 @@
-import React from "react";
+import React, {ReactElement} from "react";
 import {Field, IDataHook, Observer} from "model-react";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {IOContext} from "../../../context/IOContext";
@@ -21,6 +21,7 @@ import {IViewStackItem} from "../../_types/IViewStackItem";
 import {InstantOpenTransition} from "../../../components/context/stacks/transitions/open/InstantOpenTransition";
 import {InstantCloseTransition} from "../../../components/context/stacks/transitions/close/InstantCloseTransition";
 import {getHooked} from "../../../utils/subscribables/getHooked";
+import {IThemeIcon} from "../../../styling/theming/_types/IBaseTheme";
 
 export class MenuSearch extends AbstractUILayer {
     protected data: IMenuSearchConfig;
@@ -74,7 +75,7 @@ export class MenuSearch extends AbstractUILayer {
         const fieldData: IUILayerFieldData = {
             ID: uuid(),
             field,
-            fieldView: this.getFieldView(field, menu),
+            fieldView: this.getFieldView(field, menu, this.data.icon),
             fieldHandler: this.getFieldHandler(field, context),
         };
         const menuData: IUILayerMenuData = {
@@ -116,13 +117,18 @@ export class MenuSearch extends AbstractUILayer {
      * Retrieves the field view given a field and menu
      * @param field The field to create a view for
      * @param menu The menu to use for match highlighting
+     * @param icon The search icon
      * @returns The created view
      */
-    protected getFieldView(field: ITextField, menu: SearchMenu): IViewStackItem {
+    protected getFieldView(
+        field: ITextField,
+        menu: SearchMenu,
+        icon?: IThemeIcon | ReactElement
+    ): IViewStackItem {
         return (
             <TextFieldView
                 field={field}
-                icon={"search"}
+                icon={icon || "search"}
                 highlighter={createHighlighterWithSearchPattern(
                     h => menu.getPatternMatches(h),
                     this.data.highlighter || plaintextLexer,

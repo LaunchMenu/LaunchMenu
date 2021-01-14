@@ -14,13 +14,14 @@ export const MenuItemLayout: LFC<IMenuItemLayoutProps> = ({
     shortcut,
 }) => {
     const main = (
-        <Box className="itemMain" display="flex" flexGrow={1} padding="medium">
-            {icon && (
-                <Box minWidth={40} marginRight="medium">
-                    {icon}
-                </Box>
-            )}
-            <Box flexGrow={1}>
+        <Box
+            className="itemMain"
+            display="flex"
+            flexGrow={1}
+            padding="medium"
+            paddingLeft="none">
+            {icon && <Box minWidth={40}>{icon}</Box>}
+            <Box flexGrow={1} paddingLeft="medium">
                 <Box
                     className="itemFirstLine"
                     display="flex"

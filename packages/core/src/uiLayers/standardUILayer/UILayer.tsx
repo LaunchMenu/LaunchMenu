@@ -81,7 +81,11 @@ export class UILayer extends UnifiedAbstractUILayer {
             inpData instanceof Function ? inpData(context, close) : inpData;
 
         const ID = uuid();
-        let res = {ID, onClose: data.onClose} as IStandardUILayerDataObject & {
+        let res = {
+            ID,
+            onClose: data.onClose,
+            overlayGroup: data.overlayGroup,
+        } as IStandardUILayerDataObject & {
             onClose?: () => void;
         };
         let extra: IUILayerData[] = [];
@@ -114,6 +118,7 @@ export class UILayer extends UnifiedAbstractUILayer {
                         menu: data.menu,
                         defaultMenu: menuLayerData,
                         onExecute: data.onExecute,
+                        icon: data.icon,
                     })
                 );
             } else {
@@ -123,6 +128,12 @@ export class UILayer extends UnifiedAbstractUILayer {
                     ...res,
                 };
             }
+        } else if (data.menuView) {
+            empty = false;
+            res = {
+                menuView: data.menuView,
+                ...res,
+            };
         }
 
         // Create the standard field data
@@ -142,6 +153,12 @@ export class UILayer extends UnifiedAbstractUILayer {
                     data.fieldHandler ?? createTextFieldKeyHandler(field, context),
                 ...res,
             };
+        } else if (data.fieldView) {
+            empty = false;
+            res = {
+                fieldView: data.fieldView,
+                ...res,
+            };
         }
 
         // Create the content data
@@ -153,6 +170,12 @@ export class UILayer extends UnifiedAbstractUILayer {
                 contentView: data.contentView ?? <ContentView content={content} />,
                 contentHandler:
                     data.contentHandler ?? createContentKeyHandler(content, context),
+                ...res,
+            };
+        } else if (data.contentView) {
+            empty = false;
+            res = {
+                contentView: data.contentView,
                 ...res,
             };
         }

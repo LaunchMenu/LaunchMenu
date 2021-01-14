@@ -1,7 +1,9 @@
 import {IDataHook, waitFor} from "model-react";
+import {ReactElement} from "react";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
 import {ProxiedMenu} from "../../../menus/menu/ProxiedMenu";
+import {IThemeIcon} from "../../../styling/theming/_types/IBaseTheme";
 import {UILayer} from "../../../uiLayers/standardUILayer/UILayer";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {createContextAction} from "../../contextMenuAction/createContextAction";
@@ -36,6 +38,7 @@ export const openMenuExecuteHandler = createContextAction({
     name: "Open menu",
     contextItem: {
         priority: executeAction.priority,
+        icon: "open",
     },
     override: executeAction,
     parents: [sequentialExecuteHandler],
@@ -62,6 +65,7 @@ export const openMenuExecuteHandler = createContextAction({
         }) => {
             const callback = preventCallback?.();
             return new Promise<void>(res => {
+                // Find the combined path name
                 const pathName =
                     data.reduce(
                         (cur, d) =>
@@ -73,11 +77,27 @@ export const openMenuExecuteHandler = createContextAction({
                         ""
                     ) || ".";
 
+                // Find the most requested icon
+                const iconCounts = new Map<IThemeIcon | ReactElement, number>();
+                data.forEach(item => {
+                    if ("pathName" in item && item.searchIcon) {
+                        const currentCount = iconCounts.get(item.searchIcon) || 0;
+                        iconCounts.set(item.searchIcon, currentCount + 1);
+                    }
+                });
+                const [count, icon] = [...iconCounts.entries()].reduce(
+                    ([bestCount, bestItem], [item, count]) =>
+                        count > bestCount ? [count, item] : [bestCount, bestItem],
+                    [0, undefined] as [number, IThemeIcon | ReactElement | undefined]
+                );
+
+                // Create the menu
                 const menu = new ProxiedMenu(context, childrenGetter);
                 context.open(
                     new UILayer(
                         (context, close) => ({
                             menu,
+                            icon,
                             onExecute: items => {
                                 if (containsClosingItem(data, items)) {
                                     close();

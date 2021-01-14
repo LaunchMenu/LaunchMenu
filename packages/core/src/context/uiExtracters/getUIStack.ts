@@ -22,17 +22,23 @@ export function getUIStack(
         .getUI(hook)
         .flatMap(getUI)
         .reduce(
-            ({views, lastGroup}, {view, overlayGroup}) => {
+            ({views, lastGroup, visible}, {view, overlayGroup}) => {
                 // If no group is specified, or it's different from the last group, add the view
-                if (!overlayGroup || lastGroup != overlayGroup) views.push(view); // Mutable push is faster than concatenation
+                if (!overlayGroup || (lastGroup != overlayGroup && visible))
+                    views.push(view); // Mutable push is faster than concatenation
+
                 return {
                     views,
                     lastGroup: overlayGroup,
+                    // Overlay views don't alter visibility, other items do
+                    visible: overlayGroup ? visible : !("close" in view.value),
                 };
             },
             {
                 views: [] as IIdentifiedItem<IViewStackItem>[],
                 lastGroup: undefined as undefined | Symbol,
+                /** Whether the content so far is visible (not a closed view with possibly a number of overlays on top) */
+                visible: true,
             }
         ).views;
 }

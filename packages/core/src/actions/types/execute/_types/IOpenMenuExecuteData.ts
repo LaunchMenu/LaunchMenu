@@ -1,4 +1,6 @@
+import {ReactElement} from "react";
 import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
+import {IThemeIcon} from "../../../../styling/theming/_types/IBaseTheme";
 import {ISubscribable} from "../../../../utils/subscribables/_types/ISubscribable";
 
 /**
@@ -6,4 +8,13 @@ import {ISubscribable} from "../../../../utils/subscribables/_types/ISubscribabl
  */
 export type IOpenMenuExecuteData =
     | ISubscribable<IMenuItem[]>
-    | {items: ISubscribable<IMenuItem[]>; closeOnExecute?: boolean; pathName?: string};
+    | {
+          /** The items to be shown in the menu */
+          items: ISubscribable<IMenuItem[]>;
+          /** Whether to close the menu when an item is executed */
+          closeOnExecute?: boolean;
+          /** The name to show in the path for this menu */
+          pathName?: string;
+          /** The icon to be shown in the search field of this menu */
+          searchIcon?: IThemeIcon | ReactElement;
+      };

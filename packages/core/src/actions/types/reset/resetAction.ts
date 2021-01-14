@@ -9,6 +9,9 @@ import {IResetable} from "./_types/IResetable";
  */
 export const resetAction = createContextAction({
     name: "reset",
+    contextItem: {
+        icon: "refresh",
+    },
     core: (executors: IResetable[]) => {
         /**
          * Resets the passed items

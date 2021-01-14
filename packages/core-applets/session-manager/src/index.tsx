@@ -21,8 +21,8 @@ export const info = {
     name: "Session manager",
     description: "An applet to manage all sessions within LaunchMenu",
     version: "0.0.0",
-    icon: "search", // TODO: add some kind of management icon
-};
+    icon: "session",
+} as const;
 
 export const settings = createSettings({
     version: "0.0.0",
