@@ -15,6 +15,7 @@ import {SettingsManager} from "./settings/SettingsManager";
 import {Box} from "../styling/box/Box";
 import {IApplet} from "./applets/_types/IApplet";
 import {ipcRenderer} from "electron";
+import {LaunchMenuProvider} from "./hooks/useLM";
 
 /**
  * The main LM class
@@ -100,30 +101,32 @@ export class LaunchMenu {
     protected setupView(): void {
         this.view = (
             <ThemeProvider>
-                <FillBox
-                    className="Application"
-                    font="paragraph"
-                    boxSizing="border-box"
-                    display="flex"
-                    css={{padding: 18}}>
-                    <Box
-                        position="relative"
-                        background="bgPrimary"
-                        borderRadius="medium"
-                        overflow="hidden"
-                        flex="1 1 auto"
-                        css={{
-                            boxShadow: "0px 3px 20px -10px rgba(0,0,0,0.8)",
-                        }}>
-                        <Loader>
-                            {h => (
-                                <Transition>
-                                    {this.sessionManager.getSelectedSession(h)?.view}
-                                </Transition>
-                            )}
-                        </Loader>
-                    </Box>
-                </FillBox>
+                <LaunchMenuProvider value={this}>
+                    <FillBox
+                        className="Application"
+                        font="paragraph"
+                        boxSizing="border-box"
+                        display="flex"
+                        css={{padding: 18}}>
+                        <Box
+                            position="relative"
+                            background="bgPrimary"
+                            borderRadius="medium"
+                            overflow="hidden"
+                            flex="1 1 auto"
+                            css={{
+                                boxShadow: "0px 3px 20px -10px rgba(0,0,0,0.8)",
+                            }}>
+                            <Loader>
+                                {h => (
+                                    <Transition>
+                                        {this.sessionManager.getSelectedSession(h)?.view}
+                                    </Transition>
+                                )}
+                            </Loader>
+                        </Box>
+                    </FillBox>
+                </LaunchMenuProvider>
             </ThemeProvider>
         );
     }

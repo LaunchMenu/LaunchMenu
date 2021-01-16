@@ -38,6 +38,7 @@ import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 import {standardOverlayGroup} from "../../uiLayers/UILayerMissingView";
 import {MainMenuView} from "../components/MainMenuView";
 import {LMSessionLayer} from "./LMSessionLayer";
+import {LMSessionProvider} from "../hooks/useLMSession";
 
 /**
  * An application session
@@ -149,7 +150,11 @@ export class LMSession {
      * Initializes the view for this session
      */
     protected setupView(): void {
-        this.view = <ApplicationLayout key={this.ID} context={this.context} />;
+        this.view = (
+            <LMSessionProvider value={this}>
+                <ApplicationLayout key={this.ID} context={this.context} />
+            </LMSessionProvider>
+        );
     }
 
     // Sets up the interface
