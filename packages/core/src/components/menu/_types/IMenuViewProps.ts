@@ -1,5 +1,6 @@
 import {IMenu} from "../../../menus/menu/_types/IMenu";
 import {IMenuItemExecuteCallback} from "../../../menus/menu/_types/IMenuItemExecuteCallback";
+import {IBoxProps} from "../../../styling/box/_types/IBoxProps";
 
 export type IMenuViewProps = {
     /** The menu to visualize */
@@ -21,4 +22,7 @@ export type IMenuViewProps = {
 
     /** The duration for the smooth mouse wheel scroll animation */
     smoothScrollDuration?: number;
+
+    /** The props for the container of the item */
+    containerProps?: IBoxProps;
 };

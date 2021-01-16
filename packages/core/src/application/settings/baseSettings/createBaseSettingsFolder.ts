@@ -8,7 +8,7 @@ import {
     getFieldControlsFolderCategories,
 } from "./controls/createFieldControlsSettingsFolder";
 import {createMenuControlsSettingsFolder} from "./controls/createMenuControlsSettingsFolder";
-import {createContentSettingsFolder} from "./general/createContentSettingsFolder";
+import {createContentSettingsFolder} from "./general/content/createContentSettingsFolder";
 import {createFieldSettingsFolder} from "./general/createFieldSettingsFolder";
 import {createMenuSettingsFolder} from "./general/createMenuSettingsFolder";
 import {createSearchSettingsFolder} from "./general/createSearchSettingsFolder";

@@ -22,7 +22,14 @@ import {
     BiListUl,
     BiWindows,
 } from "react-icons/bi";
-import {IoMdCube, IoMdExit, IoMdPlay, IoMdPause, IoMdOpen} from "react-icons/io";
+import {
+    IoMdCube,
+    IoMdExit,
+    IoMdPlay,
+    IoMdPause,
+    IoMdOpen,
+    IoMdReturnLeft,
+} from "react-icons/io";
 import {FaFolderOpen, FaFolder} from "react-icons/fa";
 import {
     FiMenu,
@@ -210,6 +217,7 @@ export function createTheme(
             folder: themeInput.icons?.folder || <FaFolder />,
             folderOpen: themeInput.icons?.folderOpen || <FaFolderOpen />,
             session: themeInput.icons?.session || <BiWindows />,
+            return: themeInput.icons?.return || <IoMdReturnLeft />,
         },
         globalCss: mergeStyles(
             {

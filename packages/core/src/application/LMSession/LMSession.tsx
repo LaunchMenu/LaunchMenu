@@ -36,6 +36,8 @@ import {IStandardUILayerData} from "../../uiLayers/standardUILayer/_types/IStand
 import {Content} from "../../content/Content";
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 import {standardOverlayGroup} from "../../uiLayers/UILayerMissingView";
+import {MainMenuView} from "../components/MainMenuView";
+import {LMSessionLayer} from "./LMSessionLayer";
 
 /**
  * An application session
@@ -155,14 +157,10 @@ export class LMSession {
      * Initializes all the UI
      */
     protected async setupUI(): Promise<void> {
-        const content = await this.setupContent();
         const menu = await this.setupMenu();
         const field = await this.setupField();
-        // this.homeLayer = new UILayer([...content, ...menu, ...field]);
 
-        this.homeLayer = new UILayer([...menu, ...field, {contentView: {close: true}}], {
-            showNodataOverlay: false,
-        });
+        this.homeLayer = new LMSessionLayer([...menu, ...field]);
         this.context.open(this.homeLayer);
     }
 
@@ -210,6 +208,7 @@ export class LMSession {
         return [
             {
                 menu: this.menu,
+                menuView: <MainMenuView menu={this.menu} />,
                 searchable: false,
                 menuHandler: createMenuKeyHandler(this.menu, {
                     onExit: () => {
@@ -245,83 +244,6 @@ export class LMSession {
                 field: this.searchField,
                 highlighter,
                 icon: "search",
-            },
-        ];
-    }
-
-    /**
-     * Initializes the content to be displayed
-     */
-    protected async setupContent(): Promise<IStandardUILayerData[]> {
-        // await this.context.open(new UILayer({contentView: {close: true}}));
-
-        // const setPath = (d: string[]) =>
-        //     path.set(
-        //         d.reduce(
-        //             (cur, name) => (cur.length == 0 ? [name] : [...cur, "/", name]),
-        //             []
-        //         )
-        //     );
-        const setPath = (d: string[]) => path.set(d);
-        const path = new Field(["shit", "orange", "bread"]);
-        return [
-            {
-                content: new Content(
-                    (
-                        <Loader>
-                            {h => (
-                                <div>
-                                    <div>
-                                        <button
-                                            onClick={() =>
-                                                setPath(["shit", "orange", "bread"])
-                                            }>
-                                            opt1
-                                        </button>
-                                        <button
-                                            onClick={() => setPath(["shit", "bread"])}>
-                                            opt2
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                setPath([
-                                                    "shit",
-                                                    "orange",
-                                                    "bread",
-                                                    "shit",
-                                                ])
-                                            }>
-                                            opt3
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                setPath(["shit", "potatoes", "bread"])
-                                            }>
-                                            opt4
-                                        </button>
-                                        <button
-                                            onClick={() => setPath(["shit", "potatoes"])}>
-                                            opt5
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                setPath(["fuck", "potatoes", "bread"])
-                                            }>
-                                            opt6
-                                        </button>
-                                    </div>
-                                    <Breadcrumbs path={path.get(h)} />
-                                    {new Array(200).fill(null).map((_, i) => (
-                                        <div key={i}>
-                                            {i}
-                                            <br />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </Loader>
-                    )
-                ),
             },
         ];
     }

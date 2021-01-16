@@ -9,6 +9,7 @@ import {getHighlightThemeStyle} from "../../styling/theming/highlighting/getHigh
 import {useIOContext} from "../../context/react/useIOContext";
 import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
 import {useDataHook} from "model-react";
+import {mergeStyles} from "../../utils/mergeStyles";
 
 /**
  * A standard simple view for a menu
@@ -19,6 +20,7 @@ export const MenuView: LFC<IMenuViewProps> = ({
     cursorItemScrollPadding,
     cursorItemScrollDuration,
     smoothScrollDuration,
+    containerProps,
 }) => {
     // Default settings
     const [h] = useDataHook();
@@ -97,7 +99,8 @@ export const MenuView: LFC<IMenuViewProps> = ({
             overflow="auto"
             background="bgTertiary"
             zIndex={0}
-            css={syntaxStyling}>
+            {...containerProps}
+            css={mergeStyles(syntaxStyling, containerProps?.css)}>
             {cachedItems.current.map((menuItem, i) => {
                 const isCursor = cursorItem == menuItem;
                 return (

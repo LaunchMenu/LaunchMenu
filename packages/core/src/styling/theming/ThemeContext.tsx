@@ -27,11 +27,12 @@ export const ThemeProvider: FC<{theme?: ITheme; children: ReactNode}> = ({
     return (
         <ThemeContext.Provider value={theme}>
             <Global
-                styles={
-                    (theme.globalCss instanceof Function
+                styles={{
+                    svg: {verticalAlign: "bottom"},
+                    ...((theme.globalCss instanceof Function
                         ? theme.globalCss(theme)
-                        : theme.globalCss) || {}
-                }
+                        : theme.globalCss) || {}),
+                }}
             />
             {children}
         </ThemeContext.Provider>
