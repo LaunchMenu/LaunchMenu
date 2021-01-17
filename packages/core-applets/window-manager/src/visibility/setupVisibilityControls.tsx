@@ -7,7 +7,7 @@ import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
 
 /**
  * Sets up all listeners and UI to control window visibility
- * @param LM The launchmenu instance to do stuff with
+ * @param LM The LaunchMenu instance to do stuff with
  * @param window The window to control the visibility of
  * @param onHide A callback for when the window hides
  * @returns A function to remove the listeners and a context menu binding
@@ -23,6 +23,8 @@ export function setupVisibilityControls(
     const showWindow = () => {
         const pos = settingsManager.getSettingsContext().get(settings).position.get();
 
+        document.body.classList.add("noTransition");
+        window.setPosition(-5e3, -5e3);
         setTimeout(() => {
             window.setPosition(pos.x, pos.y);
             document.body.classList.remove("noTransition");
@@ -34,8 +36,6 @@ export function setupVisibilityControls(
     const hideWindow = () => {
         if (!window.isVisible()) return;
 
-        window.setPosition(-5e3, -5e3);
-        document.body.classList.add("noTransition");
         window.hide();
         onHide();
     };
