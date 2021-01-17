@@ -19,7 +19,7 @@
         "test-watch": "jest --watch -i",
         "test-watch-debug": "node --inspect-brk ../../node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\"",
         "eslint": "eslint ./src -o eslintLog.tap --format tap",
-        "prepare": "node scripts/initApplets.js"
+        "prepare": "node scripts/initApplets.js && npm run build"
     },
     "repository": {
         "type": "git",
