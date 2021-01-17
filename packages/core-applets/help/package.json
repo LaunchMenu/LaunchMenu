@@ -1,5 +1,5 @@
 {
-    "name": "@launchmenu/help",
+    "name": "@launchmenu/applet-help",
     "version": "0.0.5-alpha.9",
     "description": "An applet to show some information for when first using LaunchMenu",
     "types": "build/index.d.ts",
