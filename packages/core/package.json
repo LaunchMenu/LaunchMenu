@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/core",
-    "version": "0.0.5-alpha.9",
+    "version": "0.0.5-alpha.11",
     "description": "An environment for visual keyboard controlled applets",
     "types": "build/index.d.ts",
     "main": "build/index.js",
@@ -39,7 +39,7 @@
     "dependencies": {
         "@emotion/react": "^11.1.4",
         "@emotion/serialize": "^1.0.0",
-        "@launchmenu/hmr": "^0.0.5-alpha.8",
+        "@launchmenu/hmr": "^0.0.5-alpha.11",
         "ace-builds": "^1.4.12",
         "bezier-js": "^2.6.1",
         "chevrotain": "^7.0.1",
