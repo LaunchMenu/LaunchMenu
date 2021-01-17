@@ -87,6 +87,7 @@ const Container: FC<IBoxProps> = ({children, ...props}) => (
         elevation="small"
         padding="medium"
         flex="1 1 auto"
+        borderRadius="small"
         {...props}>
         {children}
     </Box>
