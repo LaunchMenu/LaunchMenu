@@ -21,8 +21,9 @@ export class ContextMenuLayer extends UILayer {
         onClose: () => void;
     }) {
         super(
-            () => ({
+            context => ({
                 menu,
+                icon: "contextMenu",
                 onExecute,
                 onClose,
                 menuView: {

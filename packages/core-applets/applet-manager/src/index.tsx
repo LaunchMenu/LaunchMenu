@@ -1,4 +1,5 @@
 import {
+    CoreAppletType,
     createSettings,
     createSettingsFolder,
     declare,
@@ -11,8 +12,8 @@ export const info = {
     name: "Applets manager",
     description: "An applet to manage all applets within LaunchMenu",
     version: "0.0.0",
-    icon: "search", // TODO: add some kind of management icon
-};
+    icon: "applets",
+} as const;
 
 export const settings = createSettings({
     version: "0.0.0",
@@ -26,6 +27,7 @@ export const settings = createSettings({
 export default declare({
     info,
     settings,
+    coreCategory: CoreAppletType.APPLETS,
     withSession: session => {
         const appletItems = new DataCacher(h =>
             session.getApplets(h).map(applet => createAppletMenuItem(applet, session))

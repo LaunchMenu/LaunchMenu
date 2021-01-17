@@ -12,6 +12,7 @@ export const deleteAction = createContextAction({
     name: "Delete",
     contextItem: {
         priority: [Priority.HIGH, 5],
+        icon: "delete",
     },
     core: (executors: IDeletable[]) => {
         const execute = async (data: IContextExecuteData) => {

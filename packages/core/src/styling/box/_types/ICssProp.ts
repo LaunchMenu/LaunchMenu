@@ -1,6 +1,4 @@
-import {ObjectInterpolation} from "@emotion/core";
+import {CSSObject} from "@emotion/serialize";
 import {ITheme} from "../../theming/_types/ITheme";
 
-export type ICssProp =
-    | ObjectInterpolation<undefined>
-    | ((theme: ITheme) => ObjectInterpolation<undefined>);
+export type ICssProp = CSSObject | ((theme: ITheme) => CSSObject);

@@ -53,6 +53,7 @@ export const executeAction = createAction({
                     item: (execute: IActionBinding[]) => ({
                         priority,
                         item: createStandardItemImport.createStandardMenuItem({
+                            icon: "play",
                             name: "Execute",
                             actionBindings: execute,
                         }),

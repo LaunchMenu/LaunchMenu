@@ -1,11 +1,12 @@
 {
     "name": "@launchmenu/core",
-    "version": "0.0.5-alpha.9",
+    "version": "0.0.5-alpha.11",
     "description": "An environment for visual keyboard controlled applets",
     "types": "build/index.d.ts",
     "main": "build/index.js",
     "files": [
-        "build/**/*"
+        "build/**/*",
+        "images/**/*"
     ],
     "scripts": {
         "build": "lm-build-tools --build --production --reexport",
@@ -18,7 +19,8 @@
         "test": "jest -i",
         "test-watch": "jest --watch -i",
         "test-watch-debug": "node --inspect-brk ../../node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\"",
-        "eslint": "eslint ./src -o eslintLog.tap --format tap"
+        "eslint": "eslint ./src -o eslintLog.tap --format tap",
+        "prepare": "node scripts/initApplets.js && npm run build"
     },
     "repository": {
         "type": "git",
@@ -36,8 +38,9 @@
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
     "dependencies": {
-        "@emotion/core": "^10.0.28",
-        "@launchmenu/hmr": "^0.0.5-alpha.8",
+        "@emotion/react": "^11.1.4",
+        "@emotion/serialize": "^1.0.0",
+        "@launchmenu/hmr": "^0.0.5-alpha.11",
         "ace-builds": "^1.4.12",
         "bezier-js": "^2.6.1",
         "chevrotain": "^7.0.1",

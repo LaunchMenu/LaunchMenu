@@ -40,19 +40,19 @@ export const cssThemeMappers = {
     font: (font: IThemeFont, theme: ITheme) => theme.font[font] ?? font,
     // Border styles
     border: (border: IThemeBorder, theme: ITheme) => theme.border[border] ?? border,
-    borderTop: mapBorderSide.bind("Top") as (
+    borderTop: mapBorderSide.bind(null, "Top") as (
         border: IThemeBorder,
         theme: ITheme
     ) => IBorderTop,
-    borderBottom: mapBorderSide.bind("Bottom") as (
+    borderBottom: mapBorderSide.bind(null, "Bottom") as (
         border: IThemeBorder,
         theme: ITheme
     ) => IBorderBottom,
-    borderLeft: mapBorderSide.bind("Left") as (
+    borderLeft: mapBorderSide.bind(null, "Left") as (
         border: IThemeBorder,
         theme: ITheme
     ) => IBorderLeft,
-    borderRight: mapBorderSide.bind("Right") as (
+    borderRight: mapBorderSide.bind(null, "Right") as (
         border: IThemeBorder,
         theme: ITheme
     ) => IBorderRight,

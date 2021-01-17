@@ -13,6 +13,7 @@ export function startApplication() {
         }: typeof import("../application/LaunchMenu") = require("../application/LaunchMenu");
 
         (window as any).launchmenu = lm = new LaunchMenu();
+        lm.setDevMode(global.DEV);
         await lm.setup();
         ReactDOM.render(lm.view, document.getElementById("root"));
     }

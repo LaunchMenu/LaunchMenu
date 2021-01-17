@@ -16,6 +16,7 @@ export function setupSessionDisposer(LM: LaunchMenu): () => void {
         sessionManager.getSessions(h).filter(session => session.isHome(h))
     );
 
+    let timeoutID: null | NodeJS.Timeout = null;
     const observer = new Observer(h => {
         const ac = autoClose.get(h);
         return {
@@ -25,12 +26,18 @@ export function setupSessionDisposer(LM: LaunchMenu): () => void {
         };
     }).listen(({autoClose, homeSessions, selected}) => {
         if (autoClose && homeSessions) {
-            homeSessions
-                .filter(session => session != selected)
-                .forEach(session => {
-                    sessionManager.removeSession(session);
-                    session.destroy();
-                });
+            // Wait a second before removing old sessions to allow for the transition to finish
+            // TODO: find a proper way to deal with the transition, which doesn't depend on an arbitrary number
+            if (timeoutID) clearTimeout(timeoutID);
+            timeoutID = setTimeout(() => {
+                // Remove all sessions that are empty and not selected
+                homeSessions
+                    .filter(session => session != selected)
+                    .forEach(session => {
+                        sessionManager.removeSession(session);
+                        session.destroy();
+                    });
+            }, 1000);
         }
     });
 

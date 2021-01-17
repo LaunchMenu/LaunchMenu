@@ -10,9 +10,9 @@ import {
 } from "@launchmenu/core";
 import {createCoordinateSetting} from "./createCoordinateSetting";
 import {PositionInputContent} from "./position/PositionInputContent";
-import {Field, Loader} from "model-react";
+import {Field} from "model-react";
 import {SizeInputContent} from "./size/SizeInputContent";
-import {BrowserWindow} from "electron";
+import {BrowserWindow, remote} from "electron";
 import {createGlobalShortcutSetting} from "./visibility/createGlobalShortcutSetting";
 import {createDebuggerVisibilitySetting} from "./visibility/createDebuggerVisibilitySetting";
 
@@ -29,13 +29,19 @@ export const settingsBrowserWindow = new Field(null as null | BrowserWindow);
  */
 export const settings = createSettings({
     version: "0.0.0",
-    settings: () =>
-        createSettingsFolder({
+    settings: () => {
+        const initSize = {width: 700, height: 450};
+        const screen = remote.screen.getPrimaryDisplay().bounds;
+
+        return createSettingsFolder({
             ...info,
             children: {
                 position: createCoordinateSetting({
                     name: "Window position",
-                    init: {x: 0, y: 0},
+                    init: {
+                        x: (screen.width - initSize.width) / 2,
+                        y: (screen.height - initSize.height) / 2,
+                    },
                     allowNegative: true,
                     actionBindings: field => [
                         scrollableContentHandler.createBinding(
@@ -48,7 +54,7 @@ export const settings = createSettings({
                 }),
                 size: createCoordinateSetting({
                     name: "Window size",
-                    init: {width: 0, height: 0},
+                    init: initSize,
                     min: minSize,
                     actionBindings: field => [
                         scrollableContentHandler.createBinding(
@@ -100,5 +106,6 @@ export const settings = createSettings({
                     init: true,
                 }),
             },
-        }),
+        });
+    },
 });

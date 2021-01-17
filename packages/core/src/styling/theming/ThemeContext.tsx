@@ -3,7 +3,7 @@ import {ITheme} from "./_types/ITheme";
 import {defaultTheme} from "./defaultTheme";
 import {useDataHook} from "model-react";
 import {getTheme} from "./loadTheme";
-import {Global} from "@emotion/core";
+import {Global} from "@emotion/react";
 
 /**
  * A context for the LaunchMenu theme
@@ -26,12 +26,13 @@ export const ThemeProvider: FC<{theme?: ITheme; children: ReactNode}> = ({
     if (!theme) theme = getTheme(h);
     return (
         <ThemeContext.Provider value={theme}>
-            <Global<ITheme>
-                styles={
-                    (theme.globalCss instanceof Function
+            <Global
+                styles={{
+                    svg: {verticalAlign: "bottom"},
+                    ...((theme.globalCss instanceof Function
                         ? theme.globalCss(theme)
-                        : theme.globalCss) || {}
-                }
+                        : theme.globalCss) || {}),
+                }}
             />
             {children}
         </ThemeContext.Provider>

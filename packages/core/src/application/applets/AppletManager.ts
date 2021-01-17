@@ -38,7 +38,7 @@ export class AppletManager {
     public constructor(
         LM: LaunchMenu,
         settingsDirectory: string,
-        reloadOnChanges: boolean = DEV
+        reloadOnChanges: boolean = LM.isInDevMode()
     ) {
         this.LM = LM;
 

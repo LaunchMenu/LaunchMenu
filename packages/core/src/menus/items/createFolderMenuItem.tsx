@@ -53,6 +53,7 @@ export function createFolderMenuItem<
     searchChildren,
     name,
     pathName = getHooked(name),
+    searchIcon,
     ...rest
 }: IFolderMenuItemData<T, S>): IMenuItem & {children: T} {
     const childList = getChildList(children);
@@ -63,6 +64,7 @@ export function createFolderMenuItem<
                 items: childList,
                 closeOnExecute,
                 pathName,
+                searchIcon,
             })
         );
     if (forwardKeyEvents)
@@ -94,7 +96,7 @@ export function createFolderMenuItem<
         () => item
     );
 
-    const {icon, description, shortcut} = rest;
+    const {icon = "menu", description, shortcut} = rest;
 
     // TODO: add folder specific styling to indicate it's a folder
     const item: IMenuItem & {children: T} = {

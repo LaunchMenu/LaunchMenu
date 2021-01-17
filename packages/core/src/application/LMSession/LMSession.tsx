@@ -27,7 +27,7 @@ import {withSession} from "../applets/declaration/withSession";
 import {UILayer} from "../../uiLayers/standardUILayer/UILayer";
 import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
 import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
-import {Breadcumbs} from "../../components/context/paths/Breadcrumbs";
+import {Breadcrumbs} from "../../components/context/paths/Breadcrumbs";
 import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {IMenuSearchable} from "../../actions/types/search/_types/IMenuSearchable";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
@@ -35,6 +35,10 @@ import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
 import {IStandardUILayerData} from "../../uiLayers/standardUILayer/_types/IStandardUILayerData";
 import {Content} from "../../content/Content";
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
+import {standardOverlayGroup} from "../../uiLayers/UILayerMissingView";
+import {MainMenuView} from "../components/MainMenuView";
+import {LMSessionLayer} from "./LMSessionLayer";
+import {LMSessionProvider} from "../hooks/useLMSession";
 
 /**
  * An application session
@@ -114,6 +118,7 @@ export class LMSession {
      */
     protected setupContext(): void {
         this.context = new IOContext({
+            isInDevMode: h => this.LM.isInDevMode(h),
             undoRedo: new UndoRedoFacility(),
             settings: new SettingsContext(),
             contextMenuBindings: this.getGlobalContextMenuBindings(),
@@ -145,7 +150,11 @@ export class LMSession {
      * Initializes the view for this session
      */
     protected setupView(): void {
-        this.view = <ApplicationLayout key={this.ID} context={this.context} />;
+        this.view = (
+            <LMSessionProvider value={this}>
+                <ApplicationLayout key={this.ID} context={this.context} />
+            </LMSessionProvider>
+        );
     }
 
     // Sets up the interface
@@ -153,10 +162,10 @@ export class LMSession {
      * Initializes all the UI
      */
     protected async setupUI(): Promise<void> {
-        const content = await this.setupContent();
         const menu = await this.setupMenu();
         const field = await this.setupField();
-        this.homeLayer = new UILayer([...content, ...menu, ...field]);
+
+        this.homeLayer = new LMSessionLayer([...menu, ...field]);
         this.context.open(this.homeLayer);
     }
 
@@ -204,6 +213,7 @@ export class LMSession {
         return [
             {
                 menu: this.menu,
+                menuView: <MainMenuView menu={this.menu} />,
                 searchable: false,
                 menuHandler: createMenuKeyHandler(this.menu, {
                     onExit: () => {
@@ -239,82 +249,6 @@ export class LMSession {
                 field: this.searchField,
                 highlighter,
                 icon: "search",
-            },
-        ];
-    }
-
-    /**
-     * Initializes the content to be displayed
-     */
-    protected async setupContent(): Promise<IStandardUILayerData[]> {
-        // await this.context.open(new UILayer({contentView: {close: true}}));
-
-        const setPath = (d: string[]) =>
-            path.set(
-                d.reduce(
-                    (cur, name) => (cur.length == 0 ? [name] : [...cur, "/", name]),
-                    []
-                )
-            );
-        const path = new Field(["shit", "orange", "bread"]);
-        return [
-            {
-                content: new Content(
-                    (
-                        <Loader>
-                            {h => (
-                                <div>
-                                    <div>
-                                        <button
-                                            onClick={() =>
-                                                setPath(["shit", "orange", "bread"])
-                                            }>
-                                            opt1
-                                        </button>
-                                        <button
-                                            onClick={() => setPath(["shit", "bread"])}>
-                                            opt2
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                setPath([
-                                                    "shit",
-                                                    "orange",
-                                                    "bread",
-                                                    "shit",
-                                                ])
-                                            }>
-                                            opt3
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                setPath(["shit", "potatoes", "bread"])
-                                            }>
-                                            opt4
-                                        </button>
-                                        <button
-                                            onClick={() => setPath(["shit", "potatoes"])}>
-                                            opt5
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                setPath(["fuck", "potatoes", "bread"])
-                                            }>
-                                            opt6
-                                        </button>
-                                    </div>
-                                    <Breadcumbs path={path.get(h)} />
-                                    {new Array(200).fill(null).map((_, i) => (
-                                        <div key={i}>
-                                            {i}
-                                            <br />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </Loader>
-                    )
-                ),
             },
         ];
     }
@@ -421,7 +355,8 @@ export class LMSession {
 
             // Initialize the new applet
             const initializedApplet = withSession(applet, this);
-            if (updated && DEV) this.callAppletReload(initializedApplet);
+            if (updated && this.LM.isInDevMode())
+                this.callAppletReload(initializedApplet);
 
             // Obtain the searchable and return the data
             const searchable =

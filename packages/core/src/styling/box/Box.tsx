@@ -1,5 +1,5 @@
 import React, {FC} from "react";
-import {ClassNames} from "@emotion/core";
+import {ClassNames} from "@emotion/react";
 import {IBoxProps} from "./_types/IBoxProps";
 import {useTheme} from "../theming/ThemeContext";
 import {mapCssProps} from "./propRetrievers/mapCssProps";

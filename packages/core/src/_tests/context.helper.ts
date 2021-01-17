@@ -12,4 +12,5 @@ export const dummyContext: IIOContext = {
     undoRedo: new UndoRedoFacility(),
     settings: new SettingsContext(),
     contextMenuBindings: [],
+    isInDevMode: () => false,
 };

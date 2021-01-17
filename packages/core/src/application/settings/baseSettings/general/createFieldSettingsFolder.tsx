@@ -40,12 +40,12 @@ export function createFieldSettingsFolder() {
             }),
             blinkDelay: createNumberSetting({
                 name: "Cursor blink delay",
-                init: 1e15,
+                init: 1e10,
                 min: 0,
                 content: (
                     <>
                         The number of milliseconds of inactivity after which the cursor
-                        shoul start blinking.
+                        should start blinking.
                     </>
                 ),
             }),

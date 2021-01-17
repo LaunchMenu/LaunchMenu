@@ -9,12 +9,14 @@ import {IRenderableSettingsTree} from "./IRenderableSettingsTree";
 export type TSettingsTree<T extends IRenderableSettingsTree> = {
     [P in keyof T]: T[P] extends {children: IRenderableSettingsTree}
         ? TSettingsTree<T[P]["children"]>
-        : T[P] extends IField<infer I>
-        ? I extends IJSON
-            ? IField<I> // Reduces the input to only a field, hiding all other data
-            : TSerializableField<T[P]> & IField<I> // Reduces the input to an serialize field and a field, hiding all other data
-        : TSerializableField<T[P]>; // Reduces the input to only a serialize field, hiding all other data;
+        : TGetFields<T[P]> & Omit<T[P], "view" | "actionBindings">;
 };
+
+type TGetFields<T> = T extends IField<infer I>
+    ? I extends IJSON
+        ? IField<I> // Reduces the input to only a field, hiding all other data
+        : TSerializableField<T> & IField<I> // Reduces the input to an serialize field and a field, hiding all other data
+    : TSerializableField<T>; // Reduces the input to only a serialize field, hiding all other data;
 
 type TSerializableField<T> = T extends ISerializeField<infer I>
     ? I extends IJSON

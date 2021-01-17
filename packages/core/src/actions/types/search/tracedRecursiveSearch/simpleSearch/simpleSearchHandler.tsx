@@ -18,6 +18,7 @@ import {LFC} from "../../../../../_types/LFC";
 import {ISearchHighlighterProps} from "../../_types/ISearchHighlighterProps";
 import {Priority} from "../../../../../menus/menu/priority/Priority";
 import {tracedRecursiveSearchHandler} from "../tracedRecursiveSearchHandler";
+import {IPriority} from "../../../../../menus/menu/priority/_types/IPriority";
 
 /** The search handlers that are available */
 const searchHandlers = new Field([] as ISimpleSearchMethod[]);
@@ -167,18 +168,28 @@ function getSimpleSearchMethod(
         hook
     ) => {
         const patternMatch = patternMatcher?.(query, hook);
-        const priority =
-            method.rate?.(
-                {
-                    name: name && getHooked(name, hook),
-                    description: description && getHooked(description, hook),
-                    content: content && getHooked(content, hook),
-                    tags: tags && getHooked(tags, hook),
-                },
-                patternMatch?.searchText ?? query.search,
-                query,
-                hook
-            ) || 0;
+
+        let priority: IPriority;
+
+        // Handle the special case of an empty search, which is allowed if a pattern is matched and the item contains an empty tag
+        if (patternMatch && patternMatch.searchText == "") {
+            priority = getHooked(tags ?? [], hook)?.includes("") ? [Priority.MEDIUM] : 0;
+        }
+        //Handle the normal search rating
+        else {
+            priority =
+                method.rate?.(
+                    {
+                        name: name && getHooked(name, hook),
+                        description: description && getHooked(description, hook),
+                        content: content && getHooked(content, hook),
+                        tags: tags && getHooked(tags, hook),
+                    },
+                    patternMatch?.searchText ?? query.search,
+                    query,
+                    hook
+                ) || 0;
+        }
 
         const item = getItem();
         return {

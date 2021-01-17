@@ -5,9 +5,12 @@ import Path from "path";
 import {settings} from "../settings";
 import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
 
+/** The position the window is located at when hidden while still rendering */
+export const hiddenCoordinates = {x: -5e3, y: -5e3};
+
 /**
  * Sets up all listeners and UI to control window visibility
- * @param LM The launchmenu instance to do stuff with
+ * @param LM The LaunchMenu instance to do stuff with
  * @param window The window to control the visibility of
  * @param onHide A callback for when the window hides
  * @returns A function to remove the listeners and a context menu binding
@@ -18,12 +21,24 @@ export function setupVisibilityControls(
     onHide: () => void
 ): {destroy: () => void; exitBindings: IActionBinding[]} {
     const settingsManager = LM.getSettingsManager();
+
+    // Create show and hide functions, that deal with the fact that transitions don't run while the window is hidden
     const showWindow = () => {
+        const pos = settingsManager.getSettingsContext().get(settings).position.get();
+
+        document.body.classList.add("noTransition");
+        window.setPosition(hiddenCoordinates.x, hiddenCoordinates.y);
+        setTimeout(() => {
+            window.setPosition(pos.x, pos.y);
+            document.body.classList.remove("noTransition");
+        }, 100);
+
         window.show();
         window.focus();
     };
     const hideWindow = () => {
         if (!window.isVisible()) return;
+
         window.hide();
         onHide();
     };
@@ -65,15 +80,18 @@ export function setupVisibilityControls(
     }, true);
 
     // Debug handler
-    const debugSettingObvserver = new Observer(h =>
-        settingsManager.getSettingsContext(h).get(settings).visibility.showDebugger.get(h)
-    ).listen(visible => {
+    const debugSettingObvserver = new Observer(h => ({
+        visible: settingsManager
+            .getSettingsContext(h)
+            .get(settings)
+            .visibility.showDebugger.get(h),
+        devMode: LM.isInDevMode(h),
+    })).listen(({visible, devMode}) => {
         const wc = window.webContents;
         if (visible == "true") wc.openDevTools({mode: "detach"});
         else if (visible == "false") wc.closeDevTools();
         else {
-            // TODO: add a property to track dev mode in LM
-            if ((global as any).DEV) wc.openDevTools({mode: "detach"});
+            if (devMode) wc.openDevTools({mode: "detach"});
             else wc.closeDevTools();
         }
     }, true);

@@ -42,6 +42,7 @@ async function firstTimeSetup(): Promise<void> {
             "@launchmenu/applet-session-manager@alpha",
             "@launchmenu/applet-settings-manager@alpha",
             "@launchmenu/applet-window-manager@alpha",
+            "@launchmenu/applet-help@alpha",
             ...chosenApplets,
         ] as string[];
         const packages = ["@launchmenu/core@alpha", ...applets];

@@ -1,6 +1,6 @@
 import React from "react";
 import Path from "path";
-import {Loader, Observer} from "model-react";
+import {Field, IDataHook, Loader, Observer} from "model-react";
 import {KeyHandler} from "../keyHandler/KeyHandler";
 import {ThemeProvider} from "../styling/theming/ThemeContext";
 import {loadTheme} from "../styling/theming/loadTheme";
@@ -15,11 +15,14 @@ import {SettingsManager} from "./settings/SettingsManager";
 import {Box} from "../styling/box/Box";
 import {IApplet} from "./applets/_types/IApplet";
 import {ipcRenderer} from "electron";
+import {LaunchMenuProvider} from "./hooks/useLM";
 
 /**
  * The main LM class
  */
 export class LaunchMenu {
+    protected devMode = new Field(false);
+
     protected settingsDirectory = Path.join(process.cwd(), "data", "settings");
 
     public view: JSX.Element;
@@ -98,29 +101,32 @@ export class LaunchMenu {
     protected setupView(): void {
         this.view = (
             <ThemeProvider>
-                <FillBox
-                    className="Application"
-                    font="paragraph"
-                    boxSizing="border-box"
-                    display="flex"
-                    css={{padding: 18}}>
-                    <Box
-                        position="relative"
-                        borderRadius="medium"
-                        overflow="hidden"
-                        flex="1 1 auto"
-                        css={{
-                            boxShadow: "0px 3px 20px -10px rgba(0,0,0,0.8)",
-                        }}>
-                        <Loader>
-                            {h => (
-                                <Transition>
-                                    {this.sessionManager.getSelectedSession(h)?.view}
-                                </Transition>
-                            )}
-                        </Loader>
-                    </Box>
-                </FillBox>
+                <LaunchMenuProvider value={this}>
+                    <FillBox
+                        className="Application"
+                        font="paragraph"
+                        boxSizing="border-box"
+                        display="flex"
+                        css={{padding: 18}}>
+                        <Box
+                            position="relative"
+                            background="bgPrimary"
+                            borderRadius="medium"
+                            overflow="hidden"
+                            flex="1 1 auto"
+                            css={{
+                                boxShadow: "0px 3px 20px -10px rgba(0,0,0,0.8)",
+                            }}>
+                            <Loader>
+                                {h => (
+                                    <Transition>
+                                        {this.sessionManager.getSelectedSession(h)?.view}
+                                    </Transition>
+                                )}
+                            </Loader>
+                        </Box>
+                    </FillBox>
+                </LaunchMenuProvider>
             </ThemeProvider>
         );
     }
@@ -154,6 +160,24 @@ export class LaunchMenu {
             path: Path.join(this.settingsDirectory, "baseSettings.json"),
         });
         this.settingsManager.addSettings(baseSettings.ID, settings);
+    }
+
+    // Dev mode
+    /**
+     * Changes whether LaunchMenu is running in dev-mode
+     * @param enabled Whether in dev-mode
+     */
+    public setDevMode(enabled: boolean): void {
+        this.devMode.set(enabled);
+    }
+
+    /**
+     * Retrieves whether LaunchMenu is running in dev-mode
+     * @param hook The hook to subscribe to changes
+     * @returns Whether dev mode is enabled
+     */
+    public isInDevMode(hook?: IDataHook): boolean {
+        return this.devMode.get(hook);
     }
 
     // Utils

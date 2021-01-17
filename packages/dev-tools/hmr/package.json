@@ -1,11 +1,12 @@
 {
     "name": "@launchmenu/hmr",
-    "version": "0.0.5-alpha.8",
+    "version": "0.0.5-alpha.11",
     "main": "build/index.js",
     "scripts": {
         "watch": "lm-build-tools --watch",
         "dev": "lm-build-tools --watch",
-        "build": "lm-build-tools --build"
+        "build": "lm-build-tools --build",
+        "prepare": "npm run build"
     },
     "repository": {
         "type": "git",

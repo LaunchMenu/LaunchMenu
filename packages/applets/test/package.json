@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-test",
-    "version": "0.0.5-alpha.9",
+    "version": "0.0.5-alpha.11",
     "private": true,
     "description": "A test applet for LaunchMenu",
     "types": "build/index.d.ts",
@@ -16,7 +16,8 @@
         "clean": "lm-build-tools --cleanup",
         "test": "jest -i",
         "test-watch": "jest --watch -i",
-        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\""
+        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\"",
+        "prepare": "npm run build"
     },
     "repository": {
         "type": "git",
@@ -39,7 +40,7 @@
         "react": "^17.0.0"
     },
     "devDependencies": {
-        "@launchmenu/core": "^0.0.5-alpha.9",
+        "@launchmenu/core": "^0.0.5-alpha.11",
         "@testing-library/jest-dom": "^5.5.0",
         "@testing-library/react": "^10.0.3",
         "@types/jest": "^26.0.0",

@@ -24,7 +24,7 @@ export const info = {
     description: "An applet only used for testing",
     version: "0.0.0",
     icon: "search",
-};
+} as const;
 
 export const settings = createSettings({
     version: "0.0.0",

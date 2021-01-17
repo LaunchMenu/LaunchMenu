@@ -16,6 +16,7 @@ export function createSettingsFolder<
 >(data: IFolderMenuItemData<T>): ISettingsFolderMenuItem<T> {
     return createFolderMenuItem({
         searchPattern: settingPatternMatcher,
+        searchIcon: "settings",
         ...data,
     });
 }

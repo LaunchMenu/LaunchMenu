@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/launcher",
-    "version": "0.0.5-alpha.9",
+    "version": "0.0.5-alpha.11",
     "description": "The installer + launcher of LM",
     "types": "build/index.d.ts",
     "main": "build/index.js",
@@ -16,7 +16,8 @@
         "dist": "electron-builder",
         "test": "jest -i",
         "test-watch": "jest --watch -i",
-        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\""
+        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\"",
+        "prepare": "npm run build"
     },
     "repository": {
         "type": "git",

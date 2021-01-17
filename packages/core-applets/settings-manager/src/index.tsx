@@ -1,5 +1,6 @@
 import {
     adjustSearchable,
+    CoreAppletType,
     createBooleanSetting,
     createKeyPatternSetting,
     createSettings,
@@ -19,8 +20,8 @@ export const info = {
     name: "Settings manager",
     description: "An applet to manage all settings within LaunchMenu",
     version: "0.0.0",
-    icon: "search", // TODO: add some kind of cog icon
-};
+    icon: "settings",
+} as const;
 
 export const settings = createSettings({
     version: "0.0.0",
@@ -49,6 +50,7 @@ export const settings = createSettings({
 export default declare({
     info,
     settings,
+    coreCategory: CoreAppletType.SETTINGS,
     withLM: LM => {
         // Setup an auto save handler
         const manager = LM.getSettingsManager();
@@ -82,7 +84,11 @@ export default declare({
             },
             open({context, onClose}) {
                 const menu = new ProxiedMenu(context, h => settingsFolders.get(h));
-                context.open(new UILayer(() => ({menu, onClose}), {path: "./settings"}));
+                context.open(
+                    new UILayer(() => ({menu, onClose, icon: "settings"}), {
+                        path: "./settings",
+                    })
+                );
             },
             withSession: session => ({
                 // Retrieve a prioritized menu item to open global and selected applet setting

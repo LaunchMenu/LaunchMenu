@@ -1,4 +1,4 @@
-import {declare} from "@launchmenu/core";
+import {CoreAppletType, declare} from "@launchmenu/core";
 import {remote} from "electron";
 import {settings, settingsBrowserWindow} from "./settings";
 import {setupPositionSettingSyncer} from "./position/setupPositionSettingSyncer";
@@ -11,12 +11,13 @@ export const info = {
     name: "Window manager",
     description: "An window to manage LaunchMenu's window",
     version: "0.0.0",
-    icon: "search", // TODO: add some appropriate icon
-};
+    icon: "window",
+} as const;
 
 export default declare({
     info,
     settings,
+    coreCategory: CoreAppletType.WINDOW,
     withLM: LM => {
         const window = remote.getCurrentWindow();
         settingsBrowserWindow.set(window);
@@ -32,7 +33,9 @@ export default declare({
         });
 
         // Setup startup controls
-        const destroyWindowController = setupStartupController(settingsManager);
+        const destroyWindowController = setupStartupController(settingsManager, h =>
+            LM.isInDevMode(h)
+        );
 
         // Setup the position setting
         const destroyPositionSyncer = setupPositionSettingSyncer(settingsManager, window);

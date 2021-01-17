@@ -1,7 +1,8 @@
-import {ReactNode} from "react";
+import {ReactElement, ReactNode} from "react";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {IPriority} from "../../../menus/menu/priority/_types/IPriority";
+import {IThemeIcon} from "../../../styling/theming/_types/IBaseTheme";
 import {IActionBinding} from "../../_types/IActionBinding";
 
 /**
@@ -21,7 +22,7 @@ export type IContextItemData = {
     name?: string;
 
     /** The icon of the menu item */
-    icon?: string | ReactNode;
+    icon?: IThemeIcon | ReactElement;
 
     /** The description of the menu item */
     description?: string;

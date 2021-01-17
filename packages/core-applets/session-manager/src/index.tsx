@@ -12,6 +12,7 @@ import {
     UILayer,
     createGlobalContextBinding,
     createBooleanSetting,
+    CoreAppletType,
 } from "@launchmenu/core";
 import {DataCacher, IDataHook} from "model-react";
 import {SessionData} from "./SessionData";
@@ -21,8 +22,8 @@ export const info = {
     name: "Session manager",
     description: "An applet to manage all sessions within LaunchMenu",
     version: "0.0.0",
-    icon: "search", // TODO: add some kind of management icon
-};
+    icon: "session",
+} as const;
 
 export const settings = createSettings({
     version: "0.0.0",
@@ -58,6 +59,7 @@ export const settings = createSettings({
 export default declare({
     info,
     settings,
+    coreCategory: CoreAppletType.SESSIONS,
     withLM: LM => {
         const sessionManager = LM.getSessionManager();
 

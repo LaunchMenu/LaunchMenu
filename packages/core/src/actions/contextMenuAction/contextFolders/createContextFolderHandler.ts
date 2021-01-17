@@ -1,5 +1,4 @@
 import {DataCacher, IDataHook} from "model-react";
-import {createFolderMenuItem} from "../../../menus/items/createFolderMenuItem";
 import {hasHigherOrEqualPriority} from "../../../menus/menu/priority/hasHigherOrEqualPriority";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {createAction} from "../../createAction";
@@ -10,6 +9,7 @@ import {IContextFolderAction} from "./_types/IContextFolderAction";
 import {IContextFolderHandlerConfig} from "./_types/IContextFolderHandlerConfig";
 import {Priority} from "../../../menus/menu/priority/Priority";
 import {IQuery} from "../../../menus/menu/_types/IQuery";
+import {createContextFolderMenuItem} from "../../../menus/items/createContextFolderMenuItem";
 
 /**
  * Creates a context menu handler that adds an folder to the (context) menu
@@ -54,11 +54,9 @@ export function createContextFolderHandler(
                 : (query: IQuery, hook: IDataHook) => itemsGetter(hook);
 
             // Create the item
-            const item = createFolderMenuItem({
+            const item = createContextFolderMenuItem({
                 name,
                 pathName: name,
-                closeOnExecute: true,
-                forwardKeyEvents: true,
                 children: itemsGetter,
                 searchChildren: searchItems,
                 ...contextItemData,

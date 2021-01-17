@@ -15,14 +15,23 @@ export class IOContext implements IIOContext {
     protected uiStack = new Field([] as {onClose?: () => void; layer: IUILayer}[]);
 
     /**
+     * Retrieves whether running in development mode
+     * @param hook The hook to subscribe to changes
+     * @returns Whether the application is in development mode
+     */
+    public readonly isInDevMode: (hook?: IDataHook) => boolean;
+
+    /**
      * Creates a new context
      * @param context The context data
      */
     public constructor(data: {
+        isInDevMode?: (hook?: IDataHook) => boolean;
         undoRedo?: IUndoRedoFacility;
         settings?: SettingsContext;
         contextMenuBindings?: ISubscribable<IActionBinding[]>;
     }) {
+        this.isInDevMode = data.isInDevMode || (() => false);
         this.undoRedo = data.undoRedo || new UndoRedoFacility();
         this.settings = data.settings || new SettingsContext();
         this.contextMenuBindings = data.contextMenuBindings || [];
