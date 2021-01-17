@@ -43,7 +43,7 @@ export const ShortAboutLM: LFC<IBoxProps> = props => {
                     Use{" "}
                     <Key>
                         <ThemeIcon icon="arrowUp" />
-                    </Key>
+                    </Key>{" "}
                     <Key>
                         <ThemeIcon icon="arrowDown" />
                     </Key>{" "}

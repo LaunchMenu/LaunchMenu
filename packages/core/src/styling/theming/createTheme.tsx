@@ -29,6 +29,7 @@ import {
     IoMdPause,
     IoMdOpen,
     IoMdReturnLeft,
+    IoMdHelp,
 } from "react-icons/io";
 import {FaFolderOpen, FaFolder} from "react-icons/fa";
 import {
@@ -109,7 +110,7 @@ export function createTheme(
         },
         elevation: {
             extraSmall:
-                themeInput.elevations?.extraSmall || "0 14px 28px 0px rgba(0,0,0,0.10)",
+                themeInput.elevations?.extraSmall || "0 2px 4px -1px rgba(0,0,0,0.10)",
             small: themeInput.elevations?.small || "0 3px 6px -2px rgba(0,0,0,0.10)",
             medium: themeInput.elevations?.medium || "0 10px 20px -5px rgba(0,0,0,0.10)",
             large: themeInput.elevations?.large || " 0 14px 28px -7px rgba(0,0,0,0.10)",
@@ -218,6 +219,7 @@ export function createTheme(
             folderOpen: themeInput.icons?.folderOpen || <FaFolderOpen />,
             session: themeInput.icons?.session || <BiWindows />,
             return: themeInput.icons?.return || <IoMdReturnLeft />,
+            help: themeInput.icons?.help || <IoMdHelp />,
         },
         globalCss: mergeStyles(
             {

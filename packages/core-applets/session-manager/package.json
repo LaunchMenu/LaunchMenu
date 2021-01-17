@@ -32,7 +32,7 @@
     "bugs": {
         "url": "https://github.com/LaunchMenu/LaunchMenu/issues"
     },
-    "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
+    "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/core-applets/session-manager#readme",
     "peerDependencies": {
         "@launchmenu/core": "^0.0.5-alpha.8",
         "model-react": "^4.0.1",

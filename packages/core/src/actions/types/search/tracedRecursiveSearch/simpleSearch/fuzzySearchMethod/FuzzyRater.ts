@@ -16,6 +16,7 @@ export const fuzzyRaterSymbol = Symbol("FuzzyRater");
  * A class to rate the match quality of some given data
  */
 export class FuzzyRater {
+    protected query: string;
     protected rater: CoreRater;
     protected allowPartialMatches: boolean;
     protected maxOrderCost: number;
@@ -62,6 +63,7 @@ export class FuzzyRater {
 
         this.penalizeMisses = missingPenalty > 0;
 
+        this.query = query;
         this.rater = new CoreRater(query, {
             fuzziness: fuzzinessTemplates[fuzzinessType],
             missingPenalty: Math.max(1, missingPenalty),

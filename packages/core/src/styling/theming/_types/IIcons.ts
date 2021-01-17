@@ -42,5 +42,6 @@ export type IIcons = {
         | "menu"
         | "session"
         | "return"
+        | "help"
         | "applets"]: JSX.Element;
 };

@@ -38,6 +38,9 @@ export const defaultTheme = createTheme(
                 borderColor: "transparent",
                 backgroundClip: "padding-box",
             },
+            "*:focus": {
+                outline: "none",
+            },
         }),
     },
     defaultHighlightTheme

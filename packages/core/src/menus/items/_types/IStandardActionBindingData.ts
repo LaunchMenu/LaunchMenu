@@ -46,16 +46,16 @@ export type IStandardActionBindingData = {
     executePassively?: boolean;
 
     /** A listener to execute side effects when the item is selected or deselected */
-    onSelect?: (selected: boolean) => void;
+    onSelect?: (selected: boolean, menu: IMenu) => void;
 
     /** A listener to execute side effects when the item becomes the cursor */
-    onCursor?: (isCursor: boolean) => void;
+    onCursor?: (isCursor: boolean, menu: IMenu) => void;
 
     /** A listener to track what menus an item is added to */
     onMenuChange?: (menu: IMenu, added: boolean) => void;
 
     /** The children that should be included in searches, defaults to undefined*/
-    searchChildren?: IRecursiveSearchChildren;    
+    searchChildren?: IRecursiveSearchChildren;
 
     /** Shows a given child in the list of children */
     onShowChild?: IShowChildInParent;

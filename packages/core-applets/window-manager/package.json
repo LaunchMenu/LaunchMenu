@@ -33,7 +33,7 @@
     "bugs": {
         "url": "https://github.com/LaunchMenu/LaunchMenu/issues"
     },
-    "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
+    "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/core-applets/window-manager#readme",
     "peerDependencies": {
         "@launchmenu/core": "^0.0.5-alpha.8",
         "electron": "^9.3.1",

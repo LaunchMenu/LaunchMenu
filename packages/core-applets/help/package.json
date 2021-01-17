@@ -1,7 +1,7 @@
 {
-    "name": "@launchmenu/applet-applet-manager",
+    "name": "@launchmenu/help",
     "version": "0.0.5-alpha.9",
-    "description": "An applet to manage applets",
+    "description": "An applet to show some information for when first using LaunchMenu",
     "types": "build/index.d.ts",
     "files": [
         "build/**/*.{js,d.ts}"
@@ -32,7 +32,7 @@
     "bugs": {
         "url": "https://github.com/LaunchMenu/LaunchMenu/issues"
     },
-    "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/core-applets/applet-manager#readme",
+    "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/core-applets/help#readme",
     "peerDependencies": {
         "@launchmenu/core": "^0.0.5-alpha.8",
         "model-react": "^4.0.1",

@@ -142,6 +142,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                         position="absolute"
                         bottom="none"
                         height="100%"
+                        width="100%"
                         // minHeight={size.height - fieldHeight}
                         display="flex">
                         <Box
@@ -175,10 +176,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                             flexGrow={1}
                             flexShrink={1}
                             background="bgSecondary">
-                            <Box
-                                className="contentSection"
-                                width={size.width * (1 - menuWidthFraction)}
-                                height="100%">
+                            <Box className="contentSection" width="100%" height="100%">
                                 <StackView
                                     ChangeTransitionComp={InstantChangeTransition}
                                     stackGetter={contentStackGetter}
