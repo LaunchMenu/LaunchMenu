@@ -5,6 +5,9 @@ import Path from "path";
 import {settings} from "../settings";
 import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
 
+/** The position the window is located at when hidden while still rendering */
+export const hiddenCoordinates = {x: -5e3, y: -5e3};
+
 /**
  * Sets up all listeners and UI to control window visibility
  * @param LM The LaunchMenu instance to do stuff with
@@ -24,7 +27,7 @@ export function setupVisibilityControls(
         const pos = settingsManager.getSettingsContext().get(settings).position.get();
 
         document.body.classList.add("noTransition");
-        window.setPosition(-5e3, -5e3);
+        window.setPosition(hiddenCoordinates.x, hiddenCoordinates.y);
         setTimeout(() => {
             window.setPosition(pos.x, pos.y);
             document.body.classList.remove("noTransition");
