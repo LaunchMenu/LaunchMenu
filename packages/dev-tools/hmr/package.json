@@ -5,7 +5,8 @@
     "scripts": {
         "watch": "lm-build-tools --watch",
         "dev": "lm-build-tools --watch",
-        "build": "lm-build-tools --build"
+        "build": "lm-build-tools --build",
+        "prepare": "npm run build"
     },
     "repository": {
         "type": "git",
