@@ -1,6 +1,7 @@
 import {IIdentifiedSettingsConfig} from "../../../settings/_types/IIdentifiedSettingsConfig";
 import {ISettingsFolderMenuItem} from "../../../settings/_types/ISettingsFolderMenuItem";
 import {IJSON} from "../../../_types/IJSON";
+import {CoreAppletType} from "../declaration/CoreAppletType";
 import {IAppletExecutionConfig} from "./IAppletExecutionConfig";
 import {IAppletInfo} from "./IAppletInfo";
 import {IAppletLMInitializer} from "./IAppletLMInitializer";
@@ -19,6 +20,8 @@ export type IAppletConfig<
     info: IAppletInfo;
     /** Settings of the applet */
     settings: S;
+    /** A possible category for this applet */
+    coreCategory?: CoreAppletType;
     /** Development time specific information/tools */
     development?: {
         /** Whether to listen for changes in code and auto reload the applet when detected */

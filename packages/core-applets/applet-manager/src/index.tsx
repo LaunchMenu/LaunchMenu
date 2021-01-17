@@ -1,4 +1,5 @@
 import {
+    CoreAppletType,
     createSettings,
     createSettingsFolder,
     declare,
@@ -26,6 +27,7 @@ export const settings = createSettings({
 export default declare({
     info,
     settings,
+    coreCategory: CoreAppletType.APPLETS,
     withSession: session => {
         const appletItems = new DataCacher(h =>
             session.getApplets(h).map(applet => createAppletMenuItem(applet, session))

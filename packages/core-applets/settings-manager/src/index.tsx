@@ -1,5 +1,6 @@
 import {
     adjustSearchable,
+    CoreAppletType,
     createBooleanSetting,
     createKeyPatternSetting,
     createSettings,
@@ -49,6 +50,7 @@ export const settings = createSettings({
 export default declare({
     info,
     settings,
+    coreCategory: CoreAppletType.SETTINGS,
     withLM: LM => {
         // Setup an auto save handler
         const manager = LM.getSettingsManager();

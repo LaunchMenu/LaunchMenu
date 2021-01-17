@@ -1,4 +1,4 @@
-import {declare} from "@launchmenu/core";
+import {CoreAppletType, declare} from "@launchmenu/core";
 import {remote} from "electron";
 import {settings, settingsBrowserWindow} from "./settings";
 import {setupPositionSettingSyncer} from "./position/setupPositionSettingSyncer";
@@ -17,6 +17,7 @@ export const info = {
 export default declare({
     info,
     settings,
+    coreCategory: CoreAppletType.WINDOW,
     withLM: LM => {
         const window = remote.getCurrentWindow();
         settingsBrowserWindow.set(window);

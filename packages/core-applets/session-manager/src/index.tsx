@@ -12,6 +12,7 @@ import {
     UILayer,
     createGlobalContextBinding,
     createBooleanSetting,
+    CoreAppletType,
 } from "@launchmenu/core";
 import {DataCacher, IDataHook} from "model-react";
 import {SessionData} from "./SessionData";
@@ -58,6 +59,7 @@ export const settings = createSettings({
 export default declare({
     info,
     settings,
+    coreCategory: CoreAppletType.SESSIONS,
     withLM: LM => {
         const sessionManager = LM.getSessionManager();
 

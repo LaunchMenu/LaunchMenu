@@ -1,4 +1,5 @@
 import {
+    CoreAppletType,
     createSettings,
     createSettingsFolder,
     declare,
@@ -33,6 +34,7 @@ const helpItems = [aboutItem, navigationItem, contextMenuItem, settingsItem];
 export default declare({
     info,
     settings,
+    coreCategory: CoreAppletType.HELP,
     async search(query, h) {
         return {
             children: searchAction.get(helpItems),
