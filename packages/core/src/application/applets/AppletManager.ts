@@ -161,7 +161,11 @@ export class AppletManager {
         );
         if (FS.existsSync(buildDir)) watchDir = buildDir;
 
-        const watcher = hmr(watchDir, () => {
+        let absoluteWatchDir = [".", "/"].includes(watchDir[0])
+            ? Path.join(process.cwd(), watchDir)
+            : Path.dirname(require.resolve(watchDir));
+
+        const watcher = hmr(absoluteWatchDir, () => {
             try {
                 // Update the version number in order to force a new instance to be initialized
                 const oldVersions = this.appletVersions.get();

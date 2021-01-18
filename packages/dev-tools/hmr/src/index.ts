@@ -29,6 +29,7 @@ export default function hmr(
             persistent: true,
             cwd: dir,
             ignoreInitial: true,
+            ignored: ["**/node_modules/**/*", "**/.git/**/*"],
         })
         .on("all", (type, path) => {
             const fullPath = Path.join(dir, path);
