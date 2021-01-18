@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-applet-manager",
-    "version": "0.0.5-alpha.11",
+    "version": "0.0.5-alpha.12",
     "description": "An applet to manage applets",
     "types": "build/index.d.ts",
     "files": [
@@ -40,7 +40,7 @@
         "react": "^17.0.0"
     },
     "devDependencies": {
-        "@launchmenu/core": "^0.0.5-alpha.11",
+        "@launchmenu/core": "^0.0.5-alpha.12",
         "@testing-library/jest-dom": "^5.5.0",
         "@testing-library/react": "^10.0.3",
         "@types/jest": "^26.0.0",
