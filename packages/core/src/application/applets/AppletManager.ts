@@ -131,7 +131,9 @@ export class AppletManager {
      */
     protected initApplet({ID, directory}: IAppletSource): IApplet {
         // Obtain the module export and check if it has a valid applet export
-        const appletExport = require(directory);
+        const appletExport = require([".", "/"].includes(directory[0])
+            ? Path.join(process.cwd(), directory)
+            : directory);
         if (appletExport?.default?.info) {
             // Load the applet if valid
             const baseApplet = {
@@ -154,18 +156,18 @@ export class AppletManager {
      * @returns The file watcher that was created
      */
     protected setupAppletWatcher(source: IAppletSource, applet: IApplet): HMRWatcher {
-        let watchDir = source.directory;
-        let buildDir = Path.join(
-            source.directory,
+        const baseDir = source.directory;
+        const absoluteBaseDir = [".", "/"].includes(baseDir[0])
+            ? Path.join(process.cwd(), baseDir)
+            : Path.dirname(require.resolve(`${baseDir}/package.json`));
+
+        const buildDir = Path.join(
+            absoluteBaseDir,
             applet.development?.watchDirectory ?? "build"
         );
-        if (FS.existsSync(buildDir)) watchDir = buildDir;
+        const watchDir = FS.existsSync(buildDir) ? buildDir : absoluteBaseDir;
 
-        let absoluteWatchDir = [".", "/"].includes(watchDir[0])
-            ? Path.join(process.cwd(), watchDir)
-            : Path.dirname(require.resolve(watchDir));
-
-        const watcher = hmr(absoluteWatchDir, () => {
+        const watcher = hmr(watchDir, () => {
             try {
                 // Update the version number in order to force a new instance to be initialized
                 const oldVersions = this.appletVersions.get();
