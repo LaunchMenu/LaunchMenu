@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-settings-manager",
-    "version": "0.0.5-alpha.12",
+    "version": "0.0.5-alpha.13",
     "description": "An applet to manage settings",
     "types": "build/index.d.ts",
     "files": [
@@ -39,7 +39,7 @@
         "uuid": "^8.2.0"
     },
     "devDependencies": {
-        "@launchmenu/core": "^0.0.5-alpha.12",
+        "@launchmenu/core": "^0.0.5-alpha.13",
         "@testing-library/jest-dom": "^5.5.0",
         "@testing-library/react": "^10.0.3",
         "@types/jest": "^26.0.0",
