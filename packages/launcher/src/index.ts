@@ -110,9 +110,16 @@ async function initAppletsFile(applet: string[]): Promise<void> {
 
     const file = {} as Record<string, string>;
     applet.forEach(module => {
+        const match = module.match(/\/?([^\/@]*)(\@[^\/]*)$/);
+        if (!match) {
+            console.error(`${module} doesn't fit regex pattern`);
+            return;
+        }
         try {
-            file[module] = getInstalledPath(getPackageNameWithoutVersion(module));
-        } catch (e) {}
+            file[match[1]] = getInstalledPath(getPackageNameWithoutVersion(module));
+        } catch (e) {
+            console.error(e);
+        }
     });
     await promisify(FS.writeFile)(path, JSON.stringify(file, null, 4), "utf8");
 }
