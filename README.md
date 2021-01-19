@@ -33,7 +33,9 @@ A [quick-start applet](https://github.com/LaunchMenu/LM-applet-quickstart) has b
 * Build some simple applets to test functionality with.
     * Note tracker
     * Wiki search
+* Create demo/marketing website + dev guides
+* Release 0.1.0
 * FileSearch applet.
-* Release Version 1.0.0
+* Release Version x.x.x
 * ???
 * Profit.
