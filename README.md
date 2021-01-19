@@ -24,14 +24,16 @@ We have planned the following applet so far:
 
 ### Current state
 
-Currently we are working on the Core Framework of LaunchMenu which you can read about in our other repository: [Adjust](https://github.com/LaunchMenu/Adjust)
-The information within this readme regarding the framework is outdated. We will try to update this file with appropriate information in the near future.
+At this point LaunchMenu is mostly feature complete. Most core functionality and core-applets have been written and integrated into LaunchMenu.
 
-### RoadMap
-* Start LaunchMenu
-    * Build main UI.
-    * Build some simple applets to test functionality with.
-    * FileSearch applet.
-    * Release Version 1.0.0
-    * ???
-    * Profit.
+A [quick-start applet](https://github.com/LaunchMenu/LM-applet-quickstart) has been created, to help devs create new applets.
+
+### Next Steps
+
+* Build some simple applets to test functionality with.
+* Create demo/marketing website + dev guides
+* Release 0.1.0
+* FileSearch applet.
+* Release Version x.x.x
+* ???
+* Profit.
