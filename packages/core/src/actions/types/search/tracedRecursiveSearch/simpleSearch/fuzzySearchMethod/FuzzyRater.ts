@@ -94,9 +94,15 @@ export class FuzzyRater {
         const mainScore = Priority.HIGH / (1 + match.orderCost);
         if (this.penalizeMisses) {
             const missingScore = Priority.HIGH / (1 + match.missingCost);
-            return [Priority.MEDIUM, missingScore, mainScore, match.extraBonus];
+            return [
+                Priority.MEDIUM,
+                missingScore,
+                mainScore,
+                match.extraBonus,
+                1 / combined.length,
+            ];
         }
-        return [Priority.MEDIUM, mainScore, match.extraBonus];
+        return [Priority.MEDIUM, mainScore, match.extraBonus, 1 / combined.length];
     }
 
     /**

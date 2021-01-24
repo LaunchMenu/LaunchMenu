@@ -1,4 +1,3 @@
-import {WikiSection} from "../../wiki/WikiSection";
 import {WiktionaryWordType} from "./WiktionaryWordType";
 
 /**

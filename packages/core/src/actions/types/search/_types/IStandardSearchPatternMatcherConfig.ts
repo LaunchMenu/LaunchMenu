@@ -5,7 +5,7 @@ import {ITextSelection} from "../../../../textFields/_types/ITextSelection";
 import {IPatternMatch} from "../../../../utils/searchExecuter/_types/IPatternMatch";
 
 /** The standard search pattern config */
-export type IStandardSearchPatternMatcherConfig = {
+export type IStandardSearchPatternMatcherConfig<T = void> = {
     /** The name of the pattern */
     name: string;
     /** The matcher to decide whether a query matches the pattern */
@@ -14,7 +14,11 @@ export type IStandardSearchPatternMatcherConfig = {
         | ((
               query: IQuery,
               hook?: IDataHook
-          ) => RegExp | ITextSelection[] | Partial<IPatternMatch> | undefined);
+          ) =>
+              | RegExp
+              | ITextSelection[]
+              | (Partial<IPatternMatch> & {metadata?: T})
+              | undefined);
     /** A syntax highlighter to use to highlight the search field */
     highlighter?: IHighlighter;
 };

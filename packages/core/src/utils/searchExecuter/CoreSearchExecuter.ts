@@ -1,7 +1,7 @@
 import {Field, IDataHook} from "model-react";
 import {IUUID} from "../../_types/IUUID";
 import {createCallbackHook} from "../createCallbackHook";
-import {PromiseAll} from "../PromiseAll";
+import {PromiseAll} from "./PromiseAll";
 import {Queue} from "../Queue";
 import {ISearchable} from "./_types/ISearchable";
 import {ICoreSearchNode} from "./_types/ICoreSearchNode";

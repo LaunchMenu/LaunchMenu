@@ -200,6 +200,7 @@ export abstract class AbstractUILayer implements IUILayer {
             // If data of other layers has been added directly, their menu item content may already be present (E.g. when using a MenuSearch layer in another layer)
             if (!itemContents.find(({ID}) => ID == item.ID)) itemContents.push(item);
         });
+
         return this.layerConfig.showNodataOverlay
             ? [this.UIMissingData, ...itemContents]
             : itemContents;

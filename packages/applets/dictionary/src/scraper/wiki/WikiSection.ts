@@ -137,7 +137,7 @@ export class WikiSection {
      * @param source THe data source to retrieve the data from
      */
     protected setContentDomSource(source: (hook?: IDataHook) => Document | null): void {
-        if (this.getContentDom() == null) {
+        if (this.content.get() == null) {
             this.contentDomSource = source;
         }
     }
@@ -161,26 +161,28 @@ export class WikiSection {
             if (!contents) return null;
 
             // Get the header of this section
-            const header = contents.querySelector(`#${subsection.getName()}`)?.parentNode;
+            const header = contents.querySelector(
+                `#${subsection.getName().replace(/\s/g, "_")}`
+            )?.parentNode;
             if (!header) return null;
-            const headerType = header.nodeType;
+            const headerType = header.nodeName;
 
             // Get all nodes that fall under this section
-            const nodes = [header] as Node[];
+            const nodes = [header.cloneNode(true)] as Node[];
             let node = header.nextSibling;
-            while (node && node.nodeType != headerType) {
-                nodes.push(node);
+            while (node && node.nodeName != headerType) {
+                nodes.push(node.cloneNode(true));
                 node = node.nextSibling;
             }
 
             // Create a document with these nodes
-            const container = new HTMLDivElement();
+            const container = document.createElement("div");
             container.append(...nodes);
             container.className = "mw-parser-output";
 
-            const document = new Document();
-            document.appendChild(container);
-            return document;
+            const doc = new Document();
+            doc.appendChild(container);
+            return doc;
         });
 
         subsection.setContentDomSource(h => source.get(h));

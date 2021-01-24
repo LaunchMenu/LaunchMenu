@@ -29,9 +29,17 @@ export class WindowController {
         this.window.loadURL(indexPath);
 
         // Handle links
-        this.window.webContents.on("new-window", (event, url) => {
+        const webview = this.window.webContents;
+        function openLink(url: string) {
+            shell.openExternal(url).catch(e => console.error(e));
+        }
+        webview.on("new-window", (event, url) => {
             event.preventDefault();
-            shell.openExternal(url);
+            openLink(url);
+        });
+        webview.on("will-navigate", (e, url) => {
+            webview.stop();
+            openLink(url);
         });
     }
 

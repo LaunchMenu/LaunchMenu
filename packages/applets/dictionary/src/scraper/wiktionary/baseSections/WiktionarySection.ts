@@ -28,7 +28,7 @@ export class WiktionarySection extends WikiSection {
      * Retrieves the references for this section
      * @returns The references if present
      */
-    protected getReferences(): WiktionaryReferences | null {
+    public getReferences(): WiktionaryReferences | null {
         return this.findSubsections(WiktionaryReferences)[0] ?? null;
     }
 
@@ -36,7 +36,7 @@ export class WiktionarySection extends WikiSection {
      * Retrieves the usage notes for this section
      * @returns The usage notes if present
      */
-    protected getUsageNotes(): WiktionaryUsageNotes | null {
+    public getUsageNotes(): WiktionaryUsageNotes | null {
         return this.findSubsections(WiktionaryUsageNotes)[0] ?? null;
     }
 
@@ -44,7 +44,7 @@ export class WiktionarySection extends WikiSection {
      * Retrieves the 'see also' for this section
      * @returns The 'see also' if present
      */
-    protected getSeeAlso(): WiktionarySeeAlso | null {
+    public getSeeAlso(): WiktionarySeeAlso | null {
         return this.findSubsections(WiktionarySeeAlso)[0] ?? null;
     }
 }

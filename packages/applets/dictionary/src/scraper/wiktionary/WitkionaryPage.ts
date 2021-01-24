@@ -6,12 +6,13 @@ import {WiktionaryReferences} from "./baseSections/WiktionaryReferences";
 import {WiktionarySeeAlso} from "./baseSections/WiktionarySeeAlso";
 import {WiktionaryUsageNotes} from "./baseSections/WiktionaryUsageNotes";
 import {WiktionaryLanguage} from "./WiktionaryLanguage";
-import {WiktionaryAdjective} from "./wordTypes/WiktionaryAdjective";
-import {WiktionaryAdverb} from "./wordTypes/WiktionaryAdverb";
-import {WiktionaryDeterminer} from "./wordTypes/WiktionaryDeterminer";
-import {WiktionaryNoun} from "./wordTypes/WiktionaryNoun";
-import {WiktionaryPronoun} from "./wordTypes/WiktionaryPronoun";
-import {WiktionaryVerb} from "./wordTypes/WiktionaryVerb";
+import {WiktionaryAdjective} from "./definitionWordType/WiktionaryAdjective";
+import {WiktionaryAdverb} from "./definitionWordType/WiktionaryAdverb";
+import {WiktionaryDeterminer} from "./definitionWordType/WiktionaryDeterminer";
+import {WiktionaryNoun} from "./definitionWordType/WiktionaryNoun";
+import {WiktionaryVerb} from "./definitionWordType/WiktionaryVerb";
+import {WiktionaryPronoun} from "./definitionWordType/WiktionaryPronoun";
+import {WiktionaryDefinition} from "./WiktionaryDefinition";
 
 export class WiktionaryPage extends WikiPage<WiktionaryLanguage> {
     /** @override */
@@ -19,7 +20,7 @@ export class WiktionaryPage extends WikiPage<WiktionaryLanguage> {
         return new WiktionaryLanguage(
             this,
             data,
-            data.childList.map(section => this.createSection(section))
+            data.childList.map(section => this.createDefinitionSection(section))
         );
     }
 
@@ -38,28 +39,29 @@ export class WiktionaryPage extends WikiPage<WiktionaryLanguage> {
         } = WikiSection;
 
         // Select an appropriate class given the section name
-        const {name} = data;
-        if (name == "Pronunciation") Class = WikiSection;
-        else if (name == "Antonyms") Class = WikiSection;
-        else if (name == "References") Class = WiktionaryReferences;
-        else if (name == "See also") Class = WiktionarySeeAlso;
-        // Word types
-        else if (name == "Verb") Class = WiktionaryVerb;
-        else if (name == "Adverb") Class = WiktionaryAdverb;
-        else if (name == "Adjective") Class = WiktionaryAdjective;
-        else if (name == "Noun") Class = WiktionaryNoun;
-        else if (name == "Pronoun") Class = WiktionaryPronoun;
-        else if (name == "Determiner") Class = WiktionaryDeterminer;
+        const name = data.name.toLowerCase();
+        if (name.match(/etymology\s*[0-9]+/)) Class = WiktionaryDefinition;
+        else if (name == "pronunciation") Class = WikiSection;
+        else if (name == "antonyms") Class = WikiSection;
+        else if (name == "references") Class = WiktionaryReferences;
+        else if (name == "see also") Class = WiktionarySeeAlso;
+        // Word definition sections
+        else if (name == "verb") Class = WiktionaryVerb;
+        else if (name == "adverb") Class = WiktionaryAdverb;
+        else if (name == "adjective") Class = WiktionaryAdjective;
+        else if (name == "noun") Class = WiktionaryNoun;
+        else if (name == "pronoun") Class = WiktionaryPronoun;
+        else if (name == "determiner") Class = WiktionaryDeterminer;
         // Extra per word type
-        else if (name == "Derived terms") Class = WikiSection;
-        else if (name == "Related terms") Class = WikiSection;
-        else if (name == "Usage notes") Class = WiktionaryUsageNotes;
+        else if (name == "derived terms") Class = WikiSection;
+        else if (name == "related terms") Class = WikiSection;
+        else if (name == "usage notes") Class = WiktionaryUsageNotes;
 
         // Instantiate the class
         return new Class(
             this,
             data,
-            data.childList.map(section => this.createSection(section))
+            data.childList.map(section => this.createDefinitionSection(section))
         );
     }
 
@@ -68,7 +70,7 @@ export class WiktionaryPage extends WikiPage<WiktionaryLanguage> {
      * @param hook The hook to subscribe to changes
      * @returns All the languages that have a definition for this word
      */
-    protected getLanguages(hook?: IDataHook): WiktionaryLanguage[] {
+    public getLanguages(hook?: IDataHook): WiktionaryLanguage[] {
         return this.getSectionList(hook);
     }
 
@@ -78,7 +80,8 @@ export class WiktionaryPage extends WikiPage<WiktionaryLanguage> {
      * @param hook The hook to subscribe to changes
      * @returns The language section if it exists
      */
-    protected getLanguage(language: string, hook?: IDataHook): WiktionaryLanguage | null {
+    public getLanguage(language: string, hook?: IDataHook): WiktionaryLanguage | null {
+        language = language.toLowerCase();
         return (
             this.getLanguages(hook).find(section => section.getLanguage() == language) ??
             null

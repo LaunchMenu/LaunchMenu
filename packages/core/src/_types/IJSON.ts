@@ -3,6 +3,6 @@ export type IJSON =
     | number
     | boolean
     | null
-    | undefined
+    | undefined // Not technically json, but acts the same as absence of key
     | IJSON[]
     | {[key: string]: IJSON};

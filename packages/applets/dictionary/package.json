@@ -45,6 +45,7 @@
         "@testing-library/react": "^10.0.3",
         "@types/jest": "^26.0.0",
         "@types/react": "^17.0.0",
+        "@types/sanitize-html": "^1.27.1",
         "jest": "^26.0.1",
         "model-react": "^4.0.1",
         "react": "^17.0.0",
@@ -53,5 +54,8 @@
     "gitHead": "022dbc089423d10ee0528697003769d2d3aeb7d4",
     "publishConfig": {
         "access": "public"
+    },
+    "dependencies": {
+        "sanitize-html": "^2.3.1"
     }
 }
