@@ -1,12 +1,10 @@
+import {IWordCategory} from "./IWordCategory";
+
+/**
+ * The normalized data retrieved for words
+ */
 export type IWordData = {
-    partOfSpeech:
-        | "Verb"
-        | "Adverb"
-        | "Adjective"
-        | "Noun"
-        | "Pronoun"
-        | "Determiner"
-        | "Interjection";
+    category: IWordCategory;
     language: string;
     definitions: {
         definition: string;

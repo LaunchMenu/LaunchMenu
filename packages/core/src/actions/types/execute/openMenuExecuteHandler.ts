@@ -10,6 +10,8 @@ import {createContextAction} from "../../contextMenuAction/createContextAction";
 import {executeAction} from "./executeAction";
 import {sequentialExecuteHandler} from "./sequentialExecuteHandler";
 import {IOpenMenuExecuteData} from "./_types/IOpenMenuExecuteData";
+import {IUILayerFieldData} from "../../../uiLayers/_types/IUILayerFieldData";
+import {IUILayerContentData} from "../../../uiLayers/_types/IUILayerContentData";
 
 /**
  * Determines whether one of the passed item comes from a set of items that indicates to be closed on execute
@@ -71,7 +73,7 @@ export const openMenuExecuteHandler = createContextAction({
                         (cur, d) =>
                             "pathName" in d
                                 ? cur
-                                    ? `${cur}/${d.pathName}`
+                                    ? `${cur}, ${d.pathName}`
                                     : d.pathName
                                 : cur,
                         ""
@@ -91,11 +93,15 @@ export const openMenuExecuteHandler = createContextAction({
                     [0, undefined] as [number, IThemeIcon | ReactElement | undefined]
                 );
 
+                // Retrieve any field and or content data
+                const fields = data.map((item)=>"field" in item?item.field: undefined).filter((item): item is IUILayerFieldData=>!!item).filter((value, index, list)=>list.indexOf(value)>=index);
+                const contents = data.map((item)=>"content" in item?item.content: undefined).filter((item): item is IUILayerContentData=>!!item).filter((value, index, list)=>list.indexOf(value)>=index);
+
                 // Create the menu
                 const menu = new ProxiedMenu(context, childrenGetter);
                 context.open(
                     new UILayer(
-                        (context, close) => ({
+                        [(context, close) => ({
                             menu,
                             icon,
                             onExecute: items => {
@@ -110,7 +116,7 @@ export const openMenuExecuteHandler = createContextAction({
                                 }
                             },
                             onClose: res,
-                        }),
+                        }), ...fields, ...contents],
                         {path: pathName}
                     )
                 );

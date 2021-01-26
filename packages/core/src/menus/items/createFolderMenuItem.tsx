@@ -54,6 +54,8 @@ export function createFolderMenuItem<
     name,
     pathName = getHooked(name),
     searchIcon,
+    layerContentData,
+    layerFieldData,
     ...rest
 }: IFolderMenuItemData<T, S>): IMenuItem & {children: T} {
     const childList = getChildList(children);
@@ -65,6 +67,8 @@ export function createFolderMenuItem<
                 closeOnExecute,
                 pathName,
                 searchIcon,
+                content: layerContentData,
+                field: layerFieldData,
             })
         );
     if (forwardKeyEvents)
@@ -109,14 +113,7 @@ export function createFolderMenuItem<
                 <MenuItemFrame {...props}>
                     <Box display="flex" alignItems="center">
                         <MenuItemLayout
-                            icon={
-                                iconV &&
-                                (typeof iconV == "string" ? (
-                                    <MenuItemIcon icon={iconV} />
-                                ) : (
-                                    iconV
-                                ))
-                            }
+                            icon={iconV && <MenuItemIcon icon={iconV} />}
                             name={
                                 <Box font="header">
                                     <simpleSearchHandler.Highlighter

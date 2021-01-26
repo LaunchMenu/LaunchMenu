@@ -83,14 +83,7 @@ export function createFieldMenuItem<D extends IJSON, T = D>({
             return (
                 <MenuItemFrame {...props}>
                     <MenuItemLayout
-                        icon={
-                            iconV &&
-                            (typeof iconV == "string" ? (
-                                <MenuItemIcon icon={iconV} />
-                            ) : (
-                                iconV
-                            ))
-                        }
+                        icon={iconV && <MenuItemIcon icon={iconV} />}
                         name={
                             <Box font="header">
                                 <simpleSearchHandler.Highlighter

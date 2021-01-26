@@ -11,6 +11,7 @@ export namespace Wiktionary {
     const domain = "https://en.wiktionary.org/";
     const clearCacheTimeout = 20e3; // 20 seconds
 
+    // TODO: start using the search cacher
     const searches: Map<
         string,
         {
@@ -75,7 +76,7 @@ export namespace Wiktionary {
                     return Object.values(data)
                         .flat()
                         .map(({definitions, language, partOfSpeech}) => ({
-                            partOfSpeech: partOfSpeech as IWordData["partOfSpeech"],
+                            category: partOfSpeech as IWordData["category"],
                             language,
                             definitions: definitions.map(
                                 ({definition, parsedExamples, examples}) => ({

@@ -14,16 +14,17 @@ import {
 } from "@launchmenu/core";
 import {IDataHook, Observer} from "model-react";
 import {Wiktionary} from "./Wiktionary";
-import {DefinitionView} from "./DefinitionView";
 import {ILanguage, languages} from "./_types/ILanguage";
 import {BiBookAlt} from "react-icons/bi";
 import {dictionaryPatternMatcher} from "./dictionaryPatternMatcher";
+import {createWordMenuItem} from "./items/createWordMenuItem";
 
+export const dictionaryIcon = <BiBookAlt />;
 export const info = {
     name: "Dictionary",
     description: "A dictionary applet",
     version: "0.0.0",
-    icon: <BiBookAlt />,
+    icon: dictionaryIcon,
 } as const;
 
 export const settings = createSettings({
@@ -42,15 +43,7 @@ export const settings = createSettings({
         }),
 });
 
-const resultCache = new SearchCache((word: string, language: ILanguage) =>
-    createStandardMenuItem({
-        icon: <BiBookAlt />,
-        name: word,
-        onExecute: () => console.log(word),
-        content: <DefinitionView word={word} language={language} />,
-        searchPattern: dictionaryPatternMatcher,
-    })
-);
+const resultCache = new SearchCache(createWordMenuItem);
 
 /**
  * A search function to get the dictionary results
@@ -84,16 +77,19 @@ export default declare({
         );
 
         context.open(
-            new UILayer(() => ({
-                icon: "search",
-                field: searchField,
-                menu: searchMenu,
-                searchable: false,
-                onClose: () => {
-                    searchObserver.destroy();
-                    onClose();
-                },
-            }))
+            new UILayer(
+                () => ({
+                    icon: dictionaryIcon,
+                    field: searchField,
+                    menu: searchMenu,
+                    searchable: false,
+                    onClose: () => {
+                        searchObserver.destroy();
+                        onClose();
+                    },
+                }),
+                {path: "Dictionary"}
+            )
         );
     },
 });

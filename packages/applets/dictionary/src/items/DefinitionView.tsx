@@ -1,9 +1,9 @@
 import React from "react";
 import {Loader} from "model-react";
 import {Box, LFC} from "@launchmenu/core";
-import {Html} from "./Html";
-import {Wiktionary} from "./Wiktionary";
-import {ILanguage} from "./_types/ILanguage";
+import {Html} from "../sanitize/Html";
+import {Wiktionary} from "../Wiktionary";
+import {ILanguage} from "../_types/ILanguage";
 
 /**
  * Shows the definitions for a given word
@@ -19,7 +19,7 @@ export const DefinitionView: LFC<{word: string; language?: ILanguage}> = ({
                 : Wiktionary.getAll(word, h)
             ).map((type, i) => (
                 <Box key={i}>
-                    <Box>{type.partOfSpeech}</Box>
+                    <Box>{type.category}</Box>
                     <ul>
                         {type.definitions.map(({definition, examples}, j) => (
                             <Box key={j} as="li">
