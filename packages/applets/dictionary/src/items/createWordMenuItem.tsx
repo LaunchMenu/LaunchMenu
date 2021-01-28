@@ -1,5 +1,10 @@
 import React from "react";
-import {createStandardMenuItem, IMenuItem} from "@launchmenu/core";
+import {
+    copyAction,
+    copyTextHandler,
+    createStandardMenuItem,
+    IMenuItem,
+} from "@launchmenu/core";
 import {dictionaryIcon} from "..";
 import {DefinitionView} from "./DefinitionView";
 import {dictionaryPatternMatcher} from "../dictionaryPatternMatcher";
@@ -17,14 +22,16 @@ export function createWordMenuItem(word: string, language: ILanguage): IMenuItem
     return createStandardMenuItem({
         icon: dictionaryIcon,
         name: word,
-        onExecute: () => console.log(word),
         content: <DefinitionView word={word} language={language} />,
         searchPattern: dictionaryPatternMatcher,
-        actionBindings: h =>
-            Wiktionary.get(word, language).flatMap(({category, definitions}) =>
+        actionBindings: h => [
+            ...Wiktionary.get(word, language).flatMap(({category, definitions}) =>
                 definitions.map(({definition, examples}) =>
                     getDefinitionsAction.createBinding({category, definition, examples})
                 )
             ),
+            copyTextHandler.createBinding(word),
+            copyAction.createBinding(copyTextHandler.createBinding(word)),
+        ],
     });
 }

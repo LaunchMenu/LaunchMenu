@@ -3,7 +3,7 @@ import {IActionBinding} from "./IActionBinding";
 import {IActionResult} from "./IActionResult";
 import {IActionTarget} from "./IActionTarget";
 
-export type IActionTransformer<I, O, AB extends IActionBinding> = {
+export type IActionTransformer<I, O, AB extends IActionBinding | void> = {
     /**
      * Applies this action transformer to the given bindings, used internally for the `get` method
      * @param bindingData The data of bindings to apply the transformer to

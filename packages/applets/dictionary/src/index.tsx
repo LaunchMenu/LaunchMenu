@@ -12,7 +12,7 @@ import {
     UILayer,
     TextField,
 } from "@launchmenu/core";
-import {IDataHook, Observer} from "model-react";
+import {getAsync, IDataHook, Observer} from "model-react";
 import {Wiktionary} from "./Wiktionary";
 import {ILanguage, languages} from "./_types/ILanguage";
 import {BiBookAlt} from "react-icons/bi";
@@ -57,7 +57,7 @@ const search = async (query: IQuery, hook: IDataHook) => {
     const language =
         pattern?.metadata?.language ||
         query.context.settings.get(settings).language.get(hook);
-    const words = await Wiktionary.search(search, language, hook);
+    const words = await getAsync(h => Wiktionary.search(search, language, h));
     const items = resultCache.getAll(words.map(word => [word, language]));
     return {
         patternMatch: pattern,

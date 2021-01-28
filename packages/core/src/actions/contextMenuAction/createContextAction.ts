@@ -26,13 +26,13 @@ export function createContextAction<
     /** The result data type */
     O = never,
     /** The parent actions types (union of parents) */
-    P extends IAction = IAction<unknown, unknown, any>,
+    P extends IAction | void = void,
     /** The possible resulting bindings of this action */
-    K extends IActionBinding<TPureAction<P>> = never,
+    K extends P extends IAction ? IActionBinding<TPureAction<P>> : void = never,
     /** The folder to show the item in */
     F extends IContextFolderAction = typeof contextMenuAction,
     /** The create binding function, which may want to specify generic types for more elaborate interfaces */
-    CB = IBindingCreator<I, O, P & TPureAction<F>>,
+    CB = IBindingCreator<I, O, TPureAction<F> & (P extends void ? unknown : P)>,
     /** The remaining functions specified on the object */
     EXTRAS = unknown
 >(actionInput: {
@@ -58,8 +58,11 @@ export function createContextAction<
     /** Extra data to set on the created action */
     extras?: EXTRAS;
 }): /** The action as well as an interface to create bindings for this action with */
-IAction<I, O, P & TPureAction<F>> &
-    EXTRAS & {
+IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
+    (/** For whatever reason, in some contexts EXTRAS becomes never */
+    EXTRAS extends never
+        ? unknown
+        : EXTRAS) & {
         createBinding: CB;
     } {
     const {
@@ -92,6 +95,7 @@ IAction<I, O, P & TPureAction<F>> &
     if (contextItem && (contextItem instanceof Function || "item" in contextItem)) {
         item = contextItem;
     } else {
+        // TODO: add a last part of priority based on the name of the action, to resolve conflicts
         const {
             name: itemName = name,
             shortcut,

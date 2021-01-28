@@ -22,6 +22,6 @@ export function isActionBindingFor(
     // Find all ancestors
     for (let action of actions) action.parents.forEach(parent => actions.add(parent));
 
-    // Check whether the action
+    // Check whether the action is present in the set
     return actions.has(action);
 }

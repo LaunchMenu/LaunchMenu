@@ -9,7 +9,7 @@ export type IBindingCreatorConfig<I> = {
 } & ({data: I} | {subscribableData: IDataRetriever<I>});
 
 /** The standard binding creator signature */
-export type IBindingCreator<I, O, P extends IAction> = {
+export type IBindingCreator<I, O, P extends IAction | void> = {
     /**
      * Creates a new action binding
      * @param config The data for the binding, and optionally extra configuration

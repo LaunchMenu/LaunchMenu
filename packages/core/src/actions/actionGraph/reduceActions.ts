@@ -29,7 +29,12 @@ export function reduceActions(
         if (bindings.length == 0 && i != actions.length - 1) continue; // Can happen if a handler decides to not create any bindings, but we always want to compute the final action
         const inputs = bindings.map(binding => getBindingData(binding, hook));
         const indices = bindings.map(binding => binding.index);
-        const result = node.action.transform(inputs, indices, hook, items);
+        const result = node.action.transform(
+            inputs,
+            indices,
+            hook,
+            items
+        ) as IActionResult<IActionBinding, any>;
 
         // Add index data to the result's bindings
         const combinedIndex = getActionResultIndex(bindings);
@@ -106,8 +111,6 @@ export function getIndexedResult<B extends IAction, O>(
         if (f) f.count++;
         else actionIndices.push({action: binding.action, count: 1, index: 0});
     });
-
-    // console.log(actionIndices, indices, combinedIndices);
 
     // Map the indices
     return {

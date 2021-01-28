@@ -148,7 +148,7 @@ export class CoreSearchExecuter<Q, I> {
                 } else {
                     // Create a promise that can be used to listen for any activity requests
                     let finish: (() => void) | null = null;
-                    const continuePromise = new Promise(res => {
+                    const continuePromise = new Promise<void>(res => {
                         this.continue = () => {
                             finish = null;
                             res();

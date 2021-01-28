@@ -6,7 +6,7 @@ import {IActionTarget} from "./IActionTarget";
 /**
  * An interface to represent common action data
  */
-export type IAction<I = any, O = any, P extends IAction = any> = {
+export type IAction<I = any, O = any, P extends IAction | void = any> = {
     /**
      * The name of this action, useful for debugging
      */
@@ -30,7 +30,7 @@ export type IAction<I = any, O = any, P extends IAction = any> = {
         indices: number[],
         hook: IDataHook | undefined,
         items: IActionTarget[]
-    ): IActionResult<IActionBinding<P>, O>;
+    ): IActionResult<P extends IAction ? IActionBinding<P> : void, O>;
 
     /**
      * Retrieves the action result for the given targets

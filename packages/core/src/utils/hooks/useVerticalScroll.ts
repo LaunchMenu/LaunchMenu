@@ -20,6 +20,7 @@ export function useVerticalScroll<T extends HTMLElement = HTMLElement>(
         const el = elRef.current;
         if (el) {
             const onWheel = (e: WheelEvent) => {
+                if (e.deltaY == 0) return;
                 e.preventDefault();
                 scrollTo({addTop: e.deltaY}, scrollDuration);
             };

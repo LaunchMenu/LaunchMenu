@@ -136,6 +136,7 @@ export namespace Wiktionary {
         if (!searches.has(term)) {
             searches.set(term, {
                 result: new DataLoader<string[]>(async () => {
+                    if (term == "") return [];
                     const result = await fetch(
                         `${domain}/w/api.php?action=opensearch&format=json&search=${encodeURI(
                             term

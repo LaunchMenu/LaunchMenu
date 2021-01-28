@@ -94,29 +94,39 @@ export const openMenuExecuteHandler = createContextAction({
                 );
 
                 // Retrieve any field and or content data
-                const fields = data.map((item)=>"field" in item?item.field: undefined).filter((item): item is IUILayerFieldData=>!!item).filter((value, index, list)=>list.indexOf(value)>=index);
-                const contents = data.map((item)=>"content" in item?item.content: undefined).filter((item): item is IUILayerContentData=>!!item).filter((value, index, list)=>list.indexOf(value)>=index);
+                const fields = data
+                    .map(item => ("field" in item ? item.field : undefined))
+                    .filter((item): item is IUILayerFieldData => !!item)
+                    .filter((value, index, list) => list.indexOf(value) >= index);
+                const contents = data
+                    .map(item => ("content" in item ? item.content : undefined))
+                    .filter((item): item is IUILayerContentData => !!item)
+                    .filter((value, index, list) => list.indexOf(value) >= index);
 
                 // Create the menu
                 const menu = new ProxiedMenu(context, childrenGetter);
                 context.open(
                     new UILayer(
-                        [(context, close) => ({
-                            menu,
-                            icon,
-                            onExecute: items => {
-                                if (containsClosingItem(data, items)) {
-                                    close();
-                                    /*
+                        [
+                            (context, close) => ({
+                                menu,
+                                icon,
+                                onExecute: items => {
+                                    if (containsClosingItem(data, items)) {
+                                        close();
+                                        /*
                                         TODO: always execute callback, but add data for whether to close the menu
                                         in order to generalize it. 
                                         Rethink this system in general since it's quite confusing atm.
                                      */
-                                    callback?.();
-                                }
-                            },
-                            onClose: res,
-                        }), ...fields, ...contents],
+                                        callback?.();
+                                    }
+                                },
+                                onClose: res,
+                            }),
+                            ...fields,
+                            ...contents,
+                        ],
                         {path: pathName}
                     )
                 );

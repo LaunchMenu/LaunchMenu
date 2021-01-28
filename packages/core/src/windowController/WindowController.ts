@@ -48,7 +48,7 @@ export class WindowController {
      */
     public async destroy(): Promise<void> {
         // Listen for the window to finish disposing
-        const disposePromise = new Promise(res => {
+        const disposePromise = new Promise<void>(res => {
             this.window.webContents.on("ipc-message", (event, message) => {
                 if (message == "LM-disposed") return res();
             });

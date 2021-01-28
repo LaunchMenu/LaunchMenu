@@ -19,7 +19,7 @@ export const advancedKeyInputEditAction = createContextAction({
         const execute: IExecutableFunction = async ({context}) => {
             const cmds = [] as ICommand[];
             for (const {field, undoable, liveUpdate} of data) {
-                await new Promise(res => {
+                await new Promise<void>(res => {
                     context.open(
                         new AdvancedKeyPatternUI(field, {
                             onSubmit: result => {

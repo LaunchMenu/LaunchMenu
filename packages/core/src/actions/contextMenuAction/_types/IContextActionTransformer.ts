@@ -4,7 +4,7 @@ import {IExecutable} from "../../types/execute/_types/IExecutable";
 import {IActionBinding} from "../../_types/IActionBinding";
 import {IActionResult} from "../../_types/IActionResult";
 
-export type IContextActionTransformer<I, O, AB extends IActionBinding> = {
+export type IContextActionTransformer<I, O, AB extends IActionBinding | void> = {
     /**
      * Applies this action transformer to the given bindings, used internally for the `get` method
      * @param bindingData The data of bindings to apply the transformer to
