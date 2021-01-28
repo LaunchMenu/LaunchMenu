@@ -273,7 +273,7 @@ export class CoreSearchExecuter<Q, I> {
         node.update.required = false;
 
         // Execute the search
-        const version = node.executeVersion++;
+        const version = ++node.executeVersion;
         node.destroyHook?.();
 
         const [hook, destroyHook] = createCallbackHook(() => this.scheduleUpdate(ID));
@@ -284,7 +284,7 @@ export class CoreSearchExecuter<Q, I> {
         );
 
         node.destroyHook = destroyHook;
-        if (node.deleted || node.executeVersion == version) return;
+        if (node.deleted || node.executeVersion != version) return;
 
         // Store the data
         const oldResult = node.result ?? {children: new Set()};

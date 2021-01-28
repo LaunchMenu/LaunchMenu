@@ -411,6 +411,33 @@ describe("CoreSearchExecuter", () => {
                     {type: "update", ID: search1.ID},
                 ]);
             });
+            it("Correctly retains the latest result when results resolve out of order", async () => {
+                let time = 0;
+                let resolveOrder: number[] = [];
+
+                const search1 = createSimpleSearch({
+                    id: "1",
+                    m: async s => {
+                        const d = ++time;
+                        // Add extra delay such that the first result resolves after the second
+                        if (d == 1) await wait(100);
+                        else await wait(20);
+                        resolveOrder.push(d);
+
+                        return s == "s";
+                    },
+                });
+
+                const [executer, result] = createCoreExecuter(search1);
+                executer.setQuery("s");
+
+                await wait(20);
+                executer.setQuery("p");
+
+                await wait(110);
+                expect(result.getItems()).toEqual([]);
+                expect(resolveOrder).toEqual([2, 1]);
+            });
         });
 
         describe("Refreshes searches when the searchable changes", () => {
