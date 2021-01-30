@@ -53,18 +53,16 @@ export const openMenuExecuteHandler = createContextAction({
          */
         const execute = async ({
             context,
-            preventCallback,
             focus,
         }: {
             /** The context to open the menu in */
             context: IIOContext;
-            /** A function to indicate the execution success should be suspended, until the second function is called */
-            preventCallback?: () => () => void;
             /** The item to focus on in the menu */
             focus?: IMenuItem;
-        }) => {
-            const callback = preventCallback?.();
-            return new Promise<void>(res => {
+        }) =>
+            new Promise<{passive: boolean}>(res => {
+                let passive = true;
+
                 // Find the combined path name
                 const pathName =
                     data.reduce(
@@ -100,16 +98,11 @@ export const openMenuExecuteHandler = createContextAction({
                             icon,
                             onExecute: items => {
                                 if (containsClosingItem(data, items)) {
+                                    passive = false;
                                     close();
-                                    /*
-                                        TODO: always execute callback, but add data for whether to close the menu
-                                        in order to generalize it. 
-                                        Rethink this system in general since it's quite confusing atm.
-                                     */
-                                    callback?.();
                                 }
                             },
-                            onClose: res,
+                            onClose: () => res({passive}),
                         }),
                         {path: pathName}
                     )
@@ -126,7 +119,6 @@ export const openMenuExecuteHandler = createContextAction({
                         return false;
                     });
             });
-        };
 
         return {
             execute,

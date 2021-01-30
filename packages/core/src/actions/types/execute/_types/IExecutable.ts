@@ -1,7 +1,10 @@
 import {IIOContext} from "../../../../context/_types/IIOContext";
 import {ICommand} from "../../../../undoRedo/_types/ICommand";
 
-export type IExecutableFunction = {
+/**
+ * An executable item
+ */
+export type IExecutable = {
     /**
      * Executes the item action, or retrieves the command to execute
      * @param data The data that can be used for execution
@@ -10,25 +13,22 @@ export type IExecutableFunction = {
     (data: {
         /** The context that can be used for execution */
         context: IIOContext;
-        /**
-         * Prevents calling the 'onExecute' function, but allows for onExecute calling later using 'triggerLater'
-         * @returns A function 'triggerLater' that can be used to allow invocation of the onExecute callback later
-         */
-        preventCallback?: () => () => void;
-    }): Promise<ICommand | void> | ICommand | void;
+        // Data is an object to more easily support future augmentation
+    }): Promise<IExecutableResponse> | IExecutableResponse;
 };
 
-export type IExecutableObject = {
-    execute: IExecutableFunction;
+export type IExecutableResponse =
+    | {
+          /**
+           * The resulting command to execute to perform this action
+           */
+          command?: ICommand;
 
-    /**
-     * Whether this is a passive executor (I.E. shouldn't invoke the execute callback).
-     * For instance used when the execution only changes UI (opens a menu, etc) without updating other state.
-     */
-    passive?: boolean;
-};
-
-/**
- * An executable item
- */
-export type IExecutable = IExecutableObject | IExecutableFunction;
+          /**
+           * Whether this is a passive executor (E.g. shouldn't close the context menu when executed).
+           * For instance used when the execution only changes UI (opens a menu, etc) without updating other state.
+           */
+          passive?: boolean;
+      }
+    | ICommand
+    | void;
