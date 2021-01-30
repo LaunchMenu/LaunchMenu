@@ -3,9 +3,10 @@ import React from "react";
 import sanitizeHtml from "sanitize-html";
 
 const defaultOptions: sanitizeHtml.IOptions = {
-    allowedTags: ["b", "i", "em", "strong", "a"],
+    allowedTags: ["b", "i", "em", "strong", "a", "br", "img"],
     allowedAttributes: {
         a: ["href"],
+        img: ["src", "width"],
     },
     allowedIframeHostnames: ["www.youtube.com"],
     transformTags: {

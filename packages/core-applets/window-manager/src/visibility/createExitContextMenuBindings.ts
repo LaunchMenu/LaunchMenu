@@ -27,7 +27,7 @@ export function createExitContextMenuBinding(
                     name: "Exit",
                     onExecute: () => {
                         const session = LM.getSessionManager().getSelectedSession();
-                        if (session) resetSession(session);
+                        session?.goHome();
                         hideWindow();
                     },
                     shortcut: context =>
@@ -73,15 +73,4 @@ export function createExitContextMenuBinding(
             windowManagementFolderHandler
         ),
     ];
-}
-
-/**
- * Resets a given LM session
- * @param session The session to be reset
- */
-export async function resetSession(session: LMSession): Promise<void> {
-    const {context} = session;
-    const layers = context.getUI().slice(1).reverse();
-    for (let layer of layers) await context.close(layer);
-    session.searchField.set("");
 }

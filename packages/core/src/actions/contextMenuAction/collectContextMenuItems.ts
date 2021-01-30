@@ -1,6 +1,5 @@
 import {IDataHook} from "model-react";
 import {getContextCategory} from "../../menus/categories/createContextCategory";
-import {adjustBindings} from "../../menus/items/adjustBindings";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
 import {getLCS} from "../../utils/getLCS";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
@@ -14,17 +13,17 @@ import {IActionTarget} from "../_types/IActionTarget";
 import {IIndexedActionBinding} from "../_types/IIndexedActionBinding";
 import {IContextMenuItemData} from "./_types/IContextMenuItemData";
 
-type IOverrideContextItem = {
+export type IOverrideContextItem = {
     node: IContextItemNode;
     contextItem: IContextMenuItemData;
 };
 
-type IContextItemNode = Omit<IActionNodeWithTargets, "children"> & {
+export type IContextItemNode = Omit<IActionNodeWithTargets, "children"> & {
     contextItems: IContextMenuItemData[];
     children: IContextItemNode[];
     descendantBindings?: IIndexedActionBinding[];
     descendantTargets?: IActionTarget[];
-    descendantContextItems?: WeakMap<IAction, IOverrideContextItem[]>;
+    descendantContextItems?: Map<IAction, IOverrideContextItem[]>;
 };
 
 /**
@@ -51,7 +50,6 @@ export function collectContextMenuItems(
         return node;
     });
 
-    // const rootNodes = nodesWithContextItems.filter(node=>!node.contextItems.find());
     const actionContextItems = nodesWithContextItems.flatMap(node =>
         node.contextItems.flatMap(rootCIData => {
             if (rootCIData.override) return []; // Is not a root item
@@ -163,6 +161,7 @@ export function getCommonDescendantContextItems(
     if (node.descendantContextItems?.has(targetAction))
         return node.descendantContextItems.get(targetAction) as IOverrideContextItem[];
 
+    // Obtain the context items for the targetted action of the specified node
     const contextItems = node.contextItems
         .filter(CI => CI.action == targetAction || CI.override == targetAction)
         .map(CI => ({contextItem: CI, node}));
@@ -175,15 +174,15 @@ export function getCommonDescendantContextItems(
 
         const childCIs = getCommonDescendantContextItems(child, targetAction);
 
-        // Find the common CIs
+        // Find the common CIs (for  when 2 siblings branch together again at a later point)
         if (i == 0) return childCIs;
         return getLCS(commonChildCIs, childCIs).map(([i]) => commonChildCIs[i]);
-    }, []);
+    }, [] as IOverrideContextItem[]);
 
     const allContextItems = [...contextItems, ...childContextItems];
 
     // Cache results for efficiency
-    if (!node.descendantContextItems) node.descendantContextItems = new WeakMap();
+    if (!node.descendantContextItems) node.descendantContextItems = new Map();
     node.descendantContextItems.set(targetAction, allContextItems);
     return allContextItems;
 }

@@ -5,6 +5,8 @@ import {
     openMenuExecuteHandler,
     Priority,
     hideContentHandler,
+    copyTextHandler,
+    copyAction,
 } from "@launchmenu/core";
 import {filterTags} from "../../sanitize/filterTags";
 import {IExampleData} from "./_types/IExampleData";
@@ -29,7 +31,12 @@ export const getExamplesAction = createContextAction({
                             name: filterTags(example),
                             description: translation && filterTags(translation),
                             onExecute: () => {},
-                            actionBindings: [hideContentHandler.createBinding()],
+                            actionBindings: [
+                                hideContentHandler.createBinding(),
+                                copyAction.createBinding(
+                                    copyTextHandler.createBinding(filterTags(example))
+                                ),
+                            ],
                         })
                     ),
                 pathName: "Examples",

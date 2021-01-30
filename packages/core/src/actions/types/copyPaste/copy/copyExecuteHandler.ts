@@ -1,6 +1,6 @@
-import {executeAction} from "../execute/executeAction";
-import {IExecutable} from "../execute/_types/IExecutable";
-import {createContextAction} from "../../contextMenuAction/createContextAction";
+import {executeAction} from "../../execute/executeAction";
+import {IExecutable} from "../../execute/_types/IExecutable";
+import {createContextAction} from "../../../contextMenuAction/createContextAction";
 
 /** An execute handler to copy items */
 export const copyExecuteHandler = createContextAction({

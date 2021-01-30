@@ -6,6 +6,8 @@ import {
     openMenuExecuteHandler,
     Priority,
     IUILayerContentData,
+    copyTextHandler,
+    copyAction,
 } from "@launchmenu/core";
 import {filterTags} from "../../sanitize/filterTags";
 import {getExamplesAction} from "./getExamplesAction";
@@ -42,19 +44,32 @@ export const getDefinitionsAction = createContextAction({
                             createFolderMenuItem({
                                 name: category,
                                 layerContentData,
-                                children: definitions.map(({definition, examples}) =>
-                                    createStandardMenuItem({
-                                        name: filterTags(definition),
+                                children: definitions.map(({definition, examples}) => {
+                                    const def = filterTags(definition);
+                                    return createStandardMenuItem({
+                                        name: def,
                                         onExecute: () => {},
-                                        actionBindings: examples.map(example =>
+                                        actionBindings: [
+                                            ...examples.map(example =>
+                                                getExamplesAction.createBinding(example)
+                                            ),
+                                            copyAction.createBinding(
+                                                copyTextHandler.createBinding(def)
+                                            ),
+                                        ],
+                                    });
+                                }),
+                                actionBindings: definitions.flatMap(
+                                    ({definition, examples}) => [
+                                        ...examples.map(example =>
                                             getExamplesAction.createBinding(example)
                                         ),
-                                    })
-                                ),
-                                actionBindings: definitions.flatMap(({examples}) =>
-                                    examples.map(example =>
-                                        getExamplesAction.createBinding(example)
-                                    )
+                                        copyAction.createBinding(
+                                            copyTextHandler.createBinding(
+                                                filterTags(definition)
+                                            )
+                                        ),
+                                    ]
                                 ),
                             })
                         ),
@@ -64,3 +79,4 @@ export const getDefinitionsAction = createContextAction({
         };
     },
 });
+

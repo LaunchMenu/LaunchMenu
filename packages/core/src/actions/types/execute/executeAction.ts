@@ -49,7 +49,7 @@ export const executeAction = createAction({
             children: [
                 contextMenuAction.createBinding({
                     action: this,
-                    execute: [this.createBinding(combineExecutables)], // Gets passed to the item
+                    execute: [this.createBinding(combineExecutables)], // Gets passed to the context item
                     item: (execute: IActionBinding[]) => ({
                         priority,
                         item: createStandardItemImport.createStandardMenuItem({

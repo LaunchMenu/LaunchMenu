@@ -1,13 +1,13 @@
-import {createAction} from "../../../createAction";
+import {createAction} from "../../../../createAction";
 import {clipboard} from "electron";
-import {Data, NativeImage} from "electron";
+import {Data as ClipboardData, NativeImage} from "electron";
 import {copyExecuteHandler} from "../copyExecuteHandler";
 
 /** A copy execute handler that uses electron's clipboard */
 export const copyClipboardHandler = createAction({
     name: "Clipboard copy",
     parents: [copyExecuteHandler],
-    core: (data: Data[]) => {
+    core: (data: ClipboardData[]) => {
         const getData = () => ({
             text: data
                 .map(data => data.text)

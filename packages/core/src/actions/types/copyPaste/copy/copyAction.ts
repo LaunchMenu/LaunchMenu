@@ -1,7 +1,7 @@
-import {baseSettings} from "../../../application/settings/baseSettings/baseSettings";
-import {createContextAction} from "../../contextMenuAction/createContextAction";
-import {addBindingCreatorRequirement} from "../../utils/addBindingCreatorRequirement";
-import {IActionBinding} from "../../_types/IActionBinding";
+import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
+import {createContextAction} from "../../../contextMenuAction/createContextAction";
+import {addBindingCreatorRequirement} from "../../../utils/addBindingCreatorRequirement";
+import {IActionBinding} from "../../../_types/IActionBinding";
 import {copyExecuteHandler} from "./copyExecuteHandler";
 
 /**

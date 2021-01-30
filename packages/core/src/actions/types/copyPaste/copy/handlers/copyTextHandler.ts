@@ -1,4 +1,4 @@
-import {createAction} from "../../../createAction";
+import {createAction} from "../../../../createAction";
 import {clipboard} from "electron";
 import {copyClipboardHandler} from "./copyClipboardHandler";
 

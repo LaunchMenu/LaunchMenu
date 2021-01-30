@@ -1,5 +1,5 @@
 import {executeAction} from "../../types/execute/executeAction";
-import {openMenuExecuteHandler} from "../../types/execute/openMenuExecuteHandler";
+import {openMenuExecuteHandler} from "../../types/execute/types/openMenuExecuteHandler";
 import {sequentialExecuteHandler} from "../../types/execute/sequentialExecuteHandler";
 import {simpleSearchHandler} from "../../types/search/tracedRecursiveSearch/simpleSearch/simpleSearchHandler";
 import {IActionBinding} from "../../_types/IActionBinding";

@@ -71,7 +71,7 @@
         "@types/npm": "^2.0.29",
         "@types/react": "^17.0.0",
         "concurrently": "^5.2.0",
-        "electron": "^10.1.2",
+        "electron": "^11.2.1",
         "electron-builder": "^22.7.0",
         "jest": "^26.0.1",
         "ts-jest": "^26.1.0",

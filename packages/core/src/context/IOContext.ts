@@ -6,11 +6,13 @@ import {UndoRedoFacility} from "../undoRedo/UndoRedoFacility";
 import {Field, IDataHook} from "model-react";
 import {IUILayer} from "../uiLayers/_types/IUILayer";
 import {IActionBinding} from "../actions/_types/IActionBinding";
+import {LMSession} from "../application/LMSession/LMSession";
 
 export class IOContext implements IIOContext {
     public readonly undoRedo: IUndoRedoFacility;
     public settings: SettingsContext;
     public readonly contextMenuBindings: ISubscribable<IActionBinding[]>;
+    public readonly session?: LMSession;
 
     protected uiStack = new Field([] as {onClose?: () => void; layer: IUILayer}[]);
 
@@ -30,11 +32,13 @@ export class IOContext implements IIOContext {
         undoRedo?: IUndoRedoFacility;
         settings?: SettingsContext;
         contextMenuBindings?: ISubscribable<IActionBinding[]>;
+        session?: LMSession;
     }) {
         this.isInDevMode = data.isInDevMode || (() => false);
         this.undoRedo = data.undoRedo || new UndoRedoFacility();
         this.settings = data.settings || new SettingsContext();
         this.contextMenuBindings = data.contextMenuBindings || [];
+        this.session = data.session;
     }
 
     /**
@@ -101,9 +105,17 @@ export class IOContext implements IIOContext {
      * Removes all layers from this context, properly destroying it
      */
     public async destroy(): Promise<void> {
-        const layers = this.uiStack.get().reverse();
-        for (let {layer} of layers) {
-            await this.close(layer);
-        }
+        await this.closeAll(true);
+    }
+
+    /**
+     * Closes all layers opened in this context
+     * @param closeSessionLayer Whether to also close the base session layer
+     */
+    public async closeAll(closeSessionLayer?: boolean): Promise<void> {
+        const allLayers = this.uiStack.get();
+        const closeLayers = closeSessionLayer ? allLayers : allLayers.slice(1);
+        const layerOrder = closeLayers.reverse();
+        for (let {layer} of layerOrder) await this.close(layer);
     }
 }

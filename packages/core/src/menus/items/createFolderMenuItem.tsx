@@ -9,7 +9,7 @@ import {adjustBindings} from "./adjustBindings";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
 import {getHooked} from "../../utils/subscribables/getHooked";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
-import {openMenuExecuteHandler} from "../../actions/types/execute/openMenuExecuteHandler";
+import {openMenuExecuteHandler} from "../../actions/types/execute/types/openMenuExecuteHandler";
 import {forwardKeyEventHandler} from "../../actions/types/keyHandler/forwardKeyEventHandler";
 import {createStandardActionBindings} from "./createStandardActionBindings";
 import {Box} from "../../styling/box/Box";
