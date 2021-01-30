@@ -14,9 +14,10 @@ export const copyExitPasteHandler = addBindingCreatorRequirement(
         name: "Clipboard copy",
         parents: [executeAction],
         core: (data: IActionBinding[]) => {
-            return {
-                children: [data],
-            };
+            return {};
+            // return {
+            //     children: [data],
+            // };
         },
 
         /**

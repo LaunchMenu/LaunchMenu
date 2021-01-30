@@ -14,13 +14,13 @@ export const updateKeyPatternOptionTypeAction = createContextAction({
         priority: [Priority.HIGH, 2],
     },
     core: (data: IUpdateKeyPatternOptionTypeExecuteData[]) => {
-        const execute: IExecutable = args => {
+        const execute: IExecutable = ({context}) => {
             const bindings = data.map((data, i) => ({
                 actionBindings: [
                     updateKeyPatternOptionTypeExecuteHandler.createBinding(data),
                 ],
             }));
-            return executeAction.get(bindings).execute(args);
+            return executeAction.execute(context, bindings);
         };
         return {
             execute,

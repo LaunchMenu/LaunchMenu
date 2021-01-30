@@ -269,15 +269,11 @@ export class MultiSelect<T> extends AbstractUILayer {
             disabled
                 ? []
                 : [
-                      executeAction.createBinding({
-                          execute: () => {
-                              const cur = this.getValue();
-                              if (includes()) {
-                                  this.selection.set(
-                                      cur.filter(v => !this.equals(v, value))
-                                  );
-                              } else this.selection.set([...cur, value]);
-                          },
+                      executeAction.createBinding(() => {
+                          const cur = this.getValue();
+                          if (includes()) {
+                              this.selection.set(cur.filter(v => !this.equals(v, value)));
+                          } else this.selection.set([...cur, value]);
                       }),
                   ]
         );
@@ -471,9 +467,9 @@ export class MultiSelect<T> extends AbstractUILayer {
                     view: rawItem.view,
                     actionBindings: adjustBindings(rawItem.actionBindings, bindings => [
                         ...bindings,
-                        executeAction.createBinding({
-                            execute: () => void this.removeCustomOption(value),
-                        }),
+                        executeAction.createBinding(
+                            () => void this.removeCustomOption(value)
+                        ),
                         ...(selectItem
                             ? [
                                   onMenuChangeAction.createBinding((menu, added) => {
@@ -539,16 +535,14 @@ export class MultiSelect<T> extends AbstractUILayer {
             view: customView.view,
             actionBindings: adjustBindings(customView.actionBindings, bindings => [
                 ...bindings,
-                executeAction.createBinding({
-                    execute: () => {
-                        const item = this.addCustomOption();
-                        if (item) {
-                            this.textField.set("");
-                            waitFor(h => this.menu.getItems(h).includes(item)).then(() =>
-                                this.menu.setCursor(item)
-                            );
-                        }
-                    },
+                executeAction.createBinding(() => {
+                    const item = this.addCustomOption();
+                    if (item) {
+                        this.textField.set("");
+                        waitFor(h => this.menu.getItems(h).includes(item)).then(() =>
+                            this.menu.setCursor(item)
+                        );
+                    }
                 }),
             ]),
         };

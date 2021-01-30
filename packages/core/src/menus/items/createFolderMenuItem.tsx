@@ -92,7 +92,7 @@ export function createFolderMenuItem<
             searchChildren: getChildList(searchChildren),
             onShowChild: async ({parent, child, context}) => {
                 if (parent)
-                    return openMenuExecuteHandler
+                    await openMenuExecuteHandler
                         .get([parent])
                         .execute({context, focus: child});
             },

@@ -240,9 +240,7 @@ export class Select<T> extends Input<T> {
             view: customView.view,
             actionBindings: adjustBindings(customView.actionBindings, bindings => [
                 ...bindings,
-                executeAction.createBinding({
-                    execute: ({context}) => this.submit(context),
-                }),
+                executeAction.createBinding(({context}) => this.submit(context)),
             ]),
         };
     }

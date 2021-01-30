@@ -5,9 +5,10 @@ import {CompoundCommand} from "../../../undoRedo/commands/CompoundCommand";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {contextMenuAction} from "../../contextMenuAction/contextMenuAction";
 import {createAction} from "../../createAction";
+import {IAction} from "../../_types/IAction";
 import {IActionBinding} from "../../_types/IActionBinding";
 import {IActionTarget} from "../../_types/IActionTarget";
-import {IExecutable} from "./_types/IExecutable";
+import {IExecutable, IExecutableResponse} from "./_types/IExecutable";
 import {IItemExecuteCallback} from "./_types/IItemExecuteCallback";
 
 const priority = new Array(3).fill(Priority.HIGH);
@@ -19,24 +20,24 @@ export const executeAction = createAction({
     name: "executeAction",
     parents: [contextMenuAction],
     core: function (executors: IExecutable[]) {
-        const combineExecutables: IExecutable = {
-            execute: async data => {
-                const results = await Promise.all(
-                    executors.map(executable =>
-                        executable instanceof Function
-                            ? executable(data)
-                            : executable.execute(data)
-                    )
-                );
-                const commands = results.filter(Boolean) as ICommand[];
-                if (commands.length > 0)
-                    return new CompoundCommand({name: "Execute"}, commands);
-            },
-            // The command is only passive if all children are passive too
-            passive: Object.values(executors).reduce(
-                (cur, e) => cur && !(e instanceof Function) && e.passive,
-                true
-            ),
+        const combineExecutables: IExecutable = async data => {
+            const results = await Promise.all(
+                executors.map(executable => executable(data))
+            );
+
+            const passive = results.some(
+                result => result && "passive" in result && result.passive
+            );
+            const commands = results
+                .map(result => (result && "command" in result ? result.command : result))
+                .filter((cmd): cmd is ICommand => !!cmd);
+            return {
+                passive,
+                command:
+                    commands.length > 0
+                        ? new CompoundCommand({name: "Execute"}, commands)
+                        : undefined,
+            };
         };
 
         // Dynamically create the standard item creator in order ro deal with circular dependencies
@@ -67,46 +68,37 @@ export const executeAction = createAction({
         priority,
         /** An execute method that automatically dispatches commands, and take care of onExecute callback calling */
         execute: async function (
+            this: IAction<IExecutable[], IExecutable>,
             context: IMenu | IIOContext,
             items?: IActionTarget[] | IItemExecuteCallback,
             onExecute?: IItemExecuteCallback
         ) {
-            // Setup a function to handle the callbacks
-            let blockCallback = false;
-            let exItems: IActionTarget[];
-            const executeCallback = () => {
-                if (!blockCallback) {
-                    if (items instanceof Function) items?.(exItems);
-                    else onExecute?.(exItems);
-                }
-                blockCallback = true; // Make sure to not perform the callback twice
-            };
-
-            let preventCount = 0; // Track how many executors temporarily prevented the callback
-            const preventCallback = () => {
-                preventCount++;
-                return () => {
-                    preventCount--;
-                    if (preventCount == 0) executeCallback();
-                };
-            };
-
-            // Execute the command
-            let c: IIOContext;
+            // Normalize the data
+            let normalizedContext: IIOContext;
+            let normalizedItems: IActionTarget[];
+            let normalizedOnExecute: IItemExecuteCallback | undefined;
             if ("getAllSelected" in context) {
-                c = context.getContext();
-                exItems = context.getAllSelected();
+                normalizedContext = context.getContext();
+                normalizedItems = context.getAllSelected();
+                normalizedOnExecute = items as IItemExecuteCallback;
             } else {
-                c = context;
-                exItems = items as IActionTarget[];
+                normalizedContext = context;
+                normalizedItems = items as IActionTarget[];
+                normalizedOnExecute = onExecute as IItemExecuteCallback;
             }
-            const executable = this.get(exItems);
-            blockCallback = executable.passive || false; // Block the callback if the executor is passive
-            const cmd = await executable.execute({context: c, preventCallback});
-            if (cmd) c.undoRedo.execute(cmd);
 
-            // Close the menu if not prevented
-            if (preventCount == 0) executeCallback();
+            // Execute the function
+            const execute = this.get(normalizedItems);
+            const result = await execute({context: normalizedContext});
+
+            // Retrieve the command if any, and execute it
+            const cmd = result && ("execute" in result ? result : result.command);
+            if (cmd) normalizedContext.undoRedo.execute(cmd);
+
+            // Execute the callback if not passive
+            if (!(result && "passive" in result && result.passive)){
+                normalizedOnExecute?.(normalizedItems);
+            }
         } as {
             /**
              * Executes the default actions of the selected items of the menu
@@ -126,6 +118,24 @@ export const executeAction = createAction({
                 items: IActionTarget[],
                 onExecute?: IItemExecuteCallback
             ): Promise<void>;
+        },
+
+        /**
+         * Retrieves the command from an execution response
+         * @param result The execution result to get the command from
+         * @returns The command from the response, if any
+         */
+        getExecuteResponseCommand(result: IExecutableResponse): ICommand | undefined {
+            return result ? ("execute" in result ? result : result.command) : undefined;
+        },
+
+        /**
+         * Retrieves whether the execution was passive
+         * @param result The execution result to get the passivity data from
+         * @returns Whether the execution was passive
+         */
+        isExecuteResponsePassive(result: IExecutableResponse): boolean {
+            return (result && "passive" in result && result.passive) || false;
         },
     },
 });
