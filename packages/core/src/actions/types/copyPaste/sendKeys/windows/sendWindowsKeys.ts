@@ -21,6 +21,6 @@ export async function sendWindowsKeys(keys: ISendKey[]): Promise<void> {
         )
         .join("");
     await promisify(exec)(
-        `cscript.exe ${Path.join(__dirname, "sendWindowsKeys.vbs")} "${codes}"`
+        `cscript.exe "${Path.join(__dirname, "sendWindowsKeys.vbs")}" "${codes}"`
     );
 }

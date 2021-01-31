@@ -4,7 +4,7 @@
     "description": "An applet to show some information for when first using LaunchMenu",
     "types": "build/index.d.ts",
     "files": [
-        "build/**/*.{js,d.ts}"
+        "build/**/*"
     ],
     "main": "build/index.js",
     "scripts": {

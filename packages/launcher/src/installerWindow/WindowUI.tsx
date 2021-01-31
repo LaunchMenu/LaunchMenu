@@ -6,8 +6,7 @@ import PuffLoader from "react-spinners/PuffLoader";
 type State = {type: "loading" | "configuring"; name: string};
 
 const applets = {
-    Example1: "Example1",
-    Example2: "Example2",
+    Dictionary: "@launchmenu/applet-dictionary@alpha",
 };
 
 export const WindowUI: FC = () => {
@@ -63,7 +62,8 @@ const InstallSelectionHandler: FC = () => {
 
     return (
         <>
-            Please select the applets you want to install
+            Please select the applets you want to install. <br /> As of right now, applets
+            can't easily be installed later, but this will be added in the near future.
             <Box>
                 {Object.keys(applets).map((name, i) => (
                     <Box key={name}>
