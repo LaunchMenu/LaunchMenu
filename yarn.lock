@@ -735,18 +735,17 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@launchmenu/build-tools@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@launchmenu/build-tools/-/build-tools-0.0.2.tgz#692c9b94556c981c330305f89306f30c1913b9a6"
-  integrity sha512-MYxcDjm6l8LyDORQc1n1gPzcIO2KBc7EsDCcS/nz6kGMlXnN2O14Uj6Hc1UAsqoEZLFAuHweMAKgpEgQbzw/PQ==
+"@jxa/run@^1.3.4":
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/@jxa/run/-/run-1.3.4.tgz#f22452421048be78873f87635f49f12f4bce6c67"
+  integrity sha512-B27h+0hs/EAoM2SgHKjaOJE+SmzFrjbZXBoQ8wKIIuhQIIpJdMATwQggVj8/DJxswKeyqKptwNH/9oJn4Ibeug==
   dependencies:
-    args "^5.0.1"
-    chalk "^4.1.0"
-    chokidar "^3.4.2"
-    cpx "^1.5.0"
-    cross-spawn-promise "0.10.2"
-    rimraf "^3.0.2"
-    typescript "4.0.2"
+    macos-version "^5.2.0"
+
+"@jxa/types@^1.3.4":
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/@jxa/types/-/types-1.3.4.tgz#57fc58164d9eac7bbb0088d51b7a8ba980887519"
+  integrity sha512-BKwO4l/NXJUXRBIYWfCOyf3k/pBTzP70h/zx5GkKaAdqpSaCZUhh48ZW16jPUb99f4je2CrtMezppBxREMUgaw==
 
 "@lerna/add@3.21.0":
   version "3.21.0"
@@ -7120,6 +7119,13 @@ macos-release@^2.2.0:
   resolved "https://registry.yarnpkg.com/macos-release/-/macos-release-2.4.1.tgz#64033d0ec6a5e6375155a74b1a1eba8e509820ac"
   integrity sha512-H/QHeBIN1fIGJX517pvK8IEK53yQOW7YcEI55oYtgjDdoCQQz7eJS94qt5kNrscReEyuD/JcdFCm2XBEcGOITg==
 
+macos-version@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/macos-version/-/macos-version-5.2.0.tgz#ae3a25155877902bbc5f5ae6b2d57b1ddce2e79e"
+  integrity sha512-egt1bqVE1evUjCup2QN2F0g42AuVcumdM31xNbABz+uXquYPzWP4OrqDm+HpCfM+6t4JzWrzABQW+MZM+FW+Jg==
+  dependencies:
+    semver "^5.6.0"
+
 make-dir@^1.0.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-1.3.0.tgz#79c1033b80515bd6d24ec9933e860ca75ee27f0c"
@@ -10407,11 +10413,6 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
-
-typescript@4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.0.2.tgz#7ea7c88777c723c681e33bf7988be5d008d05ac2"
-  integrity sha512-e4ERvRV2wb+rRZ/IQeb3jm2VxBsirQLpQhdxplZ2MEzGvDkkMmPglecnNDfSUBivMjP93vRbngYYDQqQ/78bcQ==
 
 typescript@4.1.3, typescript@^4.1.3:
   version "4.1.3"

@@ -9,6 +9,7 @@ import {
     copyTextHandler,
     copyAction,
     createContextFolderMenuItem,
+    copyExitPasteHandler,
 } from "@launchmenu/core";
 import {filterTags} from "../../sanitize/filterTags";
 import {getExamplesAction} from "./getExamplesAction";
@@ -49,6 +50,7 @@ export const getDefinitionsAction = createContextAction({
                                 ...examples.map(example =>
                                     getExamplesAction.createBinding(example)
                                 ),
+                                copyExitPasteHandler.createBinding(def),
                                 copyAction.createBinding(
                                     copyTextHandler.createBinding(def)
                                 ),

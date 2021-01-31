@@ -16,6 +16,7 @@ import {Box} from "../styling/box/Box";
 import {IApplet} from "./applets/_types/IApplet";
 import {ipcRenderer} from "electron";
 import {LaunchMenuProvider} from "./hooks/useLM";
+import {wait} from "../_tests/wait.helper";
 
 /**
  * The main LM class
@@ -33,6 +34,9 @@ export class LaunchMenu {
     protected sessionManager: SessionManager;
     protected settingsManager: SettingsManager;
     protected appletObserver: Observer<IApplet[]>;
+
+    // Whether the LM window should be opened (A window manager applet will 'visualize' this state)
+    protected windowVisible = new Field(false);
 
     /***
      * Creates a new instance of the LaunchMenu application,
@@ -178,6 +182,28 @@ export class LaunchMenu {
      */
     public isInDevMode(hook?: IDataHook): boolean {
         return this.devMode.get(hook);
+    }
+
+    // Window
+    /**
+     * Retrieves whether the LaunchMenu window is currently opened
+     * @param hook The hook to subscribe to changes
+     * @returns Whether the window should be opened
+     */
+    public isWindowOpen(hook?: IDataHook): boolean {
+        return this.windowVisible.get(hook);
+    }
+
+    /**
+     * Sets whether the window should be opened
+     * @param open Whether the window should be opened
+     */
+    public async setWindowOpen(open: boolean): Promise<void> {
+        this.windowVisible.set(open);
+
+        // Add some delay for safety, since closing the window  usually doesn't close instantly
+        // TODO: look into the possibility of making model-react listen for promises of listeners to resolve
+        return wait(10);
     }
 
     // Utils

@@ -3,7 +3,7 @@ import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {CompoundCommand} from "../../../undoRedo/commands/CompoundCommand";
 import {createAction} from "../../../actions/createAction";
 import {resetAction} from "../../../actions/types/reset/resetAction";
-import {IContextExecuteData} from "../../../context/_types/IContextExecuteData";
+import {IExecuteArg} from "../../../actions/types/execute/_types/IExecuteArg";
 
 /**
  * A reset action to reset field values
@@ -12,7 +12,7 @@ export const resetFieldAction = createAction({
     name: "reset field",
     parents: [resetAction],
     core: (data: IResetFieldActionData<any>[]) => {
-        const reset = async ({context}: IContextExecuteData) => {
+        const reset = async ({context}: IExecuteArg) => {
             const cmds = data.flatMap(({field, default: def, undoable}) => {
                 if (undoable) return new SetFieldCommand(field, def);
                 else {

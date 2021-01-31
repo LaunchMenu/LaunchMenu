@@ -4,6 +4,7 @@ import {
     copyTextHandler,
     createStandardMenuItem,
     IMenuItem,
+    copyExitPasteHandler,
 } from "@launchmenu/core";
 import {dictionaryIcon} from "..";
 import {DefinitionView} from "./DefinitionView";
@@ -30,7 +31,7 @@ export function createWordMenuItem(word: string, language: ILanguage): IMenuItem
                     getDefinitionsAction.createBinding({category, definition, examples})
                 )
             ),
-            copyTextHandler.createBinding(word),
+            copyExitPasteHandler.createBinding(word),
             copyAction.createBinding(copyTextHandler.createBinding(word)),
         ],
     });

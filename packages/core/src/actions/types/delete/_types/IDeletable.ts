@@ -1,4 +1,4 @@
-import {IContextExecuteData} from "../../../../context/_types/IContextExecuteData";
+import {IExecuteArg} from "../../execute/_types/IExecuteArg";
 import {ICommand} from "../../../../undoRedo/_types/ICommand";
 
 /**
@@ -10,5 +10,5 @@ export type IDeletable = {
      * @param data Context data that can be used
      * @returns A command if the deletion should be undoable
      */
-    (data: IContextExecuteData): Promise<ICommand | void> | ICommand | void;
+    (data: IExecuteArg): Promise<ICommand | void> | ICommand | void;
 };

@@ -7,6 +7,7 @@ import {
     hideContentHandler,
     copyTextHandler,
     copyAction,
+    copyExitPasteHandler,
 } from "@launchmenu/core";
 import {filterTags} from "../../sanitize/filterTags";
 import {IExampleData} from "./_types/IExampleData";
@@ -32,10 +33,11 @@ export const getExamplesAction = createContextAction({
                             description: translation && filterTags(translation),
                             onExecute: () => {},
                             actionBindings: [
-                                hideContentHandler.createBinding(),
+                                copyExitPasteHandler.createBinding(filterTags(example)),
                                 copyAction.createBinding(
                                     copyTextHandler.createBinding(filterTags(example))
                                 ),
+                                hideContentHandler.createBinding(),
                             ],
                         })
                     ),

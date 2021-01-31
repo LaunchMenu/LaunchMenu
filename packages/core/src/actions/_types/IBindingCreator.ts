@@ -2,6 +2,9 @@ import {IDataRetriever} from "model-react";
 import {IAction} from "./IAction";
 import {IActionBinding} from "./IActionBinding";
 
+/** The standard binding creator config, or the direct data */
+export type IBindingCreatorConfigOrData<I> = I | IBindingCreatorConfig<I>;
+
 /** The standard binding creator config */
 export type IBindingCreatorConfig<I> = {
     /** The index of the binding, for when returned by an action handler */

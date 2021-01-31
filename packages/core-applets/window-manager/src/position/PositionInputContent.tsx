@@ -2,7 +2,6 @@ import {Box, Button, IField, IPosition} from "@launchmenu/core";
 import {BrowserWindow, remote} from "electron";
 import {useDataHook} from "model-react";
 import React, {FC, useEffect} from "react";
-import {hiddenCoordinates} from "../visibility/setupVisibilityControls";
 
 /**
  * A component for showing content to control the window position
@@ -17,8 +16,7 @@ export const PositionInputContent: FC<{
         if (!browserWindow) return;
         const positionListener = () => {
             const [x, y] = browserWindow.getPosition();
-            // Don't update the field
-            if (x != hiddenCoordinates.x || y != hiddenCoordinates.y) field.set({x, y});
+            field.set({x, y});
         };
         browserWindow.on("move", positionListener);
         return () => void browserWindow.removeListener("move", positionListener);

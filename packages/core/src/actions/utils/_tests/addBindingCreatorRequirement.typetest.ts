@@ -23,6 +23,9 @@ function neverExecuted() {
     const binding4 = openMenuExecuteHandler.createBinding({items: []});
 
     /** @ts-expect-error */
+    action.createBinding(3);
+
+    /** @ts-expect-error */
     action.createBinding(binding1);
 
     action.createBinding(binding2);
@@ -30,6 +33,16 @@ function neverExecuted() {
     action.createBinding(binding3);
 
     action.createBinding(binding4);
+
+    /** @ts-expect-error */
+    action.createBinding({data: binding1});
+
+    /** @ts-expect-error */
+    action.createBinding({subscribableData: () => binding1});
+
+    action.createBinding({data: binding3});
+
+    action.createBinding({subscribableData: () => binding3});
 
     /** @ts-expect-error */
     action.createBinding(25);

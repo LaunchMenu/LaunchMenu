@@ -1,5 +1,6 @@
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {Priority} from "../../../menus/menu/priority/Priority";
+import {IPriority} from "../../../menus/menu/priority/_types/IPriority";
 import {IMenu} from "../../../menus/menu/_types/IMenu";
 import {CompoundCommand} from "../../../undoRedo/commands/CompoundCommand";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
@@ -11,7 +12,7 @@ import {IActionTarget} from "../../_types/IActionTarget";
 import {IExecutable, IExecutableResponse} from "./_types/IExecutable";
 import {IItemExecuteCallback} from "./_types/IItemExecuteCallback";
 
-const priority = new Array(3).fill(Priority.HIGH);
+const priority: IPriority = new Array(3).fill(Priority.HIGH);
 
 /**
  * The action to execute the main function of menu items
@@ -96,7 +97,7 @@ export const executeAction = createAction({
             if (cmd) normalizedContext.undoRedo.execute(cmd);
 
             // Execute the callback if not passive
-            if (!(result && "passive" in result && result.passive)){
+            if (!(result && "passive" in result && result.passive)) {
                 normalizedOnExecute?.(normalizedItems);
             }
         } as {

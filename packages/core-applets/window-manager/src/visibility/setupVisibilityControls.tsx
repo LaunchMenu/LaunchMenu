@@ -5,9 +5,6 @@ import Path from "path";
 import {settings} from "../settings";
 import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
 
-/** The position the window is located at when hidden while still rendering */
-export const hiddenCoordinates = {x: -5e3, y: -5e3};
-
 /**
  * Sets up all listeners and UI to control window visibility
  * @param LM The LaunchMenu instance to do stuff with
@@ -22,26 +19,33 @@ export function setupVisibilityControls(
 ): {destroy: () => void; exitBindings: IActionBinding[]} {
     const settingsManager = LM.getSettingsManager();
 
-    // Create show and hide functions, that deal with the fact that transitions don't run while the window is hidden
-    const showWindow = () => {
-        const pos = settingsManager.getSettingsContext().get(settings).position.get();
+    // Synchronize with LM visibility state and deal with the fact that transitions don't run while the window is hidden
+    const visibilityObserver = new Observer(h => LM.isWindowOpen(h), {
+        debounce: -1,
+    }).listen(open => {
+        if (open) {
+            document.body.classList.add("noTransition");
+            setTimeout(() => {
+                document.body.style.visibility = "inherit";
+                document.body.classList.remove("noTransition");
+            }, 50);
 
-        document.body.classList.add("noTransition");
-        window.setPosition(hiddenCoordinates.x, hiddenCoordinates.y);
-        setTimeout(() => {
-            window.setPosition(pos.x, pos.y);
-            document.body.classList.remove("noTransition");
-        }, 100);
+            window.show();
+            window.focus();
+        } else {
+            if (!window.isVisible()) return;
 
-        window.show();
-        window.focus();
-    };
-    const hideWindow = () => {
-        if (!window.isVisible()) return;
+            document.body.style.visibility = "hidden";
+            document.body.getBoundingClientRect(); // Force reflow to hide the element visually asap
 
-        window.hide();
-        onHide();
-    };
+            setTimeout(() => {
+                window.hide();
+                onHide();
+            }, 10);
+        }
+    });
+    const hideWindow = () => LM.setWindowOpen(false);
+    const showWindow = () => LM.setWindowOpen(true);
 
     // Setup the tray icon
     let tray: Tray | undefined;
@@ -55,9 +59,7 @@ export function setupVisibilityControls(
 
         tray.setTitle("LaunchMenu");
         tray.setToolTip("LaunchMenu");
-        tray.on("click", () => {
-            showWindow();
-        });
+        tray.on("click", showWindow);
     } catch (e) {
         console.error(e);
     }
@@ -80,7 +82,7 @@ export function setupVisibilityControls(
     }, true);
 
     // Debug handler
-    const debugSettingObvserver = new Observer(h => ({
+    const debugSettingObserver = new Observer(h => ({
         visible: settingsManager
             .getSettingsContext(h)
             .get(settings)
@@ -112,7 +114,8 @@ export function setupVisibilityControls(
             window.removeListener("blur", hideWindow);
             shortcutSettingObserver.destroy();
             hideSettingObserver.destroy();
-            debugSettingObvserver.destroy();
+            debugSettingObserver.destroy();
+            visibilityObserver.destroy();
             sessionObserver.destroy();
             LM.getSessionManager()
                 .getSessions()

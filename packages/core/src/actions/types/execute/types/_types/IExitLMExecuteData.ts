@@ -1,13 +1,11 @@
-import {IIOContext} from "../../../../../context/_types/IIOContext";
+import {IExecuteArg} from "../../_types/IExecuteArg";
 
 /**
  * The data for the exit execute handler
  */
 export type IExitLMExecuteData =
     | void
-    | ((data: {
-          context: IIOContext;
-      }) => IExitCallbackResponse | Promise<IExitCallbackResponse>);
+    | ((data: IExecuteArg) => IExitCallbackResponse | Promise<IExitCallbackResponse>);
 
 /** The response data */
 export type IExitCallbackResponse = void | {
@@ -15,4 +13,6 @@ export type IExitCallbackResponse = void | {
     forceClose?: boolean;
     /** Whether to always reopen LM (except when something force closes it), even if the stack didn't change */
     reopen?: boolean;
+    /** Whether to prevent the session from navigating to its home screen */
+    preventGoHome?: boolean;
 };

@@ -13,7 +13,6 @@ export function launch() {
         if (!allowQuit) event.preventDefault();
     });
 
-    // app.allowRendererProcessReuse = false;
     app.whenReady().then(() => {
         let windowController = new WindowController();
 

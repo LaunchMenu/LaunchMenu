@@ -1,5 +1,9 @@
 import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
+import {
+    IBindingCreatorConfig,
+    IBindingCreatorConfigOrData,
+} from "../_types/IBindingCreator";
 import {TIsBindingForAction} from "./_types/TIsBindingForAction";
 
 /**
@@ -20,7 +24,13 @@ export function addBindingCreatorRequirement<A extends IAction, T extends IActio
            */
           createBinding<B extends BI>(
               binding: B &
-                  (B extends IActionBinding ? TIsBindingForAction<B, T> : unknown),
+                  (B extends IActionBinding
+                      ? TIsBindingForAction<B, T>
+                      : B extends IBindingCreatorConfigOrData<infer K>
+                      ? K extends IActionBinding
+                          ? IBindingCreatorConfig<TIsBindingForAction<K, T>>
+                          : unknown
+                      : unknown),
               ...rest: I
           ): O;
       }

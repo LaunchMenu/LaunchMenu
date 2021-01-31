@@ -20,6 +20,8 @@ export class WindowController {
             webPreferences: {
                 enableRemoteModule: true,
                 nodeIntegration: true,
+                contextIsolation: false,
+                backgroundThrottling: false,
             },
         });
         this.window.menuBarVisible = false;

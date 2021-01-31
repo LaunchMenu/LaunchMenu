@@ -31,7 +31,7 @@ const defaults = {
     production: false,
     srcEntry: "index.ts",
     entry: "index.js",
-    copyExtensions: ["html", "css", "jpg", "png", "ttf", "js"],
+    copyExtensions: ["html", "css", "jpg", "png", "ttf", "js", "vbs", "exe"],
     tsConfig: Path.join(process.cwd(), "tsconfig.json"),
     verbose: true,
     srcMaps: true,

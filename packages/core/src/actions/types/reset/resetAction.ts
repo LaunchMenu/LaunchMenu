@@ -1,4 +1,4 @@
-import {IContextExecuteData} from "../../../context/_types/IContextExecuteData";
+import {IExecuteArg} from "../execute/_types/IExecuteArg";
 import {CompoundCommand} from "../../../undoRedo/commands/CompoundCommand";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {createContextAction} from "../../contextMenuAction/createContextAction";
@@ -18,7 +18,7 @@ export const resetAction = createContextAction({
          * @param data The data used for executing the reset
          * @returns A command for undoable resets
          */
-        const reset = async (data: IContextExecuteData) => {
+        const reset = async (data: IExecuteArg) => {
             const results = await Promise.all(
                 executors.map(executable => executable(data))
             );
