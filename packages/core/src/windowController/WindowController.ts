@@ -20,6 +20,8 @@ export class WindowController {
             webPreferences: {
                 enableRemoteModule: true,
                 nodeIntegration: true,
+                contextIsolation: false,
+                backgroundThrottling: false,
             },
         });
         this.window.menuBarVisible = false;
@@ -29,9 +31,17 @@ export class WindowController {
         this.window.loadURL(indexPath);
 
         // Handle links
-        this.window.webContents.on("new-window", (event, url) => {
+        const webview = this.window.webContents;
+        function openLink(url: string) {
+            shell.openExternal(url).catch(e => console.error(e));
+        }
+        webview.on("new-window", (event, url) => {
             event.preventDefault();
-            shell.openExternal(url);
+            openLink(url);
+        });
+        webview.on("will-navigate", (e, url) => {
+            webview.stop();
+            openLink(url);
         });
     }
 
@@ -40,7 +50,7 @@ export class WindowController {
      */
     public async destroy(): Promise<void> {
         // Listen for the window to finish disposing
-        const disposePromise = new Promise(res => {
+        const disposePromise = new Promise<void>(res => {
             this.window.webContents.on("ipc-message", (event, message) => {
                 if (message == "LM-disposed") return res();
             });

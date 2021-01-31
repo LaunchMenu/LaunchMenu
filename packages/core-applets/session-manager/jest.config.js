@@ -3,7 +3,7 @@ module.exports = {
     transform: {
         "^.+\\.tsx?$": "ts-jest",
     },
-    testRegex: ["./_tests/.*(?<!\\.helper|\\.setup)\\.tsx?"], // Any ts or tsx file in a _tests folder that doesn't end with .helper.ts
+    testRegex: ["./_tests/.*(?<!\\.helper|\\.setup|\\.typetest)\\.tsx?"], // Any ts or tsx file in a _tests folder that doesn't end with .helper.ts
     verbose: false,
     globals: {
         "ts-jest": {

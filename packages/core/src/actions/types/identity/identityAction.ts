@@ -116,5 +116,18 @@ export const identityAction = createAction({
         getIdentity(item: IActionTarget): IUUID | undefined {
             return [...identityAction.get([item]).keys()][0];
         },
+
+        /**
+         * Uses js identity equivalence (object equivalence) or identity id equivalence to determine whether two items represent the same item (potentially with action modifications)
+         * @param items The items to compare
+         * @returns Whether the items represent the same base item
+         */
+        itemsEqual(...items: IActionTarget[]): boolean {
+            // Object equivalence test
+            if (items.every(item => item == items[0])) return true;
+
+            // IDentity equivalence test
+            return [...identityAction.get(items).keys()].length == 1;
+        },
     },
 });

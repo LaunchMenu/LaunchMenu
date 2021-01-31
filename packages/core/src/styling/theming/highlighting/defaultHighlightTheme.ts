@@ -49,6 +49,12 @@ export const defaultHighlightTheme: IHighlightThemeInput = theme => ({
             },
         },
         {
+            scope: [highlightTags.literal],
+            settings: {
+                color: theme.color.secondary,
+            },
+        },
+        {
             scope: [highlightTags.operator],
             settings: {
                 color: theme.color.tertiary,

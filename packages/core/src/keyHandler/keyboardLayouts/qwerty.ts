@@ -23,7 +23,7 @@ export const keyboardLayout: IKeyboardLayout = {
         39: {name: "right", id: "arrowRight", char: ""},
         40: {name: "down", id: "arrowDown", char: ""},
         45: {name: "insert", id: "insert", char: ""},
-        46: {name: "e", id: "delete", char: ""},
+        46: {name: "delete", id: "delete", char: ""},
         48: {name: "0", id: "digit0", char: "0", shiftChar: ")"},
         49: {name: "1", id: "digit1", char: "1", shiftChar: "!"},
         50: {name: "2", id: "digit2", char: "2", shiftChar: "@"},

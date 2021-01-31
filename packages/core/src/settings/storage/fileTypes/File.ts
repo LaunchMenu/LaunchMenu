@@ -80,7 +80,7 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
         this.loadPromise = new Promise(async (res, rej) => {
             try {
                 if (!FS.existsSync(this.filePath)) {
-                    return res();
+                    return res(this.get());
                 }
                 FS.readFile(this.filePath, this.encoding, (err, data) => {
                     if (err) rej(err);
@@ -89,17 +89,17 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
                             // Calling set automatically resets the loading state
                             if (isLoading(h => this.loading.get(h)))
                                 this.set(this.decode(data));
-                            res();
+                            res(this.get());
                         } catch (e) {
                             rej(e);
                         }
-                    } else res();
+                    } else res(this.get());
                 });
             } catch (e) {
                 if (!allowFileNotFound) rej(e);
                 else {
                     console.error(e);
-                    res();
+                    res(this.get());
                 }
             }
         });

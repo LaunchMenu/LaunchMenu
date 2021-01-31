@@ -3,6 +3,7 @@ import React, {FC, useCallback, useEffect, useRef} from "react";
 import {IContent} from "../../content/_types/IContent";
 import {IBoxProps} from "../../styling/box/_types/IBoxProps";
 import {useSmoothScroll} from "../../utils/hooks/useSmoothScroll";
+import {useVerticalScroll} from "../../utils/hooks/useVerticalScroll";
 import {FillBox} from "../FillBox";
 
 /**
@@ -31,9 +32,12 @@ export const ContentScroller: FC<{content: IContent} & IBoxProps> = ({
         setScroll({top: offset});
     }, [offset]);
 
+    // Enable smooth scrolling
+    const smoothScrollRef = useVerticalScroll();
+
     // Render a simple box element
     return (
-        <FillBox elRef={[setRef, scrollRef]} overflow="auto" {...rest}>
+        <FillBox elRef={[setRef, scrollRef, smoothScrollRef]} overflow="auto" {...rest}>
             {children}
         </FillBox>
     );

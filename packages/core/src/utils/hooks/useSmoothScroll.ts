@@ -33,11 +33,13 @@ export function useSmoothScroll<T extends HTMLElement = HTMLElement>(): [
      * Scrolls to the specified position
      * @param newTarget The position that should be scroll to
      * @param duration How long it takes to reach the specified position
+     * @param ease The easing factor ([0,1], 0 will be linear)
      * @returns A promise that resolves when moving to the target stopped, resolves true if move was canceled since a new target was specified, or false if it successfully finished
      */
     (
         newTarget: {left?: number; top?: number; addLeft?: number; addTop?: number},
-        duration?: number
+        duration?: number,
+        ease?: number
     ) => Promise<boolean>
 ] {
     const elRef = useRef(null as HTMLElement | null);

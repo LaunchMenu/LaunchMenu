@@ -1,15 +1,18 @@
 import {IDataHook, waitFor} from "model-react";
 import {ReactElement} from "react";
-import {IIOContext} from "../../../context/_types/IIOContext";
-import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
-import {ProxiedMenu} from "../../../menus/menu/ProxiedMenu";
-import {IThemeIcon} from "../../../styling/theming/_types/IBaseTheme";
-import {UILayer} from "../../../uiLayers/standardUILayer/UILayer";
-import {getHooked} from "../../../utils/subscribables/getHooked";
-import {createContextAction} from "../../contextMenuAction/createContextAction";
-import {executeAction} from "./executeAction";
-import {sequentialExecuteHandler} from "./sequentialExecuteHandler";
+import {IIOContext} from "../../../../context/_types/IIOContext";
+import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
+import {ProxiedMenu} from "../../../../menus/menu/ProxiedMenu";
+import {IThemeIcon} from "../../../../styling/theming/_types/IBaseTheme";
+import {UILayer} from "../../../../uiLayers/standardUILayer/UILayer";
+import {getHooked} from "../../../../utils/subscribables/getHooked";
+import {createContextAction} from "../../../contextMenuAction/createContextAction";
+import {executeAction} from "../executeAction";
+import {sequentialExecuteHandler} from "../sequentialExecuteHandler";
 import {IOpenMenuExecuteData} from "./_types/IOpenMenuExecuteData";
+import {IUILayerFieldData} from "../../../../uiLayers/_types/IUILayerFieldData";
+import {IUILayerContentData} from "../../../../uiLayers/_types/IUILayerContentData";
+import {identityAction} from "../../identity/identityAction";
 
 /**
  * Determines whether one of the passed item comes from a set of items that indicates to be closed on execute
@@ -22,7 +25,11 @@ const containsClosingItem = (data: IOpenMenuExecuteData[], items: IMenuItem[]) =
         if (cur) return true;
         if ("closeOnExecute" in d && d.closeOnExecute) {
             const containsItems = items.reduce(
-                (cur, item) => cur || getHooked(d.items).includes(item),
+                (cur, item) =>
+                    cur ||
+                    getHooked(d.items).some(cItem =>
+                        identityAction.itemsEqual(item, cItem)
+                    ),
                 false
             );
             if (containsItems) return true;
@@ -53,25 +60,23 @@ export const openMenuExecuteHandler = createContextAction({
          */
         const execute = async ({
             context,
-            preventCallback,
             focus,
         }: {
             /** The context to open the menu in */
             context: IIOContext;
-            /** A function to indicate the execution success should be suspended, until the second function is called */
-            preventCallback?: () => () => void;
             /** The item to focus on in the menu */
             focus?: IMenuItem;
-        }) => {
-            const callback = preventCallback?.();
-            return new Promise<void>(res => {
+        }) =>
+            new Promise<{passive: boolean}>(res => {
+                let passive = true;
+
                 // Find the combined path name
                 const pathName =
                     data.reduce(
                         (cur, d) =>
                             "pathName" in d
                                 ? cur
-                                    ? `${cur}/${d.pathName}`
+                                    ? `${cur}, ${d.pathName}`
                                     : d.pathName
                                 : cur,
                         ""
@@ -91,26 +96,35 @@ export const openMenuExecuteHandler = createContextAction({
                     [0, undefined] as [number, IThemeIcon | ReactElement | undefined]
                 );
 
+                // Retrieve any field and or content data
+                const fields = data
+                    .map(item => ("field" in item ? item.field : undefined))
+                    .filter((item): item is IUILayerFieldData => !!item)
+                    .filter((value, index, list) => list.indexOf(value) >= index);
+                const contents = data
+                    .map(item => ("content" in item ? item.content : undefined))
+                    .filter((item): item is IUILayerContentData => !!item)
+                    .filter((value, index, list) => list.indexOf(value) >= index);
+
                 // Create the menu
                 const menu = new ProxiedMenu(context, childrenGetter);
                 context.open(
                     new UILayer(
-                        (context, close) => ({
-                            menu,
-                            icon,
-                            onExecute: items => {
-                                if (containsClosingItem(data, items)) {
-                                    close();
-                                    /*
-                                        TODO: always execute callback, but add data for whether to close the menu
-                                        in order to generalize it. 
-                                        Rethink this system in general since it's quite confusing atm.
-                                     */
-                                    callback?.();
-                                }
-                            },
-                            onClose: res,
-                        }),
+                        [
+                            (context, close) => ({
+                                menu,
+                                icon,
+                                onExecute: items => {
+                                    if (containsClosingItem(data, items)) {
+                                        passive = false;
+                                        close();
+                                    }
+                                },
+                                onClose: () => res({passive}),
+                            }),
+                            ...fields,
+                            ...contents,
+                        ],
                         {path: pathName}
                     )
                 );
@@ -126,7 +140,6 @@ export const openMenuExecuteHandler = createContextAction({
                         return false;
                     });
             });
-        };
 
         return {
             execute,

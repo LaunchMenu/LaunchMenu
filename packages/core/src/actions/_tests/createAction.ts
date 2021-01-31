@@ -42,8 +42,9 @@ describe("createAction", () => {
             expect(binding.action).toBe(action);
             expect((binding as any).data).toEqual({a1: true, a2: false});
 
-            // This should result in a compile time type error:
-            // const binding2 = action.createBinding({a1: true, a2: "true"});
+            // The below isn't allowed, and will result in an error on a2 when the comment is removed
+            /** @ts-expect-error */
+            const binding2 = action.createBinding({a1: true, a2: "true"});
         });
     });
     describe("get", () => {

@@ -33,7 +33,7 @@ export const getContentAction = createAction({
             adjustBindingInput(config, data => {
                 if (data instanceof Function)
                     return (context: IIOContext) => ({ID, ...data(context)});
-                return {ID, contentView: data};
+                return {ID, ...data};
             })
         );
     },

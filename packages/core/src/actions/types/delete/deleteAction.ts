@@ -1,4 +1,4 @@
-import {IContextExecuteData} from "../../../context/_types/IContextExecuteData";
+import {IExecuteArg} from "../execute/_types/IExecuteArg";
 import {Priority} from "../../../menus/menu/priority/Priority";
 import {CompoundCommand} from "../../../undoRedo/commands/CompoundCommand";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
@@ -15,7 +15,7 @@ export const deleteAction = createContextAction({
         icon: "delete",
     },
     core: (executors: IDeletable[]) => {
-        const execute = async (data: IContextExecuteData) => {
+        const execute = async (data: IExecuteArg) => {
             const results = await Promise.all(
                 executors.map(executable => executable(data))
             );

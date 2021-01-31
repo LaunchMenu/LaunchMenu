@@ -4,6 +4,7 @@ import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
 import {IUILayer} from "../../uiLayers/_types/IUILayer";
 import {IDataHook} from "model-react";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
+import {LMSession} from "../../application/LMSession/LMSession";
 
 /**
  * A context to get general IO utilities from
@@ -49,4 +50,6 @@ export type IIOContext = {
     readonly settings: SettingsContext;
     /** The default context menu bindings to add to all context menus */
     readonly contextMenuBindings: ISubscribable<IActionBinding[]>;
+    /** The session that this context is for */
+    readonly session?: LMSession;
 };

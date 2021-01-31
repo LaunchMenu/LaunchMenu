@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/build-tools",
-    "version": "0.0.5-alpha.11",
+    "version": "0.0.5-alpha.14",
     "bin": {
         "lm-build-tools": "./bin/lm-build-tools.js"
     },
@@ -23,7 +23,7 @@
         "cpx": "^1.5.0",
         "cross-spawn-promise": "0.10.2",
         "rimraf": "^3.0.2",
-        "typescript": "4.0.2"
+        "typescript": "4.1.3"
     },
     "gitHead": "022dbc089423d10ee0528697003769d2d3aeb7d4",
     "publishConfig": {

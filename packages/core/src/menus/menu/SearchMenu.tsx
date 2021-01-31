@@ -13,6 +13,8 @@ import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
 import {PrioritizedMenu} from "./PrioritizedMenu";
 import {IPrioritizedMenuConfig} from "./_types/IPrioritizedMenuConfig";
+import {ISearchable} from "../../utils/searchExecuter/_types/ISearchable";
+import {IMenuSearchable} from "../../actions/types/search/_types/IMenuSearchable";
 
 /**
  * A menu that can be used to perform a search on a collection of items
@@ -20,12 +22,14 @@ import {IPrioritizedMenuConfig} from "./_types/IPrioritizedMenuConfig";
 export class SearchMenu extends PrioritizedMenu {
     protected searchItems = new Field([] as IMenuItem[]);
     protected showAllOnEmptySearch?: boolean;
+    protected search?: IMenuSearchable["search"];
     protected executer = new SearchExecuter({
         searchable: {
             ID: "root",
-            search: async (query: IQuery, hook: IDataHook) => ({
-                children: searchAction.get(this.searchItems.get(hook)),
-            }),
+            search: async (query: IQuery, hook: IDataHook, ...rest) =>
+                this.search?.(query, hook, ...rest) ?? {
+                    children: searchAction.get(this.searchItems.get(hook)),
+                },
         },
         onAdd: (item: IPrioritizedMenuItem) => this.addItem(item),
         onRemove: (item: IPrioritizedMenuItem) => this.removeItem(item),
@@ -41,6 +45,8 @@ export class SearchMenu extends PrioritizedMenu {
         config?: IPrioritizedMenuConfig & {
             /** Whether to show all items when the set search is empty (defaults to false) */
             showAllOnEmptySearch?: boolean;
+            /** An optional search config to override the items search */
+            search?: IMenuSearchable["search"];
         }
     ) {
         super(context, {
@@ -56,6 +62,7 @@ export class SearchMenu extends PrioritizedMenu {
             },
         });
         this.showAllOnEmptySearch = config?.showAllOnEmptySearch;
+        this.search = config?.search;
     }
 
     /**

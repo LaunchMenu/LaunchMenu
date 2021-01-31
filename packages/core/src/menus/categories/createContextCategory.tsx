@@ -2,6 +2,7 @@ import React, {memo} from "react";
 import {IContextCategory} from "../../actions/contextMenuAction/_types/IContextCategory";
 import {MenuItemFrame} from "../../components/items/MenuItemFrame";
 import {MenuItemLayout} from "../../components/items/MenuItemLayout";
+import {Box} from "../../styling/box/Box";
 
 /**
  * Creates a new context menu category, based on the number of items that have the action in this category
@@ -20,12 +21,12 @@ export function createContextCategory(
             "The category for context menu items indicating how many are correct",
         item: {
             view: memo(props => (
-                <MenuItemFrame {...props}>
+                <MenuItemFrame {...props} transparent={true}>
                     <MenuItemLayout
                         name={
-                            <>
+                            <Box font="header">
                                 {count}/{totalCount}
-                            </>
+                            </Box>
                         }
                     />
                 </MenuItemFrame>

@@ -86,21 +86,4 @@ export abstract class UnifiedAbstractUILayer extends AbstractUILayer implements 
             );
         return super.getContentData(hook, content);
     }
-
-    /**
-     * Retrieves the key listener data
-     * @param hook The data hook to subscribe to changes
-     * @returns The key listener data of this layer
-     */
-    public getKeyHandlers(hook?: IDataHook): IKeyEventListener[] {
-        return this.getAll(hook).flatMap(el =>
-            "getKeyHandlers" in el
-                ? el.getKeyHandlers(hook)
-                : ([
-                      (el as IUILayerMenuData).menuHandler,
-                      (el as IUILayerFieldData).fieldHandler,
-                      (el as IUILayerContentData).contentHandler,
-                  ].filter(Boolean) as IKeyEventListener[])
-        );
-    }
 }

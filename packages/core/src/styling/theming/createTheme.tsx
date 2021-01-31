@@ -21,6 +21,7 @@ import {
     BiComment,
     BiListUl,
     BiWindows,
+    BiCopy,
 } from "react-icons/bi";
 import {
     IoMdCube,
@@ -220,6 +221,8 @@ export function createTheme(
             session: themeInput.icons?.session || <BiWindows />,
             return: themeInput.icons?.return || <IoMdReturnLeft />,
             help: themeInput.icons?.help || <IoMdHelp />,
+            copy: themeInput.icons?.help || <BiCopy />,
+            paste: themeInput.icons?.help || <BiCopy />,
         },
         globalCss: mergeStyles(
             {

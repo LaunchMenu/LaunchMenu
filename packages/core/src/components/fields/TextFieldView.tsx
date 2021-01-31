@@ -31,9 +31,10 @@ export const TextFieldView: LFC<ITextFieldViewProps> = ({
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
+                    style={{fontSize: 30}}
                     width={iconSize}
                     height={iconSize}>
-                    {isValidElement(icon) ? icon : <ThemeIcon size={30} icon={icon} />}
+                    {isValidElement(icon) ? icon : <ThemeIcon icon={icon} />}
                 </Box>
             )}
             <Box

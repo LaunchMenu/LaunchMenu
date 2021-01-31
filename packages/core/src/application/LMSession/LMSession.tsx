@@ -122,6 +122,7 @@ export class LMSession {
             undoRedo: new UndoRedoFacility(),
             settings: new SettingsContext(),
             contextMenuBindings: this.getGlobalContextMenuBindings(),
+            session: this,
         });
 
         // Retrieve the settings context from LM which includes all base settings data, and listen for changes
@@ -289,6 +290,16 @@ export class LMSession {
             layers[layers.length - 1] == this.homeLayer &&
             this.searchField?.get(hook) == ""
         );
+    }
+
+    /**
+     * Closes all layers and removes the search input
+     * @param close Whether to also exit LM
+     */
+    public async goHome(close?: boolean): Promise<void> {
+        this.searchField.set("");
+        if (close) this.emitClose();
+        await this.context.closeAll();
     }
 
     // Applet management

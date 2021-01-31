@@ -1,10 +1,8 @@
 import {createAction, createStandardBinding} from "../../../actions/createAction";
 import {sequentialExecuteHandler} from "../../../actions/types/execute/sequentialExecuteHandler";
-import {IExecutable} from "../../../actions/types/execute/_types/IExecutable";
 import {IAction} from "../../../actions/_types/IAction";
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
-import {TPureAction} from "../../../actions/_types/TPureAction";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {MultiSelect} from "./MultiSelect";
@@ -18,8 +16,8 @@ export const multiSelectExecuteHandler = createAction({
     parents: [sequentialExecuteHandler],
     core: (data: IMultiSelectExecuteData<unknown>[]) => ({
         children: data.map(({field, undoable, ...config}) =>
-            sequentialExecuteHandler.createBinding({
-                execute: ({context}) =>
+            sequentialExecuteHandler.createBinding(
+                ({context}) =>
                     new Promise<ICommand | void>(res => {
                         let cmd: ICommand | undefined;
                         context.open(
@@ -37,8 +35,8 @@ export const multiSelectExecuteHandler = createAction({
                                 },
                             }
                         );
-                    }),
-            })
+                    })
+            )
         ),
     }),
     createBinding: createStandardBinding as {

@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-test",
-    "version": "0.0.5-alpha.13",
+    "version": "0.0.5-alpha.15",
     "private": true,
     "description": "A test applet for LaunchMenu",
     "types": "build/index.d.ts",
@@ -36,16 +36,17 @@
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu#readme",
     "peerDependencies": {
-        "@launchmenu/core": "^0.0.5-alpha.13",
         "react": "^17.0.0"
     },
     "devDependencies": {
-        "@launchmenu/core": "^0.0.5-alpha.13",
         "@testing-library/jest-dom": "^5.5.0",
         "@testing-library/react": "^10.0.3",
         "@types/jest": "^26.0.0",
         "@types/react": "^17.0.0",
         "jest": "^26.0.1",
         "ts-jest": "^26.1.0"
+    },
+    "dependencies": {
+        "@launchmenu/core": "^0.0.5-alpha.15"
     }
 }

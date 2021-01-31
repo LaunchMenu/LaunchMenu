@@ -4,6 +4,8 @@ import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {IRecursiveSearchChildren} from "../../../actions/types/search/tracedRecursiveSearch/_types/IRecursiveSearchChildren";
 import {ReactElement} from "react";
 import {IThemeIcon} from "../../../styling/theming/_types/IBaseTheme";
+import {IUILayerFieldData} from "../../../uiLayers/_types/IUILayerFieldData";
+import {IUILayerContentData} from "../../../uiLayers/_types/IUILayerContentData";
 
 /**
  * The input data to create a category menu item with
@@ -28,4 +30,8 @@ export type IFolderMenuItemData<
     forwardKeyEvents?: boolean;
     /** The icon to show for the search field of this menu */
     searchIcon?: IThemeIcon | ReactElement;
+    /** The field data to open when opening the menu layer */
+    layerFieldData?: IUILayerFieldData;
+    /** The content data to open when opening the menu layer */
+    layerContentData?: IUILayerContentData;
 } & Omit<IStandardMenuItemData, "searchChildren">;

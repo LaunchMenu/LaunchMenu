@@ -1,7 +1,7 @@
 import {Field, IDataHook} from "model-react";
 import {IUUID} from "../../_types/IUUID";
 import {createCallbackHook} from "../createCallbackHook";
-import {PromiseAll} from "../PromiseAll";
+import {PromiseAll} from "./PromiseAll";
 import {Queue} from "../Queue";
 import {ISearchable} from "./_types/ISearchable";
 import {ICoreSearchNode} from "./_types/ICoreSearchNode";
@@ -148,7 +148,7 @@ export class CoreSearchExecuter<Q, I> {
                 } else {
                     // Create a promise that can be used to listen for any activity requests
                     let finish: (() => void) | null = null;
-                    const continuePromise = new Promise(res => {
+                    const continuePromise = new Promise<void>(res => {
                         this.continue = () => {
                             finish = null;
                             res();
@@ -273,7 +273,7 @@ export class CoreSearchExecuter<Q, I> {
         node.update.required = false;
 
         // Execute the search
-        const version = node.executeVersion++;
+        const version = ++node.executeVersion;
         node.destroyHook?.();
 
         const [hook, destroyHook] = createCallbackHook(() => this.scheduleUpdate(ID));
@@ -284,7 +284,7 @@ export class CoreSearchExecuter<Q, I> {
         );
 
         node.destroyHook = destroyHook;
-        if (node.deleted || node.executeVersion == version) return;
+        if (node.deleted || node.executeVersion != version) return;
 
         // Store the data
         const oldResult = node.result ?? {children: new Set()};

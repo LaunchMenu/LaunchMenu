@@ -9,7 +9,7 @@ import {adjustBindings} from "./adjustBindings";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
 import {getHooked} from "../../utils/subscribables/getHooked";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
-import {openMenuExecuteHandler} from "../../actions/types/execute/openMenuExecuteHandler";
+import {openMenuExecuteHandler} from "../../actions/types/execute/types/openMenuExecuteHandler";
 import {forwardKeyEventHandler} from "../../actions/types/keyHandler/forwardKeyEventHandler";
 import {createStandardActionBindings} from "./createStandardActionBindings";
 import {Box} from "../../styling/box/Box";
@@ -54,6 +54,8 @@ export function createFolderMenuItem<
     name,
     pathName = getHooked(name),
     searchIcon,
+    layerContentData,
+    layerFieldData,
     ...rest
 }: IFolderMenuItemData<T, S>): IMenuItem & {children: T} {
     const childList = getChildList(children);
@@ -65,6 +67,8 @@ export function createFolderMenuItem<
                 closeOnExecute,
                 pathName,
                 searchIcon,
+                content: layerContentData,
+                field: layerFieldData,
             })
         );
     if (forwardKeyEvents)
@@ -88,7 +92,7 @@ export function createFolderMenuItem<
             searchChildren: getChildList(searchChildren),
             onShowChild: async ({parent, child, context}) => {
                 if (parent)
-                    return openMenuExecuteHandler
+                    await openMenuExecuteHandler
                         .get([parent])
                         .execute({context, focus: child});
             },
@@ -109,14 +113,7 @@ export function createFolderMenuItem<
                 <MenuItemFrame {...props}>
                     <Box display="flex" alignItems="center">
                         <MenuItemLayout
-                            icon={
-                                iconV &&
-                                (typeof iconV == "string" ? (
-                                    <MenuItemIcon icon={iconV} />
-                                ) : (
-                                    iconV
-                                ))
-                            }
+                            icon={iconV && <MenuItemIcon icon={iconV} />}
                             name={
                                 <Box font="header">
                                     <simpleSearchHandler.Highlighter

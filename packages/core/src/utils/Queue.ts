@@ -9,6 +9,7 @@ type IQueueNode<I> = {
 export class Queue<I> {
     protected head?: IQueueNode<I>;
     protected tail?: IQueueNode<I>;
+    protected size: number = 0;
 
     /**
      * Adds an item to the queue
@@ -19,6 +20,7 @@ export class Queue<I> {
         if (this.head && this.tail) this.tail.next = node;
         else this.head = node;
         this.tail = node;
+        this.size++;
     }
 
     /**
@@ -29,9 +31,18 @@ export class Queue<I> {
         if (this.head) {
             const {value, next} = this.head;
             this.head = next;
+            this.size--;
             return value;
         }
         return undefined;
+    }
+
+    /**
+     * Retrieves the size of this queue
+     * @returns The size of the queue
+     */
+    public getSize(): number {
+        return this.size;
     }
 
     /**

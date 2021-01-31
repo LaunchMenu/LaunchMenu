@@ -1,7 +1,7 @@
 import {IMenuItem} from "./_types/IMenuItem";
 import {createStandardMenuItem} from "./createStandardMenuItem";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
-import {IExecutableFunction} from "../../actions/types/execute/_types/IExecutable";
+import {IExecutable} from "../../actions/types/execute/_types/IExecutable";
 
 /**
  * A standard finish menu item creator, intended to commit a series of changes
@@ -13,7 +13,7 @@ export function createFinishMenuItem({
     actionBindings,
 }: {
     /** The callback to make when pressed */
-    onExecute?: IExecutableFunction;
+    onExecute?: IExecutable;
     /** Any additional action bindings */
     actionBindings?: IActionBinding[];
 }): IMenuItem {

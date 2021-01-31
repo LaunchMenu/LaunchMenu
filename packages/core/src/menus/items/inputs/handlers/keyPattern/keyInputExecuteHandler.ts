@@ -13,43 +13,37 @@ export const keyInputExecuteHandler = createAction({
     parents: [sequentialExecuteHandler],
     core: (data: IAdvancedKeyInputExecuteData[]) => ({
         children: data.map((binding, i) =>
-            sequentialExecuteHandler.createBinding({
-                execute: ({context}) => {
-                    const pattern = binding.field.get();
+            sequentialExecuteHandler.createBinding(({context}) => {
+                const pattern = binding.field.get();
 
-                    // Execute the update pattern action if there is only 1 pattern
-                    if (pattern.patterns.length <= 1) {
-                        return executeAction
-                            .get([
-                                {
-                                    actionBindings: [
-                                        updateKeyPatternOptionExecuteHandler.createBinding(
-                                            {
-                                                patternField: binding.field,
-                                                option: pattern.patterns[0],
-                                                insertIfDeleted: true,
-                                                ...binding,
-                                            }
-                                        ),
-                                    ],
-                                },
-                            ])
-                            .execute({context});
-                    }
+                // Execute the update pattern action if there is only 1 pattern
+                if (pattern.patterns.length <= 1) {
+                    return executeAction.execute(context, [
+                        {
+                            actionBindings: [
+                                updateKeyPatternOptionExecuteHandler.createBinding({
+                                    patternField: binding.field,
+                                    option: pattern.patterns[0],
+                                    insertIfDeleted: true,
+                                    ...binding,
+                                }),
+                            ],
+                        },
+                    ]);
+                }
 
-                    // If there are multiple patterns, enter the advanced editor
-                    else {
-                        return advancedKeyInputEditAction
-                            .get([
-                                {
-                                    actionBindings: [
-                                        advancedKeyInputEditAction.createBinding(binding),
-                                    ],
-                                },
-                            ])
-                            .execute({context});
-                    }
-                },
+                // If there are multiple patterns, enter the advanced editor
+                else {
+                    return advancedKeyInputEditAction
+                        .get([
+                            {
+                                actionBindings: [
+                                    advancedKeyInputEditAction.createBinding(binding),
+                                ],
+                            },
+                        ])
+                        .execute({context});
+                }
             })
         ),
     }),

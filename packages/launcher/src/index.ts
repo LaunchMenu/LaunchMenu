@@ -51,11 +51,7 @@ async function firstTimeSetup(): Promise<void> {
         await initPackage();
         for (let p of packages) {
             window.setState({type: "loading", name: `Installing ${p}`});
-
-            // TODO: get rid of the fake install once we have real applets
-            if (chosenApplets.includes(p))
-                await new Promise(res => setTimeout(res, 1500));
-            else await install(p);
+            await install(p);
         }
 
         window.setState({type: "loading", name: `Finishing up`});

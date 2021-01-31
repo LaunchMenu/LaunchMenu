@@ -12,16 +12,23 @@ export const sequentialExecuteHandler = createAction({
     parents: [executeAction],
     core: (executors: IExecutable[]) => ({
         children: [
-            executeAction.createBinding(async context => {
+            executeAction.createBinding(async data => {
+                let passive = false;
                 let commands = [] as ICommand[];
                 for (let executor of executors) {
-                    const res = await (executor instanceof Function
-                        ? executor(context)
-                        : executor.execute(context));
-                    if (res) commands.push(res);
+                    const res = await executor(data);
+                    const cmd = executeAction.getExecuteResponseCommand(res);
+                    if (cmd) commands.push(cmd);
+                    if (executeAction.isExecuteResponsePassive(res)) passive = true;
                 }
-                if (commands.length > 0)
-                    return new CompoundCommand({name: "Execute sequential"}, commands);
+
+                return {
+                    passive,
+                    command:
+                        commands.length > 0
+                            ? new CompoundCommand({name: "Execute sequential"}, commands)
+                            : undefined,
+                };
             }),
         ],
     }),

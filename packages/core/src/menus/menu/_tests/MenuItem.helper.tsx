@@ -26,7 +26,7 @@ export function createDummyMenuItem({
         actionBindings: adjustBindings(actionBindings ?? [], bindings => [
             ...bindings,
             ...(category ? [getCategoryAction.createBinding(category)] : []),
-            ...(noSelect ? [] : [executeAction.createBinding({execute: () => {}})]),
+            ...(noSelect ? [] : [executeAction.createBinding(() => {})]),
         ]),
         name,
     } as IMenuItem;
@@ -50,7 +50,7 @@ export function createDummySearchableMenuItem({
         view: () => <div>hoi</div>,
         actionBindings: [
             ...(category ? [getCategoryAction.createBinding(category)] : []),
-            ...(noSelect ? [] : [executeAction.createBinding({execute: () => {}})]),
+            ...(noSelect ? [] : [executeAction.createBinding(() => {})]),
             searchAction.createBinding({
                 ID: id,
                 search: async ({search}, hook) => {

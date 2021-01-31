@@ -72,7 +72,9 @@ export const simpleSearchHandler = createAction({
     createBinding: function (
         data: Omit<ISimpleSearchData, "id">,
         index?: number
-    ): IActionBinding<IAction<ISimpleSearchData, IMenuSearchable[]>> {
+    ): IActionBinding<
+        IAction<ISimpleSearchData, IMenuSearchable[], typeof tracedRecursiveSearchHandler>
+    > {
         return {
             action: this,
             index,

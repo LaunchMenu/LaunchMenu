@@ -1,7 +1,9 @@
 import {ReactElement} from "react";
-import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
-import {IThemeIcon} from "../../../../styling/theming/_types/IBaseTheme";
-import {ISubscribable} from "../../../../utils/subscribables/_types/ISubscribable";
+import {IMenuItem} from "../../../../../menus/items/_types/IMenuItem";
+import {IThemeIcon} from "../../../../../styling/theming/_types/IBaseTheme";
+import {ISubscribable} from "../../../../../utils/subscribables/_types/ISubscribable";
+import {IUILayerFieldData} from "../../../../../uiLayers/_types/IUILayerFieldData";
+import {IUILayerContentData} from "../../../../../uiLayers/_types/IUILayerContentData";
 
 /**
  * The data that can be opened as a menu using the openMenuExecuteHandler action
@@ -17,4 +19,8 @@ export type IOpenMenuExecuteData =
           pathName?: string;
           /** The icon to be shown in the search field of this menu */
           searchIcon?: IThemeIcon | ReactElement;
+          /** Field data to use for the opened layer */
+          field?: IUILayerFieldData;
+          /** Content data to use for the opened layer */
+          content?: IUILayerContentData;
       };

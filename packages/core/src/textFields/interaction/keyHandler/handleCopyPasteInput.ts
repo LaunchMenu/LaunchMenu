@@ -34,16 +34,15 @@ export function handleCopyPasteInput(
         };
 
     if (patterns.copy.matches(event)) {
-        copyText(textField);
-        return true;
+        if (copyText(textField)) return true;
     }
     if (patterns.cut.matches(event)) {
-        copyText(textField);
-        insertText(textField, "");
-        return true;
+        if (copyText(textField)) {
+            insertText(textField, "");
+            return true;
+        }
     }
     if (patterns.paste.matches(event)) {
-        pasteText(textField);
-        return true;
+        if (pasteText(textField)) return true;
     }
 }

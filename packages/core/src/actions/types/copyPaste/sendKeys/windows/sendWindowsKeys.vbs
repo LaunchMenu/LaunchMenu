@@ -1,0 +1,1 @@
+CreateObject("wscript.shell").sendkeys(WScript.Arguments.item(0))

@@ -1,4 +1,3 @@
-import {IDataRetriever} from "model-react";
 import {actionGetter} from "./actionGraph/actionGetter";
 import {IAction} from "./_types/IAction";
 import {IActionBinding} from "./_types/IActionBinding";
@@ -17,9 +16,9 @@ export function createAction<
     /** The result data type */
     O = never,
     /** The parent actions types (union of parents) */
-    P extends IAction = IAction<never, never, any>,
+    P extends IAction | void = void,
     /** The possible resulting bindings of this action */
-    K extends IActionBinding<TPureAction<P>> = never,
+    K extends P extends IAction ? IActionBinding<TPureAction<P>> : void = never,
     /** The create binding function, which may want to specify generic types for more elaborate interfaces */
     CB = IBindingCreator<I, O, P>,
     /** The remaining functions specified on the object */
@@ -38,8 +37,11 @@ export function createAction<
 }): /** The action as well as an interface to create bindings for this action with */
 IAction<I, O, P> & {
     createBinding: CB;
-} & EXTRAS {
-    const {name, parents, core, createBinding, extras: extra = {}} = actionInput;
+} & (/** For whatever reason, in some contexts EXTRAS becomes never */
+    EXTRAS extends never
+        ? unknown
+        : EXTRAS) {
+    const {name, parents, core, createBinding, extras = {}} = actionInput;
 
     parents?.forEach(parent => {
         if (parent === undefined)
@@ -54,7 +56,7 @@ IAction<I, O, P> & {
         transform: core as any,
         get: actionGetter,
         createBinding: createBinding || (createStandardBinding as any),
-        ...(extra as any),
+        ...(extras as any),
     };
 }
 
@@ -64,7 +66,12 @@ export function createStandardBinding(
     this: IAction,
     config: any | IBindingCreatorConfig<any>
 ): IActionBinding {
-    if (config instanceof Object && ("subscribableData" in config || "data" in config))
+    if (
+        config instanceof Object &&
+        ("subscribableData" in config || "data" in config) &&
+        // A special case to prevent meta bindings (bindings of bindings) from being flattened
+        (!("action" in config) || config.action == this)
+    )
         return {action: this, ...config} as any;
     return {action: this, data: config};
 }

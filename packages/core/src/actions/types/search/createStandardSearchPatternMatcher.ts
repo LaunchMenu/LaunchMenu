@@ -9,22 +9,25 @@ import {IStandardSearchPatternMatcherConfig} from "./_types/IStandardSearchPatte
  * @param config The configuration for the matcher
  * @returns The function that can be used to match this pattern
  */
-export function createStandardSearchPatternMatcher({
+export function createStandardSearchPatternMatcher<T = void>({
     name,
     matcher: orMatcher,
     highlighter,
-}: IStandardSearchPatternMatcherConfig): {
+}: IStandardSearchPatternMatcherConfig<T>): {
     /**
      * Checks whether the given query matches the pattern, and caches the result in the query
      * @param query The query to match
      * @param hook The data hook to subscribe to changes
      * @returns The pattern that was matched, if any
      */
-    (query: IQuery, hook?: IDataHook): IPatternMatch | undefined;
+    (query: IQuery, hook?: IDataHook): (IPatternMatch & {metadata?: T}) | undefined;
 } {
     const symbol = Symbol(name);
 
-    return (query: IQuery & {[symbol]?: IPatternMatch | undefined}, hook) => {
+    return (
+        query: IQuery & {[symbol]?: (IPatternMatch & {metadata?: T}) | undefined},
+        hook
+    ) => {
         // If the result wasn't already computed for this query, compute it
         if (!(symbol in query)) {
             // Obtain the matcher

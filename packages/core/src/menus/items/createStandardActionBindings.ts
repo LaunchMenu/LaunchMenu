@@ -34,7 +34,6 @@ export function createStandardActionBindings(
         searchPattern,
         actionBindings,
         onExecute,
-        executePassively = false,
         onSelect,
         onCursor,
         onMenuChange,
@@ -57,10 +56,7 @@ export function createStandardActionBindings(
             showChild,
         }),
     ];
-    if (onExecute)
-        generatedBindings.push(
-            executeAction.createBinding({execute: onExecute, passive: executePassively})
-        );
+    if (onExecute) generatedBindings.push(executeAction.createBinding(onExecute));
     if (onSelect) generatedBindings.push(onSelectAction.createBinding(onSelect));
     if (onCursor) generatedBindings.push(onCursorAction.createBinding(onCursor));
     if (onMenuChange)
