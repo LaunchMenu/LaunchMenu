@@ -2,7 +2,8 @@ import {IKeyEventListener, IKeyEventListenerFunction} from "./_types/IKeyEventLi
 import {IKeyHandlerTarget} from "./_types/IKeyHandlerTarget";
 import {IKey} from "./_types/IKey";
 import {KeyEvent} from "./KeyEvent";
-import {keyboardLayout} from "./keyboardLayouts/qwerty";
+import {keyIds} from "./keyIdentifiers/keyIds";
+import {keyIdMapping} from "./keyIdentifiers/keys";
 
 /**
  * A key handler class
@@ -141,19 +142,18 @@ export class KeyHandler {
     /**
      * Retrieves the input data for a 'synthetic' key event
      * @param event The original event
-     * @param shift Whether shift was pressed
      * @returns The input for the event
      */
     public static getKeyEvent(event: KeyboardEvent): KeyEvent | null {
-        const layout = keyboardLayout; //TODO: Get the layout to use dynamically from settings
-        const key =
-            layout.keys[event.which] || layout.keys[event.which + "-" + event.location];
-        if (!key) return null;
+        const cc = event.code[0].toLowerCase() + event.code.substr(1);
+        const keyId = keyIds[cc as keyof typeof keyIds];
+        const keyName = keyIdMapping[keyId];
+        const char = event.key.length == 1 ? event.key : "";
         return new KeyEvent({
             key: {
-                id: key.id,
-                name: key.name,
-                char: event.shiftKey ? key.shiftChar : key.char ?? event.char,
+                id: keyId ?? "",
+                name: keyName ?? "",
+                char,
             },
             type: event.type == "keydown" ? "down" : "up",
             original: event,

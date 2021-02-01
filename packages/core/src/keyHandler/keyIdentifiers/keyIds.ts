@@ -83,7 +83,7 @@ export const keyIds = {
     minus: "minus",
     period: "period",
     slash: "slash",
-    backQuote: "backQuote",
+    backquote: "backquote",
     bracketLeft: "bracketLeft",
     backslash: "backslash",
     bracketRight: "bracketRight",
