@@ -1,5 +1,5 @@
-import {IKeyId} from "../keyIdentifiers/ids";
-import {IKeyName} from "../keyIdentifiers/names";
+import {IKeyId} from "../keyIdentifiers/keyIds";
+import {IKeyName} from "../keyIdentifiers/keyNames";
 
 /**
  * An identifier object for keyboard keys

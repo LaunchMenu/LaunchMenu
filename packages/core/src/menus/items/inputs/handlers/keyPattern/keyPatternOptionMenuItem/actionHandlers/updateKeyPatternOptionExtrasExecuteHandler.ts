@@ -2,7 +2,10 @@ import {getKeyPatternOptionIndex} from "../getKeyPatternOptionIndex";
 import {KeyPattern} from "../../../../../../../keyHandler/KeyPattern";
 import {IDataHook} from "model-react";
 import {IUpdateKeyPatternOptionExtrasExecuteData} from "../_types/IUpdateKeyPatternOptionExtrasExecuteData";
-import {IKeyName, keyNames} from "../../../../../../../keyHandler/keyIdentifiers/names";
+import {
+    IKeyName,
+    keyNames,
+} from "../../../../../../../keyHandler/keyIdentifiers/keyNames";
 import {multiSelectExecuteHandler} from "../../../../../../../uiLayers/types/multiSelect/multiSelectExecuteHandler";
 import {createMultiSelectOptionMenuItem} from "../../../../../../../uiLayers/types/multiSelect/createMultiSelectOptionMenuItem";
 import {createAction} from "../../../../../../../actions/createAction";
