@@ -18,7 +18,7 @@ export function moveCursorHorizontal(
 
     // Determine the position to jump to
     let end: number;
-    if (jumpWord) end = getJumpTokenPos(textField.get(), selection.end, direction * 2);
+    if (jumpWord) end = getJumpTokenPos(textField.get(), selection.end, direction);
     else end = selection.end + direction;
 
     // If we want to expand the selection, only change the end
