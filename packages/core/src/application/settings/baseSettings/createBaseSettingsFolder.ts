@@ -37,7 +37,10 @@ export function createBaseSettingsFolder() {
                     content: createContentControlsSettingsFolder(),
                     back: createKeyPatternSetting({
                         name: "Back",
-                        init: new KeyPattern("esc"),
+                        init: new KeyPattern([
+                            {pattern: "esc", type: "down"},
+                            {pattern: `${menuNavigationModifier}+left`, type: "down"},
+                        ]),
                     }),
                     search: createSettingsFolder({
                         name: "Search",
@@ -58,3 +61,6 @@ export function createBaseSettingsFolder() {
         },
     });
 }
+
+/** The modifier to make the arrow keys act for menu navigation instead of text navigation */
+export const menuNavigationModifier = process.platform == "darwin" ? "ctrl" : "alt";

@@ -59,6 +59,28 @@ export function createFieldControlsSettingsFolder() {
                 init: new KeyPattern("ctrl+a"),
                 category: getFieldControlsFolderCategories().jumps,
             }),
+            jumpWordLeft: createKeyPatternSetting({
+                name: "Jump a word to the left",
+                init: new KeyPattern([
+                    {
+                        pattern: `${wordJumpModifier}+left`,
+                        type: "down or repeat",
+                        allowExtra: ["shift"],
+                    },
+                ]),
+                category: getFieldControlsFolderCategories().jumps,
+            }),
+            jumpWordRight: createKeyPatternSetting({
+                name: "Jump a word to the right",
+                init: new KeyPattern([
+                    {
+                        pattern: `${wordJumpModifier}+right`,
+                        type: "down or repeat",
+                        allowExtra: ["shift"],
+                    },
+                ]),
+                category: getFieldControlsFolderCategories().jumps,
+            }),
 
             // Text navigation
             left: createKeyPatternSetting({
@@ -93,7 +115,7 @@ export function createFieldControlsSettingsFolder() {
             }),
             expandSelection: createKeyPatternSetting({
                 name: "Expand selection",
-                description: "Only pattern is used", // TODO: create a class + UI for modifier patterns
+                description: "Only the pattern is used, not the event type", // TODO: create a class + UI for modifier patterns
                 init: new KeyPattern("shift"),
                 category: getFieldControlsFolderCategories().textNavigation,
             }),
@@ -128,3 +150,6 @@ export function createFieldControlsSettingsFolder() {
         },
     });
 }
+
+/** The modifier to make the arrow keys jump entire words at once */
+export const wordJumpModifier = process.platform == "darwin" ? "alt" : "ctrl";

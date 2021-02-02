@@ -5,6 +5,7 @@ import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {TSettingsFromFactory} from "../../../settings/_types/TSettingsFromFactory";
 import {createFieldControlsSettingsFolder} from "../../../application/settings/baseSettings/controls/createFieldControlsSettingsFolder";
 import {isFieldControlsSettingsFolder} from "./isFieldControlsSettingsFolder";
+import {moveCursorHorizontal} from "../moveCursorHorizontal";
 
 /**
  * Handles cursor jump input (home/end)
@@ -21,17 +22,54 @@ export function handleCursorJumpInput(
               end: KeyPattern;
               home: KeyPattern;
               selectAll: KeyPattern;
+              jumpWordLeft: KeyPattern;
+              jumpWordRight: KeyPattern;
               expandSelection: KeyPattern;
           }
         | TSettingsFromFactory<typeof createFieldControlsSettingsFolder>
 ): void | boolean {
-    if (isFieldControlsSettingsFolder(patterns))
+    if (isFieldControlsSettingsFolder(patterns)) {
+        const op = patterns;
         patterns = {
-            end: patterns.end.get(),
-            home: patterns.home.get(),
-            selectAll: patterns.selectAll.get(),
-            expandSelection: patterns.expandSelection.get(),
+            get end() {
+                return op.end.get();
+            },
+            get home() {
+                return op.home.get();
+            },
+            get jumpWordLeft() {
+                return op.jumpWordLeft.get();
+            },
+            get jumpWordRight() {
+                return op.jumpWordRight.get();
+            },
+            get selectAll() {
+                return op.selectAll.get();
+            },
+            get expandSelection() {
+                return op.expandSelection.get();
+            },
         };
+    }
+
+    if (patterns.jumpWordLeft.matches(event)) {
+        moveCursorHorizontal(
+            textField,
+            -1,
+            patterns.expandSelection.matchesModifier(event),
+            true
+        );
+        return true;
+    }
+    if (patterns.jumpWordRight.matches(event)) {
+        moveCursorHorizontal(
+            textField,
+            1,
+            patterns.expandSelection.matchesModifier(event),
+            true
+        );
+        return true;
+    }
 
     if (patterns.end.matches(event)) {
         jumpCursor(textField, {dx: 1}, patterns.expandSelection.matchesModifier(event));
