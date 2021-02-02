@@ -47,13 +47,14 @@ export const TextFieldView: LFC<ITextFieldViewProps> = ({
                 }}
                 height={iconSize}>
                 <SyntaxField
-                    width="100%"
                     field={field}
                     highlighter={highlighter}
                     setErrors={setErrors}
                     highlightErrors={highlightErrors}
                     paddingRight="medium"
+                    minWidth="50%"
                 />
+                <Box flexGrow={1} height="100%" css={{WebkitAppRegion: "drag"}} />
             </Box>
         </Box>
     );

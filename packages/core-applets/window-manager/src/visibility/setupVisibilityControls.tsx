@@ -1,7 +1,6 @@
 import {IActionBinding, LaunchMenu} from "@launchmenu/core";
-import {Tray, remote, nativeImage, BrowserWindow} from "electron";
+import {remote, BrowserWindow} from "electron";
 import {Observer} from "model-react";
-import Path from "path";
 import {settings} from "../settings";
 import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
 
@@ -46,23 +45,6 @@ export function setupVisibilityControls(
     });
     const hideWindow = () => LM.setWindowOpen(false);
     const showWindow = () => LM.setWindowOpen(true);
-
-    // Setup the tray icon
-    let tray: Tray | undefined;
-    try {
-        tray = new remote.Tray(nativeImage.createEmpty());
-        tray.setImage(
-            nativeImage.createFromPath(
-                Path.join(__dirname, "..", "..", "images", "trayIcon.png")
-            )
-        );
-
-        tray.setTitle("LaunchMenu");
-        tray.setToolTip("LaunchMenu");
-        tray.on("click", showWindow);
-    } catch (e) {
-        console.error(e);
-    }
 
     // Auto hide when losing focus
     const hideSettingObserver = new Observer(h =>
@@ -110,7 +92,6 @@ export function setupVisibilityControls(
     // Return a function to dispose all listeners
     return {
         destroy: () => {
-            tray?.destroy();
             window.removeListener("blur", hideWindow);
             shortcutSettingObserver.destroy();
             hideSettingObserver.destroy();

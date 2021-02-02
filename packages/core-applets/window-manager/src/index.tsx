@@ -6,6 +6,7 @@ import {setupSizeSettingSyncer} from "./size/setupSizeSettingSyncer";
 import {setupVisibilityControls} from "./visibility/setupVisibilityControls";
 import {returnFocus} from "./visibility/returnFocus";
 import {setupStartupController} from "./startup/setupStartupController";
+import {setupTrayMenu} from "./tray/setupTrayMenu";
 
 export const info = {
     name: "Window manager",
@@ -40,6 +41,9 @@ export default declare({
         // Setup the position setting
         const destroyPositionSyncer = setupPositionSettingSyncer(settingsManager, window);
 
+        // Setup the tray menu
+        const destroyTrayMenu = setupTrayMenu(LM);
+
         // Setup the size setting
         const destroySizeSyncer = setupSizeSettingSyncer(settingsManager, window);
         return {
@@ -49,6 +53,7 @@ export default declare({
                 destroyVisibilityControls();
                 destroyPositionSyncer();
                 destroySizeSyncer();
+                destroyTrayMenu();
             },
         };
     },

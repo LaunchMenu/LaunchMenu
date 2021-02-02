@@ -12,16 +12,6 @@ export const PositionInputContent: FC<{
 }> = ({browserWindowField, field}) => {
     const [h] = useDataHook();
     const browserWindow = browserWindowField.get(h);
-    useEffect(() => {
-        if (!browserWindow) return;
-        const positionListener = () => {
-            const [x, y] = browserWindow.getPosition();
-            field.set({x, y});
-        };
-        browserWindow.on("move", positionListener);
-        return () => void browserWindow.removeListener("move", positionListener);
-    }, [browserWindow]);
-
     const setPosition = (position: IPosition) => {
         if (!browserWindow) return;
         const displays = remote.screen.getAllDisplays().map(display => display.bounds);
