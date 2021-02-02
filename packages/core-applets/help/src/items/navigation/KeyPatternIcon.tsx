@@ -42,10 +42,7 @@ export const KeyPatternIcon: LFC<{patterns: KeyPattern | string | string[]}> = (
             <>
                 {uis.reduce((patterns, pattern) => {
                     const wrappedPattern = (
-                        <Box
-                            display="inline-block"
-                            background="bgTertiary"
-                            padding="extraSmall">
+                        <Box display="inline-block" background="bgTertiary">
                             {pattern}
                         </Box>
                     );

@@ -1,4 +1,4 @@
-import {baseSettings, Box, KeyPattern, LFC, useIOContext} from "@launchmenu/core";
+import {baseSettings, Box, LFC, useIOContext} from "@launchmenu/core";
 import {useDataHook} from "model-react";
 import React from "react";
 import {createHelpItem} from "../../createHelpItem";
@@ -47,10 +47,6 @@ export const NavigationItemContent: LFC = () => {
                     },
                 ]}
             />
-            {/* <KeyPatternDescription
-                patterns={["ctrl+a", "shift+d"]}
-                description="Do something cool"
-            /> */}
         </Box>
     );
 };

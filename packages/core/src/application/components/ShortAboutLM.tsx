@@ -6,6 +6,7 @@ import {Box} from "../../styling/box/Box";
 import {IBoxProps} from "../../styling/box/_types/IBoxProps";
 import {ThemeIcon} from "../../components/ThemeIcon";
 import {useLMSession} from "../hooks/useLMSession";
+import {menuNavigationModifier} from "../settings/baseSettings/createBaseSettingsFolder";
 
 /**
  * A component to show some general LM information
@@ -40,18 +41,19 @@ export const ShortAboutLM: LFC<IBoxProps> = props => {
                     <span> Enter a query to get started</span>
                 </Container>
                 <Container marginRight="medium">
-                    Use{" "}
+                    Navigate with (<Key>{menuNavigationModifier}</Key>){" + "}
                     <Key>
                         <ThemeIcon icon="arrowUp" />
                     </Key>{" "}
                     <Key>
                         <ThemeIcon icon="arrowDown" />
                     </Key>{" "}
-                    and{" "}
                     <Key>
-                        <ThemeIcon icon="return" />
+                        <ThemeIcon icon="arrowLeft" />
                     </Key>{" "}
-                    to navigate
+                    <Key>
+                        <ThemeIcon icon="arrowRight" />
+                    </Key>
                 </Container>
                 <Container cursor="pointer" onClick={showHelp}>
                     Type{" "}
@@ -61,11 +63,11 @@ export const ShortAboutLM: LFC<IBoxProps> = props => {
                     for more information
                 </Container>
             </Box>
-            <Box display="inline-flex" width="100%" marginTop="large">
+            <Box display="inline-flex" width="100%" marginTop="medium">
                 <Container
                     width="50%"
                     css={theme => ({marginRight: theme.spacing.medium / 2})}>
-                    Learn more at{" "}
+                    Learn more about LaunchMenu at{" "}
                     <a href="https://launchmenu.github.io/">launchmenu.github.io</a>
                 </Container>
                 <Container
@@ -85,7 +87,7 @@ const Container: FC<IBoxProps> = ({children, ...props}) => (
     <Box
         background="bgPrimary"
         elevation="small"
-        padding="medium"
+        padding="small"
         flex="1 1 auto"
         borderRadius="small"
         {...props}>

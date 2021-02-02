@@ -50,6 +50,10 @@ export const settings = createSettings({
                             name: "Toggle between sessions",
                             init: new KeyPattern("ctrl+r"),
                         }),
+                        goHome: createKeyPatternSetting({
+                            name: "Go home (clear session)",
+                            init: new KeyPattern("ctrl+h"),
+                        }),
                     },
                 }),
             },
@@ -136,7 +140,17 @@ export default declare({
             },
             globalContextMenuBindings: [
                 createGlobalContextBinding({
-                    priority: Priority.LOW,
+                    priority: [Priority.HIGH, 45],
+                    item: createStandardMenuItem({
+                        name: "Go home",
+                        icon: "home",
+                        onExecute: ({context}) => context.session?.goHome(),
+                        shortcut: context =>
+                            context.settings.get(settings).controls.goHome.get(),
+                    }),
+                }),
+                createGlobalContextBinding({
+                    priority: [Priority.LOW, 49], // Arbitrary suffix after priority to enforce consistent ordering
                     item: createContextFolderMenuItem({
                         name: "Switch session",
                         children: getSessionMenuItems,

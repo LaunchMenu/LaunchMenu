@@ -5,5 +5,6 @@ import {createGlobalContextFolderHandler, Priority} from "@launchmenu/core";
  */
 export const windowManagementFolderHandler = createGlobalContextFolderHandler({
     name: "Window management",
-    priority: Priority.HIGH,
+    itemData: {name: "Window management", icon: "window"},
+    priority: Priority.MEDIUM,
 });

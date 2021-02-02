@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-settings-manager",
-    "version": "0.0.5-alpha.15",
+    "version": "0.0.5-alpha.16",
     "description": "An applet to manage settings",
     "types": "build/index.d.ts",
     "files": [
@@ -48,7 +48,7 @@
         "ts-jest": "^26.1.0"
     },
     "dependencies": {
-        "@launchmenu/core": "^0.0.5-alpha.15"
+        "@launchmenu/core": "^0.0.5-alpha.16"
     },
     "gitHead": "022dbc089423d10ee0528697003769d2d3aeb7d4",
     "publishConfig": {

@@ -8,9 +8,14 @@ import {KeyPatternIcon} from "./KeyPatternIcon";
 export const KeyPatternDescription: LFC<{
     description: string;
     patterns: KeyPattern[] | KeyPattern;
-}> = ({patterns, description}) => (
-    <Box marginBottom="small" as="tr">
-        <td style={{minWidth: 90, maxWidth: 140}}>
+    first?: boolean;
+}> = ({patterns, description, first}) => (
+    <Box
+        marginY="small"
+        as="tr"
+        borderTop={first ? undefined : "normal"}
+        borderColor="bgTertiary">
+        <td style={{minWidth: 90, maxWidth: 160}}>
             {(patterns instanceof Array ? patterns : [patterns])
                 .map((pattern, i) => <KeyPatternIcon patterns={pattern} key={i} />)
                 .reduce(
@@ -29,13 +34,14 @@ export const KeyPatternDescription: LFC<{
 export const KeyPatternTable: LFC<{
     patterns: ({pattern: KeyPattern | KeyPattern[]; description: string} | null)[];
 }> = ({patterns}) => (
-    <table>
+    <table style={{borderCollapse: "collapse"}}>
         <tbody>
             {patterns.map((pattern, i) =>
                 pattern ? (
                     <KeyPatternDescription
                         patterns={pattern.pattern}
                         description={pattern.description}
+                        first={i == 0}
                         key={i}
                     />
                 ) : (

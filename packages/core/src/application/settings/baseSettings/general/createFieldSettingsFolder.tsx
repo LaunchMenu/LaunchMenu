@@ -40,7 +40,7 @@ export function createFieldSettingsFolder() {
             }),
             blinkDelay: createNumberSetting({
                 name: "Cursor blink delay",
-                init: 1e10,
+                init: 1000,
                 min: 0,
                 content: (
                     <>
