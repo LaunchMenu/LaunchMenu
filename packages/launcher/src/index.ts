@@ -106,13 +106,16 @@ async function initAppletsFile(applet: string[]): Promise<void> {
 
     const file = {} as Record<string, string>;
     applet.forEach(module => {
-        const match = module.match(/\/?([^\/@]*)(\@[^\/]*)$/);
+        const match = module.match(/(([^\/@\s]*)\/)?([^\/@\s]+)(\@[^\/\s]*)?$/);
         if (!match) {
             console.error(`${module} doesn't fit regex pattern`);
             return;
         }
+        const namespace = match[2];
+        const name = match[3];
+        const path = namespace ? `${namespace}@${name}` : name;
         try {
-            file[match[1]] = getInstalledPath(getPackageNameWithoutVersion(module));
+            file[path] = getInstalledPath(getPackageNameWithoutVersion(module));
         } catch (e) {
             console.error(e);
         }

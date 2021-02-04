@@ -14,6 +14,7 @@ export const EditorField: LFC<IEditorFieldProps> = ({
     options,
     onChange,
     css,
+    contentMode = true,
     ...rest
 }) => {
     const [h] = useDataHook();
@@ -25,15 +26,32 @@ export const EditorField: LFC<IEditorFieldProps> = ({
             options={{
                 readOnly: true,
                 unfocusable: true,
-                maxLines: Infinity,
-                fontSize: 24,
+                maxLines: contentMode ? undefined : Infinity,
+                fontSize: contentMode ? 14 : 24,
                 followCursor: true,
                 highlightActiveLine: false,
                 showPrintMargin: false,
                 ...options,
             }}
             value={value}
-            css={mergeStyles({".ace_hidden-cursors .ace_cursor": {opacity: 1}}, css)}
+            css={mergeStyles(
+                theme => ({
+                    ".ace_hidden-cursors .ace_cursor": {opacity: 1},
+                    ...(contentMode && {
+                        height: "100%",
+                        color: theme.color.fontBgSecondary,
+                        background: theme.color.bgSecondary,
+                        "& .ace_gutter": {
+                            color: theme.color.fontBgTertiary,
+                            background: theme.color.bgTertiary,
+                            ".ace_gutter-active-line": {
+                                background: theme.color.bgTertiary,
+                            },
+                        },
+                    }),
+                }),
+                css
+            )}
             aceRef={ref}
             onSelectionChange={setSelection}
             selection={selection}

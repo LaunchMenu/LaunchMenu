@@ -52,6 +52,7 @@
         "react": "^17.0.0",
         "react-dom": "^17.0.0",
         "react-icons": "^3.10.0",
+        "react-resize-detector": "^6.4.0-rc.0",
         "regexp-match-indices": "^1.0.2",
         "uuid": "^8.2.0"
     },
