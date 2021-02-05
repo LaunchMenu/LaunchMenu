@@ -38,14 +38,14 @@ export default declare({
             LM.isInDevMode(h)
         );
 
-        // Setup the position setting
-        const destroyPositionSyncer = setupPositionSettingSyncer(settingsManager, window);
-
         // Setup the tray menu
         const destroyTrayMenu = setupTrayMenu(LM);
 
         // Setup the size setting
         const destroySizeSyncer = setupSizeSettingSyncer(settingsManager, window);
+
+        // Setup the position setting
+        const destroyPositionSyncer = setupPositionSettingSyncer(settingsManager, window);
         return {
             globalContextMenuBindings: exitBindings,
             onDispose: () => {

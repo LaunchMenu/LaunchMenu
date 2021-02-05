@@ -23,7 +23,7 @@ export function setupPositionSettingSyncer(
             const [pX, pY] = window.getPosition();
             if (pX != x || pY != y) window.setPosition(x, y);
         }, 100) as any;
-    });
+    }, true);
 
     // Sync the position to the setting
     const positionListener = () => {

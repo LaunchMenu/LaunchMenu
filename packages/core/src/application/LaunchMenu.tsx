@@ -24,7 +24,8 @@ import {wait} from "../_tests/wait.helper";
 export class LaunchMenu {
     protected devMode = new Field(false);
 
-    protected settingsDirectory = Path.join(process.cwd(), "data", "settings");
+    protected dataDirectory = Path.join(process.cwd(), "data");
+    protected settingsDirectory = Path.join(this.dataDirectory, "settings");
 
     public view: JSX.Element;
 
@@ -154,7 +155,8 @@ export class LaunchMenu {
     protected setupSettings(): void {
         this.settingsManager = new SettingsManager(
             h => this.appletManager.getAppletsData(h),
-            this.settingsDirectory
+            this.settingsDirectory,
+            this.dataDirectory
         );
 
         // Add the base settings

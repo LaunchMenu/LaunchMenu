@@ -9,6 +9,7 @@ import {
     TextField,
     createTextFieldKeyHandler,
     EditorField,
+    createFileSetting,
 } from "@launchmenu/core";
 import {BiNote} from "react-icons/bi";
 import {notePatternMatcher} from "./notePatternMatcher";
@@ -26,7 +27,13 @@ export const settings = createSettings({
     settings: () =>
         createSettingsFolder({
             ...info,
-            children: {},
+            children: {
+                notesDir: createFileSetting({
+                    name: "Notes directory",
+                    init: "notes",
+                    folder: true,
+                }),
+            },
         }),
 });
 
@@ -56,6 +63,7 @@ export default declare({
         //         {path: "Notes"}
         //     )
         // );
+        console.log(context.settings.get(settings).notesDir.get());
         context.open(
             new UILayer(
                 (context, close) => ({

@@ -278,7 +278,7 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
  * @param data The data to check
  * @returns Whether it's a serialize field
  */
-function isSerializeField(
+export function isSerializeField(
     data: IFieldsTree | IField<IJSON> | ISerializeField<IJSON>
 ): data is ISerializeField<IJSON> {
     return "getSerialized" in data && data.getSerialized instanceof Function;
@@ -289,7 +289,7 @@ function isSerializeField(
  * @param data The data to check
  * @returns Whether it's a field
  */
-function isField(
+export function isField(
     data: IFieldsTree | IField<IJSON> | ISerializeField<IJSON>
 ): data is IField<IJSON> {
     return "get" in data && data.get instanceof Function;
