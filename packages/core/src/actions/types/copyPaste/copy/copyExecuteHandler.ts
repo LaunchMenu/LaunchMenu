@@ -10,7 +10,6 @@ export const copyExecuteHandler = createContextAction({
         icon: "copy",
         name: "Copy",
     },
-    override: executeAction,
     parents: [executeAction],
     core: (executables: IExecutable[]) => {
         const executeBindings = executables.map(executable =>

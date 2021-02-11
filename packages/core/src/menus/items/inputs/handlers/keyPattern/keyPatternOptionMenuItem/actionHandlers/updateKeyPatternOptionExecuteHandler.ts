@@ -7,17 +7,17 @@ import {TextField} from "../../../../../../../textFields/TextField";
 import {SetFieldCommand} from "../../../../../../../undoRedo/commands/SetFieldCommand";
 import {UILayer} from "../../../../../../../uiLayers/standardUILayer/UILayer";
 import {createAction} from "../../../../../../../actions/createAction";
-import {sequentialExecuteHandler} from "../../../../../../../actions/types/execute/sequentialExecuteHandler";
+import {editExecuteHandler} from "../../../../../../../actions/types/execute/types/editExecuteHandler";
 
 /**
  * A execute handler that can be used to set the key pattern of a field
  */
 export const updateKeyPatternOptionExecuteHandler = createAction({
     name: "Update key pattern",
-    parents: [sequentialExecuteHandler],
+    parents: [editExecuteHandler],
     core: (data: IUpdateKeyPatternOptionExecuteData[]) => ({
         children: data.map(({option, patternField, undoable, insertIfDeleted}) =>
-            sequentialExecuteHandler.createBinding(
+            editExecuteHandler.createBinding(
                 ({context}) =>
                     new Promise<ICommand | void>(res => {
                         const textField = new TextField();

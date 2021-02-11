@@ -6,25 +6,54 @@ import {isItemSelectable} from "../../menus/items/isItemSelectable";
 import {useIOContext} from "../../context/react/useIOContext";
 import {KeyEvent} from "../../keyHandler/KeyEvent";
 import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
-import {IItemExecuteCallback} from "../../actions/types/execute/_types/IItemExecuteCallback";
 import {executeAction} from "../../actions/types/execute/executeAction";
 import {getConnectionGroupAction} from "../../actions/types/connectionGroup/getConnectionGroupAction";
 import {BackgroundColorProvider} from "../../styling/backgroundColorContext";
 import {useDataHook} from "model-react";
+import {IMenuItemFrameProps} from "./_types/IMenuItemFrameProps";
+import {mergeStyles} from "../../utils/mergeStyles";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution
  */
-export const MenuItemFrame: FC<{
-    isSelected: boolean;
-    isCursor: boolean;
-    onExecute?: IItemExecuteCallback;
-    menu?: IMenu;
-    item?: IMenuItem;
-    /** Whether to make the background transparent */
-    transparent?: boolean;
-}> = ({isCursor, isSelected, menu, onExecute, item, children, transparent}) => {
+export const MenuItemFrame: FC<IMenuItemFrameProps> = ({
+    isCursor,
+    isSelected,
+    menu,
+    onExecute,
+    item,
+    children,
+    transparent,
+    outerProps,
+    innerProps,
+    colors,
+}) => {
     const ioContext = useIOContext();
+
+    const onContextMenu = useCallback(() => {
+        if (!menu || !item) return;
+        if (isItemSelectable(item)) {
+            menu.setCursor(item);
+
+            // Use the context menu keyboard shortcut to open the menu
+            if (ioContext) {
+                emitContextEvent(
+                    ioContext,
+                    new KeyEvent({
+                        key: {id: "tab", name: "tab"},
+                        type: "down",
+                    })
+                );
+                emitContextEvent(
+                    ioContext,
+                    new KeyEvent({
+                        key: {id: "tab", name: "tab"},
+                        type: "up",
+                    })
+                );
+            }
+        }
+    }, [menu, item]);
 
     const {connectBgPrevious, connectBgNext} = transparent
         ? ({} as IConnections)
@@ -44,12 +73,15 @@ export const MenuItemFrame: FC<{
             overflow="hidden"
             elevation={transparent ? undefined : "small"}
             zIndex={1}
+            // Possible ui customization
+            {...outerProps}
+            css={mergeStyles(colors?.selection, outerProps?.css)}
             position="relative">
-            <BackgroundColorProvider color={mainBgColor}>
+            <BackgroundColorProvider color={colors?.container?.background ?? mainBgColor}>
                 <Box
                     background={mainBgColor}
                     marginLeft="medium"
-                    cursor="pointer"
+                    cursor={transparent ? "default" : "pointer"}
                     onClick={useCallback(async () => {
                         if (!menu || !item) return;
                         if (menu.getCursor() == item) {
@@ -57,35 +89,22 @@ export const MenuItemFrame: FC<{
                         } else if (isItemSelectable(item)) menu.setCursor(item);
                     }, [menu, item])}
                     // Open the context menu on right click
-                    onContextMenu={() => {
-                        if (!menu || !item) return;
-                        if (isItemSelectable(item)) {
-                            menu.setCursor(item);
-
-                            // Use the context menu keyboard shortcut to open the menu
-                            if (ioContext) {
-                                emitContextEvent(
-                                    ioContext,
-                                    new KeyEvent({
-                                        key: {id: "tab", name: "tab"},
-                                        type: "down",
-                                    })
-                                );
-                                emitContextEvent(
-                                    ioContext,
-                                    new KeyEvent({
-                                        key: {id: "tab", name: "tab"},
-                                        type: "up",
-                                    })
-                                );
-                            }
-                        }
-                    }}>
+                    onContextMenu={onContextMenu}
+                    // Possible ui customization
+                    {...innerProps}
+                    css={mergeStyles(colors?.container, outerProps?.css)}>
                     {connectBgPrevious && (
                         <Box
                             marginLeft="medium"
                             marginRight="medium"
                             borderTopColor={isCursor ? "primary" : "bgSecondary"}
+                            css={
+                                isCursor
+                                    ? {borderTopColor: "transparent"}
+                                    : colors?.border
+                                    ? {borderTopColor: colors.border}
+                                    : undefined
+                            }
                             borderTopStyle="solid"
                             borderWidth={1}
                         />

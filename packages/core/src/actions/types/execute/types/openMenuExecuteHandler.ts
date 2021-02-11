@@ -47,7 +47,6 @@ export const openMenuExecuteHandler = createContextAction({
         priority: executeAction.priority,
         icon: "open",
     },
-    override: executeAction,
     parents: [sequentialExecuteHandler],
     core: (data: IOpenMenuExecuteData[]) => {
         const childrenGetter = (h?: IDataHook) =>

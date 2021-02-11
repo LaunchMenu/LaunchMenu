@@ -27,7 +27,7 @@ export function createFileMenuItem({
     resetUndoable = undoable,
     ...rest
 }: IFileMenuItemData): IFieldMenuItem<string> & ISettingConfigurer {
-    const initPath = Path.join(remote.app.getPath("documents"), init);
+    let initPath = Path.join(remote.app.getPath("documents"), init);
     const field = new Field(initPath);
 
     // Listen for the field value being changed
@@ -39,6 +39,7 @@ export function createFileMenuItem({
 
     return {
         ...createFieldMenuItem({
+            init: () => initPath,
             field,
             data: field => ({
                 name,
@@ -64,8 +65,10 @@ export function createFileMenuItem({
         // Allow configuration of the absolute base path
         configure: (data: {[fileInputBasePathConfigurationSymbol]?: string}) => {
             const basePath = data[fileInputBasePathConfigurationSymbol];
-            if (!changed && basePath && !Path.isAbsolute(init))
-                field.set(Path.join(basePath, init));
+            if (!changed && basePath && !Path.isAbsolute(init)) {
+                initPath = Path.join(basePath, init);
+                field.set(initPath);
+            }
         },
     };
 }

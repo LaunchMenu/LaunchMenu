@@ -132,6 +132,7 @@ export class UILayer extends UnifiedAbstractUILayer {
             empty = false;
             res = {
                 menuView: data.menuView,
+                menuHandler: data.menuHandler,
                 ...res,
             };
         }
@@ -157,6 +158,7 @@ export class UILayer extends UnifiedAbstractUILayer {
             empty = false;
             res = {
                 fieldView: data.fieldView,
+                fieldHandler: data.fieldHandler,
                 ...res,
             };
         }
@@ -176,6 +178,7 @@ export class UILayer extends UnifiedAbstractUILayer {
             empty = false;
             res = {
                 contentView: data.contentView,
+                contentHandler: data.contentHandler,
                 ...res,
             };
         }

@@ -51,7 +51,7 @@ export default declare({
     info,
     settings,
     coreCategory: CoreAppletType.SETTINGS,
-    withLM: LM => {
+    init: ({LM}) => {
         // Setup an auto save handler
         const manager = LM.getSettingsManager();
         const disposeAutoSave = setupAutoSaveHandler(manager);

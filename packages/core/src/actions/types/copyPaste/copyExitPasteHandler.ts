@@ -22,7 +22,6 @@ import {createContextAction} from "../../contextMenuAction/createContextAction";
  */
 export const copyExitPasteHandler = createContextAction({
     name: "Copy exit paste",
-    override: executeAction,
     contextItem: {
         priority: executeAction.priority,
         icon: "copy",

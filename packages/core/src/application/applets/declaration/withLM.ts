@@ -1,3 +1,4 @@
+import {DataCacher} from "model-react";
 import {LaunchMenu} from "../../LaunchMenu";
 import {IApplet} from "../_types/IApplet";
 import {TWithLM} from "./_types/TWithLM";
@@ -9,8 +10,14 @@ import {TWithLM} from "./_types/TWithLM";
  * @returns The applet when a LM instance is provided
  */
 export function withLM<E extends IApplet>(applet: E, LM: LaunchMenu): TWithLM<E> {
-    if (applet.withLM) {
-        const execData = applet.withLM(LM);
+    if (applet.init) {
+        const settingsContext = new DataCacher(h =>
+            LM.getSettingsManager().getSettingsContext(h)
+        );
+        const execData = applet.init({
+            getSettings: h => settingsContext.get(h),
+            LM: LM,
+        });
         if (execData instanceof Function) {
             return {
                 ...applet,

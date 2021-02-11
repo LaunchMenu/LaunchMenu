@@ -16,6 +16,8 @@ import {ISavable} from "../_types/ISavable";
 import {IFieldFileChangeListener} from "./_types/IFieldsFileChangeListener";
 import {IField} from "../../../../_types/IField";
 import {ISerializeField} from "./_types/ISerializedField";
+import {promisify} from "util";
+import {getLCS} from "../../../../utils/getLCS";
 
 /**
  * A file that stores the value of the fields
@@ -75,25 +77,18 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
      * @throws An exception if the file couldn't be written to
      */
     public async save(): Promise<void> {
-        return new Promise(async (res, rej) => {
-            try {
-                await mkdirp(Path.dirname(this.filePath));
-                FS.writeFile(
-                    this.filePath,
-                    JSON.stringify(this.getData(), null, 4),
-                    "utf8",
-                    err => {
-                        if (err) rej(err);
-                        else {
-                            if (this.dirty.get()) this.dirty.set(false);
-                            res();
-                        }
-                    }
-                );
-            } catch (e) {
-                rej(e);
-            }
-        });
+        await mkdirp(Path.dirname(this.filePath));
+
+        // Check if the data changed
+        if (FS.existsSync(this.filePath)) {
+            const currentData = await promisify(FS.readFile)(this.filePath, "utf8");
+            if (!this.isDataDifferent(currentData)) return;
+        }
+
+        // If the data changed, write the new data
+        const data = JSON.stringify(this.getData(), null, 4);
+        await promisify(FS.writeFile)(this.filePath, data, "utf8");
+        if (this.dirty.get()) this.dirty.set(false);
     }
 
     /**
@@ -124,7 +119,8 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
                     else if (data) {
                         this.loadTime = Date.now();
                         try {
-                            this.setData(JSON.parse(data));
+                            if (this.isDataDifferent(data))
+                                this.setData(JSON.parse(data));
                             if (this.dirty.get()) this.dirty.set(false);
                             res();
                         } catch (e) {
@@ -134,6 +130,19 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
                 });
             })
         );
+    }
+
+    /**
+     * Checks whether the specified data is different than the currently loaded data
+     * @param data The data to check
+     * @returns Whether the data is different
+     */
+    protected isDataDifferent(data: string): boolean {
+        try {
+            return JSON.stringify(JSON.parse(data)) != JSON.stringify(this.getData());
+        } catch (e) {
+            return true;
+        }
     }
 
     /**

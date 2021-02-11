@@ -36,7 +36,8 @@
     "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/applets/notes#readme",
     "dependencies": {
         "@launchmenu/core": "^0.0.5-alpha.16",
-        "react-icons": "^3.10.0"
+        "react-icons": "^3.10.0",
+        "uuid": "^8.2.0"
     },
     "peerDependencies": {
         "model-react": "^4.0.1",
@@ -49,6 +50,7 @@
         "@types/react": "^17.0.0",
         "@types/sanitize-html": "^1.27.1",
         "jest": "^26.0.1",
+        "color": "^3.1.2",
         "model-react": "^4.0.1",
         "react": "^17.0.0",
         "ts-jest": "^26.1.0"

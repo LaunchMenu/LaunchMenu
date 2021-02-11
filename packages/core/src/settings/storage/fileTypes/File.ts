@@ -10,6 +10,7 @@ import FS from "fs";
 import Path from "path";
 import mkdirp from "mkdirp";
 import {ISavable} from "./_types/ISavable";
+import {promisify} from "util";
 
 /**
  * A file class for simple data management
@@ -70,8 +71,6 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
     public async load(allowFileNotFound: boolean = true): Promise<T> {
         // Don't reload the data if it's already loading, instead return the same result
         if (isLoading(h => this.loading.get(h)) && this.loadPromise) {
-            const errors = getExceptions(h => this.loading.get(h));
-            if (errors.length > 0) throw errors[0];
             return this.loadPromise;
         }
 
@@ -86,9 +85,7 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
                     if (err) rej(err);
                     else if (data) {
                         try {
-                            // Calling set automatically resets the loading state
-                            if (isLoading(h => this.loading.get(h)))
-                                this.set(this.decode(data));
+                            if (this.isDataDifferent(data)) this.set(this.decode(data));
                             res(this.get());
                         } catch (e) {
                             rej(e);
@@ -111,22 +108,36 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
      * @throws An exception if the file couldn't be written to
      */
     public async save(): Promise<void> {
-        return new Promise(async (res, rej) => {
-            try {
-                await mkdirp(Path.dirname(this.filePath));
-                FS.writeFile(
-                    this.filePath,
-                    this.encode(this.get()),
-                    this.encoding,
-                    err => {
-                        if (err) rej(err);
-                        else res();
-                    }
-                );
-            } catch (e) {
-                rej(e);
-            }
-        });
+        await mkdirp(Path.dirname(this.filePath));
+
+        // Check if the data changed
+        if (FS.existsSync(this.filePath)) {
+            const currentData = await promisify(FS.readFile)(
+                this.filePath,
+                this.encoding
+            );
+            if (!this.isDataDifferent(currentData)) return;
+        }
+
+        // IF the data changed, write the new data
+        await promisify(FS.writeFile)(
+            this.filePath,
+            this.encode(this.get()),
+            this.encoding
+        );
+    }
+
+    /**
+     * Checks whether the specified data is different than the currently loaded data
+     * @param data The data to check
+     * @returns Whether the data is different
+     */
+    protected isDataDifferent(data: string): boolean {
+        try {
+            return this.encode(this.get()) != data;
+        } catch (e) {
+            return true;
+        }
     }
 
     /**

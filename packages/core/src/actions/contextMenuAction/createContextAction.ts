@@ -81,7 +81,7 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
 
     // Get the action to override
     let override = inpOverride == null ? undefined : inpOverride;
-    if (inpOverride == null && parents && parents.length == 1) {
+    if (inpOverride === undefined && parents && parents.length == 1) {
         let ancestorAction = parents[0] as IAction;
         while (ancestorAction.parents && ancestorAction.parents.length == 1) {
             ancestorAction = ancestorAction.parents[0];

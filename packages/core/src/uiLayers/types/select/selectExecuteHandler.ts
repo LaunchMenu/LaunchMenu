@@ -1,5 +1,5 @@
 import {createAction, createStandardBinding} from "../../../actions/createAction";
-import {sequentialExecuteHandler} from "../../../actions/types/execute/sequentialExecuteHandler";
+import {editExecuteHandler} from "../../../actions/types/execute/types/editExecuteHandler";
 import {IAction} from "../../../actions/_types/IAction";
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
@@ -13,10 +13,10 @@ import {ISelectExecuteData} from "./_types/ISelectExecuteData";
  */
 export const selectExecuteHandler = createAction({
     name: "select execute handler",
-    parents: [sequentialExecuteHandler],
+    parents: [editExecuteHandler],
     core: (data: ISelectExecuteData<unknown>[]) => ({
         children: data.map(({field, undoable, ...config}) =>
-            sequentialExecuteHandler.createBinding(
+            editExecuteHandler.createBinding(
                 ({context}) =>
                     new Promise<ICommand | void>(res => {
                         let cmd: ICommand | undefined;
@@ -47,6 +47,6 @@ export const selectExecuteHandler = createAction({
          */
         <T>(
             config: ISelectExecuteData<T> | IBindingCreatorConfig<ISelectExecuteData<T>>
-        ): IActionBinding<IAction<ISelectExecuteData<unknown>, never>>;
+        ): IActionBinding<IAction<ISelectExecuteData<unknown>, never, typeof editExecuteHandler>>;
     },
 });

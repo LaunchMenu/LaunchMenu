@@ -1,8 +1,8 @@
 import {remote} from "electron";
 import {createAction} from "../../../../../actions/createAction";
-import {sequentialExecuteHandler} from "../../../../../actions/types/execute/sequentialExecuteHandler";
 import {IFileInputExecuteData} from "./_types/IFileInputExecuteData";
 import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand";
+import {editExecuteHandler} from "../../../../../actions/types/execute/types/editExecuteHandler";
 
 /**
  * A simple execute handler for updating file fields
@@ -10,10 +10,10 @@ import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand"
  */
 export const fileInputExecuteHandler = createAction({
     name: "file input",
-    parents: [sequentialExecuteHandler],
+    parents: [editExecuteHandler],
     core: (data: IFileInputExecuteData[]) => ({
         children: data.map(({field, folder, undoable}) =>
-            sequentialExecuteHandler.createBinding(async ({context}) => {
+            editExecuteHandler.createBinding(async ({context}) => {
                 const {LM} = context.session || {};
 
                 // Counteract keys not being released when losing focus, TODO: fix having to do this

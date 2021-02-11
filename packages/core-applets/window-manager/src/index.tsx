@@ -19,7 +19,7 @@ export default declare({
     info,
     settings,
     coreCategory: CoreAppletType.WINDOW,
-    withLM: LM => {
+    init: ({LM}) => {
         const window = remote.getCurrentWindow();
         settingsBrowserWindow.set(window);
         const settingsManager = LM.getSettingsManager();
