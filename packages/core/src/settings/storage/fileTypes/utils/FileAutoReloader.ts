@@ -36,8 +36,17 @@ export class FileAutoReloader {
 
         this.timeoutID = setTimeout(() => {
             this.timeoutID = null;
-            this.file.load();
+            this.load();
         }, this.delay);
+    }
+
+    /**
+     * Loads the file from disk, only if the current data differs than that on disk
+     */
+    protected async load(): Promise<void> {
+        if (this.file.getRaw() != (await this.file.readRaw())) {
+            this.file.load();
+        }
     }
 
     /**
@@ -48,7 +57,7 @@ export class FileAutoReloader {
         if (this.timeoutID) {
             clearTimeout(this.timeoutID);
             this.timeoutID = null;
-            if (load) this.file.load();
+            if (load) this.load();
         }
 
         return this.watcher.close();

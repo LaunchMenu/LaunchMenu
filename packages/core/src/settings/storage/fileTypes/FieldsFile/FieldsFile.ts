@@ -1,4 +1,5 @@
 import {
+    DataCacher,
     ExecutionState,
     Field,
     getExceptions,
@@ -12,17 +13,17 @@ import {IJSON} from "../../../../_types/IJSON";
 import {ExtendedObject} from "../../../../utils/ExtendedObject";
 import mkdirp from "mkdirp";
 import Path from "path";
-import {ISavable} from "../_types/ISavable";
 import {IFieldFileChangeListener} from "./_types/IFieldsFileChangeListener";
 import {IField} from "../../../../_types/IField";
 import {ISerializeField} from "./_types/ISerializedField";
 import {promisify} from "util";
 import {getLCS} from "../../../../utils/getLCS";
+import {IFile} from "../_types/IFile";
 
 /**
  * A file that stores the value of the fields
  */
-export class FieldsFile<F extends IFieldsTree> implements ISavable {
+export class FieldsFile<F extends IFieldsTree> implements IFile {
     protected filePath: string;
 
     protected loading = new ExecutionState();
@@ -48,6 +49,7 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
         this.filePath = data.path;
         this.fields = data.fields;
         this.setupFieldListeners(this.fields);
+        this.setupEncodingListener();
     }
 
     /**
@@ -73,22 +75,16 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
 
     // Disk interaction
     /**
-     * Saves the data to file
-     * @throws An exception if the file couldn't be written to
+     * Reads the raw contents on disk
+     * @returns The contents on disk
      */
-    public async save(): Promise<void> {
-        await mkdirp(Path.dirname(this.filePath));
-
-        // Check if the data changed
-        if (FS.existsSync(this.filePath)) {
-            const currentData = await promisify(FS.readFile)(this.filePath, "utf8");
-            if (!this.isDataDifferent(currentData)) return;
+    public async readRaw(): Promise<string | undefined> {
+        try {
+            const data = await promisify(FS.readFile)(this.filePath, "utf8");
+            return data;
+        } catch (e) {
+            return undefined;
         }
-
-        // If the data changed, write the new data
-        const data = JSON.stringify(this.getData(), null, 4);
-        await promisify(FS.writeFile)(this.filePath, data, "utf8");
-        if (this.dirty.get()) this.dirty.set(false);
     }
 
     /**
@@ -104,34 +100,48 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
         }
 
         // If the data isn't loading currently, reload it
-        return this.loading.add(
-            new Promise((res, rej) => {
-                if (!FS.existsSync(this.filePath)) {
-                    const err = Error(`File "${this.filePath}" doesn't exist`);
-                    if (!allowFileNotFound) rej(err);
-                    else {
-                        console.warn(err);
-                        res();
-                    }
+        return this.loading.add(async () => {
+            if (!FS.existsSync(this.filePath)) {
+                const err = new Error(`File "${this.filePath}" could not be found`);
+                if (!allowFileNotFound) throw err;
+
+                console.warn(err);
+                return;
+            }
+
+            const data = await this.readRaw();
+            if (data) {
+                this.loadTime = Date.now();
+                try {
+                    if (this.isDataDifferent(data)) this.setData(JSON.parse(data));
+                    if (this.dirty.get()) this.dirty.set(false);
+                } catch (e) {
+                    console.error(e);
                 }
-                FS.readFile(this.filePath, "utf8", (err, data) => {
-                    if (err) rej(err);
-                    else if (data) {
-                        this.loadTime = Date.now();
-                        try {
-                            if (this.isDataDifferent(data))
-                                this.setData(JSON.parse(data));
-                            if (this.dirty.get()) this.dirty.set(false);
-                            res();
-                        } catch (e) {
-                            rej(e);
-                        }
-                    } else res();
-                });
-            })
-        );
+            }
+        });
     }
 
+    /**
+     * Saves the data to file
+     * @throws An exception if the file couldn't be written to
+     */
+    public async save(): Promise<void> {
+        await mkdirp(Path.dirname(this.filePath));
+
+        // Check if the data changed
+        if (FS.existsSync(this.filePath)) {
+            const currentData = await promisify(FS.readFile)(this.filePath, "utf8");
+            if (!this.isDataDifferent(currentData)) return;
+        }
+
+        // If the data changed, write the new data
+        const data = this.getRaw();
+        await promisify(FS.writeFile)(this.filePath, data, "utf8");
+        if (this.dirty.get()) this.dirty.set(false);
+    }
+
+    // Data encoding
     /**
      * Checks whether the specified data is different than the currently loaded data
      * @param data The data to check
@@ -206,6 +216,33 @@ export class FieldsFile<F extends IFieldsTree> implements ISavable {
                 this.decode(val, field as IFieldsTree);
             }
         });
+    }
+
+    /** Keeps track of the version of the encoded data, in order to invalidate the cache */
+    protected encodedValueVersion = new Field(0);
+
+    /** Caches the encoded version of the data */
+    protected encodedValue = new DataCacher(h => {
+        this.encodedValueVersion.get(h);
+        return JSON.stringify(this.getData(), null, 4);
+    });
+
+    /**
+     * Sets up a base listener that can be used to invalidate the cache
+     */
+    protected setupEncodingListener(): void {
+        this.addChangeListener(() =>
+            this.encodedValueVersion.set(this.encodedValueVersion.get() + 1)
+        );
+    }
+
+    /**
+     * Retrieves the data that's savable to disk
+     * @param hook The hook to subscribe to changes
+     * @returns The data that could be written to disk
+     */
+    public getRaw(hook?: IDataHook): any {
+        return this.encodedValue.get(hook);
     }
 
     // Change listener setup

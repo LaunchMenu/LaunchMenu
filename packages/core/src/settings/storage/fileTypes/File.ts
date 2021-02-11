@@ -5,17 +5,18 @@ import {
     IDataHook,
     isDataLoadRequest,
     ExecutionState,
+    DataCacher,
 } from "model-react";
 import FS from "fs";
 import Path from "path";
 import mkdirp from "mkdirp";
-import {ISavable} from "./_types/ISavable";
 import {promisify} from "util";
+import {IFile} from "./_types/IFile";
 
 /**
  * A file class for simple data management
  */
-export class File<T = string, I extends T = T> extends Field<T> implements ISavable {
+export class File<T = string, I extends T = T> extends Field<T> implements IFile {
     protected filePath: string;
     protected loading = new ExecutionState();
     protected loadPromise: Promise<T> | null = null;
@@ -64,6 +65,19 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
 
     // Disk interaction
     /**
+     * Reads the raw contents on disk
+     * @returns The contents on disk
+     */
+    public async readRaw(): Promise<any> {
+        try {
+            const data = await promisify(FS.readFile)(this.filePath, this.encoding);
+            return data;
+        } catch (e) {
+            return undefined;
+        }
+    }
+
+    /**
      * Loads the data from the file
      * @param allowFileNotFound Whether to allow the file not existing without throwing an error
      * @throws An exception if the file couldn't be read
@@ -76,30 +90,23 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
 
         // If the data isn't loading currently, reload it
         this.loadTime = Date.now();
-        this.loadPromise = new Promise(async (res, rej) => {
-            try {
-                if (!FS.existsSync(this.filePath)) {
-                    return res(this.get());
-                }
-                FS.readFile(this.filePath, this.encoding, (err, data) => {
-                    if (err) rej(err);
-                    else if (data) {
-                        try {
-                            if (this.isDataDifferent(data)) this.set(this.decode(data));
-                            res(this.get());
-                        } catch (e) {
-                            rej(e);
-                        }
-                    } else res(this.get());
-                });
-            } catch (e) {
-                if (!allowFileNotFound) rej(e);
-                else {
-                    console.error(e);
-                    res(this.get());
-                }
+        this.loadPromise = (async () => {
+            if (!FS.existsSync(this.filePath)) {
+                const err = new Error(`File "${this.filePath}" could not be found`);
+                if (!allowFileNotFound) throw err;
+
+                console.warn(err);
+                return this.get();
             }
-        });
+
+            try {
+                const data = await this.readRaw();
+                if (data && this.isDataDifferent(data)) this.set(this.decode(data));
+            } catch (e) {
+                console.error(e);
+            }
+            return this.get();
+        })();
         return this.loading.add(this.loadPromise);
     }
 
@@ -120,11 +127,7 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
         }
 
         // IF the data changed, write the new data
-        await promisify(FS.writeFile)(
-            this.filePath,
-            this.encode(this.get()),
-            this.encoding
-        );
+        await promisify(FS.writeFile)(this.filePath, this.getRaw(), this.encoding);
     }
 
     /**
@@ -134,7 +137,7 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
      */
     protected isDataDifferent(data: string): boolean {
         try {
-            return this.encode(this.get()) != data;
+            return this.getRaw() != data;
         } catch (e) {
             return true;
         }
@@ -158,6 +161,18 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
      */
     protected decode(data: any): T {
         return data as T;
+    }
+
+    /** Caches the encoded version of the data */
+    protected encodedValue = new DataCacher(h => this.encode(this.get(h)));
+
+    /**
+     * Retrieves the data that's savable to disk
+     * @param hook The hook to subscribe to changes
+     * @returns The data that could be written to disk
+     */
+    public getRaw(hook?: IDataHook): any {
+        return this.encodedValue.get(hook);
     }
 
     // Data interaction

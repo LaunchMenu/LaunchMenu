@@ -9,7 +9,6 @@ export class FileAutoSaver {
     protected timeoutID: NodeJS.Timeout | null = null;
     protected delay: number;
     protected observer: Observer<unknown> | null = null;
-    protected listener: () => void;
 
     /**
      * Creates a new file autosaver
@@ -19,39 +18,43 @@ export class FileAutoSaver {
     public constructor(file: IFile, timeout: number = 1000) {
         this.file = file;
         this.delay = timeout;
-
-        this.listener = () => this.scheduleSave();
-        if (file.get) {
-            this.observer = new Observer(h => file.get?.(h)).listen(this.listener);
-        } else if (file.addChangeListener) {
-            file.addChangeListener(this.listener);
-        }
+        this.observer = new Observer(h => file.getRaw(h)).listen(() =>
+            this.scheduleSave()
+        );
     }
 
     /**
      * Schedules a save for the target file
      */
-    public scheduleSave() {
+    public scheduleSave(): void {
         if (this.timeoutID) return;
 
-        this.timeoutID = setTimeout(() => {
+        this.timeoutID = setTimeout(async () => {
             this.timeoutID = null;
-            this.file.save();
+            this.save();
         }, this.delay);
+    }
+
+    /**
+     * Saves the file to disk, only if the data has been updated
+     */
+    protected async save(): Promise<void> {
+        if (this.file.getRaw() != (await this.file.readRaw())) {
+            this.file.save();
+        }
     }
 
     /**
      * Destroys the file auto saver, stopping the autosaving process
      * @param save Whether to force save now if a save was scheduled, or whether to skip the save
      */
-    public destroy(save: boolean = true) {
+    public destroy(save: boolean = true): void {
         if (this.timeoutID) {
             clearTimeout(this.timeoutID);
             this.timeoutID = null;
-            if(save) this.file.save();
+            if (save) this.save();
         }
 
         this.observer?.destroy();
-        this.file.removeChangeListener?.(this.listener);
     }
 }
