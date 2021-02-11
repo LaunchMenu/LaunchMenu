@@ -33,7 +33,6 @@ export class Note {
 
         try {
             const file = new File(filePath);
-            console.log(file);
             return {
                 file,
                 fileSaver: new FileAutoSaver(file),

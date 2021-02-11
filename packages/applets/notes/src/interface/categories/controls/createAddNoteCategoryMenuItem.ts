@@ -8,22 +8,22 @@ import {
     sequentialExecuteHandler,
 } from "@launchmenu/core";
 import {Field} from "model-react";
-import {Note} from "../../dataModel/Note";
-import {NotesSource} from "../../dataModel/NotesSource";
-import {INoteMetadata} from "../../dataModel/_types/INoteMetadata";
+import {NoteCategory} from "../../../dataModel/NoteCategory";
+import {NotesSource} from "../../../dataModel/NotesSource";
+import {INoteCategoryMetadata} from "../../../dataModel/_types/INoteCategoryMetadata";
 
 /**
- * Creates a new menu item to add new notes
+ * Creates a new menu item to add new note categories
  * @param notesSource The notes source to add the item to
- * @param onCreate A callback for when a note is created
- * @returns The menu item that can be used to create new notes
+ * @param onCreate A callback for when a note category is created
+ * @returns The menu item that can be used to create new note categories
  */
-export function createAddNoteItem(
+export function createAddNoteCategoryMenuItem(
     notesSource: NotesSource,
-    onCreate?: (note: Note, initial: boolean) => void
+    onCreate?: (noteCategory: NoteCategory, initial: boolean) => void
 ): IMenuItem {
     return createStandardMenuItem({
-        name: "Add note",
+        name: "Add category",
         category: getControlsCategory(),
         actionBindings: [
             sequentialExecuteHandler.createBinding(async ({context}) => {
@@ -38,35 +38,35 @@ export function createAddNoteItem(
                 ]);
 
                 // Create the command to execute with the retrieved name
-                return new AddNoteCommand(field.get(), notesSource, onCreate);
+                return new AddNoteCategoryCommand(field.get(), notesSource, onCreate);
             }),
         ],
     });
 }
 
-/** A command to add a note to a notes source */
-export class AddNoteCommand extends Command {
+/** A command to add a note category to a notes source */
+export class AddNoteCategoryCommand extends Command {
     public metadata = {
-        name: "Add note",
+        name: "Add note category",
     };
 
     protected notesSource: NotesSource;
-    protected note: Note;
+    protected noteCategory: NoteCategory;
     protected name: string;
-    protected noteData: INoteMetadata | undefined;
-    protected onCreate: (note: Note, initial: boolean) => void;
+    protected noteCategoryData: INoteCategoryMetadata | undefined;
+    protected onCreate: (noteCategory: NoteCategory, initial: boolean) => void;
 
     /**
-     * Creates a new add note command
-     * @param name The name of the note
+     * Creates a new add note category command
+     * @param name The name of the note category
      * @param source The notes source to add the note to
-     * @param onCreate A callback for when the note is created
+     * @param onCreate A callback for when the category is created
      */
     public constructor(
         name: string,
         source: NotesSource,
         onCreate: (
-            note: Note,
+            noteCategory: NoteCategory,
             /** Whether it was the first creation, not a redo */
             initial: boolean
         ) => void = () => {}
@@ -79,18 +79,21 @@ export class AddNoteCommand extends Command {
 
     /** @override */
     protected async onExecute(): Promise<void> {
-        // If there was any note data, restore it to keep the future stack valid
-        if (this.noteData) this.note = await this.notesSource.createNote(this.noteData);
-        // Create a new note from scratch on first execution
-        else this.note = await this.notesSource.addNote(this.name);
+        // If there was any note category data, restore it to keep the future stack valid
+        if (this.noteCategoryData)
+            this.noteCategory = await this.notesSource.createNoteCategory(
+                this.noteCategoryData
+            );
+        // Create a new note category from scratch on first execution
+        else this.noteCategory = await this.notesSource.addNoteCategory(this.name);
 
         // Invoke the callback
-        this.onCreate(this.note, !this.noteData);
+        this.onCreate(this.noteCategory, !this.noteCategoryData);
     }
 
     /** @override */
     protected async onRevert(): Promise<void> {
-        this.noteData = this.note.getData();
-        this.note?.delete();
+        this.noteCategoryData = this.noteCategory.getData();
+        this.noteCategory?.delete();
     }
 }

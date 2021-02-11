@@ -11,7 +11,7 @@ import {IDeletable} from "./_types/IDeletable";
 export const deleteAction = createContextAction({
     name: "Delete",
     contextItem: {
-        priority: [Priority.HIGH, 5],
+        priority: [Priority.LOW, Priority.MEDIUM + 5],
         icon: "delete",
     },
     core: (executors: IDeletable[]) => {

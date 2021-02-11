@@ -62,6 +62,15 @@ export class NoteCategory {
         return this.notes.get(hook);
     }
 
+    /**
+     * Retrieves the data of this category
+     * @param hook The hook to subscribe to changes
+     * @returns All the data of the category
+     */
+    public getData(hook?: IDataHook): INoteCategoryMetadata {
+        return this.dataSource(hook);
+    }
+
     // Setters
     /**
      * Updates the category's name

@@ -8,10 +8,14 @@ import {
 } from "@launchmenu/core";
 import {Note} from "../../dataModel/Note";
 
-export const setNameAction = createContextAction({
-    name: "Set name",
+/**
+ * An action to set the name of the note
+ */
+export const setNoteNameAction = createContextAction({
+    name: "Set note name",
     contextItem: {
         icon: "edit",
+        name: "Set name",
         priority: Priority.HIGH,
     },
     core: (notes: Note[]) => {

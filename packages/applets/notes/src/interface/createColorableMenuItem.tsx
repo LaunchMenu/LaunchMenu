@@ -37,7 +37,8 @@ export function createColorableMenuItem({
             const iconV = getHooked(icon, h);
             const descriptionV = getHooked(description, h);
             const nameV = getHooked(name, h);
-            const colorV = getHooked(color, h);
+            let colorV = getHooked(color, h);
+            if (colorV == "#fff0") colorV = undefined; // Special exception to allow string based color skipping
             const colorData = new Color(colorV);
             return (
                 <MenuItemFrame

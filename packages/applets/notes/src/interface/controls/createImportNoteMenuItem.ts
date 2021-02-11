@@ -18,7 +18,7 @@ import {INoteMetadata} from "../../dataModel/_types/INoteMetadata";
  * @param onCreate A callback for when a note is created
  * @returns The menu item that can be used to create new notes
  */
-export function createImportNoteItem(
+export function createImportNoteMenuItem(
     notesSource: NotesSource,
     onCreate?: (note: Note, initial: boolean) => void
 ): IMenuItem {

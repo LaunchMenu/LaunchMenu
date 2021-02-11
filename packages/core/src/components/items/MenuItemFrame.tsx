@@ -1,4 +1,4 @@
-import React, {FC, useCallback} from "react";
+import React, {FC, useCallback, useMemo} from "react";
 import {Box} from "../../styling/box/Box";
 import {IMenu} from "../../menus/menu/_types/IMenu";
 import {IMenuItem} from "../../menus/items/_types/IMenuItem";
@@ -12,6 +12,9 @@ import {BackgroundColorProvider} from "../../styling/backgroundColorContext";
 import {useDataHook} from "model-react";
 import {IMenuItemFrameProps} from "./_types/IMenuItemFrameProps";
 import {mergeStyles} from "../../utils/mergeStyles";
+import Color from "color";
+import {IThemeColor} from "../../styling/theming/_types/IBaseTheme";
+import {useTheme} from "../../styling/theming/ThemeContext";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution
@@ -62,6 +65,18 @@ export const MenuItemFrame: FC<IMenuItemFrameProps> = ({
     const radiusSize = "small";
     const standardBackground = transparent ? undefined : "bgPrimary";
     const mainBgColor = isCursor ? "primary" : standardBackground;
+
+    // Compute the main background color
+    const theme = useTheme();
+    const containerBgColor =
+        colors?.container?.background ?? (mainBgColor && theme.color[mainBgColor]);
+
+    const textColor = useMemo((): IThemeColor => {
+        if (!containerBgColor) return "fontBgPrimary";
+        const isDark = new Color(containerBgColor).isDark();
+        return isDark ? "fontPrimary" : "fontBgPrimary";
+    }, [containerBgColor]);
+
     return (
         <Box
             className="itemFrame"
@@ -77,9 +92,10 @@ export const MenuItemFrame: FC<IMenuItemFrameProps> = ({
             {...outerProps}
             css={mergeStyles(colors?.selection, outerProps?.css)}
             position="relative">
-            <BackgroundColorProvider color={colors?.container?.background ?? mainBgColor}>
+            <BackgroundColorProvider color={containerBgColor}>
                 <Box
                     background={mainBgColor}
+                    color={textColor}
                     marginLeft="medium"
                     cursor={transparent ? "default" : "pointer"}
                     onClick={useCallback(async () => {

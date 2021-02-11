@@ -191,12 +191,11 @@ export class NotesSource {
     // File/category creation
     /**
      * Adds a new note to the system
-     * @param name The name of the string, ID will be based on this if specified
+     * @param name The name of the note, ID will be based on this if specified
      * @param ID The ID of the note
-     * @param location The location of the note's text file
      * @returns The created note
      */
-    public async addNote(name?: string, ID?: string, location?: string): Promise<Note> {
+    public async addNote(name?: string, ID?: string): Promise<Note> {
         // Create the note's ID
         const baseID = name ?? uuid();
         if (!ID) ID = baseID;
@@ -206,7 +205,7 @@ export class NotesSource {
             ID,
             name: name ?? "Note",
             modifiedAt: Date.now(),
-            location: location ?? Path.join(this.notesDir, `${ID}.txt`),
+            location: Path.join(this.notesDir, `${ID}.txt`),
         });
     }
 
@@ -259,5 +258,57 @@ export class NotesSource {
             return !!note;
         });
         return note as Note;
+    }
+
+    // Note category creation
+    /**
+     * Adds a new note category to the system
+     * @param name The name of the category, ID will be based on this if specified
+     * @param ID The ID of the note category
+     * @returns The created note category
+     */
+    public async addNoteCategory(name?: string, ID?: string): Promise<NoteCategory> {
+        // Create the note category's ID
+        const baseID = name ?? uuid();
+        if (!ID) ID = baseID;
+
+        // Create the note
+        return this.createNoteCategory({
+            ID,
+            name: name ?? "Note",
+            color: "#fff0",
+        });
+    }
+
+    /**
+     * Creates a new note category with the given information
+     * @param noteCategoryData The note category data
+     * @returns The created note category
+     */
+    public async createNoteCategory(
+        noteCategoryData: INoteCategoryMetadata
+    ): Promise<NoteCategory> {
+        // Make sure the ID is unique
+        const baseID = noteCategoryData.ID;
+        let ID = baseID;
+        let suffix = 0;
+        while (this.notes.get().some(({ID: vID}) => vID == ID)) ID = baseID + ++suffix;
+        noteCategoryData = {...noteCategoryData, ID};
+
+        // Insert the data
+        this.file.fields.categories.set([
+            ...this.file.fields.categories.get(),
+            noteCategoryData,
+        ]);
+
+        // Retrieve the note
+        let noteCategory: NoteCategory | undefined;
+        await waitFor(h => {
+            noteCategory = this.categories
+                .get(h)
+                .find(({ID}) => noteCategoryData.ID == ID);
+            return !!noteCategory;
+        });
+        return noteCategory as NoteCategory;
     }
 }

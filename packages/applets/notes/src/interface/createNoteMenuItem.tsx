@@ -7,7 +7,7 @@ import {createColorableMenuItem} from "./createColorableMenuItem";
 import {editNoteExecuteAction} from "./actionHandlers/editNoteExecuteAction";
 import {NoteCategory} from "../dataModel/NoteCategory";
 import {setCategoryAction} from "./actionHandlers/setCategoryAction";
-import {setNameAction} from "./actionHandlers/setNameAction";
+import {setNoteNameAction} from "./actionHandlers/setNoteNameAction";
 import {NotesSource} from "../dataModel/NotesSource";
 import {deleteNoteHandler} from "./actionHandlers/deleteNoteHandler";
 import {notePatternMatcher} from "../notePatternMatcher";
@@ -44,7 +44,7 @@ export function createNoteMenuItem(
         ),
         actionBindings: [
             editNoteExecuteAction.createBinding(note),
-            setNameAction.createBinding(note),
+            setNoteNameAction.createBinding(note),
             deleteNoteHandler.createBinding({note, notesSource}),
             setCategoryAction.createBinding({
                 subscribableData: h => ({
