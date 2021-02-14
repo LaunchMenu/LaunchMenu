@@ -1,9 +1,7 @@
 import {ITextField} from "../../_types/ITextField";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
 import {handleHorizontalCursorInput} from "./handleHorizontalCursorInput";
-import {handleVerticalCursorInput} from "./handleVerticalCursorInput";
 import {handleCharacterInput} from "./handleCharacterInput";
-import {handleNewlineInput} from "./handleNewlineInput";
 import {handleRemovalInput} from "./handleRemovalInput";
 import {handleCursorJumpInput} from "./handleCursorJumpInput";
 import {handleCopyPasteInput} from "./handleCopyPasteInput";
@@ -17,38 +15,41 @@ import {KeyPattern} from "../../../keyHandler/KeyPattern";
  * @param textField The text field to create the handler for
  * @param context The context that the handler is used in
  * @param onExit The code to execute when trying to exit the field
- * @param multiline Whether the text field may span multiple lines
+ * @param extraHandler Optional extra key handlers to augment this handler by
  * @returns The key handler that can be added to the input handler stack
  */
 export function createTextFieldKeyHandler(
     textField: ITextField,
     context: IIOContext,
     onExit?: () => void,
-    multiline: boolean = false
+    extraHandler?: IKeyEventListener
 ): IKeyEventListener {
     const settings = context.settings.get(baseSettings).controls;
     const fieldSettings = settings.field;
-    const shift = new KeyPattern("shift");
+    const shift = new KeyPattern("shift"); // Shift is always a modifier for capital letters
 
+    const extraHandlerObj =
+        extraHandler instanceof Function ? {emit: extraHandler} : extraHandler;
     return setupModifierCatcherHandler(
         () => [fieldSettings.expandSelection.get(), shift],
-        e => {
-            // Handle common text field inputs
-            if (handleCharacterInput(e, textField)) return true;
-            if (handleRemovalInput(e, textField, fieldSettings)) return true;
-            if (handleHorizontalCursorInput(e, textField, fieldSettings)) return true;
-            if (handleCursorJumpInput(e, textField, fieldSettings)) return true;
-            if (handleCopyPasteInput(e, textField, fieldSettings)) return true;
-            if (multiline) {
-                if (handleVerticalCursorInput(e, textField, fieldSettings)) return true;
-                if (handleNewlineInput(e, textField, fieldSettings)) return true;
-            }
+        {
+            init: () => extraHandlerObj?.init?.(),
+            emit: e => {
+                // Handle common text field inputs
+                if (handleCharacterInput(e, textField)) return true;
+                if (handleRemovalInput(e, textField, fieldSettings)) return true;
+                if (handleHorizontalCursorInput(e, textField, fieldSettings)) return true;
+                if (handleCursorJumpInput(e, textField, fieldSettings)) return true;
+                if (handleCopyPasteInput(e, textField, fieldSettings)) return true;
+                if (extraHandlerObj?.emit(e)) return true;
 
-            // Handle exit
-            if (onExit && settings.back.get().matches(e)) {
-                onExit();
-                return true;
-            }
+                // Handle exit
+                if (onExit && settings.back.get().matches(e)) {
+                    onExit();
+                    return true;
+                }
+            },
+            destroy: () => extraHandlerObj?.destroy?.(),
         }
     );
 }

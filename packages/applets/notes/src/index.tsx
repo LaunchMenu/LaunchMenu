@@ -24,6 +24,7 @@ import {createAddNoteMenuItem} from "./interface/controls/createAddNoteMenuItem"
 import {createImportNoteMenuItem} from "./interface/controls/createImportNoteMenuItem";
 import {Note} from "./dataModel/Note";
 import {createEditCategoriesMenuItem} from "./interface/controls/createEditCategoriesMenuItem";
+import {settings} from "./settings";
 
 export const info = {
     name: "Notes",
@@ -32,29 +33,20 @@ export const info = {
     icon: notesIcon,
 } as const;
 
-export const settings = createSettings({
-    version: "0.0.0",
-    settings: () =>
-        createSettingsFolder({
-            ...info,
-            children: {
-                notesDir: createFileSetting({
-                    name: "Notes directory",
-                    init: "",
-                    folder: true,
-                }),
-            },
-        }),
-});
-
 export default declare({
     info,
     settings,
     init({getSettings}) {
         // Setup the notes source together with its item interfaces
         const notesSource = new DataCacher(h => {
-            const path = getSettings(h).get(settings).notesDir.get(h);
-            return new NotesSource(`${path}/notes.json`);
+            const {notesDir, defaults} = getSettings(h).get(settings);
+            const path = notesDir.get(h);
+            return new NotesSource(`${path}/notes.json`, {
+                color: h => defaults.color.get(h),
+                fontSize: h => defaults.fontSize.get(h),
+                showRichContent: h => defaults.showRichContent.get(h),
+                syntaxMode: h => defaults.syntaxMode.get(h),
+            });
         });
         const categories = new DataCacher(h => {
             const noteCategories = notesSource.get(h).getAllCategories(h);
@@ -80,6 +72,7 @@ export default declare({
                 map,
             };
         });
+
         return {
             async search(query, hook) {
                 return {

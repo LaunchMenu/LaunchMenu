@@ -103,6 +103,7 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
             icon,
             description,
             tags,
+            content,
             priority = Priority.MEDIUM,
         } = contextItem ?? {};
         item = execute => ({
@@ -114,6 +115,7 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
                 icon,
                 description,
                 tags,
+                content,
                 actionBindings: execute
                     ? adjustBindings(execute, actionBindings)
                     : actionBindings,

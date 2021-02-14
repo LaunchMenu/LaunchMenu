@@ -1,7 +1,11 @@
 import {File, FileAutoReloader, FileAutoSaver, IFile} from "@launchmenu/core";
 import {DataCacher, IDataHook, IDataRetriever} from "model-react";
 import {NoteCategory} from "./NoteCategory";
+import {NotesSource} from "./NotesSource";
 import {INoteMetadata} from "./_types/INoteMetadata";
+import {IInherit, inherit} from "./_types/IInherit";
+import {ifNotInherited} from "./ifNotInherited";
+import {IHighlightLanguage} from "./_types/IHighlightLanguage";
 
 export class Note {
     public readonly ID: string;
@@ -9,7 +13,7 @@ export class Note {
     protected dataSource: IDataRetriever<INoteMetadata>;
     protected update: (ID: string, data?: INoteMetadata) => void;
 
-    protected categoriesSource: (hook?: IDataHook) => NoteCategory[];
+    protected notesSource: NotesSource;
 
     // Manage the note file
     protected file = new DataCacher<
@@ -55,12 +59,12 @@ export class Note {
         ID: string,
         dataSource: IDataRetriever<INoteMetadata>,
         update: (ID: string, data?: INoteMetadata) => void,
-        categoriesSource: IDataRetriever<NoteCategory[]> = () => []
+        notesSource: NotesSource
     ) {
         this.ID = ID;
         this.dataSource = dataSource;
         this.update = update;
-        this.categoriesSource = categoriesSource;
+        this.notesSource = notesSource;
     }
 
     /**
@@ -87,7 +91,7 @@ export class Note {
     /** The cached category */
     protected category = new DataCacher(h => {
         const ID = this.dataSource(h).categoryID;
-        return this.categoriesSource(h).find(({ID: vID}) => vID == ID);
+        return this.notesSource.getAllCategories(h).find(({ID: vID}) => vID == ID);
     });
 
     /**
@@ -133,6 +137,59 @@ export class Note {
      */
     public getData(hook?: IDataHook): INoteMetadata {
         return this.dataSource(hook);
+    }
+
+    // All appearance getters
+    /**
+     * Retrieves the color of this note
+     * @param hook The hook to subscribe to changes
+     * @returns The color of the note
+     */
+    public getColor(hook?: IDataHook): string {
+        return (
+            ifNotInherited(this.dataSource(hook).color) ??
+            this.getCategory(hook)?.getColor(hook) ??
+            this.notesSource.defaults.color(hook)
+        );
+    }
+
+    /**
+     * Retrieves the font size for the note
+     * @param hook The hook to subscribe to changes
+     * @returns The font size of the note
+     */
+    public getFontSize(hook?: IDataHook): number {
+        return (
+            ifNotInherited(this.dataSource(hook).fontSize) ??
+            this.getCategory(hook)?.getFontSize(hook) ??
+            this.notesSource.defaults.fontSize(hook)
+        );
+    }
+
+    /**
+     * Retrieves the syntax mode for the note
+     * @param hook The hook to subscribe to changes
+     * @returns The syntax mode of the note
+     */
+    public getSyntaxMode(hook?: IDataHook): IHighlightLanguage {
+        return (
+            ifNotInherited(this.dataSource(hook).syntaxMode) ??
+            this.getCategory(hook)?.getSyntaxMode(hook) ??
+            this.notesSource.defaults.syntaxMode(hook)
+        );
+    }
+
+    /**
+     * Retrieves the value of whether to show rich content
+     * @param hook The hook to subscribe to changes
+     * @returns Whether to show rich content
+     */
+    public getShowRichContent(hook?: IDataHook): boolean {
+        return (
+            ifNotInherited(this.dataSource(hook).showRichContent) ??
+            this.getCategory(hook)?.getShowRichContent(hook) ??
+            this.notesSource.defaults.showRichContent(hook)
+        );
     }
 
     // Setters
@@ -190,5 +247,38 @@ export class Note {
      */
     public delete(): void {
         this.update(this.ID);
+    }
+
+    // All appearance setters
+    /**
+     * Sets the color of the note
+     * @param color The new color of the note
+     */
+    public setColor(color: string | IInherit): void {
+        this.update(this.ID, {...this.dataSource(), color});
+    }
+
+    /**
+     * Sets the font size of the note
+     * @param fontSize The new font size of the category
+     */
+    public setFontSize(fontSize: number | IInherit): void {
+        this.update(this.ID, {...this.dataSource(), fontSize});
+    }
+
+    /**
+     * Sets the syntax mode of the note
+     * @param mode The new syntax mode of the note
+     */
+    public setSyntaxMode(mode: IHighlightLanguage | IInherit): void {
+        this.update(this.ID, {...this.dataSource(), syntaxMode: mode});
+    }
+
+    /**
+     * Sets whether to show rich content of the note
+     * @param showRichContent Whether to show rich content
+     */
+    public setShowRichContent(showRichContent: boolean | IInherit): void {
+        this.update(this.ID, {...this.dataSource(), showRichContent});
     }
 }

@@ -1,11 +1,15 @@
 import {DataCacher, IDataHook, IDataRetriever} from "model-react";
+import {ifNotInherited} from "./ifNotInherited";
 import {Note} from "./Note";
+import {NotesSource} from "./NotesSource";
+import {IHighlightLanguage} from "./_types/IHighlightLanguage";
+import {IInherit} from "./_types/IInherit";
 import {INoteCategoryMetadata} from "./_types/INoteCategoryMetadata";
 
 export class NoteCategory {
     public readonly ID: string;
 
-    protected notesSource: (hook?: IDataHook) => Note[];
+    protected notesSource: NotesSource;
 
     protected dataSource: IDataRetriever<INoteCategoryMetadata>;
     protected update: (ID: string, data?: INoteCategoryMetadata) => void;
@@ -21,7 +25,7 @@ export class NoteCategory {
         ID: string,
         dataSource: IDataRetriever<INoteCategoryMetadata>,
         update: (ID: string, data?: INoteCategoryMetadata) => void,
-        notesSource: IDataRetriever<Note[]> = () => []
+        notesSource: NotesSource
     ) {
         this.ID = ID;
         this.dataSource = dataSource;
@@ -39,18 +43,9 @@ export class NoteCategory {
         return this.dataSource(hook).name;
     }
 
-    /**
-     * Retrieves the color of the category
-     * @param hook The hook to subscribe to changes
-     * @returns The category's color
-     */
-    public getColor(hook?: IDataHook): string {
-        return this.dataSource(hook).color;
-    }
-
     /** The cached notes of this category */
     protected notes = new DataCacher(h =>
-        this.notesSource(h).filter(note => note.getCategory(h)?.ID == this.ID)
+        this.notesSource.getAllNotes(h).filter(note => note.getCategory(h)?.ID == this.ID)
     );
 
     /**
@@ -71,21 +66,62 @@ export class NoteCategory {
         return this.dataSource(hook);
     }
 
+    // All appearance getters
+    /**
+     * Retrieves the default color for notes in this category
+     * @param hook The hook to subscribe to changes
+     * @returns The color of the note
+     */
+    public getColor(hook?: IDataHook): string {
+        return (
+            ifNotInherited(this.dataSource(hook).color) ??
+            this.notesSource.defaults.color(hook)
+        );
+    }
+
+    /**
+     * Retrieves the default font size for notes in this category
+     * @param hook The hook to subscribe to changes
+     * @returns The font size of the note
+     */
+    public getFontSize(hook?: IDataHook): number {
+        return (
+            ifNotInherited(this.dataSource(hook).fontSize) ??
+            this.notesSource.defaults.fontSize(hook)
+        );
+    }
+
+    /**
+     * Retrieves the default syntax mode for notes in this category
+     * @param hook The hook to subscribe to changes
+     * @returns The syntax mode of the note
+     */
+    public getSyntaxMode(hook?: IDataHook): IHighlightLanguage {
+        return (
+            ifNotInherited(this.dataSource(hook).syntaxMode) ??
+            this.notesSource.defaults.syntaxMode(hook)
+        );
+    }
+
+    /**
+     * Retrieves the default value of whether to show rich content for notes in this category
+     * @param hook The hook to subscribe to changes
+     * @returns Whether to show rich content
+     */
+    public getShowRichContent(hook?: IDataHook): boolean {
+        return (
+            ifNotInherited(this.dataSource(hook).showRichContent) ??
+            this.notesSource.defaults.showRichContent(hook)
+        );
+    }
+
     // Setters
     /**
      * Updates the category's name
      * @param name The new name of the category
      */
     public setName(name: string): void {
-        return this.update(this.ID, {...this.dataSource(), name});
-    }
-
-    /**
-     * Updates the note's category's id
-     * @param color The new color of the category
-     */
-    public setColor(color: string): void {
-        return this.update(this.ID, {...this.dataSource(), color});
+        this.update(this.ID, {...this.dataSource(), name});
     }
 
     /**
@@ -100,6 +136,39 @@ export class NoteCategory {
      * Deletes the category
      */
     public delete(): void {
-        return this.update(this.ID);
+        this.update(this.ID);
+    }
+
+    // All appearance setters
+    /**
+     * Sets the default color for notes in this category
+     * @param color The new color of the category
+     */
+    public setColor(color: string | IInherit): void {
+        this.update(this.ID, {...this.dataSource(), color});
+    }
+
+    /**
+     * Sets the default font size for notes in this category
+     * @param fontSize The new font size of the category
+     */
+    public setFontSize(fontSize: number | IInherit): void {
+        this.update(this.ID, {...this.dataSource(), fontSize});
+    }
+
+    /**
+     * Sets the default syntax mode for notes in this category
+     * @param mode The new syntax mode of the category
+     */
+    public setSyntaxMode(mode: IHighlightLanguage | IInherit): void {
+        this.update(this.ID, {...this.dataSource(), syntaxMode: mode});
+    }
+
+    /**
+     * Sets the default for whether to show rich content for notes in this category
+     * @param showRichContent Whether to show rich content for this category
+     */
+    public setShowRichContent(showRichContent: boolean | IInherit): void {
+        this.update(this.ID, {...this.dataSource(), showRichContent});
     }
 }

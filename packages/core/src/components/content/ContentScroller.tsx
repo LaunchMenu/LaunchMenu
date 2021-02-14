@@ -1,5 +1,6 @@
 import {useDataHook} from "model-react";
-import React, {FC, useCallback, useEffect, useRef} from "react";
+import React, {FC, useEffect, useRef, useState} from "react";
+import {useResizeDetector} from "react-resize-detector";
 import {IContent} from "../../content/_types/IContent";
 import {IBoxProps} from "../../styling/box/_types/IBoxProps";
 import {useSmoothScroll} from "../../utils/hooks/useSmoothScroll";
@@ -35,9 +36,16 @@ export const ContentScroller: FC<{content: IContent} & IBoxProps> = ({
     // Enable smooth scrolling
     const smoothScrollRef = useVerticalScroll();
 
+    // Listen for reasizes
+    const [_, update] = useState(0);
+    const {ref: resizeRef} = useResizeDetector({onResize: () => update(s => s + 1)});
+
     // Render a simple box element
     return (
-        <FillBox elRef={[setRef, scrollRef, smoothScrollRef]} overflow="auto" {...rest}>
+        <FillBox
+            elRef={[setRef, scrollRef, smoothScrollRef, resizeRef]}
+            overflow="auto"
+            {...rest}>
             {children}
         </FillBox>
     );

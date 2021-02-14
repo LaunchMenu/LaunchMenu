@@ -1,16 +1,19 @@
-import {IColorInputExecuteData} from "./_types/IColorInputExecuteData";
+import {
+    ColorInput,
+    createAction,
+    editExecuteHandler,
+    IColorInputExecuteData,
+    ICommand,
+} from "@launchmenu/core";
 import Color from "color";
-import {ColorInput} from "./ColorInput";
-import {ICommand} from "../../../../../undoRedo/_types/ICommand";
-import {createAction} from "../../../../../actions/createAction";
-import {editExecuteHandler} from "../../../../../actions/types/execute/types/editExecuteHandler";
+import {inherit} from "../../dataModel/_types/IInherit";
 
-//TODO: make a more advanced color input editor in accordance to the planning file
+//TODO: update color input when available in LM
 /**
  * A simple execute handler for updating color fields
  */
-export const colorInputExecuteHandler = createAction({
-    name: "color input handler",
+export const inheritableColorInputExecuteHandler = createAction({
+    name: "Inheritable color input handler",
     parents: [editExecuteHandler],
     core: (data: IColorInputExecuteData[]) => ({
         children: data.map(({field, liveUpdate, undoable}) =>
@@ -22,6 +25,7 @@ export const colorInputExecuteHandler = createAction({
                                 undoable,
                                 liveUpdate: liveUpdate as any,
                                 checkValidity: text => {
+                                    if (text == inherit) return;
                                     try {
                                         new Color(text);
                                     } catch {

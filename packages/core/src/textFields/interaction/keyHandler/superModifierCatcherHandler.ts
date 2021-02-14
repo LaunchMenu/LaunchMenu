@@ -21,10 +21,8 @@ export function setupModifierCatcherHandler(
     let caughtKey = false;
 
     return {
-        init() {
-            if ("init" in listener) listener.init?.();
-        },
-        emit(e) {
+        init: () => listenerObj.init?.(),
+        emit: e => {
             // Handle modifier key catching
             const isModifier = modifiers().find(p => p.matches(e, true));
             if (isModifier) {
@@ -38,8 +36,6 @@ export function setupModifierCatcherHandler(
                 return true;
             }
         },
-        destroy() {
-            if ("destroy" in listener) listener.destroy?.();
-        },
+        destroy: () => listenerObj.destroy?.(),
     };
 }

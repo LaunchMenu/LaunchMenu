@@ -1,11 +1,12 @@
 import React from "react";
 import {
     createAction,
-    createTextFieldKeyHandler,
+    createAdvancedTextFieldKeyHandler,
     editExecuteHandler,
     EditorField,
     InstantCloseTransition,
     InstantOpenTransition,
+    Loader,
     SetFieldCommand,
     TextField,
     UILayer,
@@ -25,15 +26,29 @@ export const editNoteExecuteAction = createAction({
                     context.open(
                         new UILayer(
                             (context, close) => ({
-                                contentHandler: createTextFieldKeyHandler(
+                                contentHandler: createAdvancedTextFieldKeyHandler(
                                     field,
                                     context,
-                                    close,
-                                    true
+                                    {onExit: close}
                                 ),
                                 fieldView: {close: true},
                                 contentView: {
-                                    view: <EditorField field={field} />,
+                                    view: (
+                                        <Loader>
+                                            {h => (
+                                                <EditorField
+                                                    field={field}
+                                                    options={{
+                                                        wrap: true,
+                                                        fontSize: note.getFontSize(h),
+                                                        mode: `ace/mode/${note
+                                                            .getSyntaxMode(h)
+                                                            .toLowerCase()}`,
+                                                    }}
+                                                />
+                                            )}
+                                        </Loader>
+                                    ),
                                     transitions: {
                                         Open: InstantOpenTransition,
                                         Close: InstantCloseTransition,

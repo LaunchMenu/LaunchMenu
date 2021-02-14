@@ -12,13 +12,10 @@ export function handleCharacterInput(
     event: KeyEvent,
     textField: ITextField
 ): void | boolean {
-    if (
-        (event.type == "down" || event.type == "repeat") &&
-        event.key.char &&
-        !event.ctrl &&
-        !event.alt
-    ) {
-        insertText(textField, event.key.char);
-        return true;
+    if (!event.ctrl && !event.alt && (event.type == "down" || event.type == "repeat")) {
+        if (event.key.char) {
+            insertText(textField, event.key.char);
+            return true;
+        }
     }
 }

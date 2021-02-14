@@ -147,6 +147,20 @@ export function createFieldControlsSettingsFolder() {
                 ]),
                 category: getFieldControlsFolderCategories().insertDelete,
             }),
+            indent: createKeyPatternSetting({
+                name: "Inserts an indentation",
+                description: "Unused in single line text fields",
+                init: new KeyPattern([{pattern: ["tab"], type: "down or repeat"}]),
+                category: getFieldControlsFolderCategories().insertDelete,
+            }),
+            dedent: createKeyPatternSetting({
+                name: "Removes an indentation",
+                description: "Unused in single line text fields",
+                init: new KeyPattern([
+                    {pattern: ["shift", "tab"], type: "down or repeat"},
+                ]),
+                category: getFieldControlsFolderCategories().insertDelete,
+            }),
         },
     });
 }

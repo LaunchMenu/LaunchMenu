@@ -38,7 +38,7 @@ export function createColorableMenuItem({
             const descriptionV = getHooked(description, h);
             const nameV = getHooked(name, h);
             let colorV = getHooked(color, h);
-            if (colorV == "#fff0") colorV = undefined; // Special exception to allow string based color skipping
+            if (colorV?.toLowerCase() == "#fff0") colorV = undefined; // Special exception to allow string based color skipping
             const colorData = new Color(colorV);
             return (
                 <MenuItemFrame

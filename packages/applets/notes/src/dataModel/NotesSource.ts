@@ -6,6 +6,7 @@ import {INoteCategoryMetadata} from "./_types/INoteCategoryMetadata";
 import {INoteMetadata} from "./_types/INoteMetadata";
 import {v4 as uuid} from "uuid";
 import Path from "path";
+import {IDefaultAppearanceRetrievers} from "./_types/IDefaultAppearanceRetrievers";
 
 export class NotesSource {
     // The data source
@@ -20,11 +21,15 @@ export class NotesSource {
 
     protected notesDir: string;
 
+    /** The default appearance */
+    public defaults: IDefaultAppearanceRetrievers;
+
     /**
      * Creates a new notes data source based on the specified file path
      * @param metadataFilePath The path to the metadata file of the notes
+     * @param defaults The retrievers of the defaults of the notes
      **/
-    public constructor(metadataFilePath: string) {
+    public constructor(metadataFilePath: string, defaults: IDefaultAppearanceRetrievers) {
         this.file = new FieldsFile({
             path: metadataFilePath,
             fields: {categories: new Field([]), notes: new Field([])},
@@ -34,6 +39,8 @@ export class NotesSource {
         this.saver = new FileAutoSaver(this.file);
 
         this.notesDir = Path.join(metadataFilePath, "..", "notes");
+
+        this.defaults = defaults;
     }
 
     /**
@@ -90,7 +97,7 @@ export class NotesSource {
                 noteData.ID,
                 h => dataSource.get(h),
                 (ID, data) => this.updateNote(ID, data),
-                h => this.getAllCategories(h)
+                this
             );
         });
     });
@@ -146,7 +153,7 @@ export class NotesSource {
                 categoryData.ID,
                 h => dataSource.get(h),
                 (ID, data) => this.updateCategory(ID, data),
-                h => this.notes.get(h)
+                this
             );
         });
     });
@@ -206,6 +213,10 @@ export class NotesSource {
             name: name ?? "Note",
             modifiedAt: Date.now(),
             location: Path.join(this.notesDir, `${ID}.txt`),
+            color: "inherit",
+            fontSize: "inherit",
+            showRichContent: "inherit",
+            syntaxMode: "inherit",
         });
     }
 
@@ -232,6 +243,10 @@ export class NotesSource {
             modifiedAt: Date.now(),
             location,
             ID,
+            color: "inherit",
+            fontSize: "inherit",
+            showRichContent: "inherit",
+            syntaxMode: "inherit",
         });
     }
 
@@ -276,7 +291,10 @@ export class NotesSource {
         return this.createNoteCategory({
             ID,
             name: name ?? "Note",
-            color: "#fff0",
+            color: "inherit",
+            fontSize: "inherit",
+            showRichContent: "inherit",
+            syntaxMode: "inherit",
         });
     }
 

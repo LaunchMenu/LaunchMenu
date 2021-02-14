@@ -237,7 +237,7 @@ export class Input<T> extends AbstractUILayer {
      */
     protected checkError(text?: string): IInputError | null {
         const inpText = text ?? this.getText();
-        return (inpText && this.config.checkValidity?.(inpText)) || null;
+        return (inpText != null && this.config.checkValidity?.(inpText)) || null;
     }
 
     /**

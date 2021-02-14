@@ -359,13 +359,16 @@ export class ExtendedObject {
      * Checks if the contents of object 1 and 2 are equal, including subobjects
      * @param obj1 The first object
      * @param obj2 The second object
+     * @param maxDepth The maximum depth to check
      * @returns Whether or not the contents of the two objects are equivalent
      */
     public static deepEquals(
         obj1: {[key: string]: any},
-        obj2: {[key: string]: any}
+        obj2: {[key: string]: any},
+        maxDepth: number = Infinity
     ): boolean {
         if (obj1 == obj2) return true;
+        if (maxDepth == 0) return false;
 
         // Check if there are the same number of values present
         const obj1Keys = Object.keys(obj1);
@@ -380,7 +383,7 @@ export class ExtendedObject {
                 (this.isPlainObject(obj2[key]) || obj2[key] instanceof Array)
             ) {
                 // Recurse if object or array
-                if (!this.deepEquals(obj1[key], obj2[key])) return false;
+                if (!this.deepEquals(obj1[key], obj2[key], maxDepth - 1)) return false;
             } else {
                 // Check shallow equivalence otherwise
                 if (obj1[key] !== obj2[key]) return false;

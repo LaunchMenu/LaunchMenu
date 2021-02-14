@@ -7,9 +7,7 @@ import {useAceSelectionListener} from "./useAceSelectionListener";
 import {LFC} from "../../../_types/LFC";
 import {getAce} from "./getAce";
 import {useResizeDetector} from "react-resize-detector";
-
-let configured = false;
-
+import {useDeepUpdateEffect} from "../../../utils/hooks/useDeepUpdateEffect";
 /**
  * A react component for the ace text editor
  */
@@ -23,19 +21,11 @@ export const AceEditor: LFC<IAceEditorProps> = ({
     onSelectionChange,
     ...rest
 }) => {
-    // Perform initial configuration to use ace
-    if (!configured) {
-        configured = true;
-        // https://github.com/ajaxorg/ace/issues/1518#issuecomment-324130995
-        getAce().config.set("basePath", "/ace-builds/src-noconflict");
-        getAce().config.set("modePath", "/ace-builds/src-noconflict");
-        getAce().config.set("themePath", "/ace-builds/src-noconflict");
-    }
-
     // Create the editor
     let divRef = useRef<HTMLDivElement | null>(null);
     let [editor, setEditor] = useState(null as Ace.Editor | null);
     useLayoutEffect(() => {
+        console.log("Detect");
         if (divRef.current) {
             // Create the editor
             let editor = getAce().edit(divRef.current);
@@ -50,6 +40,12 @@ export const AceEditor: LFC<IAceEditorProps> = ({
             return () => editor.destroy();
         }
     }, []);
+
+    // Update the options on change
+    useDeepUpdateEffect(() => {
+        console.log(options, editor);
+        if (editor && options) editor.setOptions(options);
+    }, [options]);
 
     // Resize management
     const resizeCallback = useCallback(() => {

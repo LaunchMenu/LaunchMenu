@@ -31,6 +31,7 @@ export const EditorField: LFC<IEditorFieldProps> = ({
                 followCursor: true,
                 highlightActiveLine: false,
                 showPrintMargin: false,
+                highlightGutterLine: false,
                 ...options,
             }}
             value={value}
@@ -44,9 +45,6 @@ export const EditorField: LFC<IEditorFieldProps> = ({
                         "& .ace_gutter": {
                             color: theme.color.fontBgTertiary,
                             background: theme.color.bgTertiary,
-                            ".ace_gutter-active-line": {
-                                background: theme.color.bgTertiary,
-                            },
                         },
                     }),
                 }),

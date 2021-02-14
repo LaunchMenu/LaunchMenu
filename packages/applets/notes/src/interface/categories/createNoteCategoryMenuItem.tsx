@@ -1,9 +1,12 @@
 import {IMenuItem} from "@launchmenu/core";
 import {NoteCategory} from "../../dataModel/NoteCategory";
 import {NotesSource} from "../../dataModel/NotesSource";
+import {setColorAction} from "../actionHandlers/setColorAction";
+import {setFontSizeAction} from "../actionHandlers/setFontSizeAction";
+import {setRichContentAction} from "../actionHandlers/setRichContentAction";
+import {setSyntaxModeAction} from "../actionHandlers/setSyntaxModeAction";
 import {createColorableMenuItem} from "../createColorableMenuItem";
 import {deleteNoteCategoryHandler} from "./actionHandlers/deleteNoteCategoryHandler";
-import {setNoteCategoryColorAction} from "./actionHandlers/setNoteCategoryColorAction";
 import {setNoteCategoryNameExecuteHandler} from "./actionHandlers/setNoteCategoryNameExecuteHandler";
 
 /**
@@ -21,8 +24,23 @@ export function createNoteCategoryMenuItem(
         color: h => category.getColor(h),
         actionBindings: [
             setNoteCategoryNameExecuteHandler.createBinding(category),
-            setNoteCategoryColorAction.createBinding(category),
             deleteNoteCategoryHandler.createBinding({category, notesSource}),
+            setColorAction.createBinding({
+                set: color => category.setColor(color),
+                get: h => category.getColor(h),
+            }),
+            setSyntaxModeAction.createBinding({
+                set: syntax => category.setSyntaxMode(syntax),
+                get: h => category.getSyntaxMode(h),
+            }),
+            setFontSizeAction.createBinding({
+                set: size => category.setFontSize(size),
+                get: h => category.getFontSize(h),
+            }),
+            setRichContentAction.createBinding({
+                set: richContent => category.setShowRichContent(richContent),
+                get: h => category.getShowRichContent(h),
+            }),
         ],
     });
 }

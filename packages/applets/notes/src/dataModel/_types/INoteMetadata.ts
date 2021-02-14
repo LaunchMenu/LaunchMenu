@@ -1,3 +1,6 @@
+import {IInherit} from "./IInherit";
+import {INoteAppearanceMetadata} from "./INoteAppearanceMetadata";
+
 export type INoteMetadata = {
     /** The unique id of the note */
     ID: string;
@@ -9,4 +12,4 @@ export type INoteMetadata = {
     modifiedAt: number;
     /** The id of the category this note is in */
     categoryID?: string;
-};
+} & INoteAppearanceMetadata<IInherit>;
