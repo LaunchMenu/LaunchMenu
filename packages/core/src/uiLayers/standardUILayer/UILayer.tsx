@@ -7,15 +7,15 @@ import {
 } from "./_types/IStandardUILayerData";
 import {v4 as uuid} from "uuid";
 import {MenuView} from "../../components/menu/MenuView";
-import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
+import {createStandardMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createStandardMenuKeyHandler";
 import {TextFieldView} from "../../components/fields/TextFieldView";
-import {createTextFieldKeyHandler} from "../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
+import {createStandardTextFieldKeyHandler} from "../../textFields/interaction/keyHandler/createStandardTextFieldKeyHandler";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {UnifiedAbstractUILayer} from "./UnifiedAbstractUILayer";
 import {MenuSearch} from "../types/menuSearch/MenuSearch";
 import {mergeCallbacks} from "../../utils/mergeCallbacks";
 import {ContentView} from "../../components/content/ContentView";
-import {createContentKeyHandler} from "../../content/interaction/keyHandler/createContentKeyHandler";
+import {createStandardContentKeyHandler} from "../../content/interaction/keyHandler/createStandardContentKeyHandler";
 import {IUILayerBaseConfig} from "../_types/IUILayerBaseConfig";
 
 /**
@@ -97,18 +97,26 @@ export class UILayer extends UnifiedAbstractUILayer {
             const menu = data.menu;
             if (data.destroyOnClose != false)
                 res.onClose = mergeCallbacks([res.onClose, () => menu.destroy()]);
+
+            // Create a key handler if not present
+            let menuHandler = data.menuHandler;
+            if (!menuHandler) {
+                const disposableHandler = createStandardMenuKeyHandler(data.menu, {
+                    onExit: close,
+                    onExecute: data.onExecute,
+                });
+                menuHandler = disposableHandler.handler;
+                res.onClose = mergeCallbacks([res.onClose, disposableHandler.destroy]);
+            }
+
+            // Combine all the menu data
             const menuLayerData = {
                 ID,
                 menu,
                 menuView: data.menuView ?? (
                     <MenuView menu={data.menu} onExecute={data.onExecute} />
                 ),
-                menuHandler:
-                    data.menuHandler ??
-                    createMenuKeyHandler(data.menu, {
-                        onExit: close,
-                        onExecute: data.onExecute,
-                    }),
+                menuHandler,
             };
 
             // If a search menu is requested, add it as an extra layer, otherwise just add the menu
@@ -151,7 +159,8 @@ export class UILayer extends UnifiedAbstractUILayer {
                     />
                 ),
                 fieldHandler:
-                    data.fieldHandler ?? createTextFieldKeyHandler(field, context),
+                    data.fieldHandler ??
+                    createStandardTextFieldKeyHandler(field, context),
                 ...res,
             };
         } else if (data.fieldView) {
@@ -171,7 +180,8 @@ export class UILayer extends UnifiedAbstractUILayer {
                 content,
                 contentView: data.contentView ?? <ContentView content={content} />,
                 contentHandler:
-                    data.contentHandler ?? createContentKeyHandler(content, context),
+                    data.contentHandler ??
+                    createStandardContentKeyHandler(content, context),
                 ...res,
             };
         } else if (data.contentView) {

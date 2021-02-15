@@ -35,7 +35,7 @@ export const NavigationItemContent: LFC = () => {
                     },
                     null,
                     {
-                        pattern: [controls.back.get(h)],
+                        pattern: [controls.common.back.get(h)],
                         description: "Clear search/exit layer",
                     },
                     {

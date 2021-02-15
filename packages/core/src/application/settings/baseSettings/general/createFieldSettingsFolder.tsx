@@ -1,6 +1,8 @@
 import React from "react";
+import {createStandardMenuItem} from "../../../../menus/items/createStandardMenuItem";
 import {createBooleanSetting} from "../../../../settings/inputs/createBooleanSetting";
 import {createNumberSetting} from "../../../../settings/inputs/createNumberSetting";
+import {createOptionSetting} from "../../../../settings/inputs/createOptionSetting";
 import {createSettingsFolder} from "../../../../settings/inputs/createSettingsFolder";
 
 /**
@@ -58,6 +60,16 @@ export function createFieldSettingsFolder() {
                         fields.
                     </>
                 ),
+            }),
+            undoMode: createOptionSetting({
+                name: "Editor undo behavior",
+                init: "Word" as const,
+                options: ["Character", "Word", "Line"] as const,
+                createOptionView: option =>
+                    createStandardMenuItem({
+                        name: option,
+                        description: `Undoes 1 ${option.toLowerCase()} at a time`,
+                    }),
             }),
         },
     });

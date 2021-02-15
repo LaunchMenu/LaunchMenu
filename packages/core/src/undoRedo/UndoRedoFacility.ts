@@ -3,7 +3,11 @@ import {ICommand} from "./_types/ICommand";
 import {IDataHook, Field} from "model-react";
 import {ICommandsList} from "./_types/ICommandsList";
 import {CompoundCommand} from "./commands/CompoundCommand";
+import {ICommandBatchFunction} from "./_types/ICommandBatchFunction";
 
+/**
+ * A command dispatcher and undo redo manager
+ */
 export class UndoRedoFacility implements IUndoRedoFacility {
     protected commands = new Field({past: [], future: []} as {
         past: ICommand[];
@@ -19,7 +23,7 @@ export class UndoRedoFacility implements IUndoRedoFacility {
      */
     public async execute(
         command: ICommand,
-        batchCommands?: boolean | ((previous?: ICommand) => boolean)
+        batchCommands?: boolean | ICommandBatchFunction
     ): Promise<void> {
         const {past, future} = this.getCommands();
         const prevCommand = past[past.length - 1] as ICommand | undefined;
@@ -28,8 +32,11 @@ export class UndoRedoFacility implements IUndoRedoFacility {
         const finished = command.execute();
 
         // Add to the batch if requested
-        if (batchCommands instanceof Function) batchCommands = batchCommands(prevCommand);
-        if (batchCommands) {
+        let batch =
+            (batchCommands instanceof Function
+                ? prevCommand && batchCommands(prevCommand)
+                : batchCommands) ?? false;
+        if (batch) {
             if (prevCommand instanceof CompoundCommand && !this.shouldSplitBatch) {
                 command = prevCommand.augment(command);
                 this.commands.set({
@@ -37,7 +44,9 @@ export class UndoRedoFacility implements IUndoRedoFacility {
                     future: [],
                 });
             } else {
-                command = new CompoundCommand([command]);
+                command = new (batch instanceof Function ? batch : CompoundCommand)([
+                    command,
+                ]);
                 this.commands.set({past: [...past, command], future: []});
             }
         }

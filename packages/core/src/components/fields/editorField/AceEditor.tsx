@@ -25,7 +25,6 @@ export const AceEditor: LFC<IAceEditorProps> = ({
     let divRef = useRef<HTMLDivElement | null>(null);
     let [editor, setEditor] = useState(null as Ace.Editor | null);
     useLayoutEffect(() => {
-        console.log("Detect");
         if (divRef.current) {
             // Create the editor
             let editor = getAce().edit(divRef.current);
@@ -43,7 +42,6 @@ export const AceEditor: LFC<IAceEditorProps> = ({
 
     // Update the options on change
     useDeepUpdateEffect(() => {
-        console.log(options, editor);
         if (editor && options) editor.setOptions(options);
     }, [options]);
 

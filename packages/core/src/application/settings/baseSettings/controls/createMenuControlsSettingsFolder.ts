@@ -9,7 +9,7 @@ import {menuNavigationModifier} from "../createBaseSettingsFolder";
  */
 export function createMenuControlsSettingsFolder() {
     return createSettingsFolder({
-        name: "Menu",
+        name: "Menu controls",
         children: {
             execute: createKeyPatternSetting({
                 name: "Execute item",

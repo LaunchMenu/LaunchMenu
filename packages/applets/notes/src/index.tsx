@@ -1,15 +1,8 @@
 import React from "react";
 import {
-    createSettings,
-    createSettingsFolder,
-    createStandardMenuItem,
     declare,
     searchAction,
     UILayer,
-    TextField,
-    createTextFieldKeyHandler,
-    EditorField,
-    createFileSetting,
     ProxiedMenu,
     IMenuItem,
     executeAction,

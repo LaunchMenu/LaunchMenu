@@ -15,13 +15,13 @@ import {createStandardMenuItem} from "../../../menus/items/createStandardMenuIte
 import {IViewStackItem} from "../../_types/IViewStackItem";
 import {MenuView} from "../../../components/menu/MenuView";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
-import {createMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
+import {createStandardMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/createStandardMenuKeyHandler";
 import {IUILayerFieldData} from "../../_types/IUILayerFieldData";
 import {IUILayerContentData} from "../../_types/IUILayerContentData";
 import {AbstractUILayer} from "../../AbstractUILayer";
 import {TextFieldView} from "../../../components/fields/TextFieldView";
 import {ITextField} from "../../../textFields/_types/ITextField";
-import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
+import {createStandardTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createStandardTextFieldKeyHandler";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
 import {IHighlighter} from "../../../textFields/syntax/_types/IHighlighter";
@@ -37,6 +37,7 @@ import {isActionBindingFor} from "../../../actions/utils/isActionBindingFor";
 import {onMenuChangeAction} from "../../../actions/types/onMenuChange/onMenuChangAction";
 import {menuItemIdentityAction} from "../../../actions/types/identity/menuItemIdentityAction";
 import {identityAction} from "../../../actions/types/identity/identityAction";
+import {IDisposableKeyEventListener} from "../../../textFields/interaction/_types/IDisposableKeyEventListener";
 
 export function isMultiSelectObject(option: IMultiSelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -132,11 +133,14 @@ export class MultiSelect<T> extends AbstractUILayer {
         }));
 
         // Obtain all menu and field data
+        const {handler: menuHandler, destroy: destroyMenuHandler} = this.getMenuHandler(
+            menu
+        );
         const menuData: IUILayerMenuData = {
             ID: uuid(),
             menu,
             menuView: this.getMenuView(menu),
-            menuHandler: this.getMenuHandler(menu),
+            menuHandler,
         };
         const fieldData: IUILayerFieldData = {
             ID: uuid(),
@@ -186,6 +190,7 @@ export class MultiSelect<T> extends AbstractUILayer {
             this.menuData.set(null);
             this.fieldData.set(null);
             this.contentData.set(null);
+            destroyMenuHandler();
             cursorObserver.destroy();
             fieldObserver.destroy();
         };
@@ -206,8 +211,8 @@ export class MultiSelect<T> extends AbstractUILayer {
      * @param menu The menu to create the handler for
      * @returns The key listener
      */
-    protected getMenuHandler(menu: SearchMenu): IKeyEventListener {
-        return createMenuKeyHandler(menu);
+    protected getMenuHandler(menu: SearchMenu): IDisposableKeyEventListener {
+        return createStandardMenuKeyHandler(menu);
     }
 
     /**
@@ -245,9 +250,11 @@ export class MultiSelect<T> extends AbstractUILayer {
         context: IIOContext,
         close: () => void
     ): IKeyEventListener {
-        return createTextFieldKeyHandler(field, context, () => {
-            if (this.textField.get() != "") this.textField.set("");
-            else close();
+        return createStandardTextFieldKeyHandler(field, context, {
+            onExit: () => {
+                if (this.textField.get() != "") this.textField.set("");
+                else close();
+            },
         });
     }
 

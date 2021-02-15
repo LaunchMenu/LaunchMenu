@@ -2,22 +2,23 @@ import {createFieldControlsSettingsFolder} from "../../../../application/setting
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {TSettingsFromFactory} from "../../../../settings/_types/TSettingsFromFactory";
-import {ITextField} from "../../../_types/ITextField";
 import {insertText} from "../../insertText";
 import {isFieldControlsSettingsFolder} from "../../keyHandler/isFieldControlsSettingsFolder";
+import {getEditTargetTextField} from "../../performNormalizedTextEdit";
+import {ITextEditTarget} from "../../_types/ITextEditTarget";
 import {indentText} from "../indentText";
 
 /**
  * Handles tab inputs
  * @param event The event to test
- * @param textField The text field to perform the event for
+ * @param targetField The text field to perform the event for
  * @param patterns The key patterns to detect, or the base settings to extract them from
  * @param indentCharacters The characters to use for indentation
  * @returns Whether the event was caught
  */
 export function handleIndentInput(
     event: KeyEvent,
-    textField: ITextField,
+    targetField: ITextEditTarget,
     patterns:
         | {
               indent: KeyPattern;
@@ -33,14 +34,14 @@ export function handleIndentInput(
         };
 
     if (patterns.indent.matches(event)) {
-        const selection = textField.getSelection();
-        if (selection.start == selection.end) insertText(textField, indentCharacters);
-        else indentText(textField, 1, indentCharacters);
+        const selection = getEditTargetTextField(targetField).getSelection();
+        if (selection.start == selection.end) insertText(targetField, indentCharacters);
+        else indentText(targetField, 1, indentCharacters);
 
         return true;
     }
     if (patterns.dedent.matches(event)) {
-        indentText(textField, -1, indentCharacters);
+        indentText(targetField, -1, indentCharacters);
         return true;
     }
 }

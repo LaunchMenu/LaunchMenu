@@ -22,6 +22,15 @@ export function createShortcutSettingsFolder() {
                 name: "Paste",
                 init: new KeyPattern("ctrl+v"),
             }),
+            search: createSettingsFolder({
+                name: "Search",
+                children: {
+                    openAtTrace: createKeyPatternSetting({
+                        name: "Open in location",
+                        init: new KeyPattern("ctrl+o"),
+                    }),
+                },
+            }),
         },
     });
 }

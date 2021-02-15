@@ -1,5 +1,4 @@
 import {KeyEvent} from "../../keyHandler/KeyEvent";
-import {IKeyEventListenerFunction} from "../../keyHandler/_types/IKeyEventListener";
 import {IIOContext} from "../_types/IIOContext";
 
 /**
@@ -18,8 +17,6 @@ export async function emitContextEvent(
         const handlers = layer.getKeyHandlers();
         for (var j = handlers.length - 1; j >= 0; j--) {
             let handler = handlers[j];
-            if (!(handler instanceof Function))
-                handler = handler.emit.bind(handler) as IKeyEventListenerFunction;
             if (await handler(event)) return true;
         }
     }

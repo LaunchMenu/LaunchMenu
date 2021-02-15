@@ -3,7 +3,7 @@ import {
     Content,
     ContentView,
     createAction,
-    createContentKeyHandler,
+    createStandardContentKeyHandler,
     createStandardBinding,
     getContentAction,
     IAction,
@@ -12,7 +12,6 @@ import {
     IIdentifiedItem,
     IUUID,
     LFC,
-    useIOContext,
 } from "@launchmenu/core";
 import {v4 as uuid} from "uuid";
 import React from "react";
@@ -34,7 +33,7 @@ export const noteContentHandler = createAction({
         children: contents.map(({ID, value: note}) =>
             getContentAction.createBinding(context => {
                 const content = new Content(<NoteContent note={note} />);
-                const handler = createContentKeyHandler(content, context);
+                const handler = createStandardContentKeyHandler(content, context);
                 const view = <ContentView plain content={content} />;
                 return {content, contentView: view, contentHandler: handler};
             }, ID)

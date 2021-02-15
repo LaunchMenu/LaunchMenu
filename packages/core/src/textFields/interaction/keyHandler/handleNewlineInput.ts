@@ -5,6 +5,7 @@ import {TSettingsFromFactory} from "../../../settings/_types/TSettingsFromFactor
 import {createFieldControlsSettingsFolder} from "../../../application/settings/baseSettings/controls/createFieldControlsSettingsFolder";
 import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {isFieldControlsSettingsFolder} from "./isFieldControlsSettingsFolder";
+import {ITextEditTarget} from "../_types/ITextEditTarget";
 
 /**
  * Handles new line inputs
@@ -15,7 +16,7 @@ import {isFieldControlsSettingsFolder} from "./isFieldControlsSettingsFolder";
  */
 export function handleNewlineInput(
     event: KeyEvent,
-    textField: ITextField,
+    textField: ITextEditTarget,
     pattern: KeyPattern | TSettingsFromFactory<typeof createFieldControlsSettingsFolder>
 ): void | boolean {
     if (isFieldControlsSettingsFolder(pattern)) pattern = pattern.insertLine.get();

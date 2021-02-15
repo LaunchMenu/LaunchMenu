@@ -6,7 +6,7 @@ export type IOptionMenuItemData<T> = {
     /** The default value for the field */
     init: T;
     /** The options of the field */
-    options: T[];
+    options: readonly T[];
     /** Retrieves the element to show as the currently selected item */
     getValueView?: (option: T) => JSX.Element;
     /** Creates a menu item for a given option */

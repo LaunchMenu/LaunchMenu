@@ -2,6 +2,7 @@ import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {createKeyPatternSetting} from "../../../settings/inputs/createKeyPatternSetting";
 import {createSettingsFolder} from "../../../settings/inputs/createSettingsFolder";
 import {constGetter} from "../../../utils/constGetter";
+import {createCommonControlsSettingsFolder} from "./controls/createCommonControlsSettingsFolder";
 import {createContentControlsSettingsFolder} from "./controls/createContentControlsSettingsFolder";
 import {
     createFieldControlsSettingsFolder,
@@ -35,22 +36,7 @@ export function createBaseSettingsFolder() {
                     menu: createMenuControlsSettingsFolder(),
                     field: createFieldControlsSettingsFolder(),
                     content: createContentControlsSettingsFolder(),
-                    back: createKeyPatternSetting({
-                        name: "Back",
-                        init: new KeyPattern([
-                            {pattern: "esc", type: "down"},
-                            {pattern: `${menuNavigationModifier}+left`, type: "down"},
-                        ]),
-                    }),
-                    search: createSettingsFolder({
-                        name: "Search",
-                        children: {
-                            openAtTrace: createKeyPatternSetting({
-                                name: "Open in location",
-                                init: new KeyPattern("ctrl+o"),
-                            }),
-                        },
-                    }),
+                    common: createCommonControlsSettingsFolder(),
                     shortcuts: createShortcutSettingsFolder(),
                 },
             }),

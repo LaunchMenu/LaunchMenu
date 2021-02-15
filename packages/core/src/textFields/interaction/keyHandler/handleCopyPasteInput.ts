@@ -1,4 +1,3 @@
-import {ITextField} from "../../_types/ITextField";
 import {pasteText} from "../pasteText";
 import {copyText} from "../copyText";
 import {insertText} from "../insertText";
@@ -7,17 +6,19 @@ import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {TSettingsFromFactory} from "../../../settings/_types/TSettingsFromFactory";
 import {createFieldControlsSettingsFolder} from "../../../application/settings/baseSettings/controls/createFieldControlsSettingsFolder";
 import {isFieldControlsSettingsFolder} from "./isFieldControlsSettingsFolder";
+import {ITextEditTarget} from "../_types/ITextEditTarget";
+import {getEditTargetTextField} from "../performNormalizedTextEdit";
 
 /**
  * Handles copying and pasting of text
  * @param event The event to test
- * @param textField The text field to perform the event for
+ * @param targetField The text field to perform the event for
  * @param patterns The key patterns to detect, or the base settings to extract them from
  * @returns Whether the event was caught
  */
 export function handleCopyPasteInput(
     event: KeyEvent,
-    textField: ITextField,
+    targetField: ITextEditTarget,
     patterns:
         | {
               copy: KeyPattern;
@@ -34,15 +35,15 @@ export function handleCopyPasteInput(
         };
 
     if (patterns.copy.matches(event)) {
-        if (copyText(textField)) return true;
+        if (copyText(getEditTargetTextField(targetField))) return true;
     }
     if (patterns.cut.matches(event)) {
-        if (copyText(textField)) {
-            insertText(textField, "");
+        if (copyText(getEditTargetTextField(targetField))) {
+            insertText(targetField, "");
             return true;
         }
     }
     if (patterns.paste.matches(event)) {
-        if (pasteText(textField)) return true;
+        if (pasteText(targetField)) return true;
     }
 }

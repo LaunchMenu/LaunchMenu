@@ -7,7 +7,7 @@ import {SlideDownOpenTransition} from "../../context/stacks/transitions/open/sli
 import {ErrorMessage} from "./ErrorMessage";
 import {v4 as uuid} from "uuid";
 import {ContentView} from "../ContentView";
-import {createContentKeyHandler} from "../../../content/interaction/keyHandler/createContentKeyHandler";
+import {createStandardContentKeyHandler} from "../../../content/interaction/keyHandler/createStandardContentKeyHandler";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {FadeOpenTransition} from "../../context/stacks/transitions/open/FadeOpenTransition";
 import {FadeCloseTransition} from "../../context/stacks/transitions/close/FadeCloseTransition";
@@ -35,6 +35,6 @@ export function createContentError(
                 Close: FadeCloseTransition,
             },
         },
-        contentHandler: createContentKeyHandler(content, context),
+        contentHandler: createStandardContentKeyHandler(content, context),
     };
 }

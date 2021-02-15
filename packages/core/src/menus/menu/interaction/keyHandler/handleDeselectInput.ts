@@ -13,7 +13,10 @@ import {baseSettings} from "../../../../application/settings/baseSettings/baseSe
 export function handleDeselectInput(
     event: KeyEvent,
     menu: IMenu,
-    pattern: KeyPattern = menu.getContext().settings.get(baseSettings).controls.back.get()
+    pattern: KeyPattern = menu
+        .getContext()
+        .settings.get(baseSettings)
+        .controls.common.back.get()
 ): void | boolean {
     if (pattern.matches(event)) {
         const selection = menu.getSelected();

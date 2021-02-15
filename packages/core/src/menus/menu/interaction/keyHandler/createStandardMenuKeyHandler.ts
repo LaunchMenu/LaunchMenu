@@ -1,7 +1,3 @@
-import {
-    IKeyEventListener,
-    IKeyEventListenerObject,
-} from "../../../../keyHandler/_types/IKeyEventListener";
 import {IMenu} from "../../_types/IMenu";
 import {handleExecuteInput} from "./handleExecuteInput";
 import {setupMoveInputHandler} from "./setupMoveInputHandler";
@@ -11,6 +7,7 @@ import {setupContextMenuHandler} from "./setupContextMenuHandler";
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
 import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
+import {IDisposableKeyEventListener} from "../../../../textFields/interaction/_types/IDisposableKeyEventListener";
 
 /**
  * Creates a standard menu key handler
@@ -18,7 +15,7 @@ import {IMenuItemExecuteCallback} from "../../_types/IMenuItemExecuteCallback";
  * @param config Any additional optional data for the key handler configuration
  * @returns The key handler that can be added to the UILayer
  */
-export function createMenuKeyHandler(
+export function createStandardMenuKeyHandler(
     menu: IMenu,
     {
         onExit,
@@ -35,39 +32,44 @@ export function createMenuKeyHandler(
         /** Whether to forward key events to context menu items (can be costly for large selections or context menus), defaults to true */
         useContextItemKeyHandlers?: boolean;
     } = {}
-): IKeyEventListener {
+): IDisposableKeyEventListener {
     const context = menu.getContext();
     const settings = context.settings.get(baseSettings).controls;
     const fieldSettings = settings.menu;
 
     // Setup handlers
-    let handleItemKeyListeners = useItemKeyHandlers
+    let {
+        handler: handleItemKeyListeners,
+        destroy: destroyItemListenersHandler,
+    } = useItemKeyHandlers
         ? setupItemKeyListenerHandler(menu, onExecute)
-        : undefined;
-    const contextHandler = setupContextMenuHandler(menu, {
+        : {handler: undefined, destroy: undefined};
+    const {
+        handler: handleContextMenu,
+        destroy: destroyContextMenuHandler,
+    } = setupContextMenuHandler(menu, {
         useContextItemKeyHandlers,
         pattern: () => fieldSettings.openContextMenu.get(),
     });
-    const cursorMovementHandler = setupMoveInputHandler(menu, fieldSettings);
+    const handleCursorMovement = setupMoveInputHandler(menu, fieldSettings);
 
     // Return the listener
     return {
-        async emit(e: KeyEvent): Promise<boolean | void> {
-            if (await handleItemKeyListeners?.emit(e)) return true;
-            if (await contextHandler.emit(e)) return true;
+        handler: async (e: KeyEvent) => {
+            if (await handleItemKeyListeners?.(e)) return true;
+            if (await handleContextMenu(e)) return true;
             if (handleExecuteInput(e, menu, onExecute, fieldSettings.execute.get()))
                 return true;
-            if (await cursorMovementHandler.emit(e)) return true;
-            if (handleDeselectInput(e, menu, settings.back.get())) return true;
-            if (onExit && settings.back.get().matches(e)) {
+            if (await handleCursorMovement?.(e)) return true;
+            if (handleDeselectInput(e, menu, settings.common.back.get())) return true;
+            if (onExit && settings.common.back.get().matches(e)) {
                 onExit();
                 return true;
             }
         },
-        destroy() {
-            handleItemKeyListeners?.destroy?.();
-            contextHandler.destroy?.();
-            cursorMovementHandler.destroy?.();
+        destroy: () => {
+            destroyItemListenersHandler?.();
+            destroyContextMenuHandler();
         },
-    } as IKeyEventListenerObject;
+    };
 }

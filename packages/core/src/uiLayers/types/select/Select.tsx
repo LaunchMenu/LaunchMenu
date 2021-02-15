@@ -15,7 +15,7 @@ import {IInputError} from "../input/_types/IInputError";
 import {IViewStackItem} from "../../_types/IViewStackItem";
 import {MenuView} from "../../../components/menu/MenuView";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
-import {createMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
+import {createStandardMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/createStandardMenuKeyHandler";
 import {ISelectOption} from "./_types/ISelectOption";
 import {ISelectOptionData} from "./_types/ISelectOptionData";
 import {executeAction} from "../../../actions/types/execute/executeAction";
@@ -24,6 +24,7 @@ import {isActionBindingFor} from "../../../actions/utils/isActionBindingFor";
 import {searchAction} from "../../../actions/types/search/searchAction";
 import {menuItemIdentityAction} from "../../../actions/types/identity/menuItemIdentityAction";
 import {identityAction} from "../../../actions/types/identity/identityAction";
+import {IDisposableKeyEventListener} from "../../../textFields/interaction/_types/IDisposableKeyEventListener";
 
 export function isSelectObject(option: ISelectOption<any>): option is object {
     return typeof option == "object" && "value" in option;
@@ -80,11 +81,14 @@ export class Select<T> extends Input<T> {
             ...this.config.categoryConfig,
             showAllOnEmptySearch: true,
         }));
+        const {handler: menuHandler, destroy: destroyMenuHandler} = this.getMenuHandler(
+            menu
+        );
         const menuData: IUILayerMenuData = {
             ID: uuid(),
             menu,
             menuView: this.getMenuView(menu),
-            menuHandler: this.getMenuHandler(menu),
+            menuHandler,
         };
 
         // Retrieve and store the options
@@ -130,6 +134,7 @@ export class Select<T> extends Input<T> {
         return () => {
             superClose();
             this.menuData.set(null);
+            destroyMenuHandler();
             cursorObserver.destroy();
             fieldObserver.destroy();
         };
@@ -155,8 +160,8 @@ export class Select<T> extends Input<T> {
      * @param menu The menu to create the handler for
      * @returns The key listener
      */
-    protected getMenuHandler(menu: SearchMenu): IKeyEventListener {
-        return createMenuKeyHandler(menu);
+    protected getMenuHandler(menu: SearchMenu): IDisposableKeyEventListener {
+        return createStandardMenuKeyHandler(menu);
     }
 
     // Value selection handling

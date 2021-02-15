@@ -12,6 +12,7 @@ export const getFieldControlsFolderCategories = constGetter(() => ({
     clipboard: createStandardCategory({name: "Clipboard interaction"}),
     textNavigation: createStandardCategory({name: "Text navigation"}),
     insertDelete: createStandardCategory({name: "Text insertion and deletion"}),
+    meta: createStandardCategory({name: "Meta controls"}),
 }));
 
 /**
@@ -20,7 +21,7 @@ export const getFieldControlsFolderCategories = constGetter(() => ({
  */
 export function createFieldControlsSettingsFolder() {
     return createSettingsFolder({
-        name: "Field",
+        name: "Field controls",
         children: {
             // clipboard
             copy: createKeyPatternSetting({
@@ -160,6 +161,18 @@ export function createFieldControlsSettingsFolder() {
                     {pattern: ["shift", "tab"], type: "down or repeat"},
                 ]),
                 category: getFieldControlsFolderCategories().insertDelete,
+            }),
+
+            // Meta controls
+            undo: createKeyPatternSetting({
+                name: "Undo text",
+                init: new KeyPattern([{pattern: ["ctrl", "z"], type: "down or repeat"}]),
+                category: getFieldControlsFolderCategories().meta,
+            }),
+            redo: createKeyPatternSetting({
+                name: "Redo text",
+                init: new KeyPattern([{pattern: ["ctrl", "y"], type: "down or repeat"}]),
+                category: getFieldControlsFolderCategories().meta,
             }),
         },
     });

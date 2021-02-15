@@ -10,7 +10,7 @@ import {handleContentScrollInput} from "./handleContentScrollInput";
  * @param context The context that the handler is used in
  * @returns The key handler tha can be added to the UILayer
  */
-export function createContentKeyHandler(
+export function createStandardContentKeyHandler(
     content: IContent,
     context: IIOContext
 ): IKeyEventListener {

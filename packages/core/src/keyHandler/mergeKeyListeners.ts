@@ -1,24 +1,22 @@
-import {IKeyEventListener, IKeyEventListenerObject} from "./_types/IKeyEventListener";
+import {IKeyEventListener} from "./_types/IKeyEventListener";
 import {KeyEvent} from "./KeyEvent";
 
 /**
  * Merges the given key listeners
- * @param handlers
+ * @param handlers The handlers to merge
+ * @returns A key listener that merged the passed handlers in the given order
  */
 export function mergeKeyListeners(
-    ...handlers: IKeyEventListener[]
-): IKeyEventListenerObject {
-    return {
-        emit: async (event: KeyEvent) => {
-            for (let handler of handlers) {
-                if ("emit" in handler) {
-                    if (await handler.emit(event)) return true;
-                } else {
-                    if (handler(event)) return true;
-                }
-            }
-        },
-        destroy: () =>
-            handlers.forEach(handler => "destroy" in handler && handler.destroy?.()),
+    ...handlers: (IKeyEventListener | undefined)[]
+): IKeyEventListener {
+    const normalizedHandlers = handlers.filter(
+        (handler): handler is IKeyEventListener => !!handler
+    );
+    if (normalizedHandlers.length == 1) return normalizedHandlers[0];
+
+    return async (event: KeyEvent) => {
+        for (let handler of normalizedHandlers) {
+            if (await handler(event)) return true;
+        }
     };
 }
