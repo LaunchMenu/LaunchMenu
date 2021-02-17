@@ -1,5 +1,5 @@
 import {ITextField} from "../../_types/ITextField";
-import {TextEditCommand} from "../commands/TextEditCommand";
+import {ITextEditCommand} from "../commands/_types/ITextEditCommand";
 
 /** The possible targets for a text input */
 export type ITextEditTarget =
@@ -8,5 +8,5 @@ export type ITextEditTarget =
           /** The textfield to be altered */
           textField: ITextField;
           /** The callback for the created commands to alter the field */
-          onChange: (command: TextEditCommand) => void;
+          onChange: (command: ITextEditCommand) => void;
       };

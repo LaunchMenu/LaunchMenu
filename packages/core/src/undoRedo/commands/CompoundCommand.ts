@@ -2,8 +2,10 @@ import {ICommand} from "../_types/ICommand";
 import {ICommandMetadata} from "../_types/ICommandMetadata";
 import {DataCacher, IDataHook} from "model-react";
 import {ICommandState} from "../_types/ICommandState";
+import {ICompoundCommand} from "../_types/ICompoundCommand";
 
-export class CompoundCommand implements ICommand {
+/** A standard command that can be used to combine commands to execute and undo them together */
+export class CompoundCommand implements ICompoundCommand {
     public readonly commands: ICommand[];
     public metadata: ICommandMetadata;
 

@@ -4,6 +4,7 @@ import {IDataHook, Field} from "model-react";
 import {ICommandsList} from "./_types/ICommandsList";
 import {CompoundCommand} from "./commands/CompoundCommand";
 import {ICommandBatchFunction} from "./_types/ICommandBatchFunction";
+import {isCompoundCommand} from "./_types/ICompoundCommand";
 
 /**
  * A command dispatcher and undo redo manager
@@ -34,10 +35,10 @@ export class UndoRedoFacility implements IUndoRedoFacility {
         // Add to the batch if requested
         let batch =
             (batchCommands instanceof Function
-                ? prevCommand && batchCommands(prevCommand)
+                ? batchCommands(prevCommand)
                 : batchCommands) ?? false;
         if (batch) {
-            if (prevCommand instanceof CompoundCommand && !this.shouldSplitBatch) {
+            if (prevCommand && isCompoundCommand(prevCommand) && !this.shouldSplitBatch) {
                 command = prevCommand.augment(command);
                 this.commands.set({
                     past: [...past.slice(0, past.length - 1), command],

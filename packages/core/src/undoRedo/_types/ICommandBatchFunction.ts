@@ -1,5 +1,6 @@
-import {CompoundCommand} from "../commands/CompoundCommand";
 import {ICommand} from "./ICommand";
+import {ICompoundCommand} from "./ICompoundCommand";
+
 /** A function to determine whether to batch a command with the previous command */
 export type ICommandBatchFunction = {
     /**
@@ -7,7 +8,5 @@ export type ICommandBatchFunction = {
      * @param previous The previously dispatched command
      * @returns Whether to batch with the previous command, or a command class to use for the compound command
      */
-    <T extends CompoundCommand>(previous: ICommand):
-        | boolean
-        | {new (commands: ICommand[]): T};
+    (previous?: ICommand): boolean | {new (commands: ICommand[]): ICompoundCommand};
 };

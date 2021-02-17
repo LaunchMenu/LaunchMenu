@@ -1,7 +1,10 @@
 import {ITextField} from "../_types/ITextField";
 import {ITextSelection} from "../_types/ITextSelection";
+import {CompoundTextEditCommand} from "./commands/CompoundTextEditCommand";
+import {TextAlterationTools} from "./commands/TextAlterationTools";
 import {TextEditCommand} from "./commands/TextEditCommand";
 import {ITextAlterationInput} from "./commands/_types/ITextAlterationInput";
+import {ITextEditCommand} from "./commands/_types/ITextEditCommand";
 import {ITextEditTarget} from "./_types/ITextEditTarget";
 
 /**
@@ -15,7 +18,7 @@ export function performNormalizedTextEdit(
         textField: ITextField,
         undoable: boolean
     ) =>
-        | TextEditCommand
+        | ITextEditCommand
         | {alterations: ITextAlterationInput[]; selection?: ITextSelection}
 ): void {
     const textField = "textField" in target ? target.textField : target;
@@ -23,27 +26,51 @@ export function performNormalizedTextEdit(
     // Use the callback to retrieve the changes
     const result = edit(textField, "textField" in target);
 
+    // Retrieve the potential result command, or result alterations
+    const resultCommand = "getAlterations" in result ? result : undefined;
+    const resultAlterations =
+        "alterations" in result
+            ? {
+                  ...result,
+                  alternations: result.alterations.sort(
+                      ({start: a}, {start: b}) => a - b
+                  ),
+              }
+            : undefined;
+    if (
+        resultAlterations?.alterations.some(
+            (item, i, all) => item.end > all[i + 1]?.start
+        )
+    )
+        throw Error(
+            "Alterations may not overlap each other, use a compound command instead"
+        );
+
     // Check the result and perform the necessary action
     if ("textField" in target) {
         // If a command was returned, simply return the command
-        if (result instanceof TextEditCommand) target.onChange(result);
+        if (resultCommand) target.onChange(resultCommand);
         // If alterations were returned, turn it into a command
-        else {
-            const command = new TextEditCommand(
-                textField,
-                result.alterations,
-                result.selection
+        else if (resultAlterations) {
+            const {alterations, selection} = resultAlterations;
+
+            const commands = alterations.map(
+                alteration => new TextEditCommand(textField, alteration, selection)
             );
-            target.onChange(command);
+            if (commands.length == 1) target.onChange(commands[0]);
+            else if (commands.length > 1) {
+                const command = new CompoundTextEditCommand(commands as any);
+                target.onChange(command);
+            }
         }
     } else {
         // If a command was returned, simply execute the command
-        if (result instanceof TextEditCommand) result.execute();
+        if (resultCommand) resultCommand.execute();
         // If alterations were returned, combine them into the new text
-        else {
-            const {alterations, selection} = result;
-            alterations.sort(({start: a}, {start: b}) => a - b);
-            const newText = TextEditCommand.performAlterations(
+        else if (resultAlterations) {
+            const {alterations, selection} = resultAlterations;
+
+            const newText = TextAlterationTools.performAlterations(
                 textField.get(),
                 alterations
             );
