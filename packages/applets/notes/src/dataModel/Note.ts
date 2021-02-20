@@ -1,10 +1,10 @@
-import {File, FileAutoReloader, FileAutoSaver, IFile} from "@launchmenu/core";
+import {File, FileAutoReloader, FileAutoSaver} from "@launchmenu/core";
 import {DataCacher, IDataHook, IDataRetriever} from "model-react";
 import {NoteCategory} from "./NoteCategory";
 import {NotesSource} from "./NotesSource";
 import {INoteMetadata} from "./_types/INoteMetadata";
-import {IInherit, inherit} from "./_types/IInherit";
-import {ifNotInherited} from "./ifNotInherited";
+import {IInherit} from "./_types/IInherit";
+import {ifNotInherited} from "./tools/ifNotInherited";
 import {IHighlightLanguage} from "./_types/IHighlightLanguage";
 
 export class Note {
@@ -192,6 +192,19 @@ export class Note {
         );
     }
 
+    /**
+     * Retrieves the default value of whether to search the content for notes in this category
+     * @param hook The hook to subscribe to changes
+     * @returns Whether to search content
+     */
+    public getSearchContent(hook?: IDataHook): boolean {
+        return (
+            ifNotInherited(this.dataSource(hook).searchContent) ??
+            this.getCategory(hook)?.getSearchContent(hook) ??
+            this.notesSource.defaults.searchContent(hook)
+        );
+    }
+
     // Setters
     /**
      * Updates the note's name
@@ -280,5 +293,13 @@ export class Note {
      */
     public setShowRichContent(showRichContent: boolean | IInherit): void {
         this.update(this.ID, {...this.dataSource(), showRichContent});
+    }
+
+    /**
+     * Sets the default for whether to search content for notes in this category
+     * @param searchContent Whether to search content for this category
+     */
+    public setSearchContent(searchContent: boolean | IInherit): void {
+        this.update(this.ID, {...this.dataSource(), searchContent});
     }
 }

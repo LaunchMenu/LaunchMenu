@@ -5,7 +5,6 @@ import {
     getControlsCategory,
     IMenuItem,
     inputExecuteHandler,
-    searchAction,
     sequentialExecuteHandler,
 } from "@launchmenu/core";
 import {Field} from "model-react";
@@ -14,12 +13,12 @@ import {NotesSource} from "../../dataModel/NotesSource";
 import {INoteMetadata} from "../../dataModel/_types/INoteMetadata";
 
 /**
- * Creates a new menu item to add new notes
+ * Creates a menu item to edit the metadata file that stores all notes
  * @param notesSource The notes source to add the item to
  * @param onCreate A callback for when a note is created
  * @returns The menu item that can be used to create new notes
  */
-export function createAddNoteMenuItem(
+export function createEditMetadataMenuItem(
     notesSource: NotesSource,
     onCreate?: (note: Note, initial: boolean) => void
 ): IMenuItem {
@@ -42,7 +41,6 @@ export function createAddNoteMenuItem(
                 return new AddNoteCommand(field.get(), notesSource, onCreate);
             }),
         ],
-        identityActionBindings: id => [],
     });
 }
 

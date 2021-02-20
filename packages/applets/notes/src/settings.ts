@@ -50,6 +50,11 @@ export const settings = createSettings({
                             description: `Whether to render rich content for notes with "text", "markdown" or "html" syntax modes`,
                             init: true,
                         }),
+                        searchContent: createBooleanSetting({
+                            name: "Default search note content",
+                            description: `Whether to make the note's content searchable. This may cause some lag for big files`,
+                            init: false,
+                        }),
                         fontSize: createNumberSetting({
                             name: "Default note font size",
                             description:
@@ -59,6 +64,27 @@ export const settings = createSettings({
                             max: 40,
                         }),
                     },
+                }),
+                editing: createSettingsFolder({
+                    name: "Editor",
+                    children: {
+                        fullScreenEdit: createBooleanSetting({
+                            name: "Full screen note edit",
+                            init: true,
+                        }),
+                        liveUpdate: createBooleanSetting({
+                            name: "Live note saving",
+                            description:
+                                "Whether the note should save on disk while editing, instead of once editing finished",
+                            init: false,
+                        }),
+                    },
+                }),
+                inlineCategory: createBooleanSetting({
+                    name: "Inline categories",
+                    description:
+                        "Whether to show the category as the description of notes",
+                    init: false,
                 }),
             },
         }),

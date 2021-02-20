@@ -16,6 +16,7 @@ import {
     ICssCursor,
     ICssFlexWrap,
     ICssBoxSizing,
+    ICssTextAlign,
 } from "../_types/ICssTypes";
 
 /*
@@ -56,6 +57,7 @@ export const cssLiteralMappers = {
     float: (p: ICssFloat) => p,
     cursor: (p: ICssCursor) => p,
     boxSizing: (p: ICssBoxSizing) => p,
+    textAlign: (p: ICssTextAlign) => p,
     zIndex: (p: number) => p,
     order: (p: number) => p,
     flexGrow: (p: number) => p,

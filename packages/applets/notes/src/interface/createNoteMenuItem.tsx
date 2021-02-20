@@ -1,13 +1,16 @@
 import React from "react";
 import {
+    copyAction,
+    copyTextHandler,
     getCategoryAction,
     getContentAction,
     ICategory,
     IMenuItem,
+    SettingsContext,
 } from "@launchmenu/core";
 import {notesIcon} from "../notesIcon";
 import {Note} from "../dataModel/Note";
-import {IDataHook, Loader} from "model-react";
+import {IDataHook, IDataRetriever, Loader} from "model-react";
 import {createColorableMenuItem} from "./createColorableMenuItem";
 import {editNoteExecuteAction} from "./actionHandlers/editNoteExecuteAction";
 import {setCategoryAction} from "./actionHandlers/setCategoryAction";
@@ -15,42 +18,49 @@ import {setNoteNameAction} from "./actionHandlers/setNoteNameAction";
 import {NotesSource} from "../dataModel/NotesSource";
 import {deleteNoteHandler} from "./actionHandlers/deleteNoteHandler";
 import {notePatternMatcher} from "../notePatternMatcher";
-import {setColorAction} from "./actionHandlers/setColorAction";
-import {setSyntaxModeAction} from "./actionHandlers/setSyntaxModeAction";
-import {setFontSizeAction} from "./actionHandlers/setFontSizeAction";
-import {setRichContentAction} from "./actionHandlers/setRichContentAction";
+import {setColorAction} from "./actionHandlers/noteAppearance/setColorAction";
+import {setSyntaxModeAction} from "./actionHandlers/noteAppearance/setSyntaxModeAction";
+import {setFontSizeAction} from "./actionHandlers/noteAppearance/setFontSizeAction";
+import {setRichContentAction} from "./actionHandlers/noteAppearance/setRichContentAction";
 import {noteContentHandler} from "./actionHandlers/noteContentHandler";
+import {settings} from "../settings";
+import {setSearchContentAction} from "./actionHandlers/noteAppearance/setSearchContentAction";
 
 /**
  * Creates a menu item for the given note
  * @param note The note to create an item for
  * @param notesSource The source of the notes
  * @param getCategories All the available note categories
+ * @param settingsContext The context to get settings from
  * @returns The created menu item
  */
 export function createNoteMenuItem(
     note: Note,
     notesSource: NotesSource,
-    getCategories: (h?: IDataHook) => ICategory[]
+    getCategories: IDataRetriever<ICategory[]>,
+    settingsContext: SettingsContext
 ): IMenuItem {
+    const useInlineCategory = (h?: IDataHook) =>
+        settingsContext.get(settings).inlineCategory.get(h);
     return createColorableMenuItem({
         name: h => note.getName(h),
         color: h => note.getColor(h),
         icon: notesIcon,
-        searchPattern: notePatternMatcher,
-        // content: (
-        //     <Loader>
-        //         {h => (
-        //             <>
-        //                 {note
-        //                     .getText(h)
-        //                     .split(/\n/)
-        //                     .flatMap((line, i) => [<br key={i} />, line])
-        //                     .slice(1)}
-        //             </>
-        //         )}
-        //     </Loader>
-        // ),
+        searchPattern: (query, hook) =>
+            notePatternMatcher(query, hook) ??
+            note.getCategory(hook)?.getSearchPatternMatcher()(query, hook),
+        rightAlignDescription: true,
+        description: h =>
+            useInlineCategory(h) ? note.getCategory(h)?.getName(h) : undefined,
+        tags: h => {
+            const category = note.getCategory(h);
+            return [
+                ...(note.getSearchContent(h) ? [note.getText(h)] : []),
+                ...(category ? [category.getName(h)] : []),
+                // An empty tag allows for results without queries
+                "",
+            ];
+        },
         actionBindings: [
             noteContentHandler.createBinding(note),
             editNoteExecuteAction.createBinding(note),
@@ -64,6 +74,7 @@ export function createNoteMenuItem(
             }),
             getCategoryAction.createBinding({
                 subscribableData: h => {
+                    if (useInlineCategory(h)) return;
                     const categoryID = note.getCategory(h)?.ID;
                     if (!categoryID) return;
                     return getCategories(h).find(({name}) => name == categoryID);
@@ -85,6 +96,13 @@ export function createNoteMenuItem(
                 set: richContent => note.setShowRichContent(richContent),
                 get: h => note.getShowRichContent(h),
             }),
+            setSearchContentAction.createBinding({
+                set: searchContent => note.setSearchContent(searchContent),
+                get: h => note.getSearchContent(h),
+            }),
+            copyAction.createBinding(
+                copyTextHandler.createBinding({subscribableData: h => note.getText(h)})
+            ),
         ],
     });
 }

@@ -8,6 +8,8 @@ export type INoteAppearanceMetadata<I = never> = {
     syntaxMode: IHighlightLanguage | I;
     /** Whether to enable rich content rendering (only works if the syntax mode is "text", "html" or "markdown") */
     showRichContent: boolean | I;
+    /** Whether the content of a note should be searchable */
+    searchContent: boolean | I;
     /** The font size for this note */
     fontSize: number | I;
 };

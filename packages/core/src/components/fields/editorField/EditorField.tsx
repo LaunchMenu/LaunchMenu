@@ -4,6 +4,8 @@ import {IEditorFieldProps} from "./_types/IEditorFieldProps";
 import {mergeStyles} from "../../../utils/mergeStyles";
 import {LFC} from "../../../_types/LFC";
 import {useDataHook} from "model-react";
+import {useIOContext} from "../../../context/react/useIOContext";
+import {baseSettings} from "../../../application/settings/baseSettings/baseSettings";
 
 /**
  * An editor field that uses ace to highlight text
@@ -17,6 +19,7 @@ export const EditorField: LFC<IEditorFieldProps> = ({
     contentMode = true,
     ...rest
 }) => {
+    const ioContext = useIOContext();
     const [h] = useDataHook();
     const value = field.get(h);
     const selection = field.getSelection(h);
@@ -26,6 +29,10 @@ export const EditorField: LFC<IEditorFieldProps> = ({
             options={{
                 readOnly: true,
                 unfocusable: true,
+                wrap:
+                    ioContext?.settings
+                        .get(baseSettings)
+                        .field.editor.lineWrapping.get(h) ?? false,
                 maxLines: contentMode ? undefined : Infinity,
                 fontSize: contentMode ? 14 : 24,
                 followCursor: true,

@@ -28,6 +28,7 @@ export const AceEditor: LFC<IAceEditorProps> = ({
         if (divRef.current) {
             // Create the editor
             let editor = getAce().edit(divRef.current);
+            if (!options?.theme) editor.setTheme("ace/theme/dreamweaver");
             if (options) editor.setOptions(options);
             setEditor(editor);
 

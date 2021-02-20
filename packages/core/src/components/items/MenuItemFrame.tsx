@@ -108,7 +108,7 @@ export const MenuItemFrame: FC<IMenuItemFrameProps> = ({
                     onContextMenu={onContextMenu}
                     // Possible ui customization
                     {...innerProps}
-                    css={mergeStyles(colors?.container, outerProps?.css)}>
+                    css={mergeStyles(colors?.container, innerProps?.css)}>
                     {connectBgPrevious && (
                         <Box
                             marginLeft="medium"

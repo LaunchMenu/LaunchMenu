@@ -74,7 +74,7 @@ export const SyntaxHighlighterNode: LFC<
     {
         node: IHighlightNode;
     } & ISyntaxHighlighterNodesListenerProps
-> = ({node: {text, start, tags}, ...listeners}) => {
+> = ({node: {text, start, tags, style}, ...listeners}) => {
     const {onMouseDown, onMouseUp, onMouseMove} = listeners;
     const getEventHandler = (
         listener?: (e: React.MouseEvent<HTMLSpanElement>, i: number) => void
@@ -92,6 +92,7 @@ export const SyntaxHighlighterNode: LFC<
             onMouseDown={onMouseDown && mouseDown}
             onMouseUp={onMouseUp && mouseUp}
             onMouseMove={onMouseMove && mouseMove}
+            style={style}
             className={tags.join(" ") + (text == "" ? " empty" : "")}>
             {text.split("").map((char, j) => (
                 <SyntaxHighlighterChar
@@ -111,12 +112,10 @@ export const SyntaxHighlighterNode: LFC<
 export const SyntaxHighlighterNodes: LFC<ISyntaxHighlighterNodesProps> = ({
     nodes,
     ...listeners
-}) => {
-    return (
-        <>
-            {nodes.map((node, i) => (
-                <SyntaxHighlighterNode key={i} node={node} {...listeners} />
-            ))}
-        </>
-    );
-};
+}) => (
+    <>
+        {nodes.map((node, i) => (
+            <SyntaxHighlighterNode key={i} node={node} {...listeners} />
+        ))}
+    </>
+);

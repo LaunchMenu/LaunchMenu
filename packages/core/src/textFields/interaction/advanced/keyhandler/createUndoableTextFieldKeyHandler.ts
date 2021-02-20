@@ -35,7 +35,7 @@ export function createUndoableTextFieldKeyHandler<T extends IKeyEventListener>(
 ): T {
     const undoRedo = options.undoRedoFacility ?? new UndoRedoFacility();
 
-    const undoMode = context.settings.get(baseSettings).field.undoMode;
+    const undoMode = context.settings.get(baseSettings).field.editor.undoMode;
     const onChange = (command: ITextEditCommand) => {
         const historyPast = undoRedo.getCommands().past;
         const prevCommand = historyPast[historyPast.length - 1];

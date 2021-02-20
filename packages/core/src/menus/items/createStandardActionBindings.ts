@@ -16,6 +16,7 @@ import {IMenuItem} from "./_types/IMenuItem";
 import {IStandardActionBindingData} from "./_types/IStandardActionBindingData";
 import {scrollableContentHandler} from "../../actions/types/content/scrollableContentHandler";
 import {simpleSearchHandler} from "../../actions/types/search/tracedRecursiveSearch/simpleSearch/simpleSearchHandler";
+import {getHooked} from "../../utils/subscribables/getHooked";
 
 /**
  * Creates standard subscribable action bindings
@@ -33,6 +34,7 @@ export function createStandardActionBindings(
         content,
         searchPattern,
         actionBindings,
+        identityActionBindings,
         onExecute,
         onSelect,
         onCursor,
@@ -73,6 +75,13 @@ export function createStandardActionBindings(
     // Combine the input action bindings with the created ones
     let bindings: ISubscribable<IActionBinding[]> = generatedBindings;
     if (actionBindings) bindings = adjustBindings(actionBindings, generatedBindings);
+    if (identityActionBindings) {
+        const additionalBindings = identityActionBindings(identity.ID);
+        bindings = adjustBindings(bindings, (bindings, hook) => [
+            ...getHooked(additionalBindings, hook),
+            ...bindings,
+        ]);
+    }
 
     return bindings;
 }

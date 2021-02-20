@@ -1,4 +1,3 @@
-import React from "react";
 import {
     declare,
     searchAction,
@@ -6,9 +5,10 @@ import {
     ProxiedMenu,
     IMenuItem,
     executeAction,
+    baseSettings,
 } from "@launchmenu/core";
 import {notePatternMatcher} from "./notePatternMatcher";
-import {DataCacher, getAsync, IDataHook, waitFor} from "model-react";
+import {DataCacher, getAsync, waitFor} from "model-react";
 import {NotesSource} from "./dataModel/NotesSource";
 import {notesIcon} from "./notesIcon";
 import {createNoteMenuItem} from "./interface/createNoteMenuItem";
@@ -39,6 +39,7 @@ export default declare({
                 fontSize: h => defaults.fontSize.get(h),
                 showRichContent: h => defaults.showRichContent.get(h),
                 syntaxMode: h => defaults.syntaxMode.get(h),
+                searchContent: h => defaults.searchContent.get(h),
             });
         });
         const categories = new DataCacher(h => {
@@ -55,8 +56,11 @@ export default declare({
                 items: notes.map(note => {
                     let item = map.get(note.ID);
                     if (!item) {
-                        item = createNoteMenuItem(note, notesSource.get(), h =>
-                            categories.get(h)
+                        item = createNoteMenuItem(
+                            note,
+                            notesSource.get(),
+                            h => categories.get(h),
+                            getSettings(h)
                         );
                         map.set(note.ID, item);
                     }
@@ -93,7 +97,9 @@ export default declare({
                 const controls = new DataCacher(h => [
                     createAddNoteMenuItem(notesSource.get(h), createCallback),
                     createEditCategoriesMenuItem(notesSource.get(h)),
-                    createImportNoteMenuItem(notesSource.get(h), createCallback),
+                    ...(context.settings.get(baseSettings).advancedUsage.get(h)
+                        ? [createImportNoteMenuItem(notesSource.get(h), createCallback)]
+                        : []),
                 ]);
                 const allItems = new DataCacher(h => [
                     ...notesItems.get(h).items,

@@ -61,15 +61,24 @@ export function createFieldSettingsFolder() {
                     </>
                 ),
             }),
-            undoMode: createOptionSetting({
-                name: "Editor undo behavior",
-                init: "Word" as const,
-                options: ["Character", "Word", "Line"] as const,
-                createOptionView: option =>
-                    createStandardMenuItem({
-                        name: option,
-                        description: `Undoes 1 ${option.toLowerCase()} at a time`,
+            editor: createSettingsFolder({
+                name: "Editor",
+                children: {
+                    undoMode: createOptionSetting({
+                        name: "Editor undo behavior",
+                        init: "Word" as const,
+                        options: ["Character", "Word", "Line"] as const,
+                        createOptionView: option =>
+                            createStandardMenuItem({
+                                name: option,
+                                description: `Undoes 1 ${option.toLowerCase()} at a time`,
+                            }),
                     }),
+                    lineWrapping: createBooleanSetting({
+                        name: "Wrap editor lines",
+                        init: false,
+                    }),
+                },
             }),
         },
     });

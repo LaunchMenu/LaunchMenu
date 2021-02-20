@@ -24,6 +24,7 @@ import {IColorableMenuItemData} from "./_types/IColorableMenuItemData";
 export function createColorableMenuItem({
     icon,
     color,
+    rightAlignDescription,
     ...bindingData
 }: IColorableMenuItemData): IMenuItem {
     const {name, description, shortcut} = bindingData;
@@ -70,13 +71,18 @@ export function createColorableMenuItem({
                         shortcut={shortcut && <ShortcutLabel shortcut={shortcut} />}
                         description={
                             descriptionV && (
-                                <Truncated title={descriptionV}>
-                                    <simpleSearchHandler.Highlighter
-                                        query={highlight}
-                                        pattern={bindingData.searchPattern}>
-                                        {descriptionV}
-                                    </simpleSearchHandler.Highlighter>
-                                </Truncated>
+                                <Box
+                                    textAlign={
+                                        rightAlignDescription ? "right" : "inherit"
+                                    }>
+                                    <Truncated title={descriptionV}>
+                                        <simpleSearchHandler.Highlighter
+                                            query={highlight}
+                                            pattern={bindingData.searchPattern}>
+                                            {descriptionV}
+                                        </simpleSearchHandler.Highlighter>
+                                    </Truncated>
+                                </Box>
                             )
                         }
                     />

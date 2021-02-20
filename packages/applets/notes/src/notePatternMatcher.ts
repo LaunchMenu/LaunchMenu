@@ -5,5 +5,5 @@ import {createStandardSearchPatternMatcher} from "@launchmenu/core";
  */
 export const notePatternMatcher = createStandardSearchPatternMatcher({
     name: "Notes",
-    matcher: /^note\s*:/i,
+    matcher: /^note\s*:\s*/i,
 });

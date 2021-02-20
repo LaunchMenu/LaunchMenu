@@ -11,8 +11,8 @@ import {
 } from "@launchmenu/core";
 import React from "react";
 import {Field} from "model-react";
-import {editStylingFolderHandler} from "./editStylingFolderHandler";
-import {inheritableColorInputExecuteHandler} from "./inheritableColorInputExecuteHandler";
+import {editStylingFolderHandler} from "../editStylingFolderHandler";
+import {inheritableColorInputExecuteHandler} from "../inheritableColorInputExecuteHandler";
 
 /**
  * An action to set the color of a note
@@ -22,7 +22,7 @@ export const setColorAction = createContextAction({
     contextItem: {
         icon: "edit",
         name: "Set color",
-        priority: [Priority.MEDIUM, Priority.MEDIUM - 7],
+        priority: [Priority.MEDIUM, Priority.MEDIUM],
         content: (
             <>
                 Sets whether the color of the note, "inherit" can be specified to inherit

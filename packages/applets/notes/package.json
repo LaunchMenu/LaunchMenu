@@ -50,6 +50,7 @@
         "@types/jest": "^26.0.0",
         "@types/react": "^17.0.0",
         "@types/sanitize-html": "^1.27.1",
+        "regexp-match-indices": "^1.0.2",
         "color": "^3.1.2",
         "jest": "^26.0.1",
         "model-react": "^4.0.1",

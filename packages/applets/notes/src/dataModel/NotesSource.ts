@@ -8,14 +8,16 @@ import {v4 as uuid} from "uuid";
 import Path from "path";
 import {IDefaultAppearanceRetrievers} from "./_types/IDefaultAppearanceRetrievers";
 
+type INotesFile = FieldsFile<{
+    /** The notes categories */
+    categories: IField<INoteCategoryMetadata[]>;
+    /** The data for the notes themselves */
+    notes: IField<INoteMetadata[]>;
+}>;
+
 export class NotesSource {
     // The data source
-    protected file: FieldsFile<{
-        /** The notes categories */
-        categories: IField<INoteCategoryMetadata[]>;
-        /** The data for the notes themselves */
-        notes: IField<INoteMetadata[]>;
-    }>;
+    protected file: INotesFile;
     protected loader: FileAutoReloader;
     protected saver: FileAutoSaver;
 
@@ -49,6 +51,14 @@ export class NotesSource {
      */
     public getPath(): string {
         return this.file.getPath();
+    }
+
+    /**
+     * Retrieves the notes file that the data is stored in
+     * @returns The metadata file that all notes are stored in
+     */
+    public getFile(): INotesFile {
+        return this.file;
     }
 
     /**
@@ -217,6 +227,7 @@ export class NotesSource {
             fontSize: "inherit",
             showRichContent: "inherit",
             syntaxMode: "inherit",
+            searchContent: "inherit",
         });
     }
 
@@ -247,6 +258,7 @@ export class NotesSource {
             fontSize: "inherit",
             showRichContent: "inherit",
             syntaxMode: "inherit",
+            searchContent: "inherit",
         });
     }
 
@@ -295,6 +307,7 @@ export class NotesSource {
             fontSize: "inherit",
             showRichContent: "inherit",
             syntaxMode: "inherit",
+            searchContent: "inherit",
         });
     }
 

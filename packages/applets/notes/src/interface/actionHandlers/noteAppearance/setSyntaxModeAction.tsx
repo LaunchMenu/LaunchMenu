@@ -13,28 +13,31 @@ import {
 } from "@launchmenu/core";
 import React from "react";
 import {Field} from "model-react";
-import {IInherit, inherit} from "../../dataModel/_types/IInherit";
-import {editStylingFolderHandler} from "./editStylingFolderHandler";
+import {
+    highlightLanguages,
+    IHighlightLanguage,
+} from "../../../dataModel/_types/IHighlightLanguage";
+import {IInherit, inherit} from "../../../dataModel/_types/IInherit";
+import {editStylingFolderHandler} from "../editStylingFolderHandler";
 
 /**
- * An action to set whether to use rich content for a note
+ * An action to set the syntax mode for a note
  */
-export const setRichContentAction = createContextAction({
-    name: "Set note rich content",
+export const setSyntaxModeAction = createContextAction({
+    name: "Set note syntax mode",
     contextItem: {
         icon: "edit",
-        name: "Set enable rich content",
-        priority: [Priority.MEDIUM, Priority.MEDIUM - 6],
+        name: "Set syntax mode",
+        priority: [Priority.MEDIUM, Priority.MEDIUM - 5],
         content: (
             <>
-                Sets whether the note should render rich content. This is only has an
-                effect if the syntax mode is set to "Text", "Html" or "Markdown".
-                "inherit" can be specified to inherit a default value.
+                Sets the syntax mode of the note, "inherit" can be specified to inherit a
+                default value.
             </>
         ),
     },
     folder: editStylingFolderHandler,
-    core: (fields: IField<boolean | IInherit>[]) => {
+    core: (fields: IField<IHighlightLanguage | IInherit>[]) => {
         const execute = async ({context}: IExecuteArg) => {
             // Obtain the most frequent selection amongst notes as the default
             const defaultRichContent =
@@ -44,10 +47,10 @@ export const setRichContentAction = createContextAction({
                 ).reduce(
                     (best, {key, values}) =>
                         values.length > best.count
-                            ? {count: values.length, richContent: key}
+                            ? {count: values.length, language: key}
                             : best,
-                    {count: 0, richContent: undefined}
-                ).richContent ?? "inherit";
+                    {count: 0, language: undefined}
+                ).language ?? "inherit";
 
             // Execute the select handler
             const choiceField = new Field(defaultRichContent);
@@ -57,7 +60,7 @@ export const setRichContentAction = createContextAction({
                         selectExecuteHandler.createBinding({
                             field: choiceField,
                             undoable: false,
-                            options: [true, false, inherit],
+                            options: [...highlightLanguages, inherit],
                             createOptionView: v =>
                                 createStandardMenuItem({name: v.toString()}),
                         }),
@@ -67,7 +70,7 @@ export const setRichContentAction = createContextAction({
 
             // Use the result to create a set category command
             return new CompoundCommand(
-                {name: "Set enable rich content"},
+                {name: "Set syntax mode"},
                 fields.map(field => new SetFieldCommand(field, choiceField.get()))
             );
         };

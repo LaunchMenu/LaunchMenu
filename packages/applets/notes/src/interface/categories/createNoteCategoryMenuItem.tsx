@@ -1,13 +1,15 @@
 import {IMenuItem} from "@launchmenu/core";
 import {NoteCategory} from "../../dataModel/NoteCategory";
 import {NotesSource} from "../../dataModel/NotesSource";
-import {setColorAction} from "../actionHandlers/setColorAction";
-import {setFontSizeAction} from "../actionHandlers/setFontSizeAction";
-import {setRichContentAction} from "../actionHandlers/setRichContentAction";
-import {setSyntaxModeAction} from "../actionHandlers/setSyntaxModeAction";
+import {setColorAction} from "../actionHandlers/noteAppearance/setColorAction";
+import {setFontSizeAction} from "../actionHandlers/noteAppearance/setFontSizeAction";
+import {setRichContentAction} from "../actionHandlers/noteAppearance/setRichContentAction";
+import {setSearchContentAction} from "../actionHandlers/noteAppearance/setSearchContentAction";
+import {setSyntaxModeAction} from "../actionHandlers/noteAppearance/setSyntaxModeAction";
 import {createColorableMenuItem} from "../createColorableMenuItem";
 import {deleteNoteCategoryHandler} from "./actionHandlers/deleteNoteCategoryHandler";
 import {setNoteCategoryNameExecuteHandler} from "./actionHandlers/setNoteCategoryNameExecuteHandler";
+import {setSearchPatternAction} from "./actionHandlers/setSearchPatternAction";
 
 /**
  * Creates a new note category menu item
@@ -25,6 +27,10 @@ export function createNoteCategoryMenuItem(
         actionBindings: [
             setNoteCategoryNameExecuteHandler.createBinding(category),
             deleteNoteCategoryHandler.createBinding({category, notesSource}),
+            setSearchPatternAction.createBinding({
+                set: pattern => category.setSearchPattern(pattern),
+                get: h => category.getSearchPattern(h) ?? "",
+            }),
             setColorAction.createBinding({
                 set: color => category.setColor(color),
                 get: h => category.getColor(h),
@@ -40,6 +46,10 @@ export function createNoteCategoryMenuItem(
             setRichContentAction.createBinding({
                 set: richContent => category.setShowRichContent(richContent),
                 get: h => category.getShowRichContent(h),
+            }),
+            setSearchContentAction.createBinding({
+                set: searchContent => category.setSearchContent(searchContent),
+                get: h => category.getSearchContent(h),
             }),
         ],
     });

@@ -6,4 +6,6 @@ export type INoteCategoryMetadata = {
     ID: string;
     /** The name of the category */
     name: string;
+    /** The search pattern of this category */
+    searchPattern?: string;
 } & INoteAppearanceMetadata<IInherit>;

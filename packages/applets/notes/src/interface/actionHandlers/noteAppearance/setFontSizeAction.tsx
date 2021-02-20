@@ -13,8 +13,8 @@ import {
 } from "@launchmenu/core";
 import React from "react";
 import {Field} from "model-react";
-import {IInherit, inherit} from "../../dataModel/_types/IInherit";
-import {editStylingFolderHandler} from "./editStylingFolderHandler";
+import {IInherit, inherit} from "../../../dataModel/_types/IInherit";
+import {editStylingFolderHandler} from "../editStylingFolderHandler";
 
 /**
  * An action to set the font size of a note
@@ -24,7 +24,7 @@ export const setFontSizeAction = createContextAction({
     contextItem: {
         icon: "edit",
         name: "Set font size",
-        priority: [Priority.MEDIUM, Priority.MEDIUM - 8],
+        priority: [Priority.MEDIUM, Priority.MEDIUM - 20],
         content: (
             <>
                 Sets the font size of the note, "inherit" can be specified to inherit a

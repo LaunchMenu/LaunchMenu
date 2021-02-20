@@ -13,16 +13,14 @@ export function splitHighlightNode(
     if (node.start < index && node.end > index) {
         return [
             {
-                start: node.start,
+                ...node,
                 end: index,
                 text: node.text.substr(0, index - node.start),
-                tags: node.tags,
             },
             {
+                ...node,
                 start: index,
-                end: node.end,
                 text: node.text.substr(index - node.start),
-                tags: node.tags,
             },
         ];
     } else {

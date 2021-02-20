@@ -22,10 +22,9 @@ export const setCategoryAction = createContextAction({
         priority: Priority.MEDIUM,
     },
     core: (data: ISetCategoryData[]) => {
-        const groups = groupBy(data, "options", arrayEquals);
-
-        const getExecuteBindings = () =>
-            groups.map(({key: options, values: notes}) =>
+        const getExecuteBindings = () => {
+            const groups = groupBy(data, "options", arrayEquals);
+            return groups.map(({key: options, values: notes}) =>
                 editExecuteHandler.createBinding(async ({context}) => {
                     // Obtain the most frequent selection amongst notes as the default
                     const defaultCategory = groupBy(
@@ -70,6 +69,7 @@ export const setCategoryAction = createContextAction({
                     );
                 })
             );
+        };
 
         return {
             // Return the bindings for executing the action in the menu

@@ -31,12 +31,14 @@ export const defaultTheme = createTheme(
                 border: "3px solid",
                 borderColor: "transparent",
                 backgroundClip: "padding-box",
+                borderRadius: 7, // 4p + 3px border
             },
             "&::-webkit-scrollbar-thumb:hover": {
                 background: theme.color.primary,
                 border: "3px solid",
                 borderColor: "transparent",
                 backgroundClip: "padding-box",
+                borderRadius: 7, // 4p + 3px border
             },
             "*:focus": {
                 outline: "none",

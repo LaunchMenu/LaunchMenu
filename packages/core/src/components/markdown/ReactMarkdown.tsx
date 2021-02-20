@@ -1,9 +1,11 @@
-import React, {FC} from "react";
-import {constGetter} from "./constGetter";
+import React from "react";
+import {constGetter} from "../../utils/constGetter";
 import RemarkMathPlugin from "remark-math";
 import FS from "fs";
+import {LFC} from "../../_types/LFC";
 import Path from "path";
 import {Global, css} from "@emotion/react";
+import {markdownSyntaxRenderer} from "./markdownSyntaxRenderer";
 const {InlineMath, BlockMath} = require("react-katex"); // No ts available, and too lazy to make declarations
 
 // Simply reexport all of react markdown, since it will be useful for many applets
@@ -29,7 +31,6 @@ import ReactMarkdownOr, {
     renderers as renderersOr,
     types as typesOr,
 } from "react-markdown";
-import {LFC} from "../_types/LFC";
 
 /** Re export the namespace */
 export namespace IReactMarkdown {
@@ -69,7 +70,7 @@ const autoFitImageRenderer: LFC<{
 /**
  * A slightly augmented markdown renderer component
  */
-export const ReactMarkdown: FC<
+export const ReactMarkdown: LFC<
     ReactMarkdownPropsOr & {
         /** Whether to auto scale the image to fit the available size */
         autoFitImages?: boolean;
@@ -82,6 +83,7 @@ export const ReactMarkdown: FC<
             {...props}
             plugins={[...(allowLatex ? [RemarkMathPlugin] : []), ...plugins]}
             renderers={{
+                code: markdownSyntaxRenderer,
                 ...(autoFitImages && {image: autoFitImageRenderer}),
                 ...(allowLatex && {math: mathRenderer, inlineMath: inlineMathRenderer}),
                 ...renderers,
@@ -92,7 +94,7 @@ export const ReactMarkdown: FC<
     if (allowLatex) {
         return (
             <>
-                <Global styles={css(katexCss())} />
+                <Global styles={css(getKatexCss())} />
                 {markdown}
             </>
         );
@@ -101,7 +103,7 @@ export const ReactMarkdown: FC<
 };
 
 /** A retriever for the latex css */
-const katexCss = constGetter(() => {
+const getKatexCss = constGetter(() => {
     // Css is expected to be added using a linker such as webpack, so we will have to manually fix some stuff
     const cssPath = require.resolve("katex/dist/katex.min.css");
     const css = FS.readFileSync(cssPath, "utf8");

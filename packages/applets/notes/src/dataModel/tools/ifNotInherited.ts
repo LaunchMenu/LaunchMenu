@@ -1,4 +1,4 @@
-import {IInherit, inherit} from "./_types/IInherit";
+import {IInherit, inherit} from "../_types/IInherit";
 
 /**
  * Retrieves the current data, or undefined if data should be inherited
