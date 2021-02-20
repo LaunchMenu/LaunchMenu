@@ -7,6 +7,7 @@ import {
     inputExecuteHandler,
     searchAction,
     sequentialExecuteHandler,
+    tracedRecursiveSearchHandler,
 } from "@launchmenu/core";
 import {Field} from "model-react";
 import {Note} from "../../dataModel/Note";
@@ -42,7 +43,6 @@ export function createAddNoteMenuItem(
                 return new AddNoteCommand(field.get(), notesSource, onCreate);
             }),
         ],
-        identityActionBindings: id => [],
     });
 }
 
