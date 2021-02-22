@@ -1,7 +1,7 @@
-import {IMenuItem} from "./_types/IMenuItem";
-import {createStandardMenuItem} from "./createStandardMenuItem";
-import {IActionBinding} from "../../actions/_types/IActionBinding";
-import {IExecutable} from "../../actions/types/execute/_types/IExecutable";
+import {IMenuItem} from "../_types/IMenuItem";
+import {createStandardMenuItem} from "../createStandardMenuItem";
+import {IActionBinding} from "../../../actions/_types/IActionBinding";
+import {IExecutable} from "../../../actions/types/execute/_types/IExecutable";
 
 /**
  * A standard finish menu item creator, intended to commit a series of changes

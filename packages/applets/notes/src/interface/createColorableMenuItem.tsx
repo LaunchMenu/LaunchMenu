@@ -1,14 +1,17 @@
 import React from "react";
 import {
     Box,
+    createCategoryMenuItemActionBindings,
     createStandardActionBindings,
     getHooked,
     IMenuItem,
+    isItemSelectable,
     MenuItemFrame,
     MenuItemIcon,
     MenuItemLayout,
     ShortcutLabel,
     simpleSearchHandler,
+    standardConnectionGroup,
     Truncated,
 } from "@launchmenu/core";
 import {useDataHook} from "model-react";
@@ -25,10 +28,13 @@ export function createColorableMenuItem({
     icon,
     color,
     rightAlignDescription,
+    asCategory,
     ...bindingData
 }: IColorableMenuItemData): IMenuItem {
     const {name, description, shortcut} = bindingData;
-    const bindings = createStandardActionBindings(bindingData, () => item);
+    const bindings = asCategory
+        ? createCategoryMenuItemActionBindings(bindingData, asCategory)
+        : createStandardActionBindings(bindingData, () => item);
 
     const item: IMenuItem = {
         view: memo(({highlight, ...props}) => {
@@ -41,8 +47,10 @@ export function createColorableMenuItem({
             let colorV = getHooked(color, h);
             if (colorV?.toLowerCase() == "#fff0") colorV = undefined; // Special exception to allow string based color skipping
             const colorData = new Color(colorV);
+            const executableCategory = asCategory && isItemSelectable(props.item);
             return (
                 <MenuItemFrame
+                    outerProps={executableCategory ? {marginTop: "medium"} : undefined}
                     {...props}
                     colors={
                         colorV
@@ -60,7 +68,9 @@ export function createColorableMenuItem({
                     <MenuItemLayout
                         icon={iconV && <MenuItemIcon icon={iconV} />}
                         name={
-                            <Box font="header">
+                            <Box
+                                font="header"
+                                css={{fontWeight: asCategory ? "bold" : undefined}}>
                                 <simpleSearchHandler.Highlighter
                                     query={highlight}
                                     pattern={bindingData.searchPattern}>

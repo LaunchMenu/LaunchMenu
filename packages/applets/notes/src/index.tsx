@@ -6,6 +6,7 @@ import {
     IMenuItem,
     executeAction,
     baseSettings,
+    createCategoryDummyItem,
 } from "@launchmenu/core";
 import {notePatternMatcher} from "./notePatternMatcher";
 import {DataCacher, getAsync, waitFor} from "model-react";
@@ -42,10 +43,19 @@ export default declare({
                 searchContent: h => defaults.searchContent.get(h),
             });
         });
+
+        // Create all categories, note items and items to search for categories
         const categories = new DataCacher(h => {
             const noteCategories = notesSource.get(h).getAllCategories(h);
             return noteCategories.map(category => createNoteCategoryCategory(category));
         });
+        const categorySearchItems = new DataCacher(h =>
+            categories.get(h).map(category =>
+                createCategoryDummyItem({
+                    category,
+                })
+            )
+        );
         const notesItems = new DataCacher<{
             map: Map<string, IMenuItem>;
             items: IMenuItem[];
@@ -69,12 +79,15 @@ export default declare({
                 map,
             };
         });
+        const allContentItems = new DataCacher(h => {
+            return [...notesItems.get(h).items, ...categorySearchItems.get(h)];
+        });
 
         return {
             async search(query, hook) {
                 return {
                     patternMatch: notePatternMatcher(query, hook),
-                    children: searchAction.get(notesItems.get(hook).items),
+                    children: searchAction.get(allContentItems.get(hook)),
                 };
             },
             open({context, onClose}) {
@@ -102,7 +115,7 @@ export default declare({
                         : []),
                 ]);
                 const allItems = new DataCacher(h => [
-                    ...notesItems.get(h).items,
+                    ...allContentItems.get(h),
                     ...controls.get(h),
                 ]);
                 const menu = new ProxiedMenu(context, h => allItems.get(h));

@@ -1,8 +1,8 @@
 import React, {memo} from "react";
-import {IContextCategory} from "../../actions/contextMenuAction/_types/IContextCategory";
-import {MenuItemFrame} from "../../components/items/MenuItemFrame";
-import {MenuItemLayout} from "../../components/items/MenuItemLayout";
-import {Box} from "../../styling/box/Box";
+import {IContextCategory} from "../../../actions/contextMenuAction/_types/IContextCategory";
+import {MenuItemFrame} from "../../../components/items/MenuItemFrame";
+import {MenuItemLayout} from "../../../components/items/MenuItemLayout";
+import {Box} from "../../../styling/box/Box";
 
 /**
  * Creates a new context menu category, based on the number of items that have the action in this category
@@ -10,7 +10,7 @@ import {Box} from "../../styling/box/Box";
  * @param totalCount The total number of items for the context menu
  * @returns The context menu category
  */
-export function createContextCategory(
+export function createContextMenuCategory(
     count: number,
     totalCount: number
 ): IContextCategory {
@@ -43,13 +43,16 @@ const cached: {[count: number]: {[totalCount: number]: IContextCategory}} = {};
  * @param totalCount The total number of items for the context menu
  * @returns The context menu category
  */
-export function getContextCategory(count: number, totalCount: number): IContextCategory {
+export function getContextMenuCategory(
+    count: number,
+    totalCount: number
+): IContextCategory {
     // Try to retrieve the category from the cache
     const fromCache = cached[count]?.[totalCount];
     if (fromCache) return fromCache;
 
     // Create the new category and add it to the cache
-    const newCategory = createContextCategory(count, totalCount);
+    const newCategory = createContextMenuCategory(count, totalCount);
     if (!cached[count]) cached[count] = {};
     cached[count][totalCount] = newCategory;
 

@@ -113,7 +113,7 @@ export const MenuItemFrame: FC<IMenuItemFrameProps> = ({
                         <Box
                             marginLeft="medium"
                             marginRight="medium"
-                            borderTopColor={isCursor ? "primary" : "bgSecondary"}
+                            borderTopColor={isCursor ? "primary" : "bgTertiary"}
                             css={
                                 isCursor
                                     ? {borderTopColor: "transparent"}
@@ -147,25 +147,10 @@ export function useConnectAdjacent(menu?: IMenu, item?: IMenuItem): IConnections
     if (!item || !menu) return {};
 
     const [h] = useDataHook();
-    const cg = getConnectionGroupAction.get([item], h);
-    if (cg.size == 0) return {};
-
     const items = menu.getItems(h);
     const index = items.indexOf(item);
     if (index == -1) return {};
 
-    const previousItem = items[index - 1] as IMenuItem | undefined;
-    const nextItem = items[index + 1] as IMenuItem | undefined;
-
-    const previousGroups =
-        previousItem && getConnectionGroupAction.get([previousItem], h);
-    const nextGroups = nextItem && getConnectionGroupAction.get([nextItem], h);
-    return {
-        connectBgPrevious:
-            previousGroups &&
-            [...cg].reduce((cur, group) => cur || previousGroups.has(group), false),
-        connectBgNext:
-            nextGroups &&
-            [...cg].reduce((cur, group) => cur || nextGroups.has(group), false),
-    };
+    const connect = getConnectionGroupAction.shouldConnect(items, index, h);
+    return {connectBgNext: connect.next, connectBgPrevious: connect.previous};
 }

@@ -1,8 +1,8 @@
-import {IRecursiveSearchChildren} from "../../actions/types/search/tracedRecursiveSearch/_types/IRecursiveSearchChildren";
-import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
+import {IRecursiveSearchChildren} from "../../../actions/types/search/tracedRecursiveSearch/_types/IRecursiveSearchChildren";
+import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {createFolderMenuItem} from "./createFolderMenuItem";
-import {IFolderMenuItemData} from "./_types/IFolderMenuItemData";
-import {IMenuItem} from "./_types/IMenuItem";
+import {IFolderMenuItemData} from "../_types/IFolderMenuItemData";
+import {IMenuItem} from "../_types/IMenuItem";
 
 /**
  * Creates a new folder menu item for within a context menu.

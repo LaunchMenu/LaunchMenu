@@ -19,7 +19,7 @@ import {IMenuItem} from "../../../_types/IMenuItem";
 import {createKeyPatternOptionMenuItem} from "./keyPatternOptionMenuItem/createKeyPatternOptionMenuItem";
 import {createStandardMenuItem} from "../../../createStandardMenuItem";
 import {updateKeyPatternOptionExecuteHandler} from "./keyPatternOptionMenuItem/actionHandlers/updateKeyPatternOptionExecuteHandler";
-import {createFinishMenuItem} from "../../../createFinishMenuItem";
+import {createFinishMenuItem} from "../../../types/createFinishMenuItem";
 import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand";
 import {ProxiedMenu} from "../../../../menu/ProxiedMenu";
 import {AdvancedKeyPatternContent} from "./AdvancedKeyPatternContent";

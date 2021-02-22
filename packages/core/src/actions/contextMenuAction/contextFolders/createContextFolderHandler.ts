@@ -9,7 +9,7 @@ import {IContextFolderAction} from "./_types/IContextFolderAction";
 import {IContextFolderHandlerConfig} from "./_types/IContextFolderHandlerConfig";
 import {Priority} from "../../../menus/menu/priority/Priority";
 import {IQuery} from "../../../menus/menu/_types/IQuery";
-import {createContextFolderMenuItem} from "../../../menus/items/createContextFolderMenuItem";
+import {createContextFolderMenuItem} from "../../../menus/items/types/createContextFolderMenuItem";
 
 /**
  * Creates a context menu handler that adds an folder to the (context) menu

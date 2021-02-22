@@ -1,5 +1,5 @@
 import {IDataHook} from "model-react";
-import {getContextCategory} from "../../menus/categories/createContextCategory";
+import {getContextMenuCategory} from "../../menus/categories/types/getContexMenutCategory";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
 import {getLCS} from "../../utils/getLCS";
 import {ISubscribable} from "../../utils/subscribables/_types/ISubscribable";
@@ -102,7 +102,7 @@ export function getItemWithCountCategory(
     return {
         ...prioritizedItem,
         item: menuItemIdentityAction.copyItem(prioritizedItem.item, [
-            getCategoryAction.createBinding(getContextCategory(count, total)),
+            getCategoryAction.createBinding(getContextMenuCategory(count, total)),
         ]),
     };
 }

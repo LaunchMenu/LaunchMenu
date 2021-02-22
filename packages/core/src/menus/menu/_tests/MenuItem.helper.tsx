@@ -10,7 +10,7 @@ import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {ISubscribable} from "../../../utils/subscribables/_types/ISubscribable";
 import {searchAction} from "../../../actions/types/search/searchAction";
 
-export function createDummyMenuItem({
+export function createTestDummyMenuItem({
     category,
     noSelect = false,
     actionBindings,

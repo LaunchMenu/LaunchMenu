@@ -1,6 +1,6 @@
-import React, {memo} from "react";
-import {Box, ICategory, Loader, MenuItemFrame, MenuItemLayout} from "@launchmenu/core";
+import {ICategory} from "@launchmenu/core";
 import {NoteCategory} from "../dataModel/NoteCategory";
+import {createColorableMenuItem} from "./createColorableMenuItem";
 
 /**
  * Creates a LM menu category for a given note category
@@ -8,23 +8,14 @@ import {NoteCategory} from "../dataModel/NoteCategory";
  * @returns The LM category
  */
 export function createNoteCategoryCategory(category: NoteCategory): ICategory {
-    return {
+    const menuCategory: ICategory = {
         name: category.ID,
-        item: {
-            view: memo(({highlight, ...props}) => {
-                return (
-                    <MenuItemFrame {...props} transparent={true}>
-                        <MenuItemLayout
-                            name={
-                                <Box font="header">
-                                    <Loader>{h => category.getName(h)}</Loader>
-                                </Box>
-                            }
-                        />
-                    </MenuItemFrame>
-                );
-            }),
-            actionBindings: [],
-        },
+        item: createColorableMenuItem({
+            asCategory: () => menuCategory,
+            name: h => category.getName(h),
+            color: h => category.getColor(h),
+            onExecute: () => console.log("exec"),
+        }),
     };
+    return menuCategory;
 }

@@ -27,7 +27,7 @@ import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
 import {IHighlighter} from "../../../textFields/syntax/_types/IHighlighter";
 import {createContentError} from "../../../components/content/error/createContentError";
 import {TextField} from "../../../textFields/TextField";
-import {createFinishMenuItem} from "../../../menus/items/createFinishMenuItem";
+import {createFinishMenuItem} from "../../../menus/items/types/createFinishMenuItem";
 import {IMultiSelectOption} from "./_types/IMultiSelectOption";
 import {IMultiSelectOptionData} from "./_types/IMultiSelectOptionData";
 import {getControlsCategory} from "../../../menus/categories/types/getControlsCategory";

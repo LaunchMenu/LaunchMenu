@@ -1,4 +1,4 @@
-import {getContextCategory} from "../../../menus/categories/createContextCategory";
+import {getContextMenuCategory} from "../../../menus/categories/types/getContexMenutCategory";
 import {createStandardMenuItem} from "../../../menus/items/createStandardMenuItem";
 import {Priority} from "../../../menus/menu/priority/Priority";
 import {createAction} from "../../createAction";
@@ -647,8 +647,8 @@ describe("contextMenuAction", () => {
 
             expect(contextItems).toHaveLength(2);
             expect(getCategoryAction.get(contextItems.map(({item}) => item))).toEqual([
-                getContextCategory(2, 3),
-                getContextCategory(1, 3),
+                getContextMenuCategory(2, 3),
+                getContextMenuCategory(1, 3),
             ]);
         });
     });
