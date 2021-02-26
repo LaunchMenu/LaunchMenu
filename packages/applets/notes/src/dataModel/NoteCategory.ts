@@ -45,6 +45,14 @@ export class NoteCategory {
         return this.dataSource(hook).name;
     }
 
+    /**
+     * Retrieves the notes source that this category belongs to
+     * @returns The notes source
+     */
+    public getSource(): NotesSource {
+        return this.notesSource;
+    }
+
     /** The cached notes of this category */
     protected notes = new DataCacher(h =>
         this.notesSource.getAllNotes(h).filter(note => note.getCategory(h)?.ID == this.ID)

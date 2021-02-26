@@ -8,8 +8,8 @@ export type INoteMetadata = {
     name: string;
     /** The location of the note in the file system */
     location: string;
-    /** The last time that */
+    /** The last time at which the note was modified */
     modifiedAt: number;
     /** The id of the category this note is in */
     categoryID?: string;
-} & INoteAppearanceMetadata<IInherit>;
+} & Partial<INoteAppearanceMetadata<IInherit>>;

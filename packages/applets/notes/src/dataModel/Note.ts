@@ -88,6 +88,14 @@ export class Note {
         return this.dataSource(hook).name;
     }
 
+    /**
+     * Retrieves the notes source that this note belongs to
+     * @returns The notes source
+     */
+    public getSource(): NotesSource {
+        return this.notesSource;
+    }
+
     /** The cached category */
     protected category = new DataCacher(h => {
         const ID = this.dataSource(h).categoryID;

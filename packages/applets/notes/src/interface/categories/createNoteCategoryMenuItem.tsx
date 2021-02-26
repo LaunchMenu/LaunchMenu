@@ -1,6 +1,5 @@
 import {IMenuItem} from "@launchmenu/core";
 import {NoteCategory} from "../../dataModel/NoteCategory";
-import {NotesSource} from "../../dataModel/NotesSource";
 import {setColorAction} from "../actionHandlers/noteAppearance/setColorAction";
 import {setFontSizeAction} from "../actionHandlers/noteAppearance/setFontSizeAction";
 import {setRichContentAction} from "../actionHandlers/noteAppearance/setRichContentAction";
@@ -14,19 +13,15 @@ import {setSearchPatternAction} from "./actionHandlers/setSearchPatternAction";
 /**
  * Creates a new note category menu item
  * @param category The category to create the management for
- * @param noteSource The notes source for category restoration
  * @returns The menu item to configure the note category
  */
-export function createNoteCategoryMenuItem(
-    category: NoteCategory,
-    notesSource: NotesSource
-): IMenuItem {
+export function createNoteCategoryMenuItem(category: NoteCategory): IMenuItem {
     return createColorableMenuItem({
         name: h => category.getName(h),
         color: h => category.getColor(h),
         actionBindings: [
             setNoteCategoryNameExecuteHandler.createBinding(category),
-            deleteNoteCategoryHandler.createBinding({category, notesSource}),
+            deleteNoteCategoryHandler.createBinding(category),
             setSearchPatternAction.createBinding({
                 set: pattern => category.setSearchPattern(pattern),
                 get: h => category.getSearchPattern(h) ?? "",

@@ -8,4 +8,4 @@ export type INoteCategoryMetadata = {
     name: string;
     /** The search pattern of this category */
     searchPattern?: string;
-} & INoteAppearanceMetadata<IInherit>;
+} & Partial<INoteAppearanceMetadata<IInherit>>;

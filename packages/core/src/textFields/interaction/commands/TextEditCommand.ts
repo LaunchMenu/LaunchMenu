@@ -1,4 +1,5 @@
 import {Command} from "../../../undoRedo/Command";
+import {Resource} from "../../../undoRedo/dependencies/Resource";
 import {IField} from "../../../_types/IField";
 import {ITextField} from "../../_types/ITextField";
 import {ITextSelection} from "../../_types/ITextSelection";
@@ -12,6 +13,7 @@ export class TextEditCommand extends Command implements ITextEditCommand {
     public metadata = {
         name: "Edit text",
     };
+    protected readonly dependencies = [standardTextResource] as Resource[];
 
     protected target: IField<string> | ITextField;
     protected alterationInput: ITextAlterationInput;
@@ -49,6 +51,9 @@ export class TextEditCommand extends Command implements ITextEditCommand {
         this.target = target;
         this.alterationInput = alteration;
         this.newSelection = selection;
+
+        if ("resource" in target && target.resource)
+            this.dependencies = [target.resource];
     }
 
     /**
@@ -141,3 +146,6 @@ export class TextEditCommand extends Command implements ITextEditCommand {
             this.target.setSelection(this.oldSelection);
     }
 }
+
+/** A standard resource for text editing */
+export const standardTextResource = new Resource();

@@ -30,7 +30,7 @@ export function createEditCategoriesMenuItem(notesSource: NotesSource): IMenuIte
                     items: categories.map(category => {
                         let item = map.get(category.ID);
                         if (!item) {
-                            item = createNoteCategoryMenuItem(category, notesSource);
+                            item = createNoteCategoryMenuItem(category);
                             map.set(category.ID, item);
                         }
                         return item;

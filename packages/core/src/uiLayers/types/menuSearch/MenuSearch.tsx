@@ -104,7 +104,7 @@ export class MenuSearch extends AbstractUILayer {
 
         // Subscribe to the searchfield input
         const fieldObserver = new Observer(h => field.get(h)).listen(search => {
-            if (search) menu.setSearch(search); // Don't update if the search is empty
+            menu.setSearch(search);
             this.isMenuOpen.set(search.length > 0);
         });
 

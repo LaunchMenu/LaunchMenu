@@ -1,9 +1,8 @@
 import {
     Command,
-    createStandardMenuItem,
+    createCallbackHook,
+    createContextAction,
     executeAction,
-    getControlsCategory,
-    IMenuItem,
     inputExecuteHandler,
     sequentialExecuteHandler,
 } from "@launchmenu/core";
@@ -11,24 +10,28 @@ import {Field} from "model-react";
 import {Note} from "../../dataModel/Note";
 import {NotesSource} from "../../dataModel/NotesSource";
 import {INoteMetadata} from "../../dataModel/_types/INoteMetadata";
+import {editNoteExecuteAction} from "./editNoteExecuteAction";
+import {IAddNoteCallback, IAddNoteExecuteData} from "./_types/IAddNoteExecuteData";
 
-/**
- * Creates a menu item to edit the metadata file that stores all notes
- * @param notesSource The notes source to add the item to
- * @param onCreate A callback for when a note is created
- * @returns The menu item that can be used to create new notes
- */
-export function createEditMetadataMenuItem(
-    notesSource: NotesSource,
-    onCreate?: (note: Note, initial: boolean) => void
-): IMenuItem {
-    return createStandardMenuItem({
-        name: "Add note",
-        category: getControlsCategory(),
-        actionBindings: [
+/** An execute handler to create new notes */
+export const addNoteExecuteHandler = createContextAction({
+    name: "Add note execute handler",
+    contextItem: {
+        name: "Create note",
+        priority: executeAction.priority,
+    },
+    parents: [sequentialExecuteHandler],
+    core: (data: IAddNoteExecuteData[]) => ({
+        children: data.map(({callback, notesSource, category, edit = true}) =>
             sequentialExecuteHandler.createBinding(async ({context}) => {
                 // Create a field to store the input name, and request an input from the user
                 const field = new Field("");
+                let fieldChange = false;
+                field.get(
+                    createCallbackHook(() => {
+                        fieldChange = true;
+                    })[0]
+                );
                 await executeAction.execute(context, [
                     {
                         actionBindings: [
@@ -37,12 +40,33 @@ export function createEditMetadataMenuItem(
                     },
                 ]);
 
+                if (!fieldChange) return;
+
                 // Create the command to execute with the retrieved name
-                return new AddNoteCommand(field.get(), notesSource, onCreate);
-            }),
-        ],
-    });
-}
+                return new AddNoteCommand(
+                    field.get(),
+                    notesSource,
+                    async (note, initial) => {
+                        if (category) note.setCategory(category);
+
+                        // Edit the note if requested
+                        if (edit)
+                            await executeAction.execute(context, [
+                                {
+                                    actionBindings: [
+                                        editNoteExecuteAction.createBinding(note),
+                                    ],
+                                },
+                            ]);
+
+                        // Call the callback
+                        await callback(note, initial);
+                    }
+                );
+            })
+        ),
+    }),
+});
 
 /** A command to add a note to a notes source */
 export class AddNoteCommand extends Command {
@@ -54,7 +78,7 @@ export class AddNoteCommand extends Command {
     protected note: Note;
     protected name: string;
     protected noteData: INoteMetadata | undefined;
-    protected onCreate: (note: Note, initial: boolean) => void;
+    protected onCreate: IAddNoteCallback;
 
     /**
      * Creates a new add note command
@@ -65,11 +89,7 @@ export class AddNoteCommand extends Command {
     public constructor(
         name: string,
         source: NotesSource,
-        onCreate: (
-            note: Note,
-            /** Whether it was the first creation, not a redo */
-            initial: boolean
-        ) => void = () => {}
+        onCreate: IAddNoteCallback = () => Promise.resolve()
     ) {
         super();
         this.name = name;
@@ -85,7 +105,7 @@ export class AddNoteCommand extends Command {
         else this.note = await this.notesSource.addNote(this.name);
 
         // Invoke the callback
-        this.onCreate(this.note, !this.noteData);
+        await this.onCreate(this.note, !this.noteData);
     }
 
     /** @override */

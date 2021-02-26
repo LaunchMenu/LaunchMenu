@@ -4,21 +4,26 @@ import {
     UILayer,
     ProxiedMenu,
     IMenuItem,
-    executeAction,
     baseSettings,
     createCategoryDummyItem,
+    IMenu,
 } from "@launchmenu/core";
 import {notePatternMatcher} from "./notePatternMatcher";
 import {DataCacher, getAsync, waitFor} from "model-react";
 import {NotesSource} from "./dataModel/NotesSource";
 import {notesIcon} from "./notesIcon";
 import {createNoteMenuItem} from "./interface/createNoteMenuItem";
-import {createNoteCategoryCategory} from "./interface/createNoteCategoryCategory";
+import {createNoteCategoryCategory} from "./interface/categories/createNoteCategoryCategory";
 import {createAddNoteMenuItem} from "./interface/controls/createAddNoteMenuItem";
 import {createImportNoteMenuItem} from "./interface/controls/createImportNoteMenuItem";
 import {Note} from "./dataModel/Note";
 import {createEditCategoriesMenuItem} from "./interface/controls/createEditCategoriesMenuItem";
 import {settings} from "./settings";
+import {createListCacher} from "./util/createListCacher";
+import {createAddNoteCategoryMenuItem} from "./interface/categories/controls/createAddNoteCategoryMenuItem";
+import {createSelectInMenuCallback} from "./util/createSelectInMenuCallback";
+import {NoteCategory} from "./dataModel/NoteCategory";
+import {createEditMetadataMenuItem} from "./interface/controls/createEditMetadataMenuItem";
 
 export const info = {
     name: "Notes",
@@ -45,80 +50,79 @@ export default declare({
         });
 
         // Create all categories, note items and items to search for categories
-        const categories = new DataCacher(h => {
-            const noteCategories = notesSource.get(h).getAllCategories(h);
-            return noteCategories.map(category => createNoteCategoryCategory(category));
-        });
-        const categorySearchItems = new DataCacher(h =>
-            categories.get(h).map(category =>
+        const categories = createListCacher(
+            h => notesSource.get(h).getAllCategories(h),
+            category => category.ID,
+            category => createNoteCategoryCategory(category)
+        );
+        const notesItems = createListCacher(
+            h => notesSource.get(h).getAllNotes(h),
+            note => note.ID,
+            (note, h) =>
+                createNoteMenuItem(
+                    note,
+                    notesSource.get(),
+                    h => categories.get(h).items,
+                    getSettings(h)
+                )
+        );
+
+        // Create some items that can be used to show categories even if they are empty
+        const categoryEmptyItems = createListCacher(
+            h => categories.get(h).items,
+            category => category.name,
+            category =>
                 createCategoryDummyItem({
                     category,
                 })
-            )
         );
-        const notesItems = new DataCacher<{
-            map: Map<string, IMenuItem>;
-            items: IMenuItem[];
-        }>((h, prev) => {
-            const notes = notesSource.get(h).getAllNotes(h);
-            const map = new Map<string, IMenuItem>(prev?.map ?? []);
-            return {
-                items: notes.map(note => {
-                    let item = map.get(note.ID);
-                    if (!item) {
-                        item = createNoteMenuItem(
-                            note,
-                            notesSource.get(),
-                            h => categories.get(h),
-                            getSettings(h)
-                        );
-                        map.set(note.ID, item);
-                    }
-                    return item;
-                }),
-                map,
-            };
-        });
-        const allContentItems = new DataCacher(h => {
-            return [...notesItems.get(h).items, ...categorySearchItems.get(h)];
-        });
 
         return {
             async search(query, hook) {
+                // Only search the notes, not all the controls and categories
                 return {
                     patternMatch: notePatternMatcher(query, hook),
-                    children: searchAction.get(allContentItems.get(hook)),
+                    children: searchAction.get(notesItems.get(hook).items),
                 };
             },
             open({context, onClose}) {
-                // Setup a menu with controls
-                const createCallback = async (note: Note, initial: boolean) => {
-                    if (!initial) return;
+                // Create some callbacks for when new items are added to this menu (in order to select them)
+                const onCreateNote = createSelectInMenuCallback(
+                    () => menu,
+                    (note: Note, h) => notesItems.get(h).map.get(note.ID)
+                );
+                const onCreateCategory = createSelectInMenuCallback(
+                    () => menu,
+                    (noteCategory: NoteCategory, h) =>
+                        categories.get(h).map.get(noteCategory.ID)?.item
+                );
 
-                    // Wait for a note item to exist
-                    await waitFor(h => !!notesItems.get(h).map.get(note.ID));
-                    const item = notesItems.get().map.get(note.ID) as IMenuItem;
-
-                    // Wait for the menu to contain the item
-                    await waitFor(h => menu.getItems(h).includes(item));
-                    menu.setCursor(item);
-
-                    // Start editing the note
-                    await getAsync(h => note.getText(h));
-                    executeAction.execute(menu);
-                };
+                // Create the menu with its controls
                 const controls = new DataCacher(h => [
-                    createAddNoteMenuItem(notesSource.get(h), createCallback),
-                    createEditCategoriesMenuItem(notesSource.get(h)),
+                    createAddNoteMenuItem(notesSource.get(h), onCreateNote),
+                    ...(context.settings.get(settings).inlineCategory.get(h)
+                        ? [createEditCategoriesMenuItem(notesSource.get(h))]
+                        : [
+                              createAddNoteCategoryMenuItem(
+                                  notesSource.get(h),
+                                  onCreateCategory
+                              ),
+                          ]),
                     ...(context.settings.get(baseSettings).advancedUsage.get(h)
-                        ? [createImportNoteMenuItem(notesSource.get(h), createCallback)]
+                        ? [
+                              createImportNoteMenuItem(notesSource.get(h), onCreateNote),
+                              createEditMetadataMenuItem(notesSource.get(h)),
+                          ]
                         : []),
                 ]);
                 const allItems = new DataCacher(h => [
-                    ...allContentItems.get(h),
+                    ...notesItems.get(h).items,
+                    ...(context.settings.get(settings).inlineCategory.get(h)
+                        ? []
+                        : categoryEmptyItems.get(h).items),
                     ...controls.get(h),
                 ]);
-                const menu = new ProxiedMenu(context, h => allItems.get(h));
+                const menu: IMenu = new ProxiedMenu(context, h => allItems.get(h));
 
                 context.open(
                     new UILayer(

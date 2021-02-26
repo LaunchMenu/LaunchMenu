@@ -8,11 +8,9 @@ import {IDeleteNoteCategoryData} from "./_types/IDeleteNoteCategoryData";
 export const deleteNoteCategoryHandler = createAction({
     name: "Delete note category",
     parents: [deleteAction],
-    core: (notes: IDeleteNoteCategoryData[]) => ({
-        children: notes.map(({category, notesSource}) =>
-            deleteAction.createBinding(
-                () => new DeleteNoteCategoryCommand(category, notesSource)
-            )
+    core: (categories: NoteCategory[]) => ({
+        children: categories.map(category =>
+            deleteAction.createBinding(() => new DeleteNoteCategoryCommand(category))
         ),
     }),
 });
@@ -32,12 +30,11 @@ export class DeleteNoteCategoryCommand extends Command {
     /**
      * Creates a new delete command
      * @param noteCategory The note category to be deleted
-     * @param notesSource The source to delete it from (in order to undo deletion)
      */
-    public constructor(noteCategory: NoteCategory, notesSource: NotesSource) {
+    public constructor(noteCategory: NoteCategory) {
         super();
         this.noteCategory = noteCategory;
-        this.notesSource = notesSource;
+        this.notesSource = noteCategory.getSource();
     }
 
     /** @override */

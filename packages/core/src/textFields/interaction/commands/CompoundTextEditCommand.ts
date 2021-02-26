@@ -1,11 +1,13 @@
 import {Command} from "../../../undoRedo/Command";
 import {CompoundCommand} from "../../../undoRedo/commands/CompoundCommand";
+import {Resource} from "../../../undoRedo/dependencies/Resource";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {ICompoundCommand} from "../../../undoRedo/_types/ICompoundCommand";
 import {IField} from "../../../_types/IField";
 import {ITextField} from "../../_types/ITextField";
 import {ITextSelection} from "../../_types/ITextSelection";
 import {TextAlterationTools} from "./TextAlterationTools";
+import {standardTextResource} from "./TextEditCommand";
 import {ITextAlteration} from "./_types/ITextAlteration";
 import {ITextAlterationInput} from "./_types/ITextAlterationInput";
 import {ITextEditCommand} from "./_types/ITextEditCommand";
@@ -19,6 +21,7 @@ export class CompoundTextEditCommand
     public metadata = {
         name: "Compound edit text",
     };
+    protected readonly dependencies = [standardTextResource] as Resource[];
 
     public readonly commands: ITextEditCommand[];
 
@@ -45,6 +48,9 @@ export class CompoundTextEditCommand
             throw new Error(
                 "All commands should have the same text target, use a regular compound command instead"
             );
+
+        if ("resource" in this.target && this.target.resource)
+            this.dependencies = [this.target.resource];
 
         const combined = this.combineCommands(commands);
         this.newSelection = combined.selection;

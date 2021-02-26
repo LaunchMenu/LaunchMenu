@@ -40,7 +40,7 @@ export const editNoteExecuteAction = createAction({
                         setSelection: sel => textSelection.set(sel),
                     };
                 } else {
-                    field = new TextField(note.getText());
+                    field = new TextField(revertValue);
                 }
 
                 // Edit the field

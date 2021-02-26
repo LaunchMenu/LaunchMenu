@@ -23,7 +23,7 @@ export function copyItem<T extends IActionTarget>(
     const IDMap = identityAction.get([item]);
 
     // Find the ID corresponding to the specified target
-    const ID = [...IDMap].find(([ID, target]) => (target as any) == item)?.[0] ?? uuid();
+    const ID = [...IDMap].find(([_, target]) => target() == item)?.[0] ?? uuid();
 
     let newItem: T;
     if (item.actionBindings instanceof Function || bindings instanceof Function)

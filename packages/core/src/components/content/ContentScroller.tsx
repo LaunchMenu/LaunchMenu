@@ -20,9 +20,9 @@ export const ContentScroller: FC<{content: IContent} & IBoxProps> = ({
     // Sets the content size on every render, TODO: actively listen for size changes in content
     const setRef = (ref: HTMLDivElement) => {
         if (!ref) return;
-        const scrollheight = Math.max(0, ref.scrollHeight - ref.clientHeight);
-        content.setScrollHeight(scrollheight);
-        scrollHeightRef.current = scrollheight;
+        const scrollHeight = Math.max(0, ref.scrollHeight - ref.clientHeight);
+        content.setScrollHeight(scrollHeight);
+        scrollHeightRef.current = scrollHeight;
     };
 
     // Listen to any offset changes, and auto scroll to show them
