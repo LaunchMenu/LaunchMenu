@@ -26,6 +26,7 @@ export const WindowUI: FC = () => {
         <Box
             display="flex"
             flexDirection="column"
+            p={1}
             alignItems="center"
             alignContent="center"
             justifyContent="center"
