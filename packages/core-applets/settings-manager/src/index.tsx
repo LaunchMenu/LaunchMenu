@@ -7,6 +7,7 @@ import {
     createSettingsFolder,
     declare,
     KeyPattern,
+    Priority,
     ProxiedMenu,
     searchAction,
     settingPatternMatcher,
@@ -51,7 +52,7 @@ export default declare({
     info,
     settings,
     coreCategory: CoreAppletType.SETTINGS,
-    withLM: LM => {
+    init: ({LM}) => {
         // Setup an auto save handler
         const manager = LM.getSettingsManager();
         const disposeAutoSave = setupAutoSaveHandler(manager);
@@ -72,6 +73,20 @@ export default declare({
                         children: () => [],
                         // Make the ID different, such that the searcher notices these are different nodes
                         ID: ID => `capped-${ID}`,
+                        item: prioritizedItem => {
+                            if (prioritizedItem) {
+                                const {item, priority} = prioritizedItem;
+                                return {
+                                    item,
+                                    priority: priority && [
+                                        Priority.LOW,
+                                        ...(priority instanceof Array
+                                            ? priority
+                                            : [priority]),
+                                    ],
+                                };
+                            }
+                        },
                     })
                 ),
         }));

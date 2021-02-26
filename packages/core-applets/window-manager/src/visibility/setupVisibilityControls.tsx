@@ -3,6 +3,7 @@ import {remote, BrowserWindow} from "electron";
 import {Observer} from "model-react";
 import {settings} from "../settings";
 import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
+import {returnFocus} from "./returnFocus";
 
 /**
  * Sets up all listeners and UI to control window visibility
@@ -41,6 +42,7 @@ export function setupVisibilityControls(
                 window.hide();
                 onHide();
             }, 10);
+            returnFocus();
         }
     });
     const hideWindow = () => LM.setWindowOpen(false);

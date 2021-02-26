@@ -30,7 +30,7 @@ export type IAppletConfig<
         watchDirectory?: string;
     };
     /** A function to get the execution data of the config given a LM (and potentially session) instance */
-    withLM?: IAppletLMInitializer;
+    init?: IAppletLMInitializer;
     /** A function to get the execution data of the config given a session instance  */
     withSession?: IAppletSessionInitializer;
 } & Partial<IAppletExecutionConfig>;

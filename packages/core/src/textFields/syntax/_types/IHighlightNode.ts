@@ -1,3 +1,5 @@
+import {CSSProperties} from "React";
+
 /**
  * A node for containing the syntax highlighting information
  */
@@ -10,4 +12,6 @@ export type IHighlightNode = {
     end: number;
     /** The text of the node */
     text: string;
+    /** Optional css styling to force (use with care, it's better to assign tags in order to allow for theming as well as node merging) */
+    style?: CSSProperties;
 };

@@ -2,6 +2,7 @@ import {IField} from "../../_types/IField";
 import {IJSON} from "../../_types/IJSON";
 import {ISerializeField} from "../storage/fileTypes/FieldsFile/_types/ISerializedField";
 import {IRenderableSettingsTree} from "./IRenderableSettingsTree";
+import {ISettingConfigurer} from "./ISettingConfigurer";
 
 /**
  * Extracts a simple settings tree from a renderable settings tree, by removing the category nodes
@@ -9,7 +10,7 @@ import {IRenderableSettingsTree} from "./IRenderableSettingsTree";
 export type TSettingsTree<T extends IRenderableSettingsTree> = {
     [P in keyof T]: T[P] extends {children: IRenderableSettingsTree}
         ? TSettingsTree<T[P]["children"]>
-        : TIsField<T[P]> & Omit<T[P], "view" | "actionBindings">;
+        : TIsField<T[P]> & Omit<T[P], "view" | "actionBindings"> & ISettingConfigurer;
 };
 
 // Indicate that this indeed is a proper field to TS

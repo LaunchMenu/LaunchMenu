@@ -5,5 +5,5 @@ import {createStandardSearchPatternMatcher} from "@launchmenu/core";
  */
 export const appletManagerPatternMatcher = createStandardSearchPatternMatcher({
     name: "Applet",
-    matcher: /^applet:/i,
+    matcher: /^applet\s*:/i,
 });

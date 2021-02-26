@@ -94,7 +94,7 @@ export class ProxiedMenu extends AbstractMenu {
         },
         {
             onUpdate: () => {
-                this.deselectRemovedCursor();
+                this.deselectRemovedItems();
             },
         }
     );
@@ -102,8 +102,10 @@ export class ProxiedMenu extends AbstractMenu {
     /**
      * Checks whether the cursor item is still present, and deselects it if not
      */
-    protected deselectRemovedCursor(): void {
+    protected deselectRemovedItems(): void {
         const items = this.getItems();
+
+        // Update the cursor if needed
         const cursor = this.cursor.get();
         updateCursor: if (cursor == null || !items.includes(cursor)) {
             for (let i = 0; i < items.length; i++)
@@ -113,6 +115,11 @@ export class ProxiedMenu extends AbstractMenu {
                 }
             this.setCursor(null);
         }
+
+        // Remove any removed items from the selection
+        const selection= this.selected.get();
+        const presentSelected = selection.filter(item=>items.includes(item));
+        if(selection.length!=presentSelected.length) this.selected.set(presentSelected);
     }
 
     // Item retrieval

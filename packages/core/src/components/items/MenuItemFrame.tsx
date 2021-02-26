@@ -1,4 +1,4 @@
-import React, {FC, useCallback} from "react";
+import React, {FC, useCallback, useMemo} from "react";
 import {Box} from "../../styling/box/Box";
 import {IMenu} from "../../menus/menu/_types/IMenu";
 import {IMenuItem} from "../../menus/items/_types/IMenuItem";
@@ -6,25 +6,57 @@ import {isItemSelectable} from "../../menus/items/isItemSelectable";
 import {useIOContext} from "../../context/react/useIOContext";
 import {KeyEvent} from "../../keyHandler/KeyEvent";
 import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
-import {IItemExecuteCallback} from "../../actions/types/execute/_types/IItemExecuteCallback";
 import {executeAction} from "../../actions/types/execute/executeAction";
 import {getConnectionGroupAction} from "../../actions/types/connectionGroup/getConnectionGroupAction";
 import {BackgroundColorProvider} from "../../styling/backgroundColorContext";
 import {useDataHook} from "model-react";
+import {IMenuItemFrameProps} from "./_types/IMenuItemFrameProps";
+import {mergeStyles} from "../../utils/mergeStyles";
+import Color from "color";
+import {IThemeColor} from "../../styling/theming/_types/IBaseTheme";
+import {useTheme} from "../../styling/theming/ThemeContext";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution
  */
-export const MenuItemFrame: FC<{
-    isSelected: boolean;
-    isCursor: boolean;
-    onExecute?: IItemExecuteCallback;
-    menu?: IMenu;
-    item?: IMenuItem;
-    /** Whether to make the background transparent */
-    transparent?: boolean;
-}> = ({isCursor, isSelected, menu, onExecute, item, children, transparent}) => {
+export const MenuItemFrame: FC<IMenuItemFrameProps> = ({
+    isCursor,
+    isSelected,
+    menu,
+    onExecute,
+    item,
+    children,
+    transparent,
+    outerProps,
+    innerProps,
+    colors,
+}) => {
     const ioContext = useIOContext();
+
+    const onContextMenu = useCallback(() => {
+        if (!menu || !item) return;
+        if (isItemSelectable(item)) {
+            menu.setCursor(item);
+
+            // Use the context menu keyboard shortcut to open the menu
+            if (ioContext) {
+                emitContextEvent(
+                    ioContext,
+                    new KeyEvent({
+                        key: {id: "tab", name: "tab"},
+                        type: "down",
+                    })
+                );
+                emitContextEvent(
+                    ioContext,
+                    new KeyEvent({
+                        key: {id: "tab", name: "tab"},
+                        type: "up",
+                    })
+                );
+            }
+        }
+    }, [menu, item]);
 
     const {connectBgPrevious, connectBgNext} = transparent
         ? ({} as IConnections)
@@ -33,6 +65,18 @@ export const MenuItemFrame: FC<{
     const radiusSize = "small";
     const standardBackground = transparent ? undefined : "bgPrimary";
     const mainBgColor = isCursor ? "primary" : standardBackground;
+
+    // Compute the main background color
+    const theme = useTheme();
+    const containerBgColor =
+        colors?.container?.background ?? (mainBgColor && theme.color[mainBgColor]);
+
+    const textColor = useMemo((): IThemeColor => {
+        if (!containerBgColor) return "fontBgPrimary";
+        const isDark = new Color(containerBgColor).isDark();
+        return isDark ? "fontPrimary" : "fontBgPrimary";
+    }, [containerBgColor]);
+
     return (
         <Box
             className="itemFrame"
@@ -44,12 +88,16 @@ export const MenuItemFrame: FC<{
             overflow="hidden"
             elevation={transparent ? undefined : "small"}
             zIndex={1}
+            // Possible ui customization
+            {...outerProps}
+            css={mergeStyles(colors?.selection, outerProps?.css)}
             position="relative">
-            <BackgroundColorProvider color={mainBgColor}>
+            <BackgroundColorProvider color={containerBgColor}>
                 <Box
                     background={mainBgColor}
+                    color={textColor}
                     marginLeft="medium"
-                    cursor="pointer"
+                    cursor={transparent ? "default" : "pointer"}
                     onClick={useCallback(async () => {
                         if (!menu || !item) return;
                         if (menu.getCursor() == item) {
@@ -57,35 +105,22 @@ export const MenuItemFrame: FC<{
                         } else if (isItemSelectable(item)) menu.setCursor(item);
                     }, [menu, item])}
                     // Open the context menu on right click
-                    onContextMenu={() => {
-                        if (!menu || !item) return;
-                        if (isItemSelectable(item)) {
-                            menu.setCursor(item);
-
-                            // Use the context menu keyboard shortcut to open the menu
-                            if (ioContext) {
-                                emitContextEvent(
-                                    ioContext,
-                                    new KeyEvent({
-                                        key: {id: "tab", name: "tab"},
-                                        type: "down",
-                                    })
-                                );
-                                emitContextEvent(
-                                    ioContext,
-                                    new KeyEvent({
-                                        key: {id: "tab", name: "tab"},
-                                        type: "up",
-                                    })
-                                );
-                            }
-                        }
-                    }}>
+                    onContextMenu={onContextMenu}
+                    // Possible ui customization
+                    {...innerProps}
+                    css={mergeStyles(colors?.container, innerProps?.css)}>
                     {connectBgPrevious && (
                         <Box
                             marginLeft="medium"
                             marginRight="medium"
-                            borderTopColor={isCursor ? "primary" : "bgSecondary"}
+                            borderTopColor={isCursor ? "primary" : "bgTertiary"}
+                            css={
+                                isCursor
+                                    ? {borderTopColor: "transparent"}
+                                    : colors?.border
+                                    ? {borderTopColor: colors.border}
+                                    : undefined
+                            }
                             borderTopStyle="solid"
                             borderWidth={1}
                         />
@@ -112,25 +147,10 @@ export function useConnectAdjacent(menu?: IMenu, item?: IMenuItem): IConnections
     if (!item || !menu) return {};
 
     const [h] = useDataHook();
-    const cg = getConnectionGroupAction.get([item], h);
-    if (cg.size == 0) return {};
-
     const items = menu.getItems(h);
     const index = items.indexOf(item);
     if (index == -1) return {};
 
-    const previousItem = items[index - 1] as IMenuItem | undefined;
-    const nextItem = items[index + 1] as IMenuItem | undefined;
-
-    const previousGroups =
-        previousItem && getConnectionGroupAction.get([previousItem], h);
-    const nextGroups = nextItem && getConnectionGroupAction.get([nextItem], h);
-    return {
-        connectBgPrevious:
-            previousGroups &&
-            [...cg].reduce((cur, group) => cur || previousGroups.has(group), false),
-        connectBgNext:
-            nextGroups &&
-            [...cg].reduce((cur, group) => cur || nextGroups.has(group), false),
-    };
+    const connect = getConnectionGroupAction.shouldConnect(items, index, h);
+    return {connectBgNext: connect.next, connectBgPrevious: connect.previous};
 }

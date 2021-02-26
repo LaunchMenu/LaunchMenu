@@ -12,7 +12,7 @@ import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem
  */
 export const globalContextFolderHandler = createContextFolderHandler({
     name: "Global",
-    priority: Priority.LOW,
+    priority: [Priority.LOW, Priority.LOW, Priority.LOW],
     preventCountCategory: true,
 });
 

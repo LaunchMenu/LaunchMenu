@@ -9,8 +9,8 @@ import {ICategory} from "./_types/ICategory";
  */
 export const getCategoryAction = createAction({
     name: "getCategoryAction",
-    core: (categories: ICategory[]) => ({
-        result: categories,
+    core: (categories: (ICategory | undefined)[]) => ({
+        result: categories.filter((c): c is ICategory => !!c),
     }),
     extras: {
         /**

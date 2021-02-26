@@ -53,19 +53,23 @@ export function getMenuSearchableFromTracedRecursiveSearchData(
     targets: IActionTarget[]
 ): IMenuSearchable {
     if ("itemID" in searchData) {
-        const {itemID, searchable: search, children, showChild} = searchData;
+        const {itemID, search, ID, children, showChild} = searchData;
         return {
-            ID: search.ID,
+            ID,
             async search(query, hook, executer) {
+                // Define a function to get the item that this search ran on
+                const getItem = () => getSearchIdentity(itemID, query, targets, hook);
+
+                // Perform the search function
                 const {
                     item,
                     patternMatch,
                     children: originalChildren = [],
-                } = await search.search(query, hook, executer);
+                } = await search(query, getItem, hook, executer);
 
-                // Get the trace for this item
+                // Define a function to get the trace for this item
                 const getExtendedTrace = () => {
-                    const item = getSearchIdentity(itemID, query, targets, hook);
+                    const item = getItem();
                     return item ? [...getTrace(), {item, showChild}] : getTrace();
                 };
 

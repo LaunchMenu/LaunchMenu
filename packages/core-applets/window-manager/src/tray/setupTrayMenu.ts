@@ -44,6 +44,7 @@ export function setupTrayMenu(LM: LaunchMenu): () => void {
                     field.set(!field.get());
                 },
             },
+            {label: "Restart", type: "normal", click: () => LM.restart()},
             {label: "Quit", type: "normal", click: () => LM.shutdown()},
         ]);
         tray.setContextMenu(contextMenu);

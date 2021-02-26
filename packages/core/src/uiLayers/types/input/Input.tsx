@@ -13,7 +13,7 @@ import {ITextField} from "../../../textFields/_types/ITextField";
 import {IViewStackItem} from "../../_types/IViewStackItem";
 import {IInputConfig} from "./_types/IInputConfig";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
-import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
+import {createStandardTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createStandardTextFieldKeyHandler";
 import {IInputError} from "./_types/IInputError";
 import {IUILayerContentData} from "../../_types/IUILayerContentData";
 import {createContentError} from "../../../components/content/error/createContentError";
@@ -144,8 +144,9 @@ export class Input<T> extends AbstractUILayer {
         context: IIOContext,
         close: () => void
     ): IKeyEventListener {
+        // TODO: merge can be replaced by the extraHandlers option now
         return mergeKeyListeners(
-            createTextFieldKeyHandler(field, context, close),
+            createStandardTextFieldKeyHandler(field, context, {onExit: close}),
             key => {
                 if (
                     context.settings
@@ -237,7 +238,7 @@ export class Input<T> extends AbstractUILayer {
      */
     protected checkError(text?: string): IInputError | null {
         const inpText = text ?? this.getText();
-        return (inpText && this.config.checkValidity?.(inpText)) || null;
+        return (inpText != null && this.config.checkValidity?.(inpText)) || null;
     }
 
     /**

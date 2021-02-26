@@ -14,6 +14,7 @@ export const resetFieldAction = createAction({
     core: (data: IResetFieldActionData<any>[]) => {
         const reset = async ({context}: IExecuteArg) => {
             const cmds = data.flatMap(({field, default: def, undoable}) => {
+                if (typeof def == "function") def = def();
                 if (undoable) return new SetFieldCommand(field, def);
                 else {
                     field.set(def);

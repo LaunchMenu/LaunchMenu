@@ -45,6 +45,7 @@
         "ace-builds": "^1.4.12",
         "bezier-js": "^2.6.1",
         "chevrotain": "^7.0.1",
+        "chokidar": "^3.4.2",
         "color": "^3.1.2",
         "fuzzy-rater": "^0.0.0",
         "mkdirp": "^1.0.4",
@@ -52,7 +53,11 @@
         "react": "^17.0.0",
         "react-dom": "^17.0.0",
         "react-icons": "^3.10.0",
+        "react-katex": "^2.0.2",
+        "react-markdown": "^5.0.3",
+        "react-resize-detector": "^6.4.0-rc.0",
         "regexp-match-indices": "^1.0.2",
+        "remark-math": "^4.0.0",
         "uuid": "^8.2.0"
     },
     "devDependencies": {

@@ -9,7 +9,7 @@ import {getContentAction} from "./getContentAction";
 import {v4 as uuid} from "uuid";
 import {adjustBindingInput} from "../../utils/adjustBindingInput";
 import {Content} from "../../../content/Content";
-import {createContentKeyHandler} from "../../../content/interaction/keyHandler/createContentKeyHandler";
+import {createStandardContentKeyHandler} from "../../../content/interaction/keyHandler/createStandardContentKeyHandler";
 import {IUUID} from "../../../_types/IUUID";
 import {ContentView} from "../../../components/content/ContentView";
 
@@ -24,7 +24,7 @@ export const scrollableContentHandler = createAction({
         children: contents.map(item =>
             getContentAction.createBinding(context => {
                 const content = new Content(item.value);
-                const handler = createContentKeyHandler(content, context);
+                const handler = createStandardContentKeyHandler(content, context);
                 const view = <ContentView content={content} />;
                 return {content, contentView: view, contentHandler: handler};
             }, item.ID)

@@ -64,7 +64,7 @@ export default declare({
     info,
     settings,
     coreCategory: CoreAppletType.SESSIONS,
-    withLM: LM => {
+    init: ({LM}) => {
         const sessionManager = LM.getSessionManager();
 
         const disposeSessionDisposer = setupSessionDisposer(LM);

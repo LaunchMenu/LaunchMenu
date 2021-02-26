@@ -3,6 +3,7 @@ import {IIOContext} from "../../../context/_types/IIOContext";
 import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {IPriority} from "../../../menus/menu/priority/_types/IPriority";
 import {IThemeIcon} from "../../../styling/theming/_types/IBaseTheme";
+import {IViewStackItemView} from "../../../uiLayers/_types/IViewStackItem";
 import {IActionBinding} from "../../_types/IActionBinding";
 
 /**
@@ -29,6 +30,9 @@ export type IContextItemData = {
 
     /** Any tags that can be used for searching */
     tags?: string[];
+
+    /** Content to show when this item is selected */
+    content?: IViewStackItemView;
 
     /** The priority with which this action should appear in the context menu */
     priority?: IPriority;

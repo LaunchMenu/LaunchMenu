@@ -158,3 +158,11 @@ export type ICssBoxSizing =
     | "inherit"
     | "revert"
     | "unset";
+
+export type ICssTextAlign =
+    | "left"
+    | "right"
+    | "center"
+    | "justify"
+    | "initial"
+    | "inherit";

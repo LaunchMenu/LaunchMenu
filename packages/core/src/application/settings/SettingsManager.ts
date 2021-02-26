@@ -7,6 +7,7 @@ import {IApplet} from "../applets/_types/IApplet";
 import {ISettingsData} from "./_types/ISettingsData";
 import Path from "path";
 import {IAppletData} from "../applets/_types/IAppletData";
+import {fileInputBasePathConfigurationSymbol} from "../../menus/items/inputs/types/createFileMenuItem";
 
 /**
  * Manages the settings within LaunchMenu
@@ -14,6 +15,7 @@ import {IAppletData} from "../applets/_types/IAppletData";
 export class SettingsManager {
     protected appletsSource: IDataRetriever<IAppletData[]>;
     protected settingsDirectory: string;
+    protected dataDirectory: string;
 
     protected extraFiles = new Field([] as ISettingsData[]);
 
@@ -23,13 +25,16 @@ export class SettingsManager {
      * Creates a new settings manager, which auto loads the settings of the passed applets
      * @param appletsSource The retriever for the applets
      * @param settingsDirectory The directory to load the settings for the applets from
+     * @param dataDirectory The directory that LM data is stored in
      */
     public constructor(
         appletsSource: IDataRetriever<IAppletData[]>,
-        settingsDirectory: string
+        settingsDirectory: string,
+        dataDirectory: string = Path.join(settingsDirectory, "data")
     ) {
         this.appletsSource = appletsSource;
         this.settingsDirectory = settingsDirectory;
+        this.dataDirectory = dataDirectory;
     }
 
     /**
@@ -185,6 +190,7 @@ export class SettingsManager {
                 settings.ID = applet.ID;
 
                 try {
+                    // Create the settings file at the correct file path
                     const settingsFile = new SettingsFile({
                         ...settings,
                         path: Path.join(
@@ -193,6 +199,17 @@ export class SettingsManager {
                             applet.ID + ".json"
                         ),
                     });
+
+                    // Inject the base directory for file settings to use
+                    settingsFile.configure({
+                        [fileInputBasePathConfigurationSymbol]: Path.join(
+                            this.dataDirectory,
+                            "appletData",
+                            `${applet.ID}`
+                        ),
+                    });
+
+                    // Load the settings from the file if present
                     settingsFile.load();
 
                     return {

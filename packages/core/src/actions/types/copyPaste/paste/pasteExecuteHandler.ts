@@ -10,7 +10,6 @@ export const pasteExecuteHandler = createContextAction({
         icon: "paste",
         name: "Paste",
     },
-    override: executeAction,
     parents: [executeAction],
     core: (executables: IExecutable[]) => {
         const executeBindings = executables.map(executable =>

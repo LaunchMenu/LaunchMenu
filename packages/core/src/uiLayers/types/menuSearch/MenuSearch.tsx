@@ -13,15 +13,16 @@ import {IMenuSearchConfig} from "./_types/IMenuSearchConfig";
 import {v4 as uuid} from "uuid";
 import {ITextField} from "../../../textFields/_types/ITextField";
 import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
-import {createTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createTextFieldKeyHandler";
+import {createStandardTextFieldKeyHandler} from "../../../textFields/interaction/keyHandler/createStandardTextFieldKeyHandler";
 import {IIOContext} from "../../../context/_types/IIOContext";
-import {createMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
+import {createStandardMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/createStandardMenuKeyHandler";
 import {MenuView} from "../../../components/menu/MenuView";
 import {IViewStackItem} from "../../_types/IViewStackItem";
 import {InstantOpenTransition} from "../../../components/context/stacks/transitions/open/InstantOpenTransition";
 import {InstantCloseTransition} from "../../../components/context/stacks/transitions/close/InstantCloseTransition";
 import {getHooked} from "../../../utils/subscribables/getHooked";
 import {IThemeIcon} from "../../../styling/theming/_types/IBaseTheme";
+import {IDisposableKeyEventListener} from "../../../textFields/interaction/_types/IDisposableKeyEventListener";
 
 export class MenuSearch extends AbstractUILayer {
     protected data: IMenuSearchConfig;
@@ -78,13 +79,17 @@ export class MenuSearch extends AbstractUILayer {
             fieldView: this.getFieldView(field, menu, this.data.icon),
             fieldHandler: this.getFieldHandler(field, context),
         };
+        const {handler: menuHandler, destroy: destroyMenuHandler} = this.getMenuHandler(
+            menu,
+            () => {
+                field.set("");
+            }
+        );
         const menuData: IUILayerMenuData = {
             ID: uuid(),
             menu,
             menuView: this.getMenuView(menu),
-            menuHandler: this.getMenuHandler(menu, () => {
-                field.set("");
-            }),
+            menuHandler,
         };
 
         // Make the menu and field visible
@@ -99,7 +104,7 @@ export class MenuSearch extends AbstractUILayer {
 
         // Subscribe to the searchfield input
         const fieldObserver = new Observer(h => field.get(h)).listen(search => {
-            if (search) menu.setSearch(search); // Don't update if the search is empty
+            menu.setSearch(search);
             this.isMenuOpen.set(search.length > 0);
         });
 
@@ -108,6 +113,7 @@ export class MenuSearch extends AbstractUILayer {
             menu.destroy();
             menuObserver.destroy();
             fieldObserver.destroy();
+            destroyMenuHandler();
             this.menuData.set(null);
             this.fieldData.set(null);
         };
@@ -145,7 +151,7 @@ export class MenuSearch extends AbstractUILayer {
      * @returns The key listener
      */
     protected getFieldHandler(field: ITextField, context: IIOContext): IKeyEventListener {
-        return createTextFieldKeyHandler(field, context);
+        return createStandardTextFieldKeyHandler(field, context);
     }
 
     /**
@@ -169,8 +175,11 @@ export class MenuSearch extends AbstractUILayer {
      * @param onExit The callback to execute when trying to exit the menu
      * @returns The key listener
      */
-    protected getMenuHandler(menu: SearchMenu, onExit: () => void): IKeyEventListener {
-        return createMenuKeyHandler(menu, {
+    protected getMenuHandler(
+        menu: SearchMenu,
+        onExit: () => void
+    ): IDisposableKeyEventListener {
+        return createStandardMenuKeyHandler(menu, {
             onExecute: this.data.onExecute,
             useItemKeyHandlers: this.data.useItemKeyHandlers,
             useContextItemKeyHandlers: this.data.useContextItemKeyHandlers,

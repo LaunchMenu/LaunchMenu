@@ -11,6 +11,8 @@ import {
     SearchMenu,
     UILayer,
     TextField,
+    adjustSearchable,
+    Priority,
 } from "@launchmenu/core";
 import {getAsync, IDataHook, Observer} from "model-react";
 import {Wiktionary} from "./Wiktionary";
@@ -61,7 +63,28 @@ const search = async (query: IQuery, hook: IDataHook) => {
     const items = resultCache.getAll(words.map(word => [word, language]));
     return {
         patternMatch: pattern,
-        children: searchAction.get(items),
+        children: searchAction.get(items).map(
+            // Adjust the priorities of the searchable, TODO: find/create a neater way of assigning base priorities to items in core
+            searchable =>
+                adjustSearchable(searchable, {
+                    item: prioritizedItem => {
+                        if (prioritizedItem) {
+                            const {item, priority} = prioritizedItem;
+                            return {
+                                item: item,
+                                // Prefix the priority with [medium, low]
+                                priority: priority && [
+                                    Priority.MEDIUM,
+                                    Priority.LOW,
+                                    ...(priority instanceof Array
+                                        ? priority
+                                        : [priority]),
+                                ],
+                            };
+                        }
+                    },
+                })
+        ),
     };
 };
 

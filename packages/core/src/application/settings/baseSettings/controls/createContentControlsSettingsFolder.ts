@@ -8,7 +8,7 @@ import {createSettingsFolder} from "../../../../settings/inputs/createSettingsFo
  */
 export function createContentControlsSettingsFolder() {
     return createSettingsFolder({
-        name: "Content",
+        name: "Content controls",
         children: {
             contentUp: createKeyPatternSetting({
                 name: "Scroll content up",

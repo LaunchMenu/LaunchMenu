@@ -1,10 +1,14 @@
 import {IDataHook} from "model-react";
+import {Resource} from "../../undoRedo/dependencies/Resource";
 import {ITextSelection} from "./ITextSelection";
 
 /**
  * A mutable field to contain a text input as well as the selected range
  */
 export type ITextField = {
+    /** The lock for this text resource */
+    resource?: Resource;
+
     /**
      * Sets the value of the text field
      * @param text The new text

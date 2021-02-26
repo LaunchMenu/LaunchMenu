@@ -43,7 +43,11 @@ export const defaultHighlightTheme: IHighlightThemeInput = theme => ({
 
         // General highlighting
         {
-            scope: [highlightTags.number, highlightTags.patternMatch],
+            scope: [
+                highlightTags.number,
+                highlightTags.patternMatch,
+                highlightTags.keyword,
+            ],
             settings: {
                 color: theme.color.primary,
             },

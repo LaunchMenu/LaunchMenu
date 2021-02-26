@@ -13,18 +13,19 @@ import {IField} from "../../../../../_types/IField";
 import {IMenu} from "../../../../menu/_types/IMenu";
 import {IAdvancedKeyPatternUIData} from "./_types/IAdvancedKeyPatternUIData";
 import {IKeyEventListener} from "../../../../../keyHandler/_types/IKeyEventListener";
-import {createMenuKeyHandler} from "../../../../menu/interaction/keyHandler/createMenuKeyHandler";
+import {createStandardMenuKeyHandler} from "../../../../menu/interaction/keyHandler/createStandardMenuKeyHandler";
 import {v4 as uuid} from "uuid";
 import {IMenuItem} from "../../../_types/IMenuItem";
 import {createKeyPatternOptionMenuItem} from "./keyPatternOptionMenuItem/createKeyPatternOptionMenuItem";
 import {createStandardMenuItem} from "../../../createStandardMenuItem";
 import {updateKeyPatternOptionExecuteHandler} from "./keyPatternOptionMenuItem/actionHandlers/updateKeyPatternOptionExecuteHandler";
-import {createFinishMenuItem} from "../../../createFinishMenuItem";
+import {createFinishMenuItem} from "../../../types/createFinishMenuItem";
 import {SetFieldCommand} from "../../../../../undoRedo/commands/SetFieldCommand";
 import {ProxiedMenu} from "../../../../menu/ProxiedMenu";
 import {AdvancedKeyPatternContent} from "./AdvancedKeyPatternContent";
 import {getControlsCategory} from "../../../../categories/types/getControlsCategory";
 import {getCategoryAction} from "../../../../../actions/types/category/getCategoryAction";
+import {IDisposableKeyEventListener} from "../../../../../textFields/interaction/_types/IDisposableKeyEventListener";
 
 export class AdvancedKeyPatternUI extends AbstractUILayer {
     protected target: IField<KeyPattern>;
@@ -100,11 +101,15 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
         const menu = new ProxiedMenu(context, getItems);
 
         // Obtain all menu data
+        const {handler: menuHandler, destroy: destroyMenuHandler} = this.getMenuHandler(
+            menu,
+            close
+        );
         const menuData: IUILayerMenuData = {
             ID: uuid(),
             menu,
             menuView: this.getMenuView(menu),
-            menuHandler: this.getMenuHandler(menu, close),
+            menuHandler,
         };
         const menuSearch = new MenuSearch({menu});
         const contentData: IUILayerContentData = {
@@ -125,6 +130,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
             this.menuData.set(null);
             this.menuSearch.set(null);
             menu.destroy();
+            destroyMenuHandler();
             disposeSearch();
         };
     }
@@ -144,8 +150,11 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
      * @param close The function to close the UI
      * @returns The key listener
      */
-    protected getMenuHandler(menu: IMenu, close: () => void): IKeyEventListener {
-        return createMenuKeyHandler(menu, {onExit: close});
+    protected getMenuHandler(
+        menu: IMenu,
+        close: () => void
+    ): IDisposableKeyEventListener {
+        return createStandardMenuKeyHandler(menu, {onExit: close});
     }
 
     /**

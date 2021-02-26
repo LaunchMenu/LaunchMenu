@@ -1,9 +1,9 @@
 import {IDataHook} from "model-react";
 import {IPatternMatch} from "../../../utils/searchExecuter/_types/IPatternMatch";
 import {plaintextLexer} from "../../../textFields/syntax/plaintextLexer";
-import {addHighlightNodeTags} from "../../../textFields/syntax/utils/addHighlightNodeTags";
 import {highlightTags} from "../../../textFields/syntax/utils/highlightTags";
 import {IHighlighter} from "../../../textFields/syntax/_types/IHighlighter";
+import {mergeHighlightNodes} from "../../../textFields/syntax/utils/mergeHighlightNodes";
 
 /**
  * Creates a highlighter that matches search patterns
@@ -34,14 +34,14 @@ export function createHighlighterWithSearchPattern(
             let newNodes = nodes;
             patternMatches.forEach(pattern => {
                 if (pattern.highlight)
-                    pattern.highlight.forEach(node => {
-                        newNodes = addHighlightNodeTags(
-                            newNodes,
-                            node.start,
-                            node.end,
-                            "tags" in node ? node.tags : [highlightTags.patternMatch]
-                        );
-                    });
+                    newNodes = mergeHighlightNodes(
+                        newNodes,
+                        pattern.highlight.map(node => ({
+                            text: syntax.substring(node.start, node.end),
+                            tags: [highlightTags.patternMatch],
+                            ...node,
+                        }))
+                    );
             });
 
             // Return the newly created nodes and the errors

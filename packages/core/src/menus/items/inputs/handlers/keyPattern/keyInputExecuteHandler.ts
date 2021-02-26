@@ -2,18 +2,18 @@ import {IAdvancedKeyInputExecuteData} from "./_types/IAdvancedKeyInputExecuteDat
 import {updateKeyPatternOptionExecuteHandler} from "./keyPatternOptionMenuItem/actionHandlers/updateKeyPatternOptionExecuteHandler";
 import {advancedKeyInputEditAction} from "./advancedKeyInputEditAction";
 import {createAction} from "../../../../../actions/createAction";
-import {sequentialExecuteHandler} from "../../../../../actions/types/execute/sequentialExecuteHandler";
 import {executeAction} from "../../../../../actions/types/execute/executeAction";
+import {editExecuteHandler} from "../../../../../actions/types/execute/types/editExecuteHandler";
 
 /**
  * The standard key input execute handler, which either opens the advanced editor or allows you to quickly update the pattern if there is only 1
  */
 export const keyInputExecuteHandler = createAction({
     name: "key input execute handler",
-    parents: [sequentialExecuteHandler],
+    parents: [editExecuteHandler],
     core: (data: IAdvancedKeyInputExecuteData[]) => ({
         children: data.map((binding, i) =>
-            sequentialExecuteHandler.createBinding(({context}) => {
+            editExecuteHandler.createBinding(({context}) => {
                 const pattern = binding.field.get();
 
                 // Execute the update pattern action if there is only 1 pattern

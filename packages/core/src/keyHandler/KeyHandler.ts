@@ -1,4 +1,4 @@
-import {IKeyEventListener, IKeyEventListenerFunction} from "./_types/IKeyEventListener";
+import {IKeyEventListener} from "./_types/IKeyEventListener";
 import {IKeyHandlerTarget} from "./_types/IKeyHandlerTarget";
 import {IKey} from "./_types/IKey";
 import {KeyEvent} from "./KeyEvent";
@@ -103,11 +103,7 @@ export class KeyHandler {
      * Calls all the listeners with the loaded data
      */
     protected callListeners(event: KeyEvent): void {
-        this.listeners.forEach(async listener => {
-            if (!(listener instanceof Function))
-                listener = listener.emit.bind(listener) as IKeyEventListenerFunction;
-            listener(event);
-        });
+        this.listeners.forEach(listener => listener(event));
 
         event.original?.stopImmediatePropagation();
         event.original?.stopPropagation();

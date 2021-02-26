@@ -80,8 +80,8 @@ export function handleCursorJumpInput(
         return true;
     }
     if (patterns.selectAll.matches(event)) {
-        jumpCursor(textField, {dx: -1});
-        jumpCursor(textField, {dx: 1}, true);
+        jumpCursor(textField, {dx: -1, dy: -1});
+        jumpCursor(textField, {dx: 1, dy: 1}, true);
         return true;
     }
 }

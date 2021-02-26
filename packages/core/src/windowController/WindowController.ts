@@ -43,6 +43,16 @@ export class WindowController {
             webview.stop();
             openLink(url);
         });
+
+        webview.session.webRequest.onHeadersReceived({urls: ["*://*/*"]}, (d: any, c) => {
+            if (d.responseHeaders["X-Frame-Options"]) {
+                delete d.responseHeaders["X-Frame-Options"];
+            } else if (d.responseHeaders["x-frame-options"]) {
+                delete d.responseHeaders["x-frame-options"];
+            }
+
+            c({cancel: false, responseHeaders: d.responseHeaders});
+        });
     }
 
     /**

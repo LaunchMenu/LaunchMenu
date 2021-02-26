@@ -3,20 +3,20 @@ import {ICommand} from "../../../undoRedo/_types/ICommand";
 import {Input} from "./Input";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {createAction, createStandardBinding} from "../../../actions/createAction";
-import {sequentialExecuteHandler} from "../../../actions/types/execute/sequentialExecuteHandler";
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {IAction} from "../../../actions/_types/IAction";
 import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
+import {editExecuteHandler} from "../../../actions/types/execute/types/editExecuteHandler";
 
 /**
  * A handler to let users alter a field
  */
 export const inputExecuteHandler = createAction({
     name: "input handler",
-    parents: [sequentialExecuteHandler],
+    parents: [editExecuteHandler],
     core: (data: IInputExecuteData<unknown>[]) => ({
         children: data.map(({field, undoable, ...config}) =>
-            sequentialExecuteHandler.createBinding(
+            editExecuteHandler.createBinding(
                 ({context}) =>
                     new Promise<ICommand | void>(res => {
                         let cmd: ICommand | undefined;

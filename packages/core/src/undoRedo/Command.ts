@@ -74,7 +74,8 @@ export abstract class Command implements ICommand {
                 const releasers = await first.dependencies;
                 this.state.set("executing");
                 try {
-                    await this.onExecute();
+                    const res = this.onExecute();
+                    if (res instanceof Promise) await res;
                 } catch (e) {
                     error = e;
                 }
@@ -87,7 +88,8 @@ export abstract class Command implements ICommand {
                 const releasers = await first.dependencies;
                 this.state.set("reverting");
                 try {
-                    await this.onRevert();
+                    const res = this.onRevert();
+                    if (res instanceof Promise) await res;
                 } catch (e) {
                     error = e;
                 }
@@ -111,7 +113,7 @@ export abstract class Command implements ICommand {
             We can't wait for all resources to be available at once however,
             since the command execution order depends on the dependency claim order.
 
-            If a deadlock occurs, this should be solved by claiming the dependencies in the same order. 
+            If a deadlock occurs, this should be solved by claiming the dependencies in the same order everywhere, E.g. always acquire A before B. 
             There doesn't seem to be a much better solution without making things massively complex.
         */
 
@@ -132,7 +134,7 @@ export abstract class Command implements ICommand {
     }
 
     /** The code to call on execute */
-    protected abstract onExecute(): Promise<void>;
+    protected abstract onExecute(): void | Promise<void>;
     /** The code to call on revert */
-    protected abstract onRevert(): Promise<void>;
+    protected abstract onRevert(): void | Promise<void>;
 }

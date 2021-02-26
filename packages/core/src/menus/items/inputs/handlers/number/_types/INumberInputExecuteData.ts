@@ -10,16 +10,6 @@ export type INumberInputExecuteData = {
     field: IField<number>;
     /** Whether the field should update while editing */
     liveUpdate?: boolean;
-} & INumberConstraints &
-    (
-        | {
-              /** Whether the change action is undoable */
-              undoable?: false;
-          }
-        | {
-              /** Whether the change action is undoable */
-              undoable?: true;
-              /** Whether the field should update while editing */
-              liveUpdate?: false;
-          }
-    );
+    /** Whether the change action is undoable, not combinable with live update*/
+    undoable?: boolean;
+} & INumberConstraints;

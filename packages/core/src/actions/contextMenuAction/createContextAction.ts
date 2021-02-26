@@ -81,13 +81,16 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
 
     // Get the action to override
     let override = inpOverride == null ? undefined : inpOverride;
-    if (inpOverride == null && parents && parents.length == 1) {
+    if (inpOverride === undefined && parents && parents.length == 1) {
         let ancestorAction = parents[0] as IAction;
-        while (ancestorAction.parents && ancestorAction.parents.length == 1) {
-            ancestorAction = ancestorAction.parents[0];
+        do {
             if (ancestorAction.parents.find(({action}) => action == folder))
                 override = ancestorAction;
-        }
+            ancestorAction =
+                ancestorAction.parents?.length == 1
+                    ? ancestorAction.parents[0]
+                    : undefined;
+        } while (ancestorAction);
     }
 
     // Create the prioritized item if needed
@@ -103,6 +106,7 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
             icon,
             description,
             tags,
+            content,
             priority = Priority.MEDIUM,
         } = contextItem ?? {};
         item = execute => ({
@@ -114,6 +118,7 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
                 icon,
                 description,
                 tags,
+                content,
                 actionBindings: execute
                     ? adjustBindings(execute, actionBindings)
                     : actionBindings,

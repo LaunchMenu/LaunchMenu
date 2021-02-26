@@ -1,4 +1,4 @@
-import React, {useRef, useEffect, useState, useCallback} from "react";
+import React, {useRef, useEffect, useState, useCallback, useLayoutEffect} from "react";
 import type {Ace} from "ace-builds";
 import {IAceEditorProps} from "./_types/IAceEditorProps";
 import {get2dSelectionRange} from "../../../textFields/utils/rangeConversion";
@@ -6,18 +6,14 @@ import {Box} from "../../../styling/box/Box";
 import {useAceSelectionListener} from "./useAceSelectionListener";
 import {LFC} from "../../../_types/LFC";
 import {getAce} from "./getAce";
-
-// https://github.com/ajaxorg/ace/issues/1518#issuecomment-324130995
-getAce().config.set("basePath", "/ace-builds/src-noconflict");
-getAce().config.set("modePath", "/ace-builds/src-noconflict");
-getAce().config.set("themePath", "/ace-builds/src-noconflict");
-
+import {useResizeDetector} from "react-resize-detector";
+import {useDeepUpdateEffect} from "../../../utils/hooks/useDeepUpdateEffect";
 /**
  * A react component for the ace text editor
  */
 export const AceEditor: LFC<IAceEditorProps> = ({
     options,
-    aceRef: ref,
+    aceRef,
     value,
     onChange,
     selection,
@@ -26,22 +22,41 @@ export const AceEditor: LFC<IAceEditorProps> = ({
     ...rest
 }) => {
     // Create the editor
-    let divRef = useRef<HTMLDivElement>(null);
+    let divRef = useRef<HTMLDivElement | null>(null);
     let [editor, setEditor] = useState(null as Ace.Editor | null);
-    useEffect(() => {
-        if (divRef.current && !editor) {
+    useLayoutEffect(() => {
+        if (divRef.current) {
             // Create the editor
             let editor = getAce().edit(divRef.current);
+            if (!options?.theme) editor.setTheme("ace/theme/dreamweaver");
             if (options) editor.setOptions(options);
             setEditor(editor);
 
             // Create the ref
-            if (ref instanceof Function) ref(editor);
-            else if (ref) ref.current = editor;
+            if (aceRef instanceof Function) aceRef(editor);
+            else if (aceRef) aceRef.current = editor;
 
             // Manage disposal
             return () => editor.destroy();
         }
+    }, []);
+
+    // Update the options on change
+    useDeepUpdateEffect(() => {
+        if (editor && options) editor.setOptions(options);
+    }, [options]);
+
+    // Resize management
+    const resizeCallback = useCallback(() => {
+        if (editor) {
+            editor.resize();
+            setRange(selection, selectionRange);
+        }
+    }, [editor, selection, selectionRange]);
+    const {ref: resizeRef} = useResizeDetector({onResize: resizeCallback});
+    const ref = useCallback((el: HTMLDivElement) => {
+        resizeRef.current = el;
+        divRef.current = el;
     }, []);
 
     // Handle focus
@@ -106,5 +121,5 @@ export const AceEditor: LFC<IAceEditorProps> = ({
     }, [value, editor]);
 
     // Return the div
-    return <Box elRef={divRef} {...rest} onMouseUp={onMouseUp} />;
+    return <Box elRef={ref} {...rest} onMouseUp={onMouseUp} />;
 };

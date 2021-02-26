@@ -1,6 +1,6 @@
 import {IFieldMenuItem} from "../../menus/items/inputs/_types/IFieldMenuItem";
 import {IFolderMenuItemData} from "../../menus/items/_types/IFolderMenuItemData";
-import {createFolderMenuItem} from "../../menus/items/createFolderMenuItem";
+import {createFolderMenuItem} from "../../menus/items/types/createFolderMenuItem";
 import {ISettingsFolderMenuItem} from "../_types/ISettingsFolderMenuItem";
 import {settingPatternMatcher} from "./settingPatternMatcher";
 

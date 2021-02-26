@@ -1,5 +1,5 @@
 import {createAction, createStandardBinding} from "../../../actions/createAction";
-import {sequentialExecuteHandler} from "../../../actions/types/execute/sequentialExecuteHandler";
+import {editExecuteHandler} from "../../../actions/types/execute/types/editExecuteHandler";
 import {IAction} from "../../../actions/_types/IAction";
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
@@ -13,10 +13,10 @@ import {IMultiSelectExecuteData} from "./_types/IMultiSelectExecuteData";
  */
 export const multiSelectExecuteHandler = createAction({
     name: "multi select handler",
-    parents: [sequentialExecuteHandler],
+    parents: [editExecuteHandler],
     core: (data: IMultiSelectExecuteData<unknown>[]) => ({
         children: data.map(({field, undoable, ...config}) =>
-            sequentialExecuteHandler.createBinding(
+            editExecuteHandler.createBinding(
                 ({context}) =>
                     new Promise<ICommand | void>(res => {
                         let cmd: ICommand | undefined;

@@ -7,6 +7,7 @@ type State = {type: "loading" | "configuring"; name: string};
 
 const applets = {
     Dictionary: "@launchmenu/applet-dictionary@alpha",
+    Notes: "@launchmenu/applet-notes@alpha",
 };
 
 export const WindowUI: FC = () => {

@@ -2,8 +2,8 @@ import {IColorInputExecuteData} from "./_types/IColorInputExecuteData";
 import Color from "color";
 import {ColorInput} from "./ColorInput";
 import {ICommand} from "../../../../../undoRedo/_types/ICommand";
-import {sequentialExecuteHandler} from "../../../../../actions/types/execute/sequentialExecuteHandler";
 import {createAction} from "../../../../../actions/createAction";
+import {editExecuteHandler} from "../../../../../actions/types/execute/types/editExecuteHandler";
 
 //TODO: make a more advanced color input editor in accordance to the planning file
 /**
@@ -11,10 +11,10 @@ import {createAction} from "../../../../../actions/createAction";
  */
 export const colorInputExecuteHandler = createAction({
     name: "color input handler",
-    parents: [sequentialExecuteHandler],
+    parents: [editExecuteHandler],
     core: (data: IColorInputExecuteData[]) => ({
         children: data.map(({field, liveUpdate, undoable}) =>
-            sequentialExecuteHandler.createBinding(
+            editExecuteHandler.createBinding(
                 ({context}) =>
                     new Promise<ICommand | void>(res => {
                         context.open(

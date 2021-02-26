@@ -16,7 +16,6 @@ export const exitPasteHandler = addBindingCreatorRequirement(
     createContextAction({
         name: "Exit and paste",
         parents: [exitLMExecuteHandler],
-        override: executeAction,
         core: (bindings: (void | IActionBinding)[]) => {
             /**
              * Executes the pasting of the data

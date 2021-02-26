@@ -11,7 +11,7 @@ export const booleanInputExecuteHandler = createAction({
     parents: [selectExecuteHandler],
     core: (data: IBooleanInputExecuteData[]) => ({
         children: data.map(({field, liveUpdate, undoable}) =>
-            selectExecuteHandler.createBinding<boolean>({
+            selectExecuteHandler.createBinding({
                 field,
                 undoable,
                 liveUpdate,

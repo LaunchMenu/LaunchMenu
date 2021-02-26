@@ -5,6 +5,7 @@ import {TSettingsFromFactory} from "../../../settings/_types/TSettingsFromFactor
 import {createFieldControlsSettingsFolder} from "../../../application/settings/baseSettings/controls/createFieldControlsSettingsFolder";
 import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {isFieldControlsSettingsFolder} from "./isFieldControlsSettingsFolder";
+import {ITextEditTarget} from "../_types/ITextEditTarget";
 
 /**
  * Handles text removal inputs
@@ -15,7 +16,7 @@ import {isFieldControlsSettingsFolder} from "./isFieldControlsSettingsFolder";
  */
 export function handleRemovalInput(
     event: KeyEvent,
-    textField: ITextField,
+    textField: ITextEditTarget,
     patterns:
         | {
               backspace: KeyPattern;

@@ -25,14 +25,14 @@ export function mergeHighlightNodes(
             // This target isn't affected by the source, just add it as it is
             out.push(target);
             target = targets[++ti];
-        } else if (source.end < target.start) {
+        } else if (source.end <= target.start) {
             // The source is fully in front of the target, just add it as it is
             out.push(source);
             source = sources[++si];
         } else if (source.end == source.start) {
             // If the source is an empty range, either merge with another empty range, or insert before
             if (target.end == target.start) {
-                out.push({...target, tags: [...target.tags, ...source.tags]});
+                out.push(mergeNodes(target, source));
                 target = targets[++ti];
             } else out.push(source);
             source = sources[++si];
@@ -63,7 +63,7 @@ export function mergeHighlightNodes(
             }
 
             // Add the new node to the tag
-            out.push({...overlap, tags: [...overlap.tags, ...source.tags]});
+            out.push(mergeNodes(overlap, source));
 
             // Split off any part of the source that overlaps with this node
             const [sourceOverlap, sourceAfterOverlap] = splitHighlightNode(
@@ -90,4 +90,19 @@ export function mergeHighlightNodes(
 
     // Return the result
     return out;
+}
+
+/**
+ * Merges the data of 2 highlight nodes
+ * @param target The node to merge the data of the source into
+ * @param source The data to be merged (excludes selection)
+ * @returns The merged data
+ */
+function mergeNodes(target: IHighlightNode, source: IHighlightNode): IHighlightNode {
+    return {
+        ...target,
+        tags: [...target.tags, ...source.tags],
+        style:
+            target.style || source.style ? {...target.style, ...source.style} : undefined,
+    };
 }

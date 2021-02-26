@@ -16,7 +16,9 @@ export const openAtTraceAction = createContextAction({
         name: "Open in location",
         priority: [Priority.HIGH],
         shortcut: context =>
-            context.settings.get(baseSettings).controls.search.openAtTrace.get(),
+            context.settings
+                .get(baseSettings)
+                .controls.shortcuts.search.openAtTrace.get(),
     },
     core: (traces: (ISearchTraceNode[] | (() => ISearchTraceNode[]))[]) => {
         return {

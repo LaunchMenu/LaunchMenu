@@ -12,7 +12,8 @@ import {IActionTarget} from "../../_types/IActionTarget";
 import {IExecutable, IExecutableResponse} from "./_types/IExecutable";
 import {IItemExecuteCallback} from "./_types/IItemExecuteCallback";
 
-const priority: IPriority = new Array(3).fill(Priority.HIGH);
+/** The main execute action should always be on top of the context menu */
+const priority: IPriority = new Array(5).fill(Priority.EXTRAHIGH);
 
 /**
  * The action to execute the main function of menu items

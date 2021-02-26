@@ -13,8 +13,14 @@ export class TextField implements ITextField {
      * Creates a new TextField that stores text and selection data
      * @param text The initial text to store
      * @param selection The selected text
+     * @param keepCarriageReturn Whether to keep the carriage returns, defaults to false, keeping them may cause bugs when using the EditorField react component
      */
-    public constructor(text: string = "", selection?: ITextSelection) {
+    public constructor(
+        text: string = "",
+        selection?: ITextSelection,
+        keepCarriageReturn?: boolean
+    ) {
+        if (!keepCarriageReturn) text = text.replace(/\r/g, "");
         this.text = new Field(text);
         if (selection) this.selection.set(selection);
     }

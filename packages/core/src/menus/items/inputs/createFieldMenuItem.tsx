@@ -31,7 +31,7 @@ export function createFieldMenuItem<D extends IJSON, T = D>({
     data,
     ...fieldData
 }: IFieldMenuItemData<T, D>): IFieldMenuItem<T, D> {
-    let init: T;
+    let init: T | (() => T);
     let f: ISerializableField<T, D>;
     if ("field" in fieldData) {
         f = fieldData.field;

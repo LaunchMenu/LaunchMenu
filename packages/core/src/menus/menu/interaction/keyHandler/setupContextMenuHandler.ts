@@ -1,5 +1,4 @@
 import {IMenu} from "../../_types/IMenu";
-import {IKeyEventListenerObject} from "../../../../keyHandler/_types/IKeyEventListener";
 import {KeyEvent} from "../../../../keyHandler/KeyEvent";
 import {IPrioritizedMenuItem} from "../../_types/IPrioritizedMenuItem";
 import {createContextCategoriesSorter} from "../../../../actions/contextMenuAction/createContextCategoriesSorter";
@@ -11,6 +10,7 @@ import {contextMenuAction} from "../../../../actions/contextMenuAction/contextMe
 import {keyHandlerAction} from "../../../../actions/types/keyHandler/keyHandlerAction";
 import {PrioritizedMenu} from "../../PrioritizedMenu";
 import {Observer} from "model-react";
+import {IDisposableKeyEventListener} from "../../../../textFields/interaction/_types/IDisposableKeyEventListener";
 
 /**
  * Sets up a key listener to open the context menu, and forward key events to context menu items
@@ -35,7 +35,7 @@ export function setupContextMenuHandler(
         /** A pattern to detect whether to handle the keyboard opening */
         pattern?: KeyPattern | (() => KeyPattern);
     } = {}
-): IKeyEventListenerObject {
+): IDisposableKeyEventListener {
     const ioContext = menu.getContext();
     let contextData: {
         emitter?: {
@@ -52,12 +52,7 @@ export function setupContextMenuHandler(
     let contextItemsObserver: Observer<void> | undefined;
 
     return {
-        /**
-         * Emits an event to all item listeners in the menu
-         * @param e The event to emit
-         * @returns Whether the event was caught
-         */
-        async emit(e: KeyEvent): Promise<boolean | void> {
+        handler: async (e: KeyEvent) => {
             // Bail out if there is no reason to compute the context data
             const isMenuOpenEvent = getHooked(pattern).matches(e);
             if (!isMenuOpenEvent && !useContextItemKeyHandlers) return;
@@ -124,12 +119,6 @@ export function setupContextMenuHandler(
                 return true;
             }
         },
-
-        /**
-         * Destroys the hook that was added to the menu
-         */
-        destroy() {
-            contextItemsObserver?.destroy();
-        },
+        destroy: () => contextItemsObserver?.destroy(),
     };
 }

@@ -1,14 +1,12 @@
 import React from "react";
-import {getSearchIdentity} from "../../searchAction";
 import {ISimpleSearchData} from "./_types/ISimpleSearchData";
 import {v4 as uuid} from "uuid";
 import {IActionBinding} from "../../../../_types/IActionBinding";
-import {Field, IDataHook, useDataHook} from "model-react";
+import {Field, IDataHook, proxyHook, useDataHook} from "model-react";
 import {IMenuSearchable} from "../../_types/IMenuSearchable";
-import {IQuery} from "../../../../../menus/menu/_types/IQuery";
 import {getHooked} from "../../../../../utils/subscribables/getHooked";
 import {IAction} from "../../../../_types/IAction";
-import {createAction} from "../../../../createAction";
+import {createAction, createStandardBinding} from "../../../../createAction";
 import {ISimpleSearchMethod} from "./_types/ISimpleSearchMethod";
 import {IIOContext} from "../../../../../context/_types/IIOContext";
 import {ISimpleSearchExecutor} from "./_types/ISimpleSearchExecutor";
@@ -19,71 +17,66 @@ import {ISearchHighlighterProps} from "../../_types/ISearchHighlighterProps";
 import {Priority} from "../../../../../menus/menu/priority/Priority";
 import {tracedRecursiveSearchHandler} from "../tracedRecursiveSearchHandler";
 import {IPriority} from "../../../../../menus/menu/priority/_types/IPriority";
+import {IBindingCreatorConfig} from "../../../../_types/IBindingCreator";
+import {adjustBindingInput} from "../../../../utils/adjustBindingInput";
 
 /** The search handlers that are available */
 const searchHandlers = new Field([] as ISimpleSearchMethod[]);
 
 /**
- * A search handler that performs simple searches based off a regex match of a number of fields.
+ * A search handler that performs simple searches based off a match of a number of fields.
  * If multiple items are bound to 1 simple search data object, only the first item will be used.
  */
 export const simpleSearchHandler = createAction({
     name: "simple search",
     parents: [tracedRecursiveSearchHandler],
-    core: (data: ISimpleSearchData[], _1, globalHook, targets) => {
-        let search: ISimpleSearchExecutor;
-
-        // Map all the search data
-        const searchables = data.map(
-            (data): IMenuSearchable => ({
-                ID: data.id,
-                search: async (query: IQuery, hook: IDataHook) => {
-                    if (!search)
-                        search = getSimpleSearchMethod(query.context, globalHook);
-                    return search(
-                        data,
-                        () => getSearchIdentity(data.itemID, query, targets, hook),
-                        query,
-                        hook
-                    );
-                },
-            })
-        );
+    core: (data: ISimpleSearchData[]) => {
+        let search: ISimpleSearchExecutor | undefined;
         return {
-            children: searchables.map((searchable, i) => {
-                const item = data[i];
+            children: data.map(searchData => {
+                const {ID, itemID, children, showChild} = searchData;
                 return tracedRecursiveSearchHandler.createBinding({
-                    searchable,
-                    itemID: item.itemID,
-                    children: item.children,
-                    showChild: item.showChild,
+                    ID,
+                    itemID,
+                    children,
+                    showChild,
+                    search: (query, getItem, hook) => {
+                        if (!search)
+                            search = getSimpleSearchMethod(
+                                query.context,
+                                proxyHook(hook, {
+                                    onCall: () => {
+                                        // Reset the cached search
+                                        search = undefined;
+                                    },
+                                })
+                            );
+
+                        return search(searchData, getItem, query, hook);
+                    },
                 });
             }),
-            result: searchables,
         };
     },
 
     /**
      * Creates a new binding for this action
-     * @param data The binding data
-     * @param index The index of the binding
+     * @param config The binding config
      * @returns The created binding
      */
     createBinding: function (
-        data: Omit<ISimpleSearchData, "id">,
-        index?: number
+        config:
+            | Omit<ISimpleSearchData, "ID">
+            | IBindingCreatorConfig<Omit<ISimpleSearchData, "ID">>
     ): IActionBinding<
         IAction<ISimpleSearchData, IMenuSearchable[], typeof tracedRecursiveSearchHandler>
     > {
-        return {
-            action: this,
-            index,
-            ...(data instanceof Function
-                ? {subscribableData: (h: IDataHook) => ({id: uuid(), ...data(h)})}
-                : {
-                      data: {id: uuid(), ...data},
-                  }),
-        } as any;
+        return createStandardBinding.call(
+            this,
+            adjustBindingInput(config, data => {
+                return {ID: uuid(), ...data};
+            })
+        );
     },
 
     extras: {
@@ -164,7 +157,7 @@ function getSimpleSearchMethod(
 
     // If the method only has a grade function, create a searchable retriever
     const executor: ISimpleSearchExecutor = async (
-        {id, name, description, content, tags, patternMatcher},
+        {ID, name, description, content, tags, patternMatcher},
         getItem,
         query,
         hook
@@ -196,9 +189,7 @@ function getSimpleSearchMethod(
         const item = getItem();
         return {
             item:
-                Priority.isPositive(priority) && item
-                    ? {priority, ID: id, item}
-                    : undefined,
+                Priority.isPositive(priority) && item ? {priority, ID, item} : undefined,
             patternMatch,
         };
     };

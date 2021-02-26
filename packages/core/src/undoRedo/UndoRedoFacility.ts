@@ -3,7 +3,12 @@ import {ICommand} from "./_types/ICommand";
 import {IDataHook, Field} from "model-react";
 import {ICommandsList} from "./_types/ICommandsList";
 import {CompoundCommand} from "./commands/CompoundCommand";
+import {ICommandBatchFunction} from "./_types/ICommandBatchFunction";
+import {isCompoundCommand} from "./_types/ICompoundCommand";
 
+/**
+ * A command dispatcher and undo redo manager
+ */
 export class UndoRedoFacility implements IUndoRedoFacility {
     protected commands = new Field({past: [], future: []} as {
         past: ICommand[];
@@ -19,7 +24,7 @@ export class UndoRedoFacility implements IUndoRedoFacility {
      */
     public async execute(
         command: ICommand,
-        batchCommands?: boolean | ((previous?: ICommand) => boolean)
+        batchCommands?: boolean | ICommandBatchFunction
     ): Promise<void> {
         const {past, future} = this.getCommands();
         const prevCommand = past[past.length - 1] as ICommand | undefined;
@@ -28,16 +33,21 @@ export class UndoRedoFacility implements IUndoRedoFacility {
         const finished = command.execute();
 
         // Add to the batch if requested
-        if (batchCommands instanceof Function) batchCommands = batchCommands(prevCommand);
-        if (batchCommands) {
-            if (prevCommand instanceof CompoundCommand && !this.shouldSplitBatch) {
+        let batch =
+            (batchCommands instanceof Function
+                ? batchCommands(prevCommand)
+                : batchCommands) ?? false;
+        if (batch) {
+            if (prevCommand && isCompoundCommand(prevCommand) && !this.shouldSplitBatch) {
                 command = prevCommand.augment(command);
                 this.commands.set({
                     past: [...past.slice(0, past.length - 1), command],
                     future: [],
                 });
             } else {
-                command = new CompoundCommand([command]);
+                command = new (batch instanceof Function ? batch : CompoundCommand)([
+                    command,
+                ]);
                 this.commands.set({past: [...past, command], future: []});
             }
         }

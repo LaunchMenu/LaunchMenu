@@ -13,6 +13,7 @@ export function createStandardSearchPatternMatcher<T = void>({
     name,
     matcher: orMatcher,
     highlighter,
+    id,
 }: IStandardSearchPatternMatcherConfig<T>): {
     /**
      * Checks whether the given query matches the pattern, and caches the result in the query
@@ -69,6 +70,7 @@ export function createStandardSearchPatternMatcher<T = void>({
                 name,
                 highlighter,
                 searchText,
+                id,
                 ...matcher,
             };
             query[symbol] = pattern;

@@ -5,16 +5,18 @@ import {
     IDataHook,
     isDataLoadRequest,
     ExecutionState,
+    DataCacher,
 } from "model-react";
 import FS from "fs";
 import Path from "path";
 import mkdirp from "mkdirp";
-import {ISavable} from "./_types/ISavable";
+import {promisify} from "util";
+import {IFile} from "./_types/IFile";
 
 /**
  * A file class for simple data management
  */
-export class File<T = string, I extends T = T> extends Field<T> implements ISavable {
+export class File<T = string, I extends T = T> extends Field<T> implements IFile {
     protected filePath: string;
     protected loading = new ExecutionState();
     protected loadPromise: Promise<T> | null = null;
@@ -63,6 +65,19 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
 
     // Disk interaction
     /**
+     * Reads the raw contents on disk
+     * @returns The contents on disk
+     */
+    public async readRaw(): Promise<any> {
+        try {
+            const data = await promisify(FS.readFile)(this.filePath, this.encoding);
+            return data;
+        } catch (e) {
+            return undefined;
+        }
+    }
+
+    /**
      * Loads the data from the file
      * @param allowFileNotFound Whether to allow the file not existing without throwing an error
      * @throws An exception if the file couldn't be read
@@ -70,39 +85,28 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
     public async load(allowFileNotFound: boolean = true): Promise<T> {
         // Don't reload the data if it's already loading, instead return the same result
         if (isLoading(h => this.loading.get(h)) && this.loadPromise) {
-            const errors = getExceptions(h => this.loading.get(h));
-            if (errors.length > 0) throw errors[0];
             return this.loadPromise;
         }
 
         // If the data isn't loading currently, reload it
         this.loadTime = Date.now();
-        this.loadPromise = new Promise(async (res, rej) => {
-            try {
-                if (!FS.existsSync(this.filePath)) {
-                    return res(this.get());
-                }
-                FS.readFile(this.filePath, this.encoding, (err, data) => {
-                    if (err) rej(err);
-                    else if (data) {
-                        try {
-                            // Calling set automatically resets the loading state
-                            if (isLoading(h => this.loading.get(h)))
-                                this.set(this.decode(data));
-                            res(this.get());
-                        } catch (e) {
-                            rej(e);
-                        }
-                    } else res(this.get());
-                });
-            } catch (e) {
-                if (!allowFileNotFound) rej(e);
-                else {
-                    console.error(e);
-                    res(this.get());
-                }
+        this.loadPromise = (async () => {
+            if (!FS.existsSync(this.filePath)) {
+                const err = new Error(`File "${this.filePath}" could not be found`);
+                if (!allowFileNotFound) throw err;
+
+                console.warn(err);
+                return this.get();
             }
-        });
+
+            try {
+                const data = await this.readRaw();
+                if (data && this.isDataDifferent(data)) this.set(this.decode(data));
+            } catch (e) {
+                console.error(e);
+            }
+            return this.get();
+        })();
         return this.loading.add(this.loadPromise);
     }
 
@@ -111,22 +115,32 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
      * @throws An exception if the file couldn't be written to
      */
     public async save(): Promise<void> {
-        return new Promise(async (res, rej) => {
-            try {
-                await mkdirp(Path.dirname(this.filePath));
-                FS.writeFile(
-                    this.filePath,
-                    this.encode(this.get()),
-                    this.encoding,
-                    err => {
-                        if (err) rej(err);
-                        else res();
-                    }
-                );
-            } catch (e) {
-                rej(e);
-            }
-        });
+        await mkdirp(Path.dirname(this.filePath));
+
+        // Check if the data changed
+        if (FS.existsSync(this.filePath)) {
+            const currentData = await promisify(FS.readFile)(
+                this.filePath,
+                this.encoding
+            );
+            if (!this.isDataDifferent(currentData)) return;
+        }
+
+        // IF the data changed, write the new data
+        await promisify(FS.writeFile)(this.filePath, this.getRaw(), this.encoding);
+    }
+
+    /**
+     * Checks whether the specified data is different than the currently loaded data
+     * @param data The data to check
+     * @returns Whether the data is different
+     */
+    protected isDataDifferent(data: string): boolean {
+        try {
+            return this.getRaw() != data;
+        } catch (e) {
+            return true;
+        }
     }
 
     /**
@@ -147,6 +161,18 @@ export class File<T = string, I extends T = T> extends Field<T> implements ISava
      */
     protected decode(data: any): T {
         return data as T;
+    }
+
+    /** Caches the encoded version of the data */
+    protected encodedValue = new DataCacher(h => this.encode(this.get(h)));
+
+    /**
+     * Retrieves the data that's savable to disk
+     * @param hook The hook to subscribe to changes
+     * @returns The data that could be written to disk
+     */
+    public getRaw(hook?: IDataHook): any {
+        return this.encodedValue.get(hook);
     }
 
     // Data interaction

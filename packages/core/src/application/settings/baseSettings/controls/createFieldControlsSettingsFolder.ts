@@ -12,6 +12,7 @@ export const getFieldControlsFolderCategories = constGetter(() => ({
     clipboard: createStandardCategory({name: "Clipboard interaction"}),
     textNavigation: createStandardCategory({name: "Text navigation"}),
     insertDelete: createStandardCategory({name: "Text insertion and deletion"}),
+    meta: createStandardCategory({name: "Meta controls"}),
 }));
 
 /**
@@ -20,7 +21,7 @@ export const getFieldControlsFolderCategories = constGetter(() => ({
  */
 export function createFieldControlsSettingsFolder() {
     return createSettingsFolder({
-        name: "Field",
+        name: "Field controls",
         children: {
             // clipboard
             copy: createKeyPatternSetting({
@@ -146,6 +147,32 @@ export function createFieldControlsSettingsFolder() {
                     {pattern: ["enter"], type: "down or repeat", allowExtra: ["shift"]},
                 ]),
                 category: getFieldControlsFolderCategories().insertDelete,
+            }),
+            indent: createKeyPatternSetting({
+                name: "Inserts an indentation",
+                description: "Unused in single line text fields",
+                init: new KeyPattern([{pattern: ["tab"], type: "down or repeat"}]),
+                category: getFieldControlsFolderCategories().insertDelete,
+            }),
+            dedent: createKeyPatternSetting({
+                name: "Removes an indentation",
+                description: "Unused in single line text fields",
+                init: new KeyPattern([
+                    {pattern: ["shift", "tab"], type: "down or repeat"},
+                ]),
+                category: getFieldControlsFolderCategories().insertDelete,
+            }),
+
+            // Meta controls
+            undo: createKeyPatternSetting({
+                name: "Undo text",
+                init: new KeyPattern([{pattern: ["ctrl", "z"], type: "down or repeat"}]),
+                category: getFieldControlsFolderCategories().meta,
+            }),
+            redo: createKeyPatternSetting({
+                name: "Redo text",
+                init: new KeyPattern([{pattern: ["ctrl", "y"], type: "down or repeat"}]),
+                category: getFieldControlsFolderCategories().meta,
             }),
         },
     });

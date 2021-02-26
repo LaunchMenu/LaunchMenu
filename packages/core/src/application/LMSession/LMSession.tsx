@@ -26,7 +26,7 @@ import {IUUID} from "../../_types/IUUID";
 import {withSession} from "../applets/declaration/withSession";
 import {UILayer} from "../../uiLayers/standardUILayer/UILayer";
 import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
-import {createMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createMenuKeyHandler";
+import {createStandardMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createStandardMenuKeyHandler";
 import {Breadcrumbs} from "../../components/context/paths/Breadcrumbs";
 import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {IMenuSearchable} from "../../actions/types/search/_types/IMenuSearchable";
@@ -173,7 +173,9 @@ export class LMSession {
     /**
      * Initializes the menu to be displayed
      */
-    protected async setupMenu(): Promise<IStandardUILayerData[]> {
+    protected async setupMenu(): Promise<
+        (IStandardUILayerData & {onClose: () => void})[]
+    > {
         this.menu = new LMSessionMenu(this.context);
 
         // Update the selected applet based on what category a given item belongs to
@@ -210,18 +212,22 @@ export class LMSession {
             },
         });
 
+        // Create the menu key handler
+        const {handler, destroy} = createStandardMenuKeyHandler(this.menu, {
+            onExit: () => {
+                if (this.searchField.get() == "") this.emitClose();
+                else this.searchField.set("");
+            },
+        });
+
         // Return the UI to be shown:
         return [
             {
                 menu: this.menu,
                 menuView: <MainMenuView menu={this.menu} />,
                 searchable: false,
-                menuHandler: createMenuKeyHandler(this.menu, {
-                    onExit: () => {
-                        if (this.searchField.get() == "") this.emitClose();
-                        else this.searchField.set("");
-                    },
-                }),
+                menuHandler: handler,
+                onClose: destroy,
             },
         ];
     }

@@ -9,6 +9,7 @@ import {IMenu} from "../../menu/_types/IMenu";
 import {IRecursiveSearchChildren} from "../../../actions/types/search/tracedRecursiveSearch/_types/IRecursiveSearchChildren";
 import {IShortcutInput} from "./IShortcutInput";
 import {IExecutable} from "../../../actions/types/execute/_types/IExecutable";
+import {IUUID} from "../../../_types/IUUID";
 
 /**
  * The standard data that action bindings can be created for/with
@@ -34,6 +35,9 @@ export type IStandardActionBindingData = {
 
     /** Bindings to additional actions */
     actionBindings?: ISubscribable<IActionBinding[]>;
+
+    /** Bindings to additional actions that  use the item's identity */
+    identityActionBindings?: (identityID: IUUID) => ISubscribable<IActionBinding[]>;
 
     /** A pattern matcher that can be used to capture patterns in a search and highlight them */
     searchPattern?: ISimpleSearchPatternMatcher;

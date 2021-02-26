@@ -8,7 +8,7 @@ import {ISelectOption} from "./ISelectOption";
 
 export type ISelectConfig<T> = {
     /** The options for the dropdown */
-    options: ISelectOption<T>[];
+    options: readonly ISelectOption<T>[];
     /** A method to retrieve the UI for an option */
     createOptionView: (value: T, isDisabled: boolean) => IMenuItem;
     /** A check whether two values are equal, used to highlight the currently selected option */
