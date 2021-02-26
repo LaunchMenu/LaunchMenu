@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/launcher",
-    "version": "0.0.5-alpha.17",
+    "version": "0.0.5-alpha.18",
     "description": "The installer + launcher of LM",
     "types": "build/index.d.ts",
     "main": "build/index.js",
