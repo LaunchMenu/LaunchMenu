@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/hmr",
-    "version": "0.0.5-alpha.18",
+    "version": "0.0.5-alpha.19",
     "main": "build/index.js",
     "files": [
         "build/**/*"
@@ -26,7 +26,7 @@
     "dependencies": {
         "chokidar": "^3.4.2"
     },
-    "gitHead": "022dbc089423d10ee0528697003769d2d3aeb7d4",
+    "gitHead": "3949c98b3ab4954d2b8351d98283fecca72b7e74",
     "publishConfig": {
         "access": "public"
     }

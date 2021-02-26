@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/launcher",
-    "version": "0.0.5-alpha.18",
+    "version": "0.0.5-alpha.19",
     "description": "The installer + launcher of LM",
     "types": "build/index.d.ts",
     "main": "build/index.js",
@@ -79,5 +79,6 @@
     },
     "publishConfig": {
         "access": "public"
-    }
+    },
+    "gitHead": "3949c98b3ab4954d2b8351d98283fecca72b7e74"
 }

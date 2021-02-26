@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/core",
-    "version": "0.0.5-alpha.18",
+    "version": "0.0.5-alpha.19",
     "description": "An environment for visual keyboard controlled applets",
     "types": "build/index.d.ts",
     "main": "build/index.js",
@@ -41,7 +41,7 @@
         "@emotion/react": "^11.1.4",
         "@emotion/serialize": "^1.0.0",
         "@jxa/run": "^1.3.4",
-        "@launchmenu/hmr": "^0.0.5-alpha.18",
+        "@launchmenu/hmr": "^0.0.5-alpha.19",
         "ace-builds": "^1.4.12",
         "bezier-js": "^2.6.1",
         "chevrotain": "^7.0.1",
@@ -83,5 +83,6 @@
     },
     "publishConfig": {
         "access": "public"
-    }
+    },
+    "gitHead": "3949c98b3ab4954d2b8351d98283fecca72b7e74"
 }
