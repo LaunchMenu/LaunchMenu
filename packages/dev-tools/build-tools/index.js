@@ -13,7 +13,8 @@ const info = chalk.rgb(100, 100, 255);
 const resolvePackageDir = packageName =>
     Path.dirname(require.resolve(`${packageName}/package.json`));
 const tsPath = Path.join(resolvePackageDir("typescript"), "bin/tsc");
-const electronPath = Path.join(resolvePackageDir("electron"), "dist/electron.exe");
+const electronPath = Path.join(resolvePackageDir("electron"), process.platform == "win32" ? 
+"dist/electron.exe" : "/dist/Electron.app/Contents/MacOS/Electron");
 
 /**
  * Default values for variables
