@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/core",
-    "version": "0.0.5-alpha.19",
+    "version": "0.0.5-alpha.20",
     "description": "An environment for visual keyboard controlled applets",
     "types": "build/index.d.ts",
     "main": "build/index.js",
