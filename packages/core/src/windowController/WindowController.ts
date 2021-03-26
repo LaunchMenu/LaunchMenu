@@ -28,7 +28,7 @@ export class WindowController {
 
         // Load the index.html of the app
         const indexPath = Path.join(__dirname, "index.html");
-        this.window.loadURL(indexPath);
+        this.window.loadFile(indexPath);
 
         // Handle links
         const webview = this.window.webContents;

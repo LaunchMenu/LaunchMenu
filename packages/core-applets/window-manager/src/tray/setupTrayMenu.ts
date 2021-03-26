@@ -25,7 +25,6 @@ export function setupTrayMenu(LM: LaunchMenu): () => void {
             )
         );
 
-        tray.setTitle("LaunchMenu");
         tray.setToolTip("LaunchMenu");
         tray.on("click", showWindow);
 
