@@ -19,6 +19,7 @@ export const dictionaryPatternMatcher = createStandardSearchPatternMatcher({
             const language = (Object.values(languages).find(
                 lang => lang.toLowerCase() == inpLanguage
             ) || languages[inpLanguage as keyof typeof languages]) as ILanguage;
+
             return {
                 highlight: inpLanguage
                     ? [
