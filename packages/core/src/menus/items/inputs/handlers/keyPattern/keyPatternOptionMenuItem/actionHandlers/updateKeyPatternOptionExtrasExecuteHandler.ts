@@ -6,7 +6,7 @@ import {
     IKeyName,
     keyNames,
 } from "../../../../../../../keyHandler/keyIdentifiers/keyNames";
-import {multiSelectExecuteHandler} from "../../../../../../../uiLayers/types/multiSelect/multiSelectExecuteHandler";
+import {promptMultiSelectExecuteHandler} from "../../../../../../../uiLayers/types/multiSelect/promptMultiSelectExecuteHandler";
 import {createMultiSelectOptionMenuItem} from "../../../../../../../uiLayers/types/multiSelect/createMultiSelectOptionMenuItem";
 import {createAction} from "../../../../../../../actions/createAction";
 
@@ -15,10 +15,10 @@ import {createAction} from "../../../../../../../actions/createAction";
  */
 export const updateKeyPatternOptionExtrasExecuteHandler = createAction({
     name: "update key pattern option extras handler",
-    parents: [multiSelectExecuteHandler],
+    parents: [promptMultiSelectExecuteHandler],
     core: (data: IUpdateKeyPatternOptionExtrasExecuteData[]) => ({
         children: data.map(({option, patternField, liveUpdate, undoable}) =>
-            multiSelectExecuteHandler.createBinding<IKeyName>({
+            promptMultiSelectExecuteHandler.createBinding<IKeyName>({
                 field: {
                     set: value => {
                         const pattern = patternField.get();

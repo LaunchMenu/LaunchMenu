@@ -2,7 +2,7 @@ import {Loader} from "model-react";
 import React from "react";
 import {createStandardMenuItem} from "../../../../../../../menus/items/createStandardMenuItem";
 import {createFieldMenuItem} from "../../../../../../../menus/items/inputs/createFieldMenuItem";
-import {selectExecuteHandler} from "../../../../../../../uiLayers/types/select/selectExecuteHandler";
+import {promptSelectExecuteHandler} from "../../../../../../../uiLayers/types/select/promptSelectExecuteHandler";
 import {IFuzzinessIntensity} from "../_types/IFuzzinessIntensity";
 
 /**
@@ -19,7 +19,7 @@ export function createFuzzinessSetting() {
             tags: ["field"],
             resetUndoable: true,
             actionBindings: [
-                selectExecuteHandler.createBinding({
+                promptSelectExecuteHandler.createBinding({
                     subscribableData: h => ({
                         field,
                         options: ["none", "minimal", "medium", "strong", "super strong"],

@@ -7,7 +7,7 @@ import {
     groupBy,
     IExecuteArg,
     Priority,
-    selectExecuteHandler,
+    promptSelectExecuteHandler,
 } from "@launchmenu/core";
 import {Note} from "../../dataModel/Note";
 import {NoteCategory} from "../../dataModel/NoteCategory";
@@ -31,7 +31,7 @@ export const setCategoryAction = createContextAction({
                         undefined,
                     ],
                     valueRetriever: field =>
-                        selectExecuteHandler.createBinding({
+                        promptSelectExecuteHandler.createBinding({
                             field,
                             options: [...options, undefined],
                             createOptionView: category =>

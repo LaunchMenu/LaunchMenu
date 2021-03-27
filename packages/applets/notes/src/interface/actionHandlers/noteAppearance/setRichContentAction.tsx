@@ -7,7 +7,7 @@ import {
     IExecuteArg,
     IField,
     Priority,
-    selectExecuteHandler,
+    promptSelectExecuteHandler,
     sequentialExecuteHandler,
     SetFieldCommand,
 } from "@launchmenu/core";
@@ -54,7 +54,7 @@ export const setRichContentAction = createContextAction({
             await executeAction.execute(context, [
                 {
                     actionBindings: [
-                        selectExecuteHandler.createBinding({
+                        promptSelectExecuteHandler.createBinding({
                             field: choiceField,
                             undoable: false,
                             options: [true, false, inherit],

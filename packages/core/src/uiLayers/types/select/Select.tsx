@@ -14,7 +14,6 @@ import {v4 as uuid} from "uuid";
 import {IInputError} from "../input/_types/IInputError";
 import {IViewStackItem} from "../../_types/IViewStackItem";
 import {MenuView} from "../../../components/menu/MenuView";
-import {IKeyEventListener} from "../../../keyHandler/_types/IKeyEventListener";
 import {createStandardMenuKeyHandler} from "../../../menus/menu/interaction/keyHandler/createStandardMenuKeyHandler";
 import {ISelectOption} from "./_types/ISelectOption";
 import {ISelectOptionData} from "./_types/ISelectOptionData";

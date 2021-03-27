@@ -4,7 +4,7 @@ import {createFieldMenuItem} from "../../../../../menus/items/inputs/createField
 import {IFieldMenuItem} from "../../../../../menus/items/inputs/_types/IFieldMenuItem";
 import {settingPatternMatcher} from "../../../../../settings/inputs/settingPatternMatcher";
 import {HomeContentVisibility} from "./_types/HomeContentVisibility";
-import {selectExecuteHandler} from "../../../../../uiLayers/types/select/selectExecuteHandler";
+import {promptSelectExecuteHandler} from "../../../../../uiLayers/types/select/promptSelectExecuteHandler";
 import {createStandardMenuItem} from "../../../../../menus/items/createStandardMenuItem";
 
 /**
@@ -21,7 +21,7 @@ export function createHomeContentVisibilitySetting(): IFieldMenuItem<HomeContent
             resetable: true,
             valueView: <Loader>{h => field.get(h)}</Loader>,
             actionBindings: [
-                selectExecuteHandler.createBinding({
+                promptSelectExecuteHandler.createBinding({
                     field,
                     options: Object.values(HomeContentVisibility),
                     createOptionView: v => createStandardMenuItem({name: v}),

@@ -1,27 +1,27 @@
-import {createAction, createStandardBinding} from "../../../actions/createAction";
-import {editExecuteHandler} from "../../../actions/types/execute/types/editExecuteHandler";
-import {IAction} from "../../../actions/_types/IAction";
-import {IActionBinding} from "../../../actions/_types/IActionBinding";
-import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
-import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
+import {IInputExecuteData} from "./_types/IInputExecuteData";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
-import {MultiSelect} from "./MultiSelect";
-import {IMultiSelectExecuteData} from "./_types/IMultiSelectExecuteData";
+import {Input} from "./Input";
+import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
+import {createAction, createStandardBinding} from "../../../actions/createAction";
+import {IActionBinding} from "../../../actions/_types/IActionBinding";
+import {IAction} from "../../../actions/_types/IAction";
+import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
+import {editExecuteHandler} from "../../../actions/types/execute/types/editExecuteHandler";
 
 /**
- * A handler to let users alter a field with multiple values given a selection of options
+ * A handler to let users alter a field
  */
-export const multiSelectExecuteHandler = createAction({
-    name: "multi select handler",
+export const promptInputExecuteHandler = createAction({
+    name: "input handler",
     parents: [editExecuteHandler],
-    core: (data: IMultiSelectExecuteData<unknown>[]) => ({
+    core: (data: IInputExecuteData<unknown>[]) => ({
         children: data.map(({field, undoable, ...config}) =>
             editExecuteHandler.createBinding(
                 ({context}) =>
                     new Promise<ICommand | void>(res => {
                         let cmd: ICommand | undefined;
                         context.open(
-                            new MultiSelect(field, {
+                            new Input(field, {
                                 ...config,
                                 onSubmit: undoable
                                     ? result => {
@@ -46,9 +46,7 @@ export const multiSelectExecuteHandler = createAction({
          * @returns The created binding
          */
         <T>(
-            config:
-                | IMultiSelectExecuteData<T>
-                | IBindingCreatorConfig<IMultiSelectExecuteData<T>>
-        ): IActionBinding<IAction<IMultiSelectExecuteData<unknown>, never>>;
+            config: IInputExecuteData<T> | IBindingCreatorConfig<IInputExecuteData<T>>
+        ): IActionBinding<IAction<IInputExecuteData<unknown>, never>>;
     },
 });

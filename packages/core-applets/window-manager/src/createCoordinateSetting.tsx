@@ -4,7 +4,7 @@ import {
     IActionBinding,
     IField,
     IInputError,
-    inputExecuteHandler,
+    promptInputExecuteHandler,
     IPosition,
     ISize,
     settingPatternMatcher,
@@ -67,7 +67,7 @@ export function createCoordinateSetting<T extends IPosition | ISize>({
             resetUndoable: true,
             actionBindings: [
                 ...actionBindings(field),
-                inputExecuteHandler.createBinding({
+                promptInputExecuteHandler.createBinding({
                     field,
                     undoable: true,
                     serialize: (coordinate: IPosition | ISize) =>

@@ -9,7 +9,7 @@ import {editExecuteHandler} from "../../../../../actions/types/execute/types/edi
 /**
  * A simple execute handler for updating color fields
  */
-export const colorInputExecuteHandler = createAction({
+export const promptColorInputExecuteHandler = createAction({
     name: "color input handler",
     parents: [editExecuteHandler],
     core: (data: IColorInputExecuteData[]) => ({

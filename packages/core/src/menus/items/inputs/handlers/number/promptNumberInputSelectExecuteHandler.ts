@@ -1,19 +1,19 @@
 import {checkTextNumberConstraints} from "./checkTextNumberConstraints";
 import {INumberInputSelectExecuteData} from "./_types/INumberInputSelectExecuteData";
 import {createStandardMenuItem} from "../../../createStandardMenuItem";
-import {selectExecuteHandler} from "../../../../../uiLayers/types/select/selectExecuteHandler";
+import {promptSelectExecuteHandler} from "../../../../../uiLayers/types/select/promptSelectExecuteHandler";
 import {createAction} from "../../../../../actions/createAction";
 
 /**
  * A simple execute handler for updating numeric fields, allowing the choice of multiple options
  */
-export const numberInputSelectExecuteHandler = createAction({
+export const promptNumberInputSelectExecuteHandler = createAction({
     name: "number select input",
-    parents: [selectExecuteHandler],
+    parents: [promptSelectExecuteHandler],
     core: (data: INumberInputSelectExecuteData[]) => ({
         children: data.map(
             ({field, liveUpdate, undoable, options, allowCustomInput, ...rest}) =>
-                selectExecuteHandler.createBinding<number>({
+                promptSelectExecuteHandler.createBinding<number>({
                     field,
                     undoable,
                     options,

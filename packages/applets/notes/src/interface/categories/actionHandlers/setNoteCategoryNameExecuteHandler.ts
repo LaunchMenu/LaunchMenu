@@ -3,7 +3,7 @@ import {
     executeAction,
     IExecuteArg,
     IField,
-    inputExecuteHandler,
+    promptInputExecuteHandler,
     Priority,
 } from "@launchmenu/core";
 import {NoteCategory} from "../../../dataModel/NoteCategory";
@@ -18,7 +18,7 @@ export const setNoteCategoryNameExecuteHandler = createContextAction({
         name: "Set name",
         priority: Priority.HIGH,
     },
-    parents: [inputExecuteHandler],
+    parents: [promptInputExecuteHandler],
     core: (categories: NoteCategory[]) => {
         const bindings = categories.map(category => {
             // Create a virtual field
@@ -28,7 +28,7 @@ export const setNoteCategoryNameExecuteHandler = createContextAction({
             };
 
             // Create the input execute handler
-            return inputExecuteHandler.createBinding({
+            return promptInputExecuteHandler.createBinding({
                 field,
             });
         });
