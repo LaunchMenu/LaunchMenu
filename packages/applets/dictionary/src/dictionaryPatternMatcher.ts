@@ -1,8 +1,4 @@
-import {
-    createStandardSearchPatternMatcher,
-    highlightTagErrors,
-    highlightTags,
-} from "@launchmenu/core";
+import {createStandardSearchPatternMatcher, highlightTags} from "@launchmenu/core";
 import {ILanguage, languages} from "./_types/ILanguage";
 
 /**

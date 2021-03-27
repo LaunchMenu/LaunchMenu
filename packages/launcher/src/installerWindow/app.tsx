@@ -1,4 +1,9 @@
-import {createMuiTheme, ThemeProvider} from "@material-ui/core";
+import {
+    createMuiTheme,
+    CssBaseline,
+    StylesProvider,
+    ThemeProvider,
+} from "@material-ui/core";
 import React from "react";
 import ReactDOM from "react-dom";
 import {WindowUI} from "./WindowUI";
@@ -20,9 +25,12 @@ function startApplication() {
     });
 
     ReactDOM.render(
-        <ThemeProvider theme={theme}>
-            <WindowUI />
-        </ThemeProvider>,
+        <StylesProvider injectFirst>
+            <CssBaseline />
+            <ThemeProvider theme={theme}>
+                <WindowUI />
+            </ThemeProvider>
+        </StylesProvider>,
         document.getElementById("root")
     );
 }
