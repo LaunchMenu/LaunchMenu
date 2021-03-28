@@ -1,8 +1,4 @@
-import {
-    createStandardSearchPatternMatcher,
-    highlightTagErrors,
-    highlightTags,
-} from "@launchmenu/core";
+import {createStandardSearchPatternMatcher, highlightTags} from "@launchmenu/core";
 import {ILanguage, languages} from "./_types/ILanguage";
 
 /**
@@ -19,6 +15,7 @@ export const dictionaryPatternMatcher = createStandardSearchPatternMatcher({
             const language = (Object.values(languages).find(
                 lang => lang.toLowerCase() == inpLanguage
             ) || languages[inpLanguage as keyof typeof languages]) as ILanguage;
+
             return {
                 highlight: inpLanguage
                     ? [

@@ -4,7 +4,7 @@ import {IFieldMenuItem} from "../_types/IFieldMenuItem";
 import {Loader} from "model-react";
 import {IColorMenuItemData} from "./_types/IColorMenuItemData";
 import {ColorPreview} from "../../../../components/items/inputs/ColorPreview";
-import {colorInputExecuteHandler} from "../handlers/color/colorInputExecuteHandler";
+import {promptColorInputExecuteHandler} from "../handlers/color/promptColorInputExecuteHandler";
 import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
 
 /**
@@ -37,7 +37,7 @@ export function createColorMenuItem({
             resetUndoable,
             actionBindings: adjustSubscribable(actionBindings, bindings => [
                 ...bindings,
-                colorInputExecuteHandler.createBinding({
+                promptColorInputExecuteHandler.createBinding({
                     field,
                     liveUpdate: liveUpdate as any,
                     undoable,

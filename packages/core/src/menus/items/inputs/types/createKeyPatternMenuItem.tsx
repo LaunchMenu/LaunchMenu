@@ -4,7 +4,7 @@ import {IFieldMenuItem} from "../_types/IFieldMenuItem";
 import {Field, IDataHook, Loader} from "model-react";
 import {IKeyPatternMenuItemData} from "./_types/IKeyPatternMenuItemData";
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
-import {keyInputExecuteHandler} from "../handlers/keyPattern/keyInputExecuteHandler";
+import {promptKeyInputExecuteHandler} from "../handlers/keyPattern/promptKeyInputExecuteHandler";
 import {advancedKeyInputEditAction} from "../handlers/keyPattern/advancedKeyInputEditAction";
 import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
 import {IKeyArrayPatternData} from "../handlers/keyPattern/_types/IKeyPatternData";
@@ -50,7 +50,7 @@ export function createKeyPatternMenuItem({
             resetUndoable,
             actionBindings: adjustSubscribable(actionBindings, bindings => [
                 ...bindings,
-                keyInputExecuteHandler.createBinding({
+                promptKeyInputExecuteHandler.createBinding({
                     field,
                     liveUpdate: liveUpdate as any,
                     undoable,

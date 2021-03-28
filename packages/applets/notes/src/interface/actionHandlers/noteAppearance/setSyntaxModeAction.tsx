@@ -7,7 +7,7 @@ import {
     IExecuteArg,
     IField,
     Priority,
-    selectExecuteHandler,
+    promptSelectExecuteHandler,
     sequentialExecuteHandler,
     SetFieldCommand,
 } from "@launchmenu/core";
@@ -57,7 +57,7 @@ export const setSyntaxModeAction = createContextAction({
             await executeAction.execute(context, [
                 {
                     actionBindings: [
-                        selectExecuteHandler.createBinding({
+                        promptSelectExecuteHandler.createBinding({
                             field: choiceField,
                             undoable: false,
                             options: [...highlightLanguages, inherit],

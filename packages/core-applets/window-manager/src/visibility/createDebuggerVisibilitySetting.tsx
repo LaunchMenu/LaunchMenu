@@ -2,7 +2,7 @@ import React from "react";
 import {
     createFieldMenuItem,
     createStandardMenuItem,
-    selectExecuteHandler,
+    promptSelectExecuteHandler,
     settingPatternMatcher,
 } from "@launchmenu/core";
 import {Loader} from "model-react";
@@ -21,7 +21,7 @@ export function createDebuggerVisibilitySetting() {
             resetable: true,
             valueView: <Loader>{h => field.get(h)}</Loader>,
             actionBindings: [
-                selectExecuteHandler.createBinding({
+                promptSelectExecuteHandler.createBinding({
                     field,
                     options: ["true", "false", "if running dev"],
                     createOptionView: v => createStandardMenuItem({name: v}),

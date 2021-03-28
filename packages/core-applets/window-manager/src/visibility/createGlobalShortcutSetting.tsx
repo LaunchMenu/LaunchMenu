@@ -3,8 +3,8 @@ import {
     Box,
     createFieldMenuItem,
     createStandardMenuItem,
-    inputExecuteHandler,
-    selectExecuteHandler,
+    promptInputExecuteHandler,
+    promptSelectExecuteHandler,
     settingPatternMatcher,
 } from "@launchmenu/core";
 import {Loader} from "model-react";
@@ -39,14 +39,14 @@ export function createGlobalShortcutSetting({
             searchPattern: settingPatternMatcher,
             actionBindings: [
                 options
-                    ? selectExecuteHandler.createBinding({
+                    ? promptSelectExecuteHandler.createBinding({
                           field,
                           undoable: true,
                           options: options,
                           createOptionView: text => createStandardMenuItem({name: text}),
                           allowCustomInput: allowCustom,
                       })
-                    : inputExecuteHandler.createBinding({
+                    : promptInputExecuteHandler.createBinding({
                           field,
                           undoable: true,
                       }),

@@ -1,4 +1,4 @@
-import React, {FC, useCallback, useMemo} from "react";
+import React, {FC, useCallback, useEffect, useMemo, useRef} from "react";
 import {Box} from "../../styling/box/Box";
 import {IMenu} from "../../menus/menu/_types/IMenu";
 import {IMenuItem} from "../../menus/items/_types/IMenuItem";
@@ -144,13 +144,15 @@ type IConnections = {
  * @returns Whether the previous and next items are selected
  */
 export function useConnectAdjacent(menu?: IMenu, item?: IMenuItem): IConnections {
+    let prev = useRef<IConnections>({});
+    const [h] = useDataHook();
     if (!item || !menu) return {};
 
-    const [h] = useDataHook();
     const items = menu.getItems(h);
     const index = items.indexOf(item);
-    if (index == -1) return {};
+    if (index == -1) return prev.current;
 
     const connect = getConnectionGroupAction.shouldConnect(items, index, h);
-    return {connectBgNext: connect.next, connectBgPrevious: connect.previous};
+    prev.current = {connectBgNext: connect.next, connectBgPrevious: connect.previous};
+    return prev.current;
 }

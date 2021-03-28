@@ -46,12 +46,14 @@ export function createCustomSearchPatternMatcher(
                         let highlight: IHighlightNode[] = [
                             {
                                 start: match.index,
-                                end: match[0].length,
+                                end: match.index + match[0].length,
                                 text: match[0],
                                 tags: [highlightTags.patternMatch],
                             },
                         ];
-                        let searchText = search.substring(match[0].length);
+                        let searchText =
+                            search.substring(0, match.index) +
+                            search.substring(match.index + match[0].length);
                         if (groups) {
                             const result = getNodesFromGroups(groups, highlight, search);
                             highlight = result.highlight;

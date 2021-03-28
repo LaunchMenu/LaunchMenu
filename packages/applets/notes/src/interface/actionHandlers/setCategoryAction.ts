@@ -1,16 +1,14 @@
 import {
     Command,
-    CompoundCommand,
     createContextAction,
     createStandardMenuItem,
-    editExecuteHandler,
+    singlePromptExecuteHandler,
     executeAction,
     groupBy,
     IExecuteArg,
     Priority,
-    selectExecuteHandler,
+    promptSelectExecuteHandler,
 } from "@launchmenu/core";
-import {Field} from "model-react";
 import {Note} from "../../dataModel/Note";
 import {NoteCategory} from "../../dataModel/NoteCategory";
 import {ISetCategoryData} from "./_types/ISetCategoryData";
@@ -25,48 +23,26 @@ export const setCategoryAction = createContextAction({
         const getExecuteBindings = () => {
             const groups = groupBy(data, "options", arrayEquals);
             return groups.map(({key: options, values: notes}) =>
-                editExecuteHandler.createBinding(async ({context}) => {
-                    // Obtain the most frequent selection amongst notes as the default
-                    const defaultCategory = groupBy(
-                        notes
+                singlePromptExecuteHandler.createBinding({
+                    init: [
+                        ...notes
                             .map(({note}) => note.getCategory())
                             .filter((c): c is NoteCategory => !!c),
-                        v => v
-                    ).reduce(
-                        (best, {key, values}) =>
-                            values.length > best.count
-                                ? {count: values.length, category: key}
-                                : best,
-                        {count: 0, category: undefined}
-                    ).category;
-
-                    // Execute the select handler
-                    const field = new Field(defaultCategory);
-                    await executeAction.execute(context, [
-                        {
-                            actionBindings: [
-                                selectExecuteHandler.createBinding({
-                                    field,
-                                    undoable: false,
-                                    options: [...options, undefined],
-                                    createOptionView: category =>
-                                        createStandardMenuItem({
-                                            name: h =>
-                                                category ? category.getName(h) : "None",
-                                            icon: category ? undefined : "delete",
-                                        }),
+                        undefined,
+                    ],
+                    valueRetriever: field =>
+                        promptSelectExecuteHandler.createBinding({
+                            field,
+                            options: [...options, undefined],
+                            createOptionView: category =>
+                                createStandardMenuItem({
+                                    name: h => (category ? category.getName(h) : "None"),
+                                    icon: category ? undefined : "delete",
                                 }),
-                            ],
-                        },
-                    ]);
-
-                    // Use the result to create a set category command
-                    return new CompoundCommand(
-                        {name: "Set note category"},
-                        notes.map(
-                            ({note}) => new SetNoteCategoryCommand(note, field.get())
-                        )
-                    );
+                        }),
+                    setValues: value =>
+                        notes.map(({note}) => new SetNoteCategoryCommand(note, value)),
+                    commandName: "Set note category",
                 })
             );
         };

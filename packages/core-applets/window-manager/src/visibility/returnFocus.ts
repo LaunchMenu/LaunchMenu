@@ -8,8 +8,8 @@ export function returnFocus(): void {
     const dummyTransparentWindow = new remote.BrowserWindow({
         width: 1,
         height: 1,
-        x: -100,
-        y: -100,
+        x: -1e5,
+        y: -1e5,
         transparent: true,
         frame: false,
     });

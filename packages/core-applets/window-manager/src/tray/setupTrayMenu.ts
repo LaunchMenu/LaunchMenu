@@ -1,8 +1,8 @@
 import {LaunchMenu} from "@launchmenu/core";
 import {nativeImage, remote, Tray, shell} from "electron";
 import {IDataHook, Observer} from "model-react";
-import Path from "path";
 import {settings} from "../settings";
+import {trayIcon} from "./icon";
 
 /**
  * Sets up the tray menu
@@ -19,11 +19,7 @@ export function setupTrayMenu(LM: LaunchMenu): () => void {
     let startupObserver: Observer<any> | undefined;
     try {
         tray = new remote.Tray(nativeImage.createEmpty());
-        tray.setImage(
-            nativeImage.createFromPath(
-                Path.join(__dirname, "..", "..", "images", "trayIcon.png")
-            )
-        );
+        tray.setImage(trayIcon);
 
         tray.setTitle("LaunchMenu");
         tray.setToolTip("LaunchMenu");

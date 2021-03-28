@@ -2,7 +2,7 @@ import {
     Command,
     createStandardMenuItem,
     executeAction,
-    fileInputExecuteHandler,
+    promptFileInputExecuteHandler,
     getControlsCategory,
     IMenuItem,
     sequentialExecuteHandler,
@@ -32,7 +32,7 @@ export function createImportNoteMenuItem(
                 await executeAction.execute(context, [
                     {
                         actionBindings: [
-                            fileInputExecuteHandler.createBinding({
+                            promptFileInputExecuteHandler.createBinding({
                                 field,
                                 undoable: false,
                             }),

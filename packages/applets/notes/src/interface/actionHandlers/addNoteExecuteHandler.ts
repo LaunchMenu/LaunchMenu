@@ -3,7 +3,7 @@ import {
     createCallbackHook,
     createContextAction,
     executeAction,
-    inputExecuteHandler,
+    promptInputExecuteHandler,
     sequentialExecuteHandler,
 } from "@launchmenu/core";
 import {Field} from "model-react";
@@ -35,7 +35,10 @@ export const addNoteExecuteHandler = createContextAction({
                 await executeAction.execute(context, [
                     {
                         actionBindings: [
-                            inputExecuteHandler.createBinding({field, undoable: false}),
+                            promptInputExecuteHandler.createBinding({
+                                field,
+                                undoable: false,
+                            }),
                         ],
                     },
                 ]);

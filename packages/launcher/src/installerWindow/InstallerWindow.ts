@@ -1,8 +1,6 @@
 import {BrowserWindow, ipcMain} from "electron";
 import Path from "path";
-
-type State = {type: "loading" | "configuring"; name: string};
-
+import {IState} from "../_types/IState";
 export class InstallerWindow {
     protected window: BrowserWindow;
 
@@ -24,7 +22,7 @@ export class InstallerWindow {
             this.window = new BrowserWindow({
                 title: "LM setup",
                 width: 400,
-                height: 400,
+                height: 250,
                 frame: false,
                 show: false,
                 webPreferences: {
@@ -54,7 +52,7 @@ export class InstallerWindow {
      * Sets the state to be displayed in the window
      * @param state The state to be displayed
      */
-    public async setState(state: State): Promise<void> {
+    public async setState(state: IState): Promise<void> {
         this.window.webContents.send("state", state);
     }
 

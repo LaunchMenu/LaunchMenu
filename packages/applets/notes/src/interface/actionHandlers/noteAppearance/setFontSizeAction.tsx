@@ -6,7 +6,7 @@ import {
     groupBy,
     IExecuteArg,
     IField,
-    inputExecuteHandler,
+    promptInputExecuteHandler,
     Priority,
     sequentialExecuteHandler,
     SetFieldCommand,
@@ -53,7 +53,7 @@ export const setFontSizeAction = createContextAction({
             await executeAction.execute(context, [
                 {
                     actionBindings: [
-                        inputExecuteHandler.createBinding<number | IInherit>({
+                        promptInputExecuteHandler.createBinding<number | IInherit>({
                             field: choiceField,
                             undoable: false,
                             serialize: number => number.toString(),

@@ -4,7 +4,7 @@ import {IFieldMenuItem} from "../_types/IFieldMenuItem";
 import {IStringMenuItemData} from "./_types/IStringMenuItemData";
 import {Loader} from "model-react";
 import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
-import {inputExecuteHandler} from "../../../../uiLayers/types/input/inputExecuteHandler";
+import {promptInputExecuteHandler} from "../../../../uiLayers/types/input/promptInputExecuteHandler";
 
 /**
  * Creates a new string menu item
@@ -35,7 +35,7 @@ export function createStringMenuItem({
             resetUndoable,
             actionBindings: adjustSubscribable(actionBindings, bindings => [
                 ...bindings,
-                inputExecuteHandler.createBinding({
+                promptInputExecuteHandler.createBinding({
                     field,
                     liveUpdate,
                     undoable,

@@ -3,7 +3,7 @@ import {
     executeAction,
     IExecuteArg,
     IField,
-    inputExecuteHandler,
+    promptInputExecuteHandler,
     Priority,
 } from "@launchmenu/core";
 import {Note} from "../../dataModel/Note";
@@ -28,7 +28,7 @@ export const setNoteNameAction = createContextAction({
                 };
 
                 // Create the input execute handler
-                return inputExecuteHandler.createBinding({
+                return promptInputExecuteHandler.createBinding({
                     field,
                 });
             });

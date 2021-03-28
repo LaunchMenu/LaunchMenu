@@ -8,7 +8,7 @@ import {editExecuteHandler} from "../../../../../actions/types/execute/types/edi
 /**
  * The standard key input execute handler, which either opens the advanced editor or allows you to quickly update the pattern if there is only 1
  */
-export const keyInputExecuteHandler = createAction({
+export const promptKeyInputExecuteHandler = createAction({
     name: "key input execute handler",
     parents: [editExecuteHandler],
     core: (data: IAdvancedKeyInputExecuteData[]) => ({
