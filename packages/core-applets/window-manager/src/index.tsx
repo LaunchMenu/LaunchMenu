@@ -7,6 +7,7 @@ import {setupVisibilityControls} from "./visibility/setupVisibilityControls";
 import {returnFocus} from "./visibility/returnFocus";
 import {setupStartupController} from "./startup/setupStartupController";
 import {setupTrayMenu} from "./tray/setupTrayMenu";
+import {windowIcon} from "./tray/icon";
 
 export const info = {
     name: "Window manager",
@@ -46,6 +47,9 @@ export default declare({
 
         // Setup the position setting
         const destroyPositionSyncer = setupPositionSettingSyncer(settingsManager, window);
+
+        // Set the window image
+        remote.getCurrentWindow().setIcon(windowIcon);
         return {
             globalContextMenuBindings: exitBindings,
             onDispose: () => {

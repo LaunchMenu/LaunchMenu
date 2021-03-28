@@ -6,7 +6,7 @@ import {IHomeContentOption} from "./_types/IHomeContentOptions";
 import {IHomeContentSetting} from "./_types/IHomeContentSetting";
 import {settingPatternMatcher} from "../../../../../settings/inputs/settingPatternMatcher";
 import {createFieldMenuItem} from "../../../../../menus/items/inputs/createFieldMenuItem";
-import {selectExecuteHandler} from "../../../../../uiLayers/types/select/selectExecuteHandler";
+import {promptSelectExecuteHandler} from "../../../../../uiLayers/types/select/promptSelectExecuteHandler";
 
 /**
  * Creates a new content setting menu item
@@ -50,7 +50,7 @@ export function createHomeContentSetting(
                 resetable: true,
                 valueView: <Loader>{h => field.get(h).ID}</Loader>,
                 actionBindings: [
-                    selectExecuteHandler.createBinding<IHomeContentOption>({
+                    promptSelectExecuteHandler.createBinding<IHomeContentOption>({
                         subscribableData: h => ({
                             field,
                             options: options.get(h),

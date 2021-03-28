@@ -6,7 +6,7 @@ import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscrib
 import {adjustBindings} from "../../adjustBindings";
 import {IOptionMenuItemData} from "./_types/IOptionMenuItemData";
 import {IJSON} from "../../../../_types/IJSON";
-import {selectExecuteHandler} from "../../../../uiLayers/types/select/selectExecuteHandler";
+import {promptSelectExecuteHandler} from "../../../../uiLayers/types/select/promptSelectExecuteHandler";
 
 /**
  * Creates a new option menu item
@@ -47,7 +47,7 @@ export function createOptionMenuItem<T extends IJSON>({
             ]),
             resetUndoable,
             actionBindings: adjustBindings(actionBindings, [
-                selectExecuteHandler.createBinding({
+                promptSelectExecuteHandler.createBinding({
                     field,
                     options,
                     createOptionView,

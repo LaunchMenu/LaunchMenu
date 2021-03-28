@@ -17,7 +17,7 @@ export function startApplication() {
         await lm.setup();
         ReactDOM.render(lm.view, document.getElementById("root"));
     }
-    let prevStartup = startup();
+    let prevStartup = startup().then(() => ipcRenderer.send("LM-launched"));
 
     // Listen for dispose requests, to properly dispose of all data
     ipcRenderer.on("LM-dispose", async () => {

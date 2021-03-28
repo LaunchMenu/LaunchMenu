@@ -8,7 +8,7 @@ import {editExecuteHandler} from "../../../../../actions/types/execute/types/edi
  * A simple execute handler for updating file fields
  * TODO: Add some way of configuring this handler, such that a file explorer applet can take over this task
  */
-export const fileInputExecuteHandler = createAction({
+export const promptFileInputExecuteHandler = createAction({
     name: "file input",
     parents: [editExecuteHandler],
     core: (data: IFileInputExecuteData[]) => ({

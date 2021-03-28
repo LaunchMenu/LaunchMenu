@@ -1,17 +1,17 @@
 import {INumberInputExecuteData} from "./_types/INumberInputExecuteData";
 import {checkTextNumberConstraints} from "./checkTextNumberConstraints";
-import {inputExecuteHandler} from "../../../../../uiLayers/types/input/inputExecuteHandler";
+import {promptInputExecuteHandler} from "../../../../../uiLayers/types/input/promptInputExecuteHandler";
 import {createAction} from "../../../../../actions/createAction";
 
 /**
  * A simple execute handler for updating numeric fields
  */
-export const numberInputExecuteHandler = createAction({
+export const promptNumberInputExecuteHandler = createAction({
     name: "number input",
-    parents: [inputExecuteHandler],
+    parents: [promptInputExecuteHandler],
     core: (data: INumberInputExecuteData[]) => ({
         children: data.map(({field, liveUpdate, undoable, ...rest}) =>
-            inputExecuteHandler.createBinding<number>({
+            promptInputExecuteHandler.createBinding<number>({
                 field,
                 undoable,
                 liveUpdate,

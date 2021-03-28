@@ -15,19 +15,31 @@ global.DEV = process.env.NODE_ENV == "dev";
 launch();
 
 /**
- * The launch process is currently a bit messy and hacky, in order to get later installed applets to share the same packages with LM.
- * Launching the application will actually install a number of packages beforehand in the same directory as the exe is in if they aren't there yet. Afterwards it will run the launcher of core to start LM.
+ * The launch process is currently a bit messy and hacky in order to get later installed applets to share the same packages with LM.
+ * Launching the application will actually install a number of packages beforehand - in the same directory as the exe is in - if they aren't there yet. Afterwards it will run the launcher of core to start LM.
  */
 async function launch(): Promise<void> {
     setupWorkingDir();
 
-    if (!isInstalled("@launchmenu/core")) await firstTimeSetup();
-    require(getInstalledPath(
-        "@launchmenu/core/build/windowController/launcher"
-    )).launch();
+    const launchLM = () =>
+        require(getInstalledPath(
+            "@launchmenu/core/build/windowController/launcher"
+        )).launch();
+
+    if (!isInstalled("@launchmenu/core")) await firstTimeSetup(launchLM);
+    else launchLM();
 }
 
-async function firstTimeSetup(): Promise<void> {
+/**
+ * Sets up LM for the first launch:
+ * + Prompts user to install applets
+ * - Installs packages
+ * - Adds required initial settings files
+ * @param launchLM The function to LM after installation
+ */
+async function firstTimeSetup(
+    launchLM: () => Promise<{show: () => void; shown: Promise<void>}>
+): Promise<void> {
     await app.whenReady();
     const window = new InstallerWindow();
 
@@ -56,6 +68,13 @@ async function firstTimeSetup(): Promise<void> {
 
         window.setState({type: "loading", name: `Finishing up`});
         await initAppletsFile(applets);
+
+        // Launch LM
+        window.setState({type: "finished", name: "Finished"});
+        const {show, shown} = await launchLM();
+
+        // Wait for the user to open LM
+        await shown;
     } catch (e) {
         // Handle failures by showing the user something went wrong, and shitting the error message to some file
         window.setState({
@@ -71,8 +90,8 @@ async function firstTimeSetup(): Promise<void> {
         await new Promise(res => setTimeout(res, 5000));
     }
 
-    // Close the window after a slight delay
-    setTimeout(() => window.close(), 3000);
+    // Close the window
+    window.close();
 }
 
 /*********************************************
@@ -101,6 +120,8 @@ async function initPackage(): Promise<void> {
 }
 
 async function initAppletsFile(applet: string[]): Promise<void> {
+    if (DEV) return;
+
     const path = Path.join(process.cwd(), "data/settings/applets.json");
     if (FS.existsSync(path)) return;
 

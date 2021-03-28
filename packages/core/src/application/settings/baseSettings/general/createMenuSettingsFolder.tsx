@@ -8,7 +8,7 @@ import {createBooleanSetting} from "../../../../settings/inputs/createBooleanSet
 import {createNumberSetting} from "../../../../settings/inputs/createNumberSetting";
 import {createSettingsFolder} from "../../../../settings/inputs/createSettingsFolder";
 import {settingPatternMatcher} from "../../../../settings/inputs/settingPatternMatcher";
-import {selectExecuteHandler} from "../../../../uiLayers/types/select/selectExecuteHandler";
+import {promptSelectExecuteHandler} from "../../../../uiLayers/types/select/promptSelectExecuteHandler";
 import {IViewStackItemView} from "../../../../uiLayers/_types/IViewStackItem";
 import {constGetter} from "../../../../utils/constGetter";
 
@@ -124,7 +124,7 @@ export function createCategorySortingSetting({
             name,
             valueView: <Loader>{h => field.get(h).toString()}</Loader>,
             actionBindings: [
-                selectExecuteHandler.createBinding({
+                promptSelectExecuteHandler.createBinding({
                     field,
                     undoable: true,
                     liveUpdate: false,

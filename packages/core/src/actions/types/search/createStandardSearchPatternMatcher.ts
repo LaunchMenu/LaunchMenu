@@ -60,12 +60,12 @@ export function createStandardSearchPatternMatcher<T = void>({
 
             // Store the pattern match
             const searchText =
-                matcher.highlight
-                    ?.sort(({end: a}, {end: b}) => b - a)
+                matcher.highlight ? [...matcher.highlight]
+                    .sort(({end: a}, {end: b}) => b - a)
                     .reduce(
                         (text, node) => text.slice(0, node.start) + text.slice(node.end),
                         query.search
-                    ) ?? query.search;
+                    ) : query.search;
             const pattern = {
                 name,
                 highlighter,
@@ -73,6 +73,7 @@ export function createStandardSearchPatternMatcher<T = void>({
                 id,
                 ...matcher,
             };
+
             query[symbol] = pattern;
         }
 

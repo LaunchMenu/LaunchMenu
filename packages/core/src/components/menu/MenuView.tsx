@@ -103,6 +103,7 @@ export const MenuView: LFC<IMenuViewProps> = ({
             css={mergeStyles(syntaxStyling, containerProps?.css)}>
             {cachedItems.current.map((menuItem, i) => {
                 const isCursor = cursorItem == menuItem;
+                // TODO: look into the possibility of using menuItems as keys (using some ID?)
                 return (
                     <div key={i} ref={isCursor ? cursorRef : undefined}>
                         <menuItem.view

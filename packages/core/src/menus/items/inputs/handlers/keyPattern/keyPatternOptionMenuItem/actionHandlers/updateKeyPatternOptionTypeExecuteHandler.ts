@@ -4,7 +4,7 @@ import {IUpdateKeyPatternOptionTypeExecuteData} from "../_types/IUpdateKeyPatter
 import {IKeyPatternEventType} from "../../_types/IKeyPatternEventType";
 import {IDataHook} from "model-react";
 import {createStandardMenuItem} from "../../../../../createStandardMenuItem";
-import {selectExecuteHandler} from "../../../../../../../uiLayers/types/select/selectExecuteHandler";
+import {promptSelectExecuteHandler} from "../../../../../../../uiLayers/types/select/promptSelectExecuteHandler";
 import {createAction} from "../../../../../../../actions/createAction";
 
 /**
@@ -12,10 +12,10 @@ import {createAction} from "../../../../../../../actions/createAction";
  */
 export const updateKeyPatternOptionTypeExecuteHandler = createAction({
     name: "update key pattern option type handler",
-    parents: [selectExecuteHandler],
+    parents: [promptSelectExecuteHandler],
     core: (data: IUpdateKeyPatternOptionTypeExecuteData[]) => ({
         children: data.map(({option, patternField, liveUpdate, undoable}) =>
-            selectExecuteHandler.createBinding<string>({
+            promptSelectExecuteHandler.createBinding<string>({
                 field: {
                     set: (value: IKeyPatternEventType) => {
                         const pattern = patternField.get();

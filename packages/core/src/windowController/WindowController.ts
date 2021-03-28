@@ -5,6 +5,11 @@ export class WindowController {
     protected window: BrowserWindow;
 
     /**
+     * A promise that resolves once the window has been opened at least once
+     */
+    public shown: Promise<void>;
+
+    /**
      * Creates a new window manager
      * @param shortcutManager The shortcut manager to manage the global shortcuts
      */
@@ -44,6 +49,7 @@ export class WindowController {
             openLink(url);
         });
 
+        // TODO: I forgot to document why I added this... Look into this again and add relevant comment
         webview.session.webRequest.onHeadersReceived({urls: ["*://*/*"]}, (d: any, c) => {
             if (d.responseHeaders["X-Frame-Options"]) {
                 delete d.responseHeaders["X-Frame-Options"];
@@ -53,6 +59,18 @@ export class WindowController {
 
             c({cancel: false, responseHeaders: d.responseHeaders});
         });
+
+        // Track whether the window has been shown. To be used by the installer
+        this.shown = new Promise(res => {
+            this.window.on("show", () => res());
+        });
+    }
+
+    /**
+     * Shows the LM window
+     */
+    public show(): void {
+        this.window.show();
     }
 
     /**

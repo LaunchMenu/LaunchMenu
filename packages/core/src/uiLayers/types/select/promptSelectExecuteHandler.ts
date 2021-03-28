@@ -11,7 +11,7 @@ import {ISelectExecuteData} from "./_types/ISelectExecuteData";
 /**
  * A handler to let users alter a field given a selection of options
  */
-export const selectExecuteHandler = createAction({
+export const promptSelectExecuteHandler = createAction({
     name: "select execute handler",
     parents: [editExecuteHandler],
     core: (data: ISelectExecuteData<unknown>[]) => ({
@@ -47,6 +47,8 @@ export const selectExecuteHandler = createAction({
          */
         <T>(
             config: ISelectExecuteData<T> | IBindingCreatorConfig<ISelectExecuteData<T>>
-        ): IActionBinding<IAction<ISelectExecuteData<unknown>, never, typeof editExecuteHandler>>;
+        ): IActionBinding<
+            IAction<ISelectExecuteData<unknown>, never, typeof editExecuteHandler>
+        >;
     },
 });

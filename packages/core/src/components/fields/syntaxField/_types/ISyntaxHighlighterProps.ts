@@ -18,7 +18,7 @@ export type ISyntaxHighlighterProps = (
           setErrors?: (errors: IHighlightError[]) => void;
       }
     | {
-          /** The nodes to highlight with */
+          /** The nodes to highlight with, provided in sorted order from first index to last index */
           nodes: IHighlightNode[];
       }
 ) & {

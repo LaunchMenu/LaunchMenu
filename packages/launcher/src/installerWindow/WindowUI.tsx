@@ -2,8 +2,7 @@ import {Box, Button, Checkbox} from "@material-ui/core";
 import {ipcRenderer} from "electron/renderer";
 import React, {FC, useEffect, useState} from "react";
 import PuffLoader from "react-spinners/PuffLoader";
-
-type State = {type: "loading" | "configuring"; name: string};
+import {IState} from "../_types/IState";
 
 const applets = {
     Dictionary: "@launchmenu/applet-dictionary@alpha",
@@ -11,11 +10,11 @@ const applets = {
 };
 
 export const WindowUI: FC = () => {
-    const [state, setState] = useState({type: "loading", name: "Initializing"} as State);
+    const [state, setState] = useState({type: "loading", name: "Initializing"} as IState);
     useEffect(() => {
         ipcRenderer.send("ready");
 
-        const listener = (event: any, newState: State) => {
+        const listener = (event: any, newState: IState) => {
             setState(newState);
         };
         ipcRenderer.on("state", listener);
@@ -37,6 +36,11 @@ export const WindowUI: FC = () => {
                     <Box mt={1} css={{width: 70}}>
                         <PuffLoader color="#00F" size={60} />
                     </Box>
+                </>
+            ) : state.type == "finished" ? (
+                <>
+                    {state.name}
+                    <Box>Press ctrl+o or use the tray icon to open LM.</Box>
                 </>
             ) : (
                 <InstallSelectionHandler />
@@ -79,7 +83,7 @@ const InstallSelectionHandler: FC = () => {
                     </Box>
                 ))}
             </Box>
-            <Button role="button" onClick={onSubmit}>
+            <Button role="button" variant="contained" color="primary" onClick={onSubmit}>
                 Install
             </Button>
         </>

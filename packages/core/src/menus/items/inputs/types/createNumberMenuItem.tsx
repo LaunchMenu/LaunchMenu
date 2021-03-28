@@ -3,8 +3,8 @@ import {createFieldMenuItem} from "../createFieldMenuItem";
 import {IFieldMenuItem} from "../_types/IFieldMenuItem";
 import {Loader} from "model-react";
 import {INumberMenuItemData} from "./_types/INumberMenuItemData";
-import {numberInputExecuteHandler} from "../handlers/number/numberInputExecuteHandler";
-import {numberInputSelectExecuteHandler} from "../handlers/number/numberInputSelectExecuteHandler";
+import {promptNumberInputExecuteHandler} from "../handlers/number/promptNumberInputExecuteHandler";
+import {promptNumberInputSelectExecuteHandler} from "../handlers/number/promptNumberInputSelectExecuteHandler";
 import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
 
 /**
@@ -43,7 +43,7 @@ export function createNumberMenuItem({
             actionBindings: adjustSubscribable(actionBindings, bindings => [
                 ...bindings,
                 options
-                    ? numberInputSelectExecuteHandler.createBinding({
+                    ? promptNumberInputSelectExecuteHandler.createBinding({
                           field,
                           options,
                           allowCustomInput,
@@ -54,7 +54,7 @@ export function createNumberMenuItem({
                           baseValue,
                           increment,
                       })
-                    : numberInputExecuteHandler.createBinding({
+                    : promptNumberInputExecuteHandler.createBinding({
                           field,
                           liveUpdate: liveUpdate as any,
                           undoable,

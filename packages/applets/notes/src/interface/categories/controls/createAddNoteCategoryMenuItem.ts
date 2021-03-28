@@ -4,7 +4,7 @@ import {
     executeAction,
     getControlsCategory,
     IMenuItem,
-    inputExecuteHandler,
+    promptInputExecuteHandler,
     sequentialExecuteHandler,
 } from "@launchmenu/core";
 import {Field} from "model-react";
@@ -32,7 +32,10 @@ export function createAddNoteCategoryMenuItem(
                 await executeAction.execute(context, [
                     {
                         actionBindings: [
-                            inputExecuteHandler.createBinding({field, undoable: false}),
+                            promptInputExecuteHandler.createBinding({
+                                field,
+                                undoable: false,
+                            }),
                         ],
                     },
                 ]);

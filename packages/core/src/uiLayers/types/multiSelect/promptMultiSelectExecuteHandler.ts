@@ -1,27 +1,27 @@
-import {IInputExecuteData} from "./_types/IInputExecuteData";
-import {ICommand} from "../../../undoRedo/_types/ICommand";
-import {Input} from "./Input";
-import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {createAction, createStandardBinding} from "../../../actions/createAction";
-import {IActionBinding} from "../../../actions/_types/IActionBinding";
-import {IAction} from "../../../actions/_types/IAction";
-import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
 import {editExecuteHandler} from "../../../actions/types/execute/types/editExecuteHandler";
+import {IAction} from "../../../actions/_types/IAction";
+import {IActionBinding} from "../../../actions/_types/IActionBinding";
+import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
+import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
+import {ICommand} from "../../../undoRedo/_types/ICommand";
+import {MultiSelect} from "./MultiSelect";
+import {IMultiSelectExecuteData} from "./_types/IMultiSelectExecuteData";
 
 /**
- * A handler to let users alter a field
+ * A handler to let users alter a field with multiple values given a selection of options
  */
-export const inputExecuteHandler = createAction({
-    name: "input handler",
+export const promptMultiSelectExecuteHandler = createAction({
+    name: "multi select handler",
     parents: [editExecuteHandler],
-    core: (data: IInputExecuteData<unknown>[]) => ({
+    core: (data: IMultiSelectExecuteData<unknown>[]) => ({
         children: data.map(({field, undoable, ...config}) =>
             editExecuteHandler.createBinding(
                 ({context}) =>
                     new Promise<ICommand | void>(res => {
                         let cmd: ICommand | undefined;
                         context.open(
-                            new Input(field, {
+                            new MultiSelect(field, {
                                 ...config,
                                 onSubmit: undoable
                                     ? result => {
@@ -46,7 +46,9 @@ export const inputExecuteHandler = createAction({
          * @returns The created binding
          */
         <T>(
-            config: IInputExecuteData<T> | IBindingCreatorConfig<IInputExecuteData<T>>
-        ): IActionBinding<IAction<IInputExecuteData<unknown>, never>>;
+            config:
+                | IMultiSelectExecuteData<T>
+                | IBindingCreatorConfig<IMultiSelectExecuteData<T>>
+        ): IActionBinding<IAction<IMultiSelectExecuteData<unknown>, never>>;
     },
 });

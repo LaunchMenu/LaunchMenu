@@ -8,7 +8,7 @@ import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscrib
 import {adjustBindings} from "../../adjustBindings";
 import {ISettingConfigurer} from "../../../../settings/_types/ISettingConfigurer";
 import {IFileMenuItemData} from "./_types/IFileMenuItemData";
-import {fileInputExecuteHandler} from "../handlers/file/fileInputExecuteHandler";
+import {promptFileInputExecuteHandler} from "../handlers/file/promptFileInputExecuteHandler";
 import {createCallbackHook} from "../../../../utils/createCallbackHook";
 
 /**
@@ -53,7 +53,7 @@ export function createFileMenuItem({
                 ]),
                 resetUndoable,
                 actionBindings: adjustBindings(actionBindings, [
-                    fileInputExecuteHandler.createBinding({
+                    promptFileInputExecuteHandler.createBinding({
                         field,
                         folder,
                         undoable,

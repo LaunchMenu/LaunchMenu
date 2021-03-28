@@ -6,7 +6,7 @@ import {
     highlightTags,
     IExecuteArg,
     IField,
-    inputExecuteHandler,
+    promptInputExecuteHandler,
     Priority,
     ReactMarkdown,
 } from "@launchmenu/core";
@@ -47,7 +47,10 @@ or prefixed with \`c_\` followed by a css color for highlighting. E.g.:
     core: (fields: IField<string>[]) => {
         const getExecuteBindings = () =>
             fields.map(field =>
-                inputExecuteHandler.createBinding({field, highlighter: regexTokenizer})
+                promptInputExecuteHandler.createBinding({
+                    field,
+                    highlighter: regexTokenizer,
+                })
             );
 
         return {

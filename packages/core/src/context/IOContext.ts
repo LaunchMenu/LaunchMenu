@@ -7,6 +7,7 @@ import {Field, IDataHook} from "model-react";
 import {IUILayer} from "../uiLayers/_types/IUILayer";
 import {IActionBinding} from "../actions/_types/IActionBinding";
 import {LMSession} from "../application/LMSession/LMSession";
+import {SubIOContextLayer} from "./SubIOContextLayer";
 
 export class IOContext implements IIOContext {
     public readonly undoRedo: IUndoRedoFacility;
@@ -14,6 +15,7 @@ export class IOContext implements IIOContext {
     public readonly contextMenuBindings: ISubscribable<IActionBinding[]>;
     public readonly session?: LMSession;
 
+    protected closeLayer: Promise<() => void> | undefined;
     protected uiStack = new Field([] as {onClose?: () => void; layer: IUILayer}[]);
 
     /**
@@ -33,12 +35,15 @@ export class IOContext implements IIOContext {
         settings?: SettingsContext;
         contextMenuBindings?: ISubscribable<IActionBinding[]>;
         session?: LMSession;
+        parent?: IIOContext;
     }) {
-        this.isInDevMode = data.isInDevMode || (() => false);
-        this.undoRedo = data.undoRedo || new UndoRedoFacility();
-        this.settings = data.settings || new SettingsContext();
-        this.contextMenuBindings = data.contextMenuBindings || [];
-        this.session = data.session;
+        this.isInDevMode = data.isInDevMode || data.parent?.isInDevMode || (() => false);
+        this.undoRedo = data.undoRedo || data.parent?.undoRedo || new UndoRedoFacility();
+        this.settings = data.settings || data.parent?.settings || new SettingsContext();
+        this.contextMenuBindings =
+            data.contextMenuBindings || data.parent?.contextMenuBindings || [];
+        this.session = data.session || data.parent?.session;
+        if (data.parent) this.closeLayer = data.parent.open(new SubIOContextLayer(this));
     }
 
     /**
@@ -106,6 +111,7 @@ export class IOContext implements IIOContext {
      */
     public async destroy(): Promise<void> {
         await this.closeAll(true);
+        (await this.closeLayer)?.();
     }
 
     /**

@@ -3,7 +3,7 @@ import {createFieldMenuItem} from "../createFieldMenuItem";
 import {IFieldMenuItem} from "../_types/IFieldMenuItem";
 import {Loader} from "model-react";
 import {IBooleanMenuItemData} from "./_types/IBooleanMenuItemData";
-import {booleanInputExecuteHandler} from "../handlers/boolean/booleanInputExecuteHandler";
+import {promptBooleanInputExecuteHandler} from "../handlers/boolean/promptBooleanInputExecuteHandler";
 import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
 import {adjustBindings} from "../../adjustBindings";
 
@@ -34,7 +34,7 @@ export function createBooleanMenuItem({
             ]),
             resetUndoable,
             actionBindings: adjustBindings(actionBindings, [
-                booleanInputExecuteHandler.createBinding({
+                promptBooleanInputExecuteHandler.createBinding({
                     field,
                     liveUpdate: liveUpdate as any,
                     undoable,

@@ -4,7 +4,7 @@ import {createFieldMenuItem} from "../../../../../menus/items/inputs/createField
 import {IUUID} from "../../../../../_types/IUUID";
 import {simpleSearchHandler} from "./simpleSearchHandler";
 import {ISimpleSearchMethod} from "./_types/ISimpleSearchMethod";
-import {selectExecuteHandler} from "../../../../../uiLayers/types/select/selectExecuteHandler";
+import {promptSelectExecuteHandler} from "../../../../../uiLayers/types/select/promptSelectExecuteHandler";
 
 /**
  * Creates a menu item to select the search handler method
@@ -32,7 +32,7 @@ export function createSimpleSearchHandlerMethodSetting() {
             tags: ["field"],
             resetUndoable: true,
             actionBindings: [
-                selectExecuteHandler.createBinding({
+                promptSelectExecuteHandler.createBinding({
                     subscribableData: h => ({
                         field,
                         options: simpleSearchHandler.getSearchMethods(h),
