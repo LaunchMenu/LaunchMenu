@@ -1,11 +1,4 @@
-import {
-    DataCacher,
-    Field,
-    IDataHook,
-    IDataRetriever,
-    Loader,
-    Observer,
-} from "model-react";
+import {DataCacher, Field, IDataHook, IDataRetriever, Observer} from "model-react";
 import React from "react";
 import {IOContext} from "../../context/IOContext";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
@@ -27,18 +20,17 @@ import {withSession} from "../applets/declaration/withSession";
 import {UILayer} from "../../uiLayers/standardUILayer/UILayer";
 import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
 import {createStandardMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createStandardMenuKeyHandler";
-import {Breadcrumbs} from "../../components/context/paths/Breadcrumbs";
 import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {IMenuSearchable} from "../../actions/types/search/_types/IMenuSearchable";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
 import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
 import {IStandardUILayerData} from "../../uiLayers/standardUILayer/_types/IStandardUILayerData";
-import {Content} from "../../content/Content";
 import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
-import {standardOverlayGroup} from "../../uiLayers/UILayerMissingView";
 import {MainMenuView} from "../components/MainMenuView";
 import {LMSessionLayer} from "./LMSessionLayer";
 import {LMSessionProvider} from "../hooks/useLMSession";
+import {TextFieldView} from "../../components/fields/TextFieldView";
+import {InstantOpenTransition} from "../../components/context/stacks/transitions/open/InstantOpenTransition";
 
 /**
  * An application session
@@ -256,6 +248,16 @@ export class LMSession {
                 field: this.searchField,
                 highlighter,
                 icon: "search",
+                fieldView: {
+                    view: (
+                        <TextFieldView
+                            highlighter={highlighter}
+                            icon="search"
+                            field={this.searchField}
+                        />
+                    ),
+                    transitions: {Open: InstantOpenTransition},
+                },
             },
         ];
     }

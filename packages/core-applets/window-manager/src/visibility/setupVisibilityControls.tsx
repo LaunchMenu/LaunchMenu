@@ -1,5 +1,5 @@
 import {IActionBinding, LaunchMenu} from "@launchmenu/core";
-import {remote, BrowserWindow} from "electron";
+import {BrowserWindow} from "electron";
 import {Observer} from "model-react";
 import {settings} from "../settings";
 import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
@@ -45,7 +45,6 @@ export function setupVisibilityControls(
             returnFocus();
         }
     });
-    document.body.classList.add("noTransition"); // Prevents half finished transitions on startup
     const hideWindow = () => LM.setWindowOpen(false);
     const showWindow = () => LM.setWindowOpen(true);
 
@@ -58,12 +57,12 @@ export function setupVisibilityControls(
     }, true);
 
     // Shortcut handler
-    let latestShortcut: null | string = null;
-    const shortcutSettingObserver = new Observer(h =>
-        settingsManager.getSettingsContext(h).get(settings).controls.open.get(h)
-    ).listen(pattern => {
-        latestShortcut = pattern;
-        remote.globalShortcut.register(pattern, showWindow);
+    let disposeOpenShortcutHandler: () => void;
+    const shortcutSettingObserver = new Observer(
+        h => settingsManager.getSettingsContext(h).get(settings).controls.open
+    ).listen(openSetting => {
+        disposeOpenShortcutHandler?.();
+        disposeOpenShortcutHandler = openSetting.onTrigger(showWindow);
     }, true);
 
     // Debug handler
@@ -104,7 +103,7 @@ export function setupVisibilityControls(
             LM.getSessionManager()
                 .getSessions()
                 .forEach(session => session.removeCloseListener(exitListener));
-            if (latestShortcut) remote.globalShortcut.unregister(latestShortcut);
+            disposeOpenShortcutHandler?.();
         },
         exitBindings: createExitContextMenuBinding(LM, hideWindow),
     };

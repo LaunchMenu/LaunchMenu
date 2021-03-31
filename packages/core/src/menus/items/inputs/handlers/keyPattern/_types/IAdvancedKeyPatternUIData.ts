@@ -7,4 +7,6 @@ export type IAdvancedKeyPatternUIData = {
     undoable?: boolean;
     /** The callback to make once the user submits their changes */
     onSubmit?: (value: KeyPattern) => void;
+    /** Whether to only allow valid global shortcuts */
+    globalShortcutOnly?: boolean;
 };

@@ -10,7 +10,7 @@ import {ISettingConfigurer} from "./ISettingConfigurer";
 export type TSettingsTree<T extends IRenderableSettingsTree> = {
     [P in keyof T]: T[P] extends {children: IRenderableSettingsTree}
         ? TSettingsTree<T[P]["children"]>
-        : TIsField<T[P]> & Omit<T[P], "view" | "actionBindings"> & ISettingConfigurer;
+        : TIsField<T[P]> & Omit<T[P], "view" | "actionBindings">;
 };
 
 // Indicate that this indeed is a proper field to TS

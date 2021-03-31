@@ -6,6 +6,12 @@ import {ipcRenderer} from "electron";
 export function startApplication() {
     global.DEV = process.env.NODE_ENV == "dev";
 
+    // Prevent accidental global close usage
+    global.close = () =>
+        console.log(
+            "LM shouldn't be closed this way, did you call global close on accident?"
+        );
+
     let lm: import("../application/LaunchMenu").LaunchMenu;
     async function startup() {
         const {

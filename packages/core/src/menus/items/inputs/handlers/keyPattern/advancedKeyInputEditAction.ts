@@ -18,7 +18,7 @@ export const advancedKeyInputEditAction = createContextAction({
     core: (data: IAdvancedKeyInputExecuteData[]) => {
         const execute: IExecutable = async ({context}) => {
             const cmds = [] as ICommand[];
-            for (const {field, undoable, liveUpdate} of data) {
+            for (const {field, undoable, liveUpdate, globalShortcutOnly} of data) {
                 await new Promise<void>(res => {
                     context.open(
                         new AdvancedKeyPatternUI(field, {
@@ -27,6 +27,7 @@ export const advancedKeyInputEditAction = createContextAction({
                                     cmds.push(new SetFieldCommand(field, result));
                                 else if (!liveUpdate) field.set(result);
                             },
+                            globalShortcutOnly,
                         }),
                         {onClose: res}
                     );

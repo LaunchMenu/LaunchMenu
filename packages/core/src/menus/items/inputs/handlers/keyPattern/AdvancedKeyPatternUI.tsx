@@ -12,7 +12,6 @@ import {IViewStackItem} from "../../../../../uiLayers/_types/IViewStackItem";
 import {IField} from "../../../../../_types/IField";
 import {IMenu} from "../../../../menu/_types/IMenu";
 import {IAdvancedKeyPatternUIData} from "./_types/IAdvancedKeyPatternUIData";
-import {IKeyEventListener} from "../../../../../keyHandler/_types/IKeyEventListener";
 import {createStandardMenuKeyHandler} from "../../../../menu/interaction/keyHandler/createStandardMenuKeyHandler";
 import {v4 as uuid} from "uuid";
 import {IMenuItem} from "../../../_types/IMenuItem";
@@ -92,6 +91,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
                 createKeyPatternOptionMenuItem({
                     patternField: this.value,
                     option,
+                    globalShortcutOnly: this.config.globalShortcutOnly,
                 })
             );
             return [...controls, ...patterns];
@@ -169,6 +169,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
                     patternField: this.value,
                     option: {type: "down", pattern: []},
                     insertIfDeleted: true,
+                    globalShortcutOnly: this.config.globalShortcutOnly,
                 }),
                 getCategoryAction.createBinding(getControlsCategory()),
             ],

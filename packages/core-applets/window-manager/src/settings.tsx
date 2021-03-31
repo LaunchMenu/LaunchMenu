@@ -2,6 +2,7 @@ import React from "react";
 import {info} from "./";
 import {
     createBooleanSetting,
+    createGlobalKeyPatternSetting,
     createKeyPatternSetting,
     createSettings,
     createSettingsFolder,
@@ -78,10 +79,9 @@ export const settings = createSettings({
                 controls: createSettingsFolder({
                     name: "Controls",
                     children: {
-                        open: createGlobalShortcutSetting({
+                        open: createGlobalKeyPatternSetting({
                             name: "Open LaunchMenu",
-                            init: "Control+O",
-                            options: ["Control+O", "Control+Space"],
+                            init: new KeyPattern("ctrl+o"),
                         }),
                         exit: createKeyPatternSetting({
                             name: "Exit LaunchMenu",

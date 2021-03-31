@@ -11,4 +11,6 @@ export type IAdvancedKeyInputExecuteData = {
     liveUpdate?: boolean;
     /** Whether the change action is undoable */
     undoable?: boolean;
+    /** Whether to only allow valid global shortcuts */
+    globalShortcutOnly?: boolean;
 };
