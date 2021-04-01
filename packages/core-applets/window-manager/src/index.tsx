@@ -1,4 +1,4 @@
-import {CoreAppletType, declare, globalKeyHandler, KeyPattern} from "@launchmenu/core";
+import {CoreAppletType, declare} from "@launchmenu/core";
 import {remote} from "electron";
 import {settings, settingsBrowserWindow} from "./settings";
 import {setupPositionSettingSyncer} from "./position/setupPositionSettingSyncer";
@@ -8,7 +8,6 @@ import {returnFocus} from "./visibility/returnFocus";
 import {setupStartupController} from "./startup/setupStartupController";
 import {setupTrayMenu} from "./tray/setupTrayMenu";
 import {windowIcon} from "./tray/icon";
-import {Observer} from "model-react";
 
 export const info = {
     name: "Window manager",
