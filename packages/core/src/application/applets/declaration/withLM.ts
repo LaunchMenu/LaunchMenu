@@ -1,4 +1,5 @@
-import {DataCacher} from "model-react";
+import {ISettingsTree} from "../../../settings/_types/ISettingsTree";
+import {TConfigSettings} from "../../../settings/_types/TConfigSettings";
 import {LaunchMenu} from "../../LaunchMenu";
 import {IApplet} from "../_types/IApplet";
 import {TWithLM} from "./_types/TWithLM";
@@ -9,13 +10,14 @@ import {TWithLM} from "./_types/TWithLM";
  * @param session The applet data when a LM instance is supplied
  * @returns The applet when a LM instance is provided
  */
-export function withLM<E extends IApplet>(applet: E, LM: LaunchMenu): TWithLM<E> {
+export function withLM<E extends IApplet>(
+    applet: E,
+    LM: LaunchMenu,
+    settings: E extends IApplet<infer S> ? TConfigSettings<S> : ISettingsTree
+): TWithLM<E> {
     if (applet.init) {
-        const settingsContext = new DataCacher(h =>
-            LM.getSettingsManager().getSettingsContext(h)
-        );
         const execData = applet.init({
-            getSettings: h => settingsContext.get(h),
+            settings,
             LM: LM,
         });
         if (execData instanceof Function) {

@@ -8,10 +8,7 @@ import {IAppletConfig} from "./IAppletConfig";
  * An applet plugin for LM
  */
 export type IApplet<
-    S extends IIdentifiedSettingsConfig<
-        IJSON,
-        ISettingsFolderMenuItem
-    > = IIdentifiedSettingsConfig<IJSON, ISettingsFolderMenuItem>
+    S extends IIdentifiedSettingsConfig<IJSON, ISettingsFolderMenuItem> = IIdentifiedSettingsConfig<IJSON, ISettingsFolderMenuItem>
 > = {
     /** A unique ID for this module */
     ID: IUUID;

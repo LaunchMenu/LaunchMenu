@@ -75,8 +75,8 @@ export class LaunchMenu {
         if (this.keyHandler as any) throw Error("Instance has already been set up");
         this.setupKeyHandler();
         this.setupTheme();
-        this.setupApplets();
         this.setupSettings();
+        this.setupApplets();
         this.setupView();
         this.sessionManager = new SessionManager(this);
         this.sessionManager.addSession();
@@ -140,7 +140,13 @@ export class LaunchMenu {
      * Initializes the applets manager
      */
     protected setupApplets(): void {
-        this.appletManager = new AppletManager(this, this.settingsDirectory);
+        this.appletManager = new AppletManager(this, {
+            directory: this.settingsDirectory,
+            getSettings: (applet, version) =>
+                this.settingsManager.updateAppletSettings(applet, version),
+            removeSettings: appletID =>
+                this.settingsManager.destroyAppletSetting(appletID),
+        });
 
         // Add an observer, making sure that applets always instantly reload, even if no other component requests them.
         // This is important because applets can have side effects, so even if nothing needs the applet, the applet may affect the system.
@@ -154,7 +160,6 @@ export class LaunchMenu {
      */
     protected setupSettings(): void {
         this.settingsManager = new SettingsManager(
-            h => this.appletManager.getAppletsData(h),
             this.settingsDirectory,
             this.dataDirectory
         );

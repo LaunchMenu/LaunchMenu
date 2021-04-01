@@ -7,6 +7,9 @@ import {
     createSettings,
     createSettingsFolder,
     createStandardMenuItem,
+    IIdentifiedSettingsConfig,
+    TSettingsTree,
+    TConfigSettings,
 } from "@launchmenu/core";
 import {info} from ".";
 import {
@@ -89,3 +92,4 @@ export const settings = createSettings({
             },
         }),
 });
+export type ISettings = TConfigSettings<typeof settings>;
