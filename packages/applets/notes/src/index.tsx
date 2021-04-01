@@ -35,10 +35,10 @@ export const info = {
 export default declare({
     info,
     settings,
-    init({getSettings}) {
+    init({settings: initSettings}) {
         // Setup the notes source together with its item interfaces
         const notesSource = new DataCacher(h => {
-            const {notesDir, defaults} = getSettings(h).get(settings);
+            const {notesDir, defaults} = initSettings;
             const path = notesDir.get(h);
             return new NotesSource(`${path}/notes.json`, {
                 color: h => defaults.color.get(h),
@@ -58,12 +58,12 @@ export default declare({
         const notesItems = createListCacher(
             h => notesSource.get(h).getAllNotes(h),
             note => note.ID,
-            (note, h) =>
+            note =>
                 createNoteMenuItem(
                     note,
                     notesSource.get(),
                     h => categories.get(h).items,
-                    getSettings(h)
+                    initSettings
                 )
         );
 

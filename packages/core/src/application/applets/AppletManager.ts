@@ -10,8 +10,18 @@ import {IUUID} from "../../_types/IUUID";
 import {createAppletResultCategory} from "./createAppletResultCategory";
 import {withLM} from "./declaration/withLM";
 import {JSONFile} from "../../settings/storage/fileTypes/JSONFile";
-import {IAppletData} from "./_types/IAppletData";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
+import {ISettingsTree} from "../../settings/_types/ISettingsTree";
+import {IAppletData} from "./_types/IAppletData";
+
+type ISettingsConfig = {
+    /** The directory that settings should be stored */
+    directory: string;
+    /** The function to retrieve the settings for a given applet */
+    getSettings: (applet: IApplet, version: IUUID) => ISettingsTree;
+    /** Removes the settings of a given applet */
+    removeSettings: (appletID: IUUID) => void;
+};
 
 /**
  * A manager of applets, takes care of loading applets given their locations
@@ -19,6 +29,7 @@ import {ICategory} from "../../actions/types/category/_types/ICategory";
 export class AppletManager {
     protected LM: LaunchMenu;
     protected reloadOnChanges: boolean;
+    protected settingsConfig: ISettingsConfig;
 
     protected destroyed = new Field(false);
     protected sourceFile: JSONFile;
@@ -37,13 +48,16 @@ export class AppletManager {
      */
     public constructor(
         LM: LaunchMenu,
-        settingsDirectory: string,
+        settingsConfig: ISettingsConfig,
         reloadOnChanges: boolean = LM.isInDevMode()
     ) {
         this.LM = LM;
-
-        this.sourceFile = new JSONFile(Path.join(settingsDirectory, "applets.json"));
+        this.settingsConfig = settingsConfig;
         this.reloadOnChanges = reloadOnChanges;
+
+        this.sourceFile = new JSONFile(
+            Path.join(settingsConfig.directory, "applets.json")
+        );
     }
 
     /**
@@ -56,6 +70,7 @@ export class AppletManager {
         } catch (e) {
             console.error(e);
         }
+        this.settingsConfig.removeSettings(appletData.applet.ID);
         appletData.watcher?.destroy();
     }
 
@@ -126,10 +141,11 @@ export class AppletManager {
     /**
      * Initializes an applet
      * @param source The source data of the applet
+     * @param version The new version of the applet
      * @throws An exception if no valid applet was found
      * @returns The applet data
      */
-    protected initApplet({ID, directory}: IAppletSource): IApplet {
+    protected initApplet({ID, directory}: IAppletSource, version: IUUID): IApplet {
         // Obtain the module export and check if it has a valid applet export
         const appletExport = require([".", "/"].includes(directory[0])
             ? Path.join(process.cwd(), directory)
@@ -140,7 +156,8 @@ export class AppletManager {
                 ...(appletExport.default as IAppletConfig<any>),
                 ID,
             };
-            return withLM(baseApplet, this.LM);
+            const settingsTree = this.settingsConfig.getSettings(baseApplet, version);
+            return withLM(baseApplet, this.LM, settingsTree);
         } else {
             // Throw an error when the module has no proper applet
             throw Error(
@@ -240,7 +257,7 @@ export class AppletManager {
 
             // If no applet exists for this source yet, create it
             try {
-                const applet = this.initApplet(source);
+                const applet = this.initApplet(source, source.version);
 
                 return {
                     applet,

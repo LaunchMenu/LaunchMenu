@@ -1,12 +1,9 @@
-import React from "react";
 import {
     copyAction,
     copyTextHandler,
     getCategoryAction,
-    getContentAction,
     ICategory,
     IMenuItem,
-    SettingsContext,
 } from "@launchmenu/core";
 import {notesIcon} from "../notesIcon";
 import {Note} from "../dataModel/Note";
@@ -23,7 +20,7 @@ import {setSyntaxModeAction} from "./actionHandlers/noteAppearance/setSyntaxMode
 import {setFontSizeAction} from "./actionHandlers/noteAppearance/setFontSizeAction";
 import {setRichContentAction} from "./actionHandlers/noteAppearance/setRichContentAction";
 import {noteContentHandler} from "./actionHandlers/noteContentHandler";
-import {settings} from "../settings";
+import {ISettings, settings} from "../settings";
 import {setSearchContentAction} from "./actionHandlers/noteAppearance/setSearchContentAction";
 
 /**
@@ -38,10 +35,9 @@ export function createNoteMenuItem(
     note: Note,
     notesSource: NotesSource,
     getCategories: IDataRetriever<ICategory[]>,
-    settingsContext: SettingsContext
+    settings: ISettings
 ): IMenuItem {
-    const useInlineCategory = (h?: IDataHook) =>
-        settingsContext.get(settings).inlineCategory.get(h);
+    const useInlineCategory = (h?: IDataHook) => settings.inlineCategory.get(h);
     return createColorableMenuItem({
         name: h => note.getName(h),
         color: h => note.getColor(h),
