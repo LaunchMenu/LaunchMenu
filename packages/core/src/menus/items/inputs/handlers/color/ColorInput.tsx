@@ -2,7 +2,7 @@ import Color from "color";
 import React from "react";
 import {ColorTextFieldView} from "../../../../../components/settings/inputs/ColorTextFieldView";
 import {ITextField} from "../../../../../textFields/_types/ITextField";
-import {Input} from "../../../../../uiLayers/types/input/Input";
+import {InputLayer} from "../../../../../uiLayers/types/input/InputLayer";
 import {IViewStackItem} from "../../../../../uiLayers/_types/IViewStackItem";
 import {IInputConfig} from "../../../../../uiLayers/types/input/_types/IInputConfig";
 import {IField} from "../../../../../_types/IField";
@@ -10,7 +10,7 @@ import {IField} from "../../../../../_types/IField";
 /**
  * An input layer for colors
  */
-export class ColorInput extends Input<string> {
+export class ColorInput extends InputLayer<string> {
     /**
      * Creates a new color input
      * @param field The field to target

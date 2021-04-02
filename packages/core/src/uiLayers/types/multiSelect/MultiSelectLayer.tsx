@@ -49,7 +49,7 @@ export function getMultiSelectOptionValue<T>(option: IMultiSelectOption<T>): T {
 /**
  * A UILayer that can be used as an input to chose multiple elements from a selection of items
  */
-export class MultiSelect<T> extends AbstractUILayer {
+export class MultiSelectLayer<T> extends AbstractUILayer {
     protected target: IField<T[]>;
     protected config: IMultiSelectConfig<T>;
 
