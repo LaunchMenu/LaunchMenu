@@ -1,2 +1,2 @@
 # Fix for "env: node\r: No such file or directory" on Mac 
-*.js  text eol=lf
+**/*.js text eol=lf
