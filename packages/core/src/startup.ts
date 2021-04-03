@@ -3,5 +3,10 @@ import {launch} from "./windowController/launcher";
 
 // Only run this code if we are in the main electron process
 if (app) {
-    launch();
+    launch().then(({exit})=>{
+        process.on('exit', (code)=>{
+            exit();
+        });
+    });
+
 }
