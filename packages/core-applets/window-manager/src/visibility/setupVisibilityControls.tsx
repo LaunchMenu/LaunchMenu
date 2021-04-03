@@ -83,6 +83,10 @@ export function setupVisibilityControls(
         }
     }, true);
 
+    // Hide the taskbar/dock icons for LM
+    remote.app.dock?.hide();
+    window.setSkipTaskbar(true);
+
     // Setup a listener to hide the window when hitting escape when in the home screen
     const exitListener = hideWindow;
     const sessionObserver = new Observer(h =>
