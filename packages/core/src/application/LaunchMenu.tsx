@@ -14,9 +14,10 @@ import {SessionManager} from "./LMSession/SessionManager";
 import {SettingsManager} from "./settings/SettingsManager";
 import {Box} from "../styling/box/Box";
 import {IApplet} from "./applets/_types/IApplet";
-import {ipcRenderer} from "electron";
+import {ipcRenderer, remote} from "electron";
 import {LaunchMenuProvider} from "./hooks/useLM";
 import {wait} from "../_tests/wait.helper";
+import { isPlatform } from "../utils/ isPlatform"; 
 
 /**
  * The main LM class
@@ -43,7 +44,7 @@ export class LaunchMenu {
      * Creates a new instance of the LaunchMenu application,
      * requires setup to be called before doing anything.
      */
-    public constructor() {}
+    public constructor() { }
 
     /**
      * Disposes of all runtime data
@@ -112,7 +113,7 @@ export class LaunchMenu {
                         font="paragraph"
                         boxSizing="border-box"
                         display="flex"
-                        css={{padding: 18}}>
+                        css={{padding: isPlatform("mac") ? 0 : 18}}>
                         <Box
                             position="relative"
                             background="bgPrimary"
