@@ -111,3 +111,5 @@ dist/
 packages/core/data
 
 eslintLog.tap
+
+.DS_Store
