@@ -248,7 +248,7 @@ async function run({
             launchElectron,
             production,
         }).then(() => {
-            if (verbose) console.log(info("[launch]: quite application"));
+            if (verbose) console.log(info("[launch]: quit application"));
         });
     }
 
