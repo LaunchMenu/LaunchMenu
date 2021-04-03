@@ -1,4 +1,4 @@
-import {BrowserWindow, shell} from "electron";
+import {BrowserWindow, shell, ipcMain} from "electron";
 import Path from "path";
 
 export class WindowController {
@@ -63,6 +63,11 @@ export class WindowController {
         // Track whether the window has been shown. To be used by the installer
         this.shown = new Promise(res => {
             this.window.on("show", () => res());
+        });
+
+        // Check if window is closed by user
+        this.window.on("close", ()=>{
+            ipcMain.emit("shutdown");
         });
     }
 
