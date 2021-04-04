@@ -31,7 +31,6 @@ export default declare({
             exitBindings,
         } = setupVisibilityControls(LM, window, () => {
             returnFocus();
-            LM.getKeyHandler().resetKeys();
         });
 
         // Setup startup controls

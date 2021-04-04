@@ -50,12 +50,15 @@ export function setupVisibilityControls(
     const showWindow = () => LM.setWindowOpen(true);
 
     // Auto hide when losing focus
-    const hideSettingObserver = new Observer(h =>
-        settingsManager.getSettingsContext(h).get(settings).visibility.hideOnBlur.get(h)
-    ).listen(hideOnBlur => {
-        window.removeListener("blur", hideWindow);
-        if (hideOnBlur) window.on("blur", hideWindow);
-    }, true);
+    const blurListener = () => {
+        LM.getKeyHandler().resetKeys();
+        const hideOnBlur = settingsManager
+            .getSettingsContext()
+            .get(settings)
+            .visibility.hideOnBlur.get();
+        if (hideOnBlur) hideWindow();
+    };
+    window.on("blur", blurListener);
 
     // Shortcut handler
     let latestShortcut: null | string = null;
@@ -101,7 +104,6 @@ export function setupVisibilityControls(
         destroy: () => {
             window.removeListener("blur", hideWindow);
             shortcutSettingObserver.destroy();
-            hideSettingObserver.destroy();
             debugSettingObserver.destroy();
             visibilityObserver.destroy();
             sessionObserver.destroy();
