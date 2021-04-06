@@ -15,6 +15,7 @@ import {mergeStyles} from "../../utils/mergeStyles";
 import Color from "color";
 import {IThemeColor} from "../../styling/theming/_types/IBaseTheme";
 import {useTheme} from "../../styling/theming/ThemeContext";
+import {useIsItemSelectable} from "./useIsItemSelectable";
 
 /**
  * A menu item frame that visualizes selection state and click handler for item execution
@@ -27,6 +28,7 @@ export const MenuItemFrame: FC<IMenuItemFrameProps> = ({
     item,
     children,
     transparent,
+    disabled,
     outerProps,
     innerProps,
     colors,
@@ -58,6 +60,8 @@ export const MenuItemFrame: FC<IMenuItemFrameProps> = ({
         }
     }, [menu, item]);
 
+    const isSelectable = useIsItemSelectable(item);
+    if (disabled == undefined && !transparent) disabled = !isSelectable;
     const {connectBgPrevious, connectBgNext} = transparent
         ? ({} as IConnections)
         : useConnectAdjacent(menu, item);
@@ -85,6 +89,7 @@ export const MenuItemFrame: FC<IMenuItemFrameProps> = ({
             borderRadiusBottomRight={connectBgNext ? undefined : radiusSize}
             borderRadiusTopLeft={connectBgPrevious ? undefined : radiusSize}
             borderRadiusBottomLeft={connectBgNext ? undefined : radiusSize}
+            opacity={disabled ? 0.5 : 1}
             overflow="hidden"
             elevation={transparent ? undefined : "small"}
             zIndex={1}
@@ -97,12 +102,12 @@ export const MenuItemFrame: FC<IMenuItemFrameProps> = ({
                     background={mainBgColor}
                     color={textColor}
                     marginLeft="medium"
-                    cursor={transparent ? "default" : "pointer"}
+                    cursor={transparent || disabled ? "default" : "pointer"}
                     onClick={useCallback(async () => {
                         if (!menu || !item) return;
                         if (menu.getCursor() == item) {
                             executeAction.execute(menu.getContext(), [item], onExecute);
-                        } else if (isItemSelectable(item)) menu.setCursor(item);
+                        } else if (!disabled && isSelectable) menu.setCursor(item);
                     }, [menu, item])}
                     // Open the context menu on right click
                     onContextMenu={onContextMenu}
