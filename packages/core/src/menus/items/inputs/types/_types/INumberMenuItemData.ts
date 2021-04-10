@@ -5,9 +5,9 @@ import {IInputTypeMenuItemData} from "./IInputTypeMenuItemData";
 export type INumberMenuItemData = {
     /** The default value for the field */
     init: number;
-    /** Whether to update the field as you type, defaults to false */
-    options?: number[];
     /** The numeric options to choose from */
+    options?: number[];
+    /** Whether to allow custom input when options are present, defaults to false */
     allowCustomInput?: boolean;
 } & INumberConstraints &
     IInputTypeMenuItemData;
