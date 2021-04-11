@@ -8,6 +8,7 @@ import {returnFocus} from "./visibility/returnFocus";
 import {setupStartupController} from "./startup/setupStartupController";
 import {setupTrayMenu} from "./tray/setupTrayMenu";
 import {windowIcon} from "./tray/icon";
+import {setupFrame} from "./setupFrame";
 
 export const info = {
     name: "Window manager",
@@ -48,6 +49,9 @@ export default declare({
         // Setup the position setting
         const destroyPositionSyncer = setupPositionSettingSyncer(settingsManager, window);
 
+        // Setup the frame of the application
+        const removeFrame = setupFrame(LM);
+
         // Set the window image
         remote.getCurrentWindow().setIcon(windowIcon);
         return {
@@ -58,6 +62,7 @@ export default declare({
                 destroyPositionSyncer();
                 destroySizeSyncer();
                 destroyTrayMenu();
+                removeFrame();
             },
         };
     },
