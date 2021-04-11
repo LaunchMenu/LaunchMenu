@@ -65,6 +65,10 @@ export const settings = createSettings({
                         ),
                     ],
                 }),
+                windowShadow: createBooleanSetting({
+                    name: "Window shadow",
+                    init: true,
+                }),
                 visibility: createSettingsFolder({
                     name: "Visibility",
                     children: {

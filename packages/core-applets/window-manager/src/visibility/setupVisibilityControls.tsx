@@ -45,7 +45,6 @@ export function setupVisibilityControls(
             returnFocus();
         }
     });
-    document.body.classList.add("noTransition"); // Prevents half finished transitions on startup
     const hideWindow = () => LM.setWindowOpen(false);
     const showWindow = () => LM.setWindowOpen(true);
 

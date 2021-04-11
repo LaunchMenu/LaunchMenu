@@ -1,5 +1,6 @@
 import {IDataHook} from "model-react";
 import React, {useLayoutEffect, useRef, useState} from "react";
+import {useResizeDetector} from "react-resize-detector";
 import {UIPathView} from "../../components/context/paths/UIPathView";
 import {StackView} from "../../components/context/stacks/StackView";
 import {InstantChangeTransition} from "../../components/context/stacks/transitions/change/InstantChangeTransition";
@@ -87,11 +88,15 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
     const [animating, setAnimating] = useState(false); // Skip animating on first render
     const layoutRef = useRef<HTMLElement>();
     const [size, setSize] = useState({width: 0, height: 0});
-    const {width: windowWidth, height: windowHeight} = useWindowSize();
+
+    const [sizeID, triggerSizeChange] = useState(0);
+    const {ref: resizeRef} = useResizeDetector({
+        onResize: () => triggerSizeChange(s => s + 1),
+    });
     useLayoutEffect(() => {
         if (layoutRef.current) setSize(layoutRef.current.getBoundingClientRect());
         setTimeout(() => setAnimating(true));
-    }, [layoutRef.current, windowWidth, windowHeight]);
+    }, [layoutRef.current, sizeID]);
 
     // Return the layout with transition animations
     const horizontalDivision =
@@ -104,7 +109,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
         <IOContextProvider value={context}>
             <FillBox
                 className="frame"
-                elRef={layoutRef}
+                elRef={[layoutRef, resizeRef]}
                 display="flex"
                 flexDirection="column"
                 overflow="hidden">
