@@ -24,4 +24,6 @@ export type IUILayerMenuData = {
     destroyOnClose?: boolean;
     /** The overlay group to use, making sure that only the bottom view with the same group in a continuous sequence is shown */
     overlayGroup?: Symbol;
+    /** Whether to prevent the layer from closing when the user uses their back key, defaults to whether a menu handler is present */
+    handleClose?: boolean;
 };

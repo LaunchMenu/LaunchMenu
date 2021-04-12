@@ -27,7 +27,10 @@ export function setupVisibilityControls(
             document.body.classList.add("noTransition");
             setTimeout(() => {
                 document.body.style.visibility = "inherit";
-                document.body.classList.remove("noTransition");
+                document.body.className = document.body.className.replace(
+                    /\bnoTransition\b/g,
+                    ""
+                );
             }, 50);
 
             window.show();
@@ -45,6 +48,7 @@ export function setupVisibilityControls(
             returnFocus();
         }
     });
+    if (!LM.isWindowOpen()) document.body.classList.add("noTransition");
     const hideWindow = () => LM.setWindowOpen(false);
     const showWindow = () => LM.setWindowOpen(true);
 

@@ -17,6 +17,7 @@ import {mergeKeyListeners} from "../../../keyHandler/mergeKeyListeners";
  * Creates a standard text field key handler
  * @param textField The text field to create the handler for
  * @param context The context that the handler is used in
+ * @param config Additional configuration
  * @returns The key handler that can be added to the input handler stack
  */
 export function createStandardTextFieldKeyHandler(
