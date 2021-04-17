@@ -205,6 +205,7 @@ export class UILayer extends UnifiedAbstractUILayer {
             empty = false;
             res = {
                 contentView: undefined,
+                contentHandler: data.contentHandler,
                 ...res,
             };
         }
