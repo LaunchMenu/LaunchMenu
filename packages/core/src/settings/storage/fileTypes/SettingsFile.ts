@@ -54,7 +54,7 @@ export class SettingsFile<
      * @param tree The settings tree to configure
      * @param data The data to pass to every setting to configure it with
      */
-    public configureTree(tree: ISettingsTree, data: Record<symbol, any>): void {
+    protected configureTree(tree: ISettingsTree, data: Record<symbol, any>): void {
         Object.values(tree).forEach(f => {
             if (isSerializeField(f) || isField(f)) f.configure?.(data);
             else this.configureTree(f, data);

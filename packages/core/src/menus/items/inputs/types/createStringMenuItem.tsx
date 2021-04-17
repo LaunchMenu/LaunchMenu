@@ -39,6 +39,7 @@ export function createStringMenuItem({
                     field,
                     liveUpdate,
                     undoable,
+                    checkValidity,
                 }),
             ]),
             ...rest,

@@ -10,6 +10,7 @@ import {settingPatternMatcher} from "./settingPatternMatcher";
  */
 export function createColorSetting(data: IColorMenuItemData): IFieldMenuItem<string> {
     return createColorMenuItem({
+        icon: "settings",
         resetable: true,
         searchPattern: settingPatternMatcher,
         ...data,
