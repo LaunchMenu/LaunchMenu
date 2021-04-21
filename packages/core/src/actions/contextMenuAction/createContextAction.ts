@@ -14,6 +14,7 @@ import {contextMenuAction} from "./contextMenuAction";
 import {executeAction} from "../types/execute/executeAction";
 import {createAction} from "../createAction";
 import {adjustBindings} from "../../menus/items/adjustBindings";
+import {IActionTarget} from "../_types/IActionTarget";
 
 /**
  * Creates an action that conforms to all constraints of a proper action
@@ -133,11 +134,17 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
             name,
             parents: parents ? [...parents, targetMenu] : [targetMenu],
             createBinding,
-            core: (bindingData: I[], indices: number[], hook: IDataHook) => {
+            core: (
+                bindingData: I[],
+                indices: number[],
+                hook: IDataHook,
+                items: IActionTarget[]
+            ) => {
                 const {execute, actionBindings = [], result, children} = core(
                     bindingData,
                     indices,
-                    hook
+                    hook,
+                    items
                 );
                 const executeBindings = execute
                     ? adjustBindings(actionBindings, [

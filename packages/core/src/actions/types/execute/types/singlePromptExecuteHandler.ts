@@ -44,9 +44,10 @@ export const singlePromptExecuteHandler = createAction({
 
                     // Get the value
                     const resultField = new Field(defaultValue);
-                    const retrieverResult = (await valueRetriever(
-                        resultField
-                    )) as IActionBinding;
+                    const retrieverResult = (await valueRetriever({
+                        field: resultField,
+                        context,
+                    })) as IActionBinding;
                     let result: unknown = retrieverResult;
 
                     // Check if the result is an action binding and if so execute that binding to get the result
