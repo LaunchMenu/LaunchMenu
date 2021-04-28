@@ -1,5 +1,4 @@
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
-import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
 import {Priority} from "../../../../menus/menu/priority/Priority";
 import {createContextAction} from "../../../contextMenuAction/createContextAction";
 import {sequentialExecuteHandler} from "../../execute/sequentialExecuteHandler";

@@ -5,6 +5,7 @@ import {IUUID} from "../../../../../_types/IUUID";
 import {simpleSearchHandler} from "./simpleSearchHandler";
 import {ISimpleSearchMethod} from "./_types/ISimpleSearchMethod";
 import {promptSelectExecuteHandler} from "../../../../../uiLayers/types/select/promptSelectExecuteHandler";
+import {settingPatternMatcher} from "../../../../../settings/inputs/settingPatternMatcher";
 
 /**
  * Creates a menu item to select the search handler method
@@ -40,6 +41,7 @@ export function createSimpleSearchHandlerMethodSetting() {
                     }),
                 }),
             ],
+            searchPattern: settingPatternMatcher,
         }),
     });
 }

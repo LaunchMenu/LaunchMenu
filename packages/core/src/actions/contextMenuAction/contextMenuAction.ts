@@ -8,7 +8,7 @@ import {IAction} from "../_types/IAction";
 import {IActionBinding} from "../_types/IActionBinding";
 import {IActionTarget} from "../_types/IActionTarget";
 import {IContextMenuItemData} from "./_types/IContextMenuItemData";
-import {collectContextMenuItems} from "./collectContextMenuItems";
+import type {collectContextMenuItems} from "./collectContextMenuItems";
 import {getHooked} from "../../utils/subscribables/getHooked";
 
 export const contextMenuAction = createAction({
@@ -31,7 +31,15 @@ export const contextMenuAction = createAction({
             const allTargets = [...items, {actionBindings: extraBindings}];
             const contextItemData = contextMenuAction.get(allTargets, hook);
 
-            return collectContextMenuItems(contextItemData, items, extraBindings, hook);
+            // Dynamically import the collectContextMenuItems function in order to deal with circular dependencies
+            const collectContextMenuItemsFunc: typeof collectContextMenuItems = require("./collectContextMenuItems")
+                .collectContextMenuItems;
+            return collectContextMenuItemsFunc(
+                contextItemData,
+                items,
+                extraBindings,
+                hook
+            );
         },
 
         /**
