@@ -1,7 +1,7 @@
 import React, {FC} from "react";
 import {Box, FillBox, IBoxProps, mergeStyles} from "@launchmenu/core";
 import {ITitleScreenJSONProps, ITitleScreenProps} from "./_types/ITitleScreenProps";
-import {createRemoteElementAdder} from "./createRemoteElementAdder";
+import {createRemoteElementShower} from "./createRemoteElementShower";
 
 /**
  * The screen overlay
@@ -12,7 +12,7 @@ export const TitleScreen: FC<ITitleScreenProps & IBoxProps> = ({
     list,
     children,
     background = "#ffffff",
-    monitor,
+    bigScreen: monitor,
     ...rest
 }) => (
     <FillBox
@@ -40,7 +40,7 @@ export const TitleScreen: FC<ITitleScreenProps & IBoxProps> = ({
             </Box>
         )}
         {list && (
-            <Box marginBottom="large" css={{fontSize: "1em"}} as="ul">
+            <Box css={{fontSize: "1em"}} margin="none" as="ul">
                 {list.map((item, i) => (
                     <li key={i}>{item}</li>
                 ))}
@@ -48,6 +48,7 @@ export const TitleScreen: FC<ITitleScreenProps & IBoxProps> = ({
         )}
     </FillBox>
 );
-export const createRemoteTitleScreen = createRemoteElementAdder<ITitleScreenJSONProps>(
-    `${__filename}>TitleScreen`
+export const showRemoteTitleScreen = createRemoteElementShower<ITitleScreenJSONProps>(
+    `${__filename}>TitleScreen`,
+    {bigScreen: true}
 );

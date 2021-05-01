@@ -1,4 +1,4 @@
-import React from "react";
+import React, {Fragment} from "react";
 import {
     getSeededRandom,
     IField,
@@ -8,17 +8,29 @@ import {
     KeyEvent,
     LaunchMenu,
     wait,
+    standardWindowSize,
+    LMSession,
+    IMenuItem,
+    getContextMenuStack,
+    getUIStack,
+    waitForRetrieve,
+    IMenu,
+    getTextAction,
+    getHooked,
 } from "@launchmenu/core";
-import {Field, IDataHook, IDataRetriever} from "model-react";
+import {DataCacher, Field, IDataHook, IDataRetriever, Loader, waitFor} from "model-react";
+import {remote} from "electron";
 import {IRemoteElement} from "../overlays/window/_types/IRemoteElement";
 import {IRect} from "../overlays/window/_types/IRect";
 import {v4 as uuid} from "uuid";
 import Path from "path";
 import {getKeyList, keyVisualizationManager} from "./KeyVisualizationManager";
-import {Recorder} from "./Recorder";
+import {Recorder} from "./recording/Recorder";
 import {IKeyInput} from "./_types/IKeyInput";
 import {getKeyFromCharacter} from "./getKeyFromCharacter";
-import {IShowScreenConfig} from "./_types/IShowScreenConfig";
+import {IShowScreenConfig} from "./recording/_types/IShowScreenConfig";
+import {IShowConfig} from "./recording/_types/IShowConfig";
+import {FadeTransition} from "../components/FadeTransition";
 
 /**
  * A class that a script can use to control the LaunchMenu instance and recording
@@ -39,6 +51,8 @@ export class Controller<T extends Record<string, IJSON> = Record<string, IJSON>>
     protected screenOverlays: IField<IRemoteElement[]>;
     protected hasQuit: IDataRetriever<boolean>;
 
+    protected cursorVisible = new Field(true);
+    protected hideCursorCount = new Field(0);
     protected screenOverlayRectangle = new Field({x: 0, y: 0, width: 1920, height: 1080});
     protected screenOverlayState = new Field<T>({} as T);
     protected screenOverlayThemePath = new Field<string | undefined>(undefined);
@@ -99,6 +113,10 @@ export class Controller<T extends Record<string, IJSON> = Record<string, IJSON>>
             .getSessions()
             .forEach(session => sessionManager.removeSession(session));
         sessionManager.addSession();
+        remote
+            .getCurrentWindow()
+            .setSize(standardWindowSize.width, standardWindowSize.height);
+
         await wait(500);
     }
 
@@ -233,6 +251,114 @@ export class Controller<T extends Record<string, IJSON> = Record<string, IJSON>>
         }
     }
 
+    /**
+     * Retrieves the currently visible session
+     * @param hook The hook to subscribe to changes
+     * @returns The currently visible session
+     */
+    public getSession(hook?: IDataHook): LMSession | null {
+        this.checkRunning();
+        return this.LM.getSessionManager().getSelectedSession(hook);
+    }
+
+    /**
+     * Selects a given item in the menu by navigating to it with the keyboard
+     * @param itemMatch The name pattern of the item to select, or a callback to check if this is the item to look for
+     * @param config The config for how to navigate to items
+     * @returns A promise that resolves once the item was selected
+     */
+    public async selectItem(
+        itemMatch: RegExp | ((item: IMenuItem, hook: IDataHook) => boolean),
+        {
+            delay = 200,
+            variation = 100,
+            downKey = "down",
+            upKey = "up",
+        }: {
+            /** The base delay between key presses */
+            delay?: number;
+            /** The additional type delay variation */
+            variation?: number;
+            /** The name of the key to move the cursor down */
+            downKey?: IKeyInput;
+            /** The name of the key to move the cursor up */
+            upKey?: IKeyInput;
+        } = {}
+    ): Promise<void> {
+        this.checkRunning();
+
+        // Normalize the item into a function
+        if (!(itemMatch instanceof Function)) {
+            const regex = itemMatch;
+            itemMatch = (item, hook) => {
+                const texts = getTextAction.get([item], hook);
+                const combinedText = texts
+                    .map(
+                        ({name, description}) =>
+                            `${getHooked(name, hook) ?? ""}\n${
+                                getHooked(description, hook) ?? ""
+                            }`
+                    )
+                    .join("\n");
+                return !!combinedText.match(regex);
+            };
+        }
+        const checkItem = itemMatch;
+
+        // Get the menu
+        const menuSource = new DataCacher(h => {
+            const session = this.getSession(h);
+            if (!session) return undefined;
+            const menus = session?.context
+                .getUI(h)
+                .flatMap(layer => layer.getMenuData(h))
+                .map(menuData => menuData.menu)
+                .filter((menu): menu is IMenu => !!menu);
+            const menu = menus[menus.length - 1];
+            return menu;
+        });
+
+        // Wait for an item that matches
+        const result = await waitForRetrieve(h => {
+            if (this.hasQuit(h)) return false;
+
+            const menu = menuSource.get(h);
+            if (!menu) return;
+
+            const item = menu.getItems(h).find(item => checkItem(item, h));
+            if (item) return {item, menu};
+        });
+        if (!result) throw new Error("Item could not be found");
+        const {item, menu} = result;
+
+        // Navigate to the item
+        while (menu.getCursor() != item) {
+            this.checkRunning();
+
+            const items = menu.getItems();
+            if (!items.includes(item)) throw Error("Item was removed from menu");
+
+            const cursor = menu.getCursor();
+            const cursorIndex = cursor ? items.indexOf(cursor) : -1;
+            const itemIndex = items.indexOf(item);
+
+            // Press the key to navigate there
+            const key = cursorIndex < itemIndex ? downKey : upKey;
+            const time = this.random() * variation + delay;
+            await this.press(key, {duration: time / 2});
+            await wait(time / 2);
+        }
+    }
+
+    /**
+     * Retrieves a promise that resolves once LM is visible
+     * @returns A promise that resolves once LM is opened
+     */
+    public async waitForOpen(): Promise<void> {
+        await waitFor(h => this.LM.isWindowOpen(h) || this.hasQuit(h));
+        this.checkRunning();
+    }
+
     // Overlay management
     /**
      * Sets the screen overlay state data
@@ -260,7 +386,13 @@ export class Controller<T extends Record<string, IJSON> = Record<string, IJSON>>
      */
     public async showScreen<T extends Record<string, IJSON>>(
         path: string,
-        config: IShowScreenConfig<T> = {}
+        {
+            duration,
+            fadeIn = true,
+            fadeOut = true,
+            props,
+            hideCursor,
+        }: IShowScreenConfig<T> = {}
     ): Promise<{
         /** Disposes the element */
         destroy: () => void;
@@ -270,6 +402,7 @@ export class Controller<T extends Record<string, IJSON> = Record<string, IJSON>>
         this.checkRunning();
         const id = uuid();
         const absPath = Path.resolve(path);
+        if (hideCursor) this.hideCursorCount.set(this.hideCursorCount.get() + 1);
 
         // Setup updating and destroying
         const update = (props: T) => {
@@ -280,18 +413,23 @@ export class Controller<T extends Record<string, IJSON> = Record<string, IJSON>>
                     componentPath: absPath,
                     key: id,
                     props,
+                    fadeIn: typeof fadeIn == "number" ? fadeIn : fadeIn ? 200 : 0,
+                    fadeOut: typeof fadeOut == "number" ? fadeOut : fadeOut ? 200 : 0,
                 },
             ]);
         };
         const destroy = () => {
             const currentOverlays = this.screenOverlays.get();
-            this.screenOverlays.set(currentOverlays.filter(({key}) => key != id));
+            const newOverlays = currentOverlays.filter(({key}) => key != id);
+            this.screenOverlays.set(newOverlays);
+            if (newOverlays.length != currentOverlays.length && hideCursor)
+                this.hideCursorCount.set(this.hideCursorCount.get() - 1);
         };
 
         // Initialize and possibly destroy
-        update(config.props || ({} as T));
-        if (config.showTime) {
-            await wait(config.showTime);
+        update(props || ({} as T));
+        if (duration) {
+            await wait(duration);
             destroy();
         }
 
@@ -310,29 +448,54 @@ export class Controller<T extends Record<string, IJSON> = Record<string, IJSON>>
      */
     public async show(
         element: JSX.Element,
-        config: {showTime?: number} = {}
+        {fadeIn = true, fadeOut = true, duration}: IShowConfig = {}
     ): Promise<{
         /** Disposes the element */
         destroy: () => void;
     }> {
         this.checkRunning();
         const id = uuid();
-        const keyedElement = <element.type {...element.props} key={id} />;
+        const fade = fadeIn || fadeOut;
+        const fadeInDuration = typeof fadeIn == "number" ? fadeIn : fadeIn ? 200 : 0;
+        const fadeOutDuration = typeof fadeOut == "number" ? fadeOut : fadeOut ? 200 : 0;
+        const elementSource = new Field<JSX.Element | undefined>(element);
+        const keyedElement = fade ? (
+            <Loader key={id}>
+                {h => {
+                    const el = elementSource.get(h);
+                    return (
+                        <FadeTransition
+                            deps={[el]}
+                            inDuration={fadeInDuration}
+                            outDuration={fadeOutDuration}>
+                            {el}
+                        </FadeTransition>
+                    );
+                }}
+            </Loader>
+        ) : (
+            <element.type {...element.props} key={id} />
+        );
 
         // Setup destroying
-        const destroy = () => {
+        const remove = () => {
             const currentOverlays = this.overlays.get();
             this.overlays.set(currentOverlays.filter(({key}) => key != id));
+        };
+        const destroy = () => {
+            elementSource.set(<Fragment />);
+            if (fadeOutDuration) setTimeout(remove, fadeOutDuration);
+            else remove();
         };
 
         // Initialize and possibly destroy
         this.overlays.set([...this.overlays.get(), keyedElement]);
-        if (config.showTime) {
-            await wait(config.showTime);
+        if (duration) {
+            await wait(duration);
             destroy();
         }
 
-        // Return the functions to update the screen with
+        // Return the functions to update the element with
         return {
             destroy,
         };
@@ -431,5 +594,25 @@ export class Controller<T extends Record<string, IJSON> = Record<string, IJSON>>
      */
     public getScreenOverlayThemePath(hook?: IDataHook): string | undefined {
         return this.screenOverlayThemePath.get(hook);
+    }
+
+    /**
+     * Sets whether the cursor is visible, can only be false if screen overlay is enabled
+     * @param visible Whether the cursor should be visible
+     */
+    public setCursorVisible(visible: boolean): void {
+        this.checkRunning();
+        if (!this.areScreenOverlaysEnabled())
+            throw new Error("Cursor can only be disable if overlay is enabled");
+        this.cursorVisible.set(visible);
+    }
+
+    /**
+     * Whether the mouse cursor should be visible
+     * @param hook The hook to subscribe to changes
+     * @returns Whether the cursor should be visible
+     */
+    public isCursorVisible(hook?: IDataHook): boolean {
+        return this.cursorVisible.get(hook) && this.hideCursorCount.get(hook) == 0;
     }
 }

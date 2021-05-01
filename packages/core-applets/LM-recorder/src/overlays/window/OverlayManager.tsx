@@ -3,6 +3,7 @@ import {ipcRenderer} from "electron";
 import {IRemoteElement} from "./_types/IRemoteElement";
 import {ILatentElement} from "./_types/ILatentElement";
 import {FillBox, ITheme, ThemeProvider} from "@launchmenu/core";
+import {FadeTransition} from "../../components/FadeTransition";
 
 /**
  * The app that renders the elements that are specified remotely
@@ -18,13 +19,14 @@ export const OverlayManager: FC = () => {
         const onUpdateComps = (
             event: Electron.IpcRendererEvent,
             comps: IRemoteElement[]
-        ) => {
-            setComps(
-                comps
-                    .map(({componentPath, key, props}) => {
+        ) =>
+            setComps(prevComps => {
+                // The components to show
+                const newComps = comps
+                    .map(({componentPath, ...rest}) => {
                         try {
                             const Component = importPath(componentPath);
-                            return {Component, key, props};
+                            return {Component, visible: true, ...rest};
                         } catch (e) {
                             console.error(
                                 `Could not load component at path ${componentPath}`
@@ -32,9 +34,31 @@ export const OverlayManager: FC = () => {
                             console.error(e);
                         }
                     })
-                    .filter((comp): comp is ILatentElement => !!comp)
-            );
-        };
+                    .filter((comp): comp is ILatentElement => !!comp);
+
+                // Add all the old components back in
+                const now = Date.now();
+                return [
+                    ...newComps,
+                    ...prevComps
+                        .map(oldComp => {
+                            if (!oldComp.fadeOut) return;
+                            if (
+                                oldComp.removalTime &&
+                                now > oldComp.removalTime + oldComp.fadeOut
+                            )
+                                return;
+                            if (newComps.find(comp => comp.key == oldComp.key)) return;
+
+                            return {
+                                removalTime: now,
+                                ...oldComp,
+                                visible: false,
+                            } as ILatentElement;
+                        })
+                        .filter((comp): comp is ILatentElement => !!comp),
+                ];
+            });
         const onUpdateTheme = (
             event: Electron.IpcRendererEvent,
             path: string | undefined
@@ -65,10 +89,20 @@ export const OverlayManager: FC = () => {
 
     return (
         <ThemeProvider theme={theme}>
-            <FillBox font="paragraph">
-                {comps.map(({Component, key, props}) => (
-                    <Component key={key} {...state} {...props} />
-                ))}
+            <FillBox font="paragraph" cursor="none">
+                {comps.map(({Component, key, props, visible, fadeIn, fadeOut}) => {
+                    const el = <Component key={key} {...state} {...props} />;
+                    const fade = fadeIn || fadeOut;
+                    if (!fade) return el;
+                    return (
+                        <FadeTransition
+                            deps={[visible]}
+                            inDuration={fadeIn}
+                            outDuration={fadeOut}>
+                            {visible ? el : <Fragment />}
+                        </FadeTransition>
+                    );
+                })}
             </FillBox>
         </ThemeProvider>
     );

@@ -6,19 +6,30 @@ import Path from "path";
 
 /**
  * Sets up a window to show overlays
- * @param overlays The overlays to be displayed
- * @param state The state to pass to the elements
- * @param windowBox The size and position of the window
- * @param showDebug Whether to show the debug window
+ * @param config The window configuration
  * @returns A function to dispose the window
  */
-export async function setupOverlayWindow(
-    overlays: IDataRetriever<IRemoteElement[]>,
-    state: IDataRetriever<Partial<Object>>,
-    themePath: IDataRetriever<string | undefined>,
-    windowBox: IDataRetriever<IRect>,
-    showDebug: boolean = false
-): Promise<() => void> {
+export async function setupOverlayWindow({
+    overlays,
+    state,
+    themePath,
+    windowBox,
+    cursorVisible,
+    showDebug = false,
+}: {
+    /** The overlays to be displayed */
+    overlays: IDataRetriever<IRemoteElement[]>;
+    /** The state to pass to the elements */
+    state: IDataRetriever<Partial<Object>>;
+    /** The theme to be used by the overlays */
+    themePath: IDataRetriever<string | undefined>;
+    /** The size and position of the overlay window */
+    windowBox: IDataRetriever<IRect>;
+    /** Whether the cursor should be visible */
+    cursorVisible: IDataRetriever<boolean>;
+    /** Whether the debug window should be shown */
+    showDebug?: boolean;
+}): Promise<() => void> {
     const initBox = windowBox();
     const window = new remote.BrowserWindow({
         ...initBox,
@@ -33,10 +44,9 @@ export async function setupOverlayWindow(
             backgroundThrottling: false,
         },
     });
-    window.setIgnoreMouseEvents(true);
     const indexPath = Path.join(__dirname, "window", "index.html");
     window.loadURL(indexPath);
-    window.setAlwaysOnTop(true, "floating");
+    window.setAlwaysOnTop(true, "modal-panel");
     window.setContentSize(initBox.width, initBox.height);
     window.setSkipTaskbar(true);
     if (showDebug) window.webContents.openDevTools();
@@ -55,9 +65,15 @@ export async function setupOverlayWindow(
     const stateObserver = new Observer(state, {debounce: -1}).listen(state => {
         window.webContents.send("updateState", state);
     }, true);
-    const themeObserver = new Observer(themePath, {debounce: -1}).listen(state => {
-        window.webContents.send("updateTheme", state);
+    const themeObserver = new Observer(themePath, {debounce: -1}).listen(theme => {
+        window.webContents.send("updateTheme", theme);
     }, true);
+    const cursorVisibleObserver = new Observer(cursorVisible, {debounce: -1}).listen(
+        visible => {
+            window.setIgnoreMouseEvents(visible);
+        },
+        true
+    );
 
     // Wait for the window to load
     await new Promise<void>(res => window.webContents.on("did-finish-load", res));
@@ -69,6 +85,7 @@ export async function setupOverlayWindow(
         overlaysObserver.destroy();
         stateObserver.destroy();
         themeObserver.destroy();
+        cursorVisibleObserver.destroy();
         window.destroy();
     };
 }

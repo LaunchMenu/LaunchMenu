@@ -14,6 +14,7 @@ export const Overlay: FC<
     ...rest
 }) => (
     <Box
+        zIndex={1}
         overflow="hidden"
         position="absolute"
         borderRadius={borderRadius}

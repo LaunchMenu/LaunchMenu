@@ -1,6 +1,6 @@
 import {IJSON} from "@launchmenu/core";
 import {Controller} from "../controller/Controller";
-import {IShowScreenConfig} from "../controller/_types/IShowScreenConfig";
+import {IShowScreenConfig} from "../controller/recording/_types/IShowScreenConfig";
 import {IShowScreenResult} from "../controller/_types/IShowScreenResult";
 import Path from "path";
 
@@ -10,7 +10,7 @@ import Path from "path";
  * @param defaultProps The standard props to supply
  * @returns A function that can be used to open the element
  */
-export function createRemoteElementAdder<T extends Record<string, IJSON>>(
+export function createRemoteElementShower<T extends Record<string, IJSON>>(
     path: string,
     defaultProps: T = {} as T
 ): {
@@ -29,8 +29,8 @@ export function createRemoteElementAdder<T extends Record<string, IJSON>>(
     path = Path.resolve(path);
     const func = (controller: Controller, config?: IShowScreenConfig<T>) =>
         controller.showScreen<T>(path, {
-            props: {...config?.props, ...defaultProps},
             ...config,
+            props: {...defaultProps, ...config?.props},
         });
     func.path = path;
     return func;

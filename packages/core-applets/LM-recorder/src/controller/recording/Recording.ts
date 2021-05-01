@@ -1,11 +1,12 @@
 import {v4 as uuid} from "uuid";
-import {promises as fs} from "fs";
-import OS from "os";
+import {promises as FS} from "fs";
 import Path from "path";
 import FFmpeg from "fluent-ffmpeg";
 import {path as ffmpegPath} from "@ffmpeg-installer/ffmpeg";
-import {IRecordingConfig} from "./_types/IRecordingConfig";
-import {IExtendedRecordingConfig} from "./_types/IExtendedRecordingConfig";
+import {IAudioConfig} from "./_types/IAudioConfig";
+import {getTempPath} from "./getTempPath";
+import {IRecordingConfig} from "../_types/IRecordingConfig";
+import {IExtendedRecordingConfig} from "../_types/IExtendedRecordingConfig";
 
 /**
  * Represents an individual recording
@@ -15,7 +16,15 @@ export class Recording {
     protected stream: MediaStream;
     protected config: IExtendedRecordingConfig;
 
+    protected audio: ({
+        /** The path to the audio */
+        path: string;
+        /* *The time to play the audio at */
+        time: number;
+    } & IAudioConfig)[] = [];
+
     protected recorder: MediaRecorder;
+    protected startTime: number;
 
     protected canceled = false;
     protected finished: Promise<void>;
@@ -79,6 +88,19 @@ export class Recording {
     }
 
     /**
+     * Adds the given audio segment at this point in time of the recording
+     * @param path The path to the audio file
+     * @param config The configuration of the audio
+     */
+    public addAudio(path: string, config?: IAudioConfig): void {
+        this.audio.push({
+            path: Path.resolve(path),
+            time: Date.now() - this.startTime,
+            ...config,
+        });
+    }
+
+    /**
      * Starts recording of LM
      */
     protected startRecording(): void {
@@ -100,40 +122,48 @@ export class Recording {
             }
 
             console.log("Saving video");
+            // Determine the intermediate paths if needed
+            const addAudio = this.audio.length != 0;
+            const audioPath = addAudio ? getTempPath(uuid()) : this.path;
+
             const postProcess = this.config.bitRate || this.config.crop;
+            const renderPath = postProcess ? getTempPath(uuid()) : audioPath;
 
             // Render the video from js
-            const renderPath = postProcess ? this.getTempPath(uuid()) : this.path;
             const blob = new Blob(recordedChunks, {type});
             const buffer = Buffer.from(await blob.arrayBuffer());
-            await fs.writeFile(renderPath, buffer);
+            await FS.writeFile(renderPath, buffer);
 
-            // Crop the video using ffmpeg if needed
+            // Crop the video using ffmpeg if needed for cropping or other processing
             if (postProcess)
-                await this.processVideo(renderPath, this.path, {
+                await this.processVideo(renderPath, audioPath, {
                     bitRate: this.config.defaultBitRate,
                     ...this.config,
                 });
+
+            // Add audio to the video if needed
+            if (addAudio) await this.addVideoAudio(audioPath, this.path);
 
             console.log(`Video saved at "${this.path}"`);
             finish();
         };
 
         this.recorder.start();
+        this.startTime = Date.now();
     }
 
     /**
      * Crops the video at the given path
      * @param inPath The path to the video to crop
      * @param outPath The path to store the video at
-     * @param crop
+     * @param config The processing config
      */
     protected async processVideo(
         inPath: string,
         outPath: string,
         {crop, bitRate, crf}: IRecordingConfig
     ): Promise<void> {
-        return new Promise((res, rej) => {
+        return new Promise<void>((res, rej) => {
             const video = FFmpeg({source: inPath})
                 .setFfmpegPath(ffmpegPath)
                 .addOption("-preset", "veryslow")
@@ -147,14 +177,48 @@ export class Recording {
                     `crop=${crop.width}:${crop.height}:${crop.x}:${crop.y}`
                 );
             video.saveToFile(outPath);
+        }).finally(() => {
+            FS.unlink(inPath);
         });
     }
 
     /**
-     * Retrieves a temp file path for a video
-     * @param id The id of the vioeo
+     * Adds audio to the given video
+     * @param inPath The path to the video to add audio to
+     * @param outPath The path to store the video at
      */
-    protected getTempPath(id: string): string {
-        return Path.join(OS.tmpdir(), `${id}-video.webm`);
+    protected async addVideoAudio(inPath: string, outPath: string): Promise<void> {
+        return new Promise<void>((res, rej) => {
+            const video = FFmpeg({source: inPath})
+                .setFfmpegPath(ffmpegPath)
+                .addOption("-c:v", "copy")
+                .addOption("-map", `0`)
+                .addOption("-map", `[audio]`)
+                .on("error", rej)
+                .on("end", res);
+
+            this.audio.forEach(({path, time, offset}, i) => {
+                video.addInput(path);
+            });
+
+            const audioSequences = this.audio.map(({time, offset, volume = 1}, i) => {
+                const delay = (time + (offset ?? 0)).toFixed(0);
+                return `[${
+                    i + 1
+                }:a]aresample=async=1,volume=${volume},adelay=${delay}|${delay}[${
+                    i + 1
+                }o]`;
+            });
+            const audioIds = this.audio.map(({}, i) => `[${i + 1}o]`).join("");
+            const audioCombining = `${audioIds}amix=inputs=${this.audio.length}[audio]`;
+            video.addOption(
+                "-filter_complex",
+                `${audioSequences.join(";")};${audioCombining}`
+            );
+
+            video.saveToFile(outPath);
+        }).finally(() => {
+            FS.unlink(inPath);
+        });
     }
 }

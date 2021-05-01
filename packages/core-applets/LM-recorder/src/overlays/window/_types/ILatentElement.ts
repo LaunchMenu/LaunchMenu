@@ -8,6 +8,14 @@ export type ILatentElement<T = Record<string, any>> = {
     Component: FC<T>;
     /** The element's key */
     key: string;
-    /** The extra props to send to the element */
-    props: T;
+    /** Whether to fade in, and optionally the duration */
+    fadeIn?: number;
+    /** Whether to fade out, and optionally the duration */
+    fadeOut?: number;
+    /** The props to pass to the element */
+    props?: T;
+    /** Whether the element is still visible */
+    visible: boolean;
+    /** The time at which the element was removed */
+    removalTime?: number;
 };

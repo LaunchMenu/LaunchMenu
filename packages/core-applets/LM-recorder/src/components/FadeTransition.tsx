@@ -7,7 +7,16 @@ export const FadeTransition: FC<{
     deps: any[];
     containerProps?: IBoxProps;
     duration?: number;
-}> = ({deps, children, containerProps = {}, duration = 300}) => {
+    inDuration?: number;
+    outDuration?: number;
+}> = ({
+    deps,
+    children,
+    containerProps = {},
+    duration = 300,
+    inDuration = duration,
+    outDuration = duration,
+}) => {
     const prevChildren = useRef(children);
     const prevDeps = useRef(deps);
 
@@ -47,14 +56,14 @@ export const FadeTransition: FC<{
                     },
                     ".transition-appear-active": {
                         opacity: 1,
-                        transition: `opacity ${duration}ms`,
+                        transition: `opacity ${inDuration}ms`,
                     },
                     ".transition-exit": {
                         opacity: 1,
                     },
                     ".transition-exit-active": {
                         opacity: 0,
-                        transition: `opacity ${duration}ms`,
+                        transition: `opacity ${outDuration}ms`,
                     },
                 },
                 containerProps.css

@@ -8,6 +8,10 @@ export type IRemoteElement = {
     componentPath: string;
     /** The element's key */
     key: string;
-    /** The extra props to send to the element */
-    props: Record<string, IJSON>;
+    /** The props to pass to the element */
+    props?: Record<string, IJSON>;
+    /** Whether to fade in, and optionally the duration */
+    fadeIn?: number;
+    /** Whether to fade out, and optionally the duration */
+    fadeOut?: number;
 };

@@ -32,13 +32,14 @@ export async function recordScript({
                 disposeOverlayWindow.get()?.then(disp => disp());
                 disposeOverlayWindow.set(null);
             } else {
-                const promise = setupOverlayWindow(
-                    h => screenOverlays.get(h),
-                    h => controller.getScreenOverlayState(h),
-                    h => controller.getScreenOverlayThemePath(h),
-                    h => controller.getScreenOverlayRect(h),
-                    showDebug
-                );
+                const promise = setupOverlayWindow({
+                    overlays: h => screenOverlays.get(h),
+                    state: h => controller.getScreenOverlayState(h),
+                    themePath: h => controller.getScreenOverlayThemePath(h),
+                    windowBox: h => controller.getScreenOverlayRect(h),
+                    cursorVisible: h => controller.isCursorVisible(h),
+                    showDebug,
+                });
                 disposeOverlayWindow.set(promise);
                 await promise;
             }

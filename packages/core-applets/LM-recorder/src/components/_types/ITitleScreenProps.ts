@@ -10,8 +10,8 @@ export type ITitleScreenJSONProps = {
     list?: string[];
     /** The background color */
     background?: string;
-    /** Whether this is the full monitor mode */
-    monitor?: boolean;
+    /** Whether this is the full screen mode instead of in LM*/
+    bigScreen?: boolean;
 };
 
 /** All props for the title screen */

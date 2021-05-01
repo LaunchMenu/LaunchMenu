@@ -24,8 +24,8 @@
     },
     "keywords": [
         "LaunchMenu",
-        "Help",
-        "Info",
+        "Record",
+        "Video",
         "Applet",
         "LaunchMenu Applet"
     ],
@@ -48,6 +48,7 @@
         "@types/jest": "^26.0.0",
         "@types/react": "^17.0.0",
         "@types/react-transition-group": "^4.4.1",
+        "@types/w3c-image-capture": "^1.0.2",
         "jest": "^26.0.1",
         "model-react": "^4.0.1",
         "react": "^17.0.0",
@@ -55,9 +56,12 @@
     },
     "dependencies": {
         "@ffmpeg-installer/ffmpeg": "^1.0.20",
-        "@launchmenu/core": "^0.0.5-alpha.20",
         "fluent-ffmpeg": "^2.1.2",
-        "react-transition-group": "^4.4.1"
+        "@launchmenu/core": "^0.0.5-alpha.20",
+        "color": "^3.1.2",
+        "jimp": "^0.16.1",
+        "react-transition-group": "^4.4.1",
+        "uuid": "^8.2.0"
     },
     "gitHead": "3949c98b3ab4954d2b8351d98283fecca72b7e74",
     "publishConfig": {
