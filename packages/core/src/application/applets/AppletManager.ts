@@ -178,7 +178,7 @@ export class AppletManager {
             ? Path.join(process.cwd(), baseDir)
             : Path.dirname(require.resolve(`${baseDir}/package.json`));
 
-        const buildDir = Path.join(
+        const buildDir = Path.resolve(
             absoluteBaseDir,
             applet.development?.watchDirectory ?? "build"
         );

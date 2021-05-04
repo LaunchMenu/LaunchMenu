@@ -17,6 +17,7 @@ export function createDebuggerVisibilitySetting() {
         data: field => ({
             name: "Show debugger",
             resetUndoable: true,
+            icon: "settings",
             searchPattern: settingPatternMatcher,
             resetable: true,
             valueView: <Loader>{h => field.get(h)}</Loader>,

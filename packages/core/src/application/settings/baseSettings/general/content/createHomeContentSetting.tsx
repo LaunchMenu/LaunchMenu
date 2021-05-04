@@ -46,6 +46,7 @@ export function createHomeContentSetting(
             data: field => ({
                 name: "Home content",
                 resetUndoable: true,
+                icon: "settings",
                 searchPattern: settingPatternMatcher,
                 resetable: true,
                 valueView: <Loader>{h => field.get(h).ID}</Loader>,

@@ -29,6 +29,7 @@ export function createSimpleSearchHandlerMethodSetting() {
         field: serializedField,
         data: field => ({
             name: "Simple search method",
+            icon: "settings",
             valueView: <Loader>{h => field.get(h).name}</Loader>,
             tags: ["field"],
             resetUndoable: true,

@@ -105,7 +105,8 @@ export default declare({
         const addSessionItem = createStandardMenuItem({
             name: "Add session",
             category: sessionsControlsCategory,
-            shortcut: context => context.settings.get(settings).controls.newSession.get(),
+            shortcut: (context, h) =>
+                context.settings.get(settings).controls.newSession.get(h),
             onExecute: () => {
                 const session = sessionManager.addSession();
             },
@@ -113,8 +114,8 @@ export default declare({
         const toggleSessionsItem = createStandardMenuItem({
             name: "Toggle sessions",
             category: sessionsControlsCategory,
-            shortcut: context =>
-                context.settings.get(settings).controls.toggleSession.get(),
+            shortcut: (context, h) =>
+                context.settings.get(settings).controls.toggleSession.get(h),
             onExecute: () => {
                 const sessions = sessionManager.getSessions();
                 const prevSession = sessions[sessions.length - 2];
@@ -145,8 +146,8 @@ export default declare({
                         name: "Go home",
                         icon: "home",
                         onExecute: ({context}) => context.session?.goHome(),
-                        shortcut: context =>
-                            context.settings.get(settings).controls.goHome.get(),
+                        shortcut: (context, h) =>
+                            context.settings.get(settings).controls.goHome.get(h),
                     }),
                 }),
                 createGlobalContextBinding({
@@ -154,8 +155,8 @@ export default declare({
                     item: createContextFolderMenuItem({
                         name: "Switch session",
                         children: getSessionMenuItems,
-                        shortcut: context =>
-                            context.settings.get(settings).controls.openMenu.get(),
+                        shortcut: (context, h) =>
+                            context.settings.get(settings).controls.openMenu.get(h),
                     }),
                 }),
             ],
