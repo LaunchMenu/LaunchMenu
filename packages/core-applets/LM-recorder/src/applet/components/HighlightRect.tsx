@@ -22,11 +22,12 @@ export const HighlightRect: FC<IHighlightRectProps> = ({
     transitionDuration = 300,
     comment,
     commentSide = "right",
+    commentProps,
 }) => {
-    const {direction, ...rect} =
+    const {direction, maxWidth, ...rect} =
         typeof area == "string"
             ? getArea(area, visible)
-            : {...area, direction: oppositeDirs[commentSide]};
+            : {...area, maxWidth: undefined, direction: oppositeDirs[commentSide]};
     const theme = useTheme();
     const shadowColor = useMemo(
         () => new Color(theme.color.primary).alpha(0.5).toString(),
@@ -61,7 +62,11 @@ export const HighlightRect: FC<IHighlightRectProps> = ({
                 duration={transitionDuration}
                 deps={[comment]}>
                 {comment ? (
-                    <PointerOverlay zIndex={2} pointAt={{...rect, direction}}>
+                    <PointerOverlay
+                        zIndex={2}
+                        maxWidth={maxWidth ? maxWidth - 40 : maxWidth}
+                        pointAt={{...rect, direction}}
+                        {...commentProps}>
                         {comment}
                     </PointerOverlay>
                 ) : (
@@ -91,6 +96,7 @@ const getArea = (
     visible: IHighlightAreaNames[]
 ): IRect & {
     direction: IDirection;
+    maxWidth: number;
 } => {
     const width = ww - sp * 2,
         height = wh - sp * 2;
@@ -111,7 +117,9 @@ const getArea = (
     if (area == "menu") direction = visible.includes("content") ? "left" : "down";
     if (area == "content") direction = visible.includes("menu") ? "right" : "down";
 
-    return {x: sp + x, y: sp + y, width: x2 - x, height: y2 - y, direction};
+    const maxWidth = width * (area == "menu" ? 1 - mw : area == "content" ? mw : 1);
+
+    return {x: sp + x, y: sp + y, width: x2 - x, height: y2 - y, direction, maxWidth};
 };
 
 const HighlightOverlay: FC<{x1?: number; x2?: number; y1?: number; y2?: number}> = ({

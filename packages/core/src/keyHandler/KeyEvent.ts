@@ -42,7 +42,7 @@ export class KeyEvent {
      * @param keys The keys that are held, overrides the previous keys
      */
     public setHeldKeys(keys: IKey[]): void {
-        this.held = [...this.held, ...keys];
+        this.held = [...keys];
         this.ctrl = !!this.held.find(k => k.name == "ctrl");
         this.shift = !!this.held.find(k => k.name == "shift");
         this.alt = !!this.held.find(k => k.name == "alt");

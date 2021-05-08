@@ -17,6 +17,7 @@ export function setupFrame(LM: LaunchMenu): () => void {
         return (
             <FillBox
                 className="Application"
+                color="fontBgPrimary"
                 font="paragraph"
                 boxSizing="border-box"
                 display="flex"

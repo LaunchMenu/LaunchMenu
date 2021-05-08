@@ -7,7 +7,7 @@ import {
     Priority,
     wait,
 } from "@launchmenu/core";
-import hmr from "@launchmenu/hmr";
+import hmr, {referencelessRequire} from "@launchmenu/hmr";
 import {Field, IDataHook} from "model-react";
 import {IWatchRecordData} from "./_types/IWatchRecordData";
 import Path from "path";
@@ -47,7 +47,7 @@ export const watchRecordAction = createContextAction({
                 const watcher = hmr(watchDir, (changedFiles, affectedFiles) => {
                     if (affectedFiles.includes(path)) {
                         try {
-                            const recordings = require(path);
+                            const recordings = referencelessRequire(path);
                             const declaration = recordings[
                                 propName
                             ] as IRecordScriptDeclaration | null;
@@ -60,9 +60,11 @@ export const watchRecordAction = createContextAction({
                                 await executingPrevRecording;
                                 isRecording.set(true);
                                 const result = await recordScript({LM, script});
-                                isRecording.set(false);
                                 return result;
                             });
+                            recordResult
+                                .then(({finished}) => finished)
+                                .finally(() => isRecording.set(false));
 
                             // Make other recordings wait for this recording to finish, and setup the dispose function
                             let indicateForceFinish: (() => void) | undefined;
@@ -100,9 +102,9 @@ export const watchRecordAction = createContextAction({
                         prevDispose();
                     },
                 };
-                const recordings = watchedRecordings.get();
+                const recordings = activeRecordings.get();
                 if (!recordings.find(({name: rn}) => rn != name))
-                    watchedRecordings.set([...recordings, scriptData]);
+                    activeRecordings.set([...recordings, scriptData]);
             })
         ),
     }),
@@ -112,7 +114,7 @@ export const watchRecordAction = createContextAction({
 let executingRecording = Promise.resolve();
 
 /** The recordings that are currently being watched */
-const watchedRecordings = new Field<
+export const activeRecordings = new Field<
     {name: string; isRecording: Field<boolean>; dispose: () => void}[]
 >([]);
 
@@ -123,7 +125,7 @@ const exitWatchBindings = contextMenuAction.createBinding({
         priority: Priority.LOW,
         item: createStandardMenuItem({
             name: h => {
-                const count = watchedRecordings.get(h).length;
+                const count = activeRecordings.get(h).length;
                 return `Exit ${count} watched script${count != 1 ? "s" : ""}`;
             },
             onExecute: stopScriptWatchers,
@@ -133,13 +135,19 @@ const exitWatchBindings = contextMenuAction.createBinding({
     preventCountCategory: true,
 });
 
+/** A data retriever to check whether any recording is going */
+export const isRecording = (hook?: IDataHook) => {
+    const recordings = activeRecordings.get(hook);
+    return recordings.some(({isRecording}) => isRecording.get(hook));
+};
+
 /**
  * Disposes all watched scripts
  */
 export function stopScriptWatchers() {
-    const scripts = watchedRecordings.get();
+    const scripts = activeRecordings.get();
     scripts.forEach(({dispose}) => dispose());
-    watchedRecordings.set([]);
+    activeRecordings.set([]);
 }
 
 /**
@@ -148,9 +156,6 @@ export function stopScriptWatchers() {
  * @returns The list with a binding when no script is executing, or an empty list otherwise
  */
 export const globalExitBinding = (hook?: IDataHook) => {
-    const recordings = watchedRecordings.get(hook);
-    const visible =
-        recordings.length > 0 &&
-        recordings.every(({isRecording}) => !isRecording.get(hook));
+    const visible = !isRecording(hook) && activeRecordings.get(hook).length > 0;
     return visible ? [exitWatchBindings] : [];
 };

@@ -81,7 +81,7 @@ export const FadeTransition: FC<IFadeTransitionProps> = ({
             )}>
             {allChildren.map(({ID, node}) => {
                 const visible = ID == curID;
-                const fading = ID < curID;
+                const fading = ID < IDRef.current;
                 return (
                     <Box
                         key={ID}

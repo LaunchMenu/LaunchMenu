@@ -12,12 +12,15 @@ import {
     IMenu,
     getTextAction,
     getHooked,
+    IKeyName,
 } from "@launchmenu/core";
 import {DataCacher, IDataHook, IDataRetriever, waitFor} from "model-react";
 import {remote} from "electron";
 import {getKeyList} from "../keyVisualizer/KeyVisualizer";
 import {IKeyInput} from "./_types/IKeyInput";
 import {getKeyFromCharacter} from "./getKeyFromCharacter";
+import {IItemMatch} from "./_types/IItemMatch";
+import {IItemNavigationConfig} from "./_types/IItemNavigationConfig";
 
 /**
  * A class that a script can use to control the LaunchMenu instance and recording
@@ -60,6 +63,15 @@ export class Controller {
         this.random = getSeededRandom(seed);
     }
 
+    /**
+     * Retrieves the currently visible session
+     * @param hook The hook to subscribe to changes
+     * @returns The currently visible session
+     */
+    public getSession(hook?: IDataHook): LMSession | null {
+        return this.LM.getSessionManager().getSelectedSession(hook);
+    }
+
     // Automation
     /**
      * Resets the UI state of LaunchMenu
@@ -73,6 +85,8 @@ export class Controller {
         remote
             .getCurrentWindow()
             .setSize(standardWindowSize.width, standardWindowSize.height);
+
+        this.LM.getKeyHandler().resetKeys();
 
         await wait(500);
     }
@@ -141,6 +155,9 @@ export class Controller {
                     // Add the key
                     keys.push(key.usesShift ? [shiftKey, key.key] : [key.key]);
                 }
+
+                // Reset shift if it was still held
+                if (shift) keys.push(new KeyEvent({key: shiftKey, type: "up"}));
             } else if (seq.key) {
                 keys.push(seq.key);
             }
@@ -209,13 +226,36 @@ export class Controller {
     }
 
     /**
-     * Retrieves the currently visible session
-     * @param hook The hook to subscribe to changes
-     * @returns The currently visible session
+     * Presses the given keys in sequence, and possibly performs another sequence while these keys are held
+     * @param keys The keys to be pressed
+     * @param config Additional configuration
      */
-    public getSession(hook?: IDataHook): LMSession | null {
-        this.checkRunning();
-        return this.LM.getSessionManager().getSelectedSession(hook);
+    public async hold(
+        keys: IKeyName[] | IKey[],
+        {
+            whileHeld,
+            keyDelay,
+        }: {
+            /** The callback to perform while the keys are held */
+            whileHeld?: () => Promise<void>;
+            /** The delay between two consecutive key presses */
+            keyDelay?: number;
+        } = {}
+    ): Promise<void> {
+        let keyObjs = getKeyList(keys);
+        for (let i = 0; i < keyObjs.length; i++) {
+            const key = keyObjs[i];
+            if (i > 0) await this.wait(keyDelay);
+            this.press(new KeyEvent({key, type: "down"}));
+        }
+
+        await whileHeld?.();
+
+        for (let i = keyObjs.length - 1; i >= 0; i--) {
+            const key = keyObjs[i];
+            this.press(new KeyEvent({key, type: "up"}));
+            if (i > 0) await this.wait(keyDelay);
+        }
     }
 
     /**
@@ -225,22 +265,13 @@ export class Controller {
      * @returns A promise that resolves once the item was selected
      */
     public async selectItem(
-        itemMatch: RegExp | ((item: IMenuItem, hook: IDataHook) => boolean),
+        itemMatch: IItemMatch,
         {
             delay = 150,
             variation = 100,
             downKey = "down",
             upKey = "up",
-        }: {
-            /** The base delay between key presses */
-            delay?: number;
-            /** The additional type delay variation */
-            variation?: number;
-            /** The name of the key to move the cursor down */
-            downKey?: IKeyInput;
-            /** The name of the key to move the cursor up */
-            upKey?: IKeyInput;
-        } = {}
+        }: IItemNavigationConfig = {}
     ): Promise<void> {
         this.checkRunning();
 
@@ -307,6 +338,40 @@ export class Controller {
         }
     }
 
+    /**
+     * Navigates through several menu layers at once, executing the item the matching items
+     * @param itemMatches The matchers for the items to find and execute
+     * @param config Additional configuration for selecting the items
+     */
+    public async navigate(
+        itemMatches: IItemMatch[],
+        {
+            keyDelay,
+            executeDelay = 500,
+            selectDelay = 500,
+            executeKey = "enter",
+            ...selectConfig
+        }: Omit<IItemNavigationConfig, "delay"> & {
+            /** The name of the key to execute the item */
+            executeKey?: IKeyInput;
+            /** The delay before executing an item */
+            executeDelay?: number;
+            /** The delay before selecting the item */
+            selectDelay?: number;
+            /** The base delay between key presses */
+            keyDelay?: number;
+        } = {}
+    ) {
+        for (let i = 0; i < itemMatches.length; i++) {
+            const item = itemMatches[i];
+            if (i > 0) await this.wait(selectDelay);
+            await this.selectItem(item, {...selectConfig, delay: keyDelay});
+            await this.wait(executeDelay);
+            await this.press(executeKey);
+        }
+    }
+
+    // Sequencing
     /**
      * Retrieves a promise that resolves once LM is visible
      * @returns A promise that resolves once LM is opened

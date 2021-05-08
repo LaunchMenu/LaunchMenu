@@ -76,9 +76,10 @@ export const MenuItemFrame: FC<IMenuItemFrameProps> = ({
         colors?.container?.background ?? (mainBgColor && theme.color[mainBgColor]);
 
     const textColor = useMemo((): IThemeColor => {
-        if (!containerBgColor) return "fontBgPrimary";
+        const isThemeDark = new Color(theme.color.bgPrimary).isDark();
+        if (!containerBgColor) return isThemeDark ? "fontPrimary" : "fontBgPrimary";
         const isDark = new Color(containerBgColor).isDark();
-        return isDark ? "fontPrimary" : "fontBgPrimary";
+        return isDark != isThemeDark ? "fontPrimary" : "fontBgPrimary";
     }, [containerBgColor]);
 
     return (

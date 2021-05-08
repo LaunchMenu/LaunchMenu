@@ -66,6 +66,11 @@ const specialKeys = {
     down: {big: <BigKeyView>↓</BigKeyView>, small: <KeyView>↓</KeyView>},
     esc: {big: <BigKeyView>esc</BigKeyView>, small: <KeyView>esc</KeyView>},
     tab: {big: <BigKeyView>⇥</BigKeyView>, small: <KeyView>⇥</KeyView>},
+    pageUp: {big: <BigKeyView>⇞ PgUp</BigKeyView>, small: <KeyView>⇞ PgUp</KeyView>},
+    pageDown: {big: <BigKeyView>⇟ PgDn</BigKeyView>, small: <KeyView>⇟ PgDn</KeyView>},
+    home: {big: <BigKeyView>⇱ home</BigKeyView>, small: <KeyView>⇱ hame</KeyView>},
+    end: {big: <BigKeyView>⇲ end</BigKeyView>, small: <KeyView>⇲ end</KeyView>},
+    contextMenu: {big: <BigKeyView>☰</BigKeyView>, small: <KeyView>☰</KeyView>},
 } as const;
 
 const RepeatKeyView: FC<{count: number}> = ({count, children}) => (

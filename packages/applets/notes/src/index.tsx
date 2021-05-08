@@ -3,34 +3,26 @@ import {
     searchAction,
     UILayer,
     ProxiedMenu,
-    IMenuItem,
     baseSettings,
     createCategoryDummyItem,
     IMenu,
 } from "@launchmenu/core";
 import {notePatternMatcher} from "./notePatternMatcher";
-import {DataCacher, getAsync, waitFor} from "model-react";
+import {DataCacher} from "model-react";
 import {NotesSource} from "./dataModel/NotesSource";
-import {notesIcon} from "./notesIcon";
 import {createNoteMenuItem} from "./interface/createNoteMenuItem";
 import {createNoteCategoryCategory} from "./interface/categories/createNoteCategoryCategory";
 import {createAddNoteMenuItem} from "./interface/controls/createAddNoteMenuItem";
 import {createImportNoteMenuItem} from "./interface/controls/createImportNoteMenuItem";
 import {Note} from "./dataModel/Note";
 import {createEditCategoriesMenuItem} from "./interface/controls/createEditCategoriesMenuItem";
-import {settings} from "./settings";
+import {info, settings} from "./settings";
 import {createListCacher} from "./util/createListCacher";
 import {createAddNoteCategoryMenuItem} from "./interface/categories/controls/createAddNoteCategoryMenuItem";
 import {createSelectInMenuCallback} from "./util/createSelectInMenuCallback";
 import {NoteCategory} from "./dataModel/NoteCategory";
 import {createEditMetadataMenuItem} from "./interface/controls/createEditMetadataMenuItem";
-
-export const info = {
-    name: "Notes",
-    description: "A notes applet",
-    version: "0.0.0",
-    icon: notesIcon,
-} as const;
+import {notesIcon} from "./notesIcon";
 
 export default declare({
     info,

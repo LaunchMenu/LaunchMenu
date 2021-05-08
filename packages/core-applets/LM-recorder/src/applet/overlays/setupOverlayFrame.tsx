@@ -1,4 +1,4 @@
-import React, {FC, Fragment} from "react";
+import React, {FC, Fragment, useMemo} from "react";
 import {FillBox, IWindowFrameProps, LaunchMenu} from "@launchmenu/core";
 import {IDataRetriever, useDataHook} from "model-react";
 
@@ -14,12 +14,20 @@ export function setupOverlayFrame(
 ): () => void {
     let PrevFrame = LM.getWindowFrame();
 
-    const Frame: FC<IWindowFrameProps> = ({children, ...rest}) => {
+    const Frame: FC<IWindowFrameProps> = ({children, windowName, isMainWindow, ID}) => {
         const [h] = useDataHook();
         const currentOverlays = overlays(h);
+        const mainEl = useMemo(
+            () => (
+                <PrevFrame windowName={windowName} isMainWindow={isMainWindow} ID={ID}>
+                    {children}
+                </PrevFrame>
+            ),
+            [children, windowName, isMainWindow, ID]
+        );
         return (
             <Fragment>
-                <PrevFrame {...rest}>{children}</PrevFrame>
+                {mainEl}
                 <FillBox font="paragraph" zIndex={1}>
                     {currentOverlays}
                 </FillBox>

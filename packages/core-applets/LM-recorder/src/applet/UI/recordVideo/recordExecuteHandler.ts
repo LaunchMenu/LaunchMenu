@@ -5,6 +5,9 @@ import {
 } from "@launchmenu/core";
 import {recordScript} from "../../recordScript";
 import {IRecordScript} from "../../_types/IRecordScript";
+import {activeRecordings} from "./watchRecordAction";
+import {v4 as uuid} from "uuid";
+import {Field} from "model-react";
 
 /** The execute handler to record a video */
 export const recordExecuteHandler = createContextAction({
@@ -26,7 +29,32 @@ export const recordExecuteHandler = createContextAction({
                         return;
                     }
 
-                    await recordScript({LM, script});
+                    // Setup some global state data for the recording
+                    let recordResult:
+                        | Promise<{
+                              forceQuit: () => void;
+                              finished: Promise<void>;
+                          }>
+                        | undefined;
+                    const isRecording = new Field(true);
+                    const recording = {
+                        name: uuid(),
+                        isRecording,
+                        dispose: () => recordResult?.then(({forceQuit}) => forceQuit()),
+                    };
+                    activeRecordings.set([...activeRecordings.get(), recording]);
+
+                    // Perform the recording
+                    try {
+                        recordResult = recordScript({LM, script});
+                        const {finished} = await recordResult;
+                        await finished;
+                    } finally {
+                        // Dispose recording data
+                        activeRecordings.set(
+                            activeRecordings.get().filter(r => r != recording)
+                        );
+                    }
                 })
             ),
         };

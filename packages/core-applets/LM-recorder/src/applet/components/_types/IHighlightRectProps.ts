@@ -1,3 +1,4 @@
+import {IBoxProps} from "@launchmenu/core";
 import {ReactNode} from "react";
 import {IRect} from "../../overlays/window/_types/IRect";
 
@@ -12,6 +13,8 @@ export type IHighlightRectProps = {
     comment?: ReactNode;
     /** The side to show the comment at */
     commentSide?: "left" | "right" | "up" | "down";
+    /** Props to pass to the comment element */
+    commentProps?: IBoxProps;
 };
 
 export type IHighlightArea = IRect | IHighlightAreaNames;

@@ -25,7 +25,7 @@ export const KeyOverlayView: FC<IKeyVizProps> = ({keys}) => {
                 <Overlay maxWidth={300} right="none" css={{bottom: 100, fontSize: 30}}>
                     <FadeTransition
                         deps={[keys.ID, !keys.keys.length]}
-                        fadeProps={{position: "absolute"}}
+                        fadeProps={{position: "absolute", top: "none"}}
                         innerProps={{
                             display: "flex",
                             minWidth: 150,

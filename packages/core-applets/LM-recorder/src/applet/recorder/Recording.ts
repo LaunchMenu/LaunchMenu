@@ -7,6 +7,8 @@ import {IAudioConfig} from "./_types/IAudioConfig";
 import {getTempPath} from "./getTempPath";
 import {IExtendedRecordingConfig} from "./_types/IExtendedRecordingConfig";
 import {IRecordingConfig} from "./_types/IRecordingConfig";
+import {IVideoTimestampTags} from "./_types/IVideoTimestampTags";
+
 /**
  * Represents an individual recording
  */
@@ -21,6 +23,8 @@ export class Recording {
         /* *The time to play the audio at */
         time: number;
     } & IAudioConfig)[] = [];
+
+    protected timestampTags: IVideoTimestampTags = {};
 
     protected recorder: MediaRecorder;
     protected startTime: number;
@@ -100,6 +104,38 @@ export class Recording {
             time: Date.now() - this.startTime,
             ...config,
         });
+    }
+
+    /**
+     * Tags the current timestamp with the given path
+     * @param tag The tag to add, a `.` (dot) can be used to make sub-objects
+     */
+    public tagTime(tag: string): void {
+        const parts = tag.split(".");
+        let obj = this.timestampTags;
+        while (parts.length > 1) {
+            const first = parts.shift();
+            if (!first) return;
+            let subObj = obj[first];
+            if (!subObj || !(subObj instanceof Object)) subObj = obj[first] = {};
+
+            obj = subObj;
+        }
+
+        const tagProp = parts.shift();
+        if (!tagProp) return;
+        obj[tagProp] = (Date.now() - this.startTime) / 1000;
+    }
+
+    /**
+     * Saves the timestamps to a json file
+     * @param path The path to save the timestamps to
+     */
+    public saveTimestamps(path?: string): Promise<void> {
+        const {dir, name} = Path.parse(path ?? this.path);
+        const jsonPath = Path.join(dir, name) + (!path ? " timestamps" : "") + ".json";
+
+        return FS.writeFile(jsonPath, JSON.stringify(this.timestampTags, null, 4));
     }
 
     /**

@@ -5,6 +5,7 @@ import {recordExecuteHandler} from "./recordExecuteHandler";
 import {recordPatternMatcher} from "./recordPatternMatcher";
 import {watchRecordAction} from "./watchRecordAction";
 import {IRecordScriptDeclaration} from "./_types/IRecordScriptDeclaration";
+import {referencelessRequire} from "@launchmenu/hmr";
 
 /**
  * Creates a menu item used for recording videos for the specified property
@@ -21,7 +22,7 @@ export function createVideoRecorderItem({
     path: string;
 }): IMenuItem | undefined {
     try {
-        const recordings = require(path);
+        const recordings = referencelessRequire(path);
         const declaration = recordings[propName] as IRecordScriptDeclaration | null;
         const script = declaration?.script;
         if (!script || declaration?.type != videoScriptSymbol) return;
