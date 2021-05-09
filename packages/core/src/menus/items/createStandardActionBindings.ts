@@ -19,6 +19,7 @@ import {simpleSearchHandler} from "../../actions/types/search/tracedRecursiveSea
 import {getHooked} from "../../utils/subscribables/getHooked";
 import {IStandardActionBindingExtraData} from "./_types/IStandardActionBindingExtraData";
 import {createElement, Fragment} from "react";
+import {getTextAction} from "../../actions/types/text/getTextAction";
 
 /**
  * Creates standard subscribable action bindings
@@ -55,7 +56,10 @@ export function createStandardActionBindings(
     }: IStandardActionBindingExtraData = {}
 ): ISubscribable<IActionBinding[]> {
     const identity = menuItemIdentityAction.createBinding(item);
-    const generatedBindings: IActionBinding[] = [identity];
+    const generatedBindings: IActionBinding[] = [
+        identity,
+        getTextAction.createBinding({name, description, tags}),
+    ];
 
     if (includeSearch)
         generatedBindings.push(

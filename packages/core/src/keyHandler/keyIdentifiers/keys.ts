@@ -98,4 +98,5 @@ export const keyIdMapping: {[K in IKeyId]: IKeyName} = {
     slash: "slash",
     space: "space",
     tab: "tab",
+    contextMenu: "contextMenu",
 };

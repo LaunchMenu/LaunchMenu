@@ -56,7 +56,10 @@ export class KeyHandler {
         } = {}
     ): void {
         if (event.type == "up" && store) delete this.pressedKeys[event.key.id];
-        if (insertHeldKeys) event.setHeldKeys(Object.values(this.pressedKeys));
+        if (insertHeldKeys) {
+            if(event.held.length>0) event.setHeldKeys([...event.held, ...Object.values(this.pressedKeys)]);
+            else event.setHeldKeys(Object.values(this.pressedKeys));
+        }
         if (event.type != "up" && store) this.pressedKeys[event.key.id] = event.key;
 
         this.callListeners(event);

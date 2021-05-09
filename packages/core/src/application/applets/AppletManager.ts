@@ -1,4 +1,4 @@
-import hmr, {HMRWatcher} from "@launchmenu/hmr";
+import hmr, {HMRWatcher, referencelessRequire} from "@launchmenu/hmr";
 import {DataCacher, Field, IDataHook} from "model-react";
 import {IAppletConfig} from "./_types/IAppletConfig";
 import {IAppletSource} from "./_types/IAppletSource";
@@ -147,9 +147,11 @@ export class AppletManager {
      */
     protected initApplet({ID, directory}: IAppletSource, version: IUUID): IApplet {
         // Obtain the module export and check if it has a valid applet export
-        const appletExport = require([".", "/"].includes(directory[0])
-            ? Path.join(process.cwd(), directory)
-            : directory);
+        const appletExport = referencelessRequire(
+            [".", "/"].includes(directory[0])
+                ? Path.join(process.cwd(), directory)
+                : directory
+        );
         if (appletExport?.default?.info) {
             // Load the applet if valid
             const baseApplet = {
@@ -178,7 +180,7 @@ export class AppletManager {
             ? Path.join(process.cwd(), baseDir)
             : Path.dirname(require.resolve(`${baseDir}/package.json`));
 
-        const buildDir = Path.join(
+        const buildDir = Path.resolve(
             absoluteBaseDir,
             applet.development?.watchDirectory ?? "build"
         );

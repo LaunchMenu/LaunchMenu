@@ -17,6 +17,7 @@ export function createHomeContentVisibilitySetting(): IFieldMenuItem<HomeContent
         data: field => ({
             name: "Home content visibility",
             resetUndoable: true,
+            icon: "settings",
             searchPattern: settingPatternMatcher,
             resetable: true,
             valueView: <Loader>{h => field.get(h)}</Loader>,

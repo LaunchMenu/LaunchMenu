@@ -1,5 +1,4 @@
 import React from "react";
-import {info} from "./";
 import {
     createBooleanSetting,
     createKeyPatternSetting,
@@ -15,6 +14,13 @@ import {SizeInputContent} from "./size/SizeInputContent";
 import {BrowserWindow, remote} from "electron";
 import {createGlobalShortcutSetting} from "./visibility/createGlobalShortcutSetting";
 import {createDebuggerVisibilitySetting} from "./visibility/createDebuggerVisibilitySetting";
+
+export const info = {
+    name: "Window manager",
+    description: "An window to manage LaunchMenu's window",
+    version: "0.0.0",
+    icon: "window",
+} as const;
 
 export const minSize = {
     width: 600,

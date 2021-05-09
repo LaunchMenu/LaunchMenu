@@ -72,8 +72,8 @@ export function createGlobalSettingsBindings<
                 item: createStandardMenuItem({
                     name: "Save settings",
                     onExecute: () => settingsManager.saveAll(),
-                    shortcut: context =>
-                        context.settings.get(settings).controls.save.get(),
+                    shortcut: (context, h) =>
+                        context.settings.get(settings).controls.save.get(h),
                 }),
             },
             settingsFolderHandler
@@ -87,8 +87,8 @@ export function createGlobalSettingsBindings<
                 item: createStandardMenuItem({
                     name: "Reload settings",
                     onExecute: () => settingsManager.saveAll(),
-                    shortcut: context =>
-                        context.settings.get(settings).controls.load.get(),
+                    shortcut: (context, h) =>
+                        context.settings.get(settings).controls.load.get(h),
                 }),
             },
             settingsFolderHandler

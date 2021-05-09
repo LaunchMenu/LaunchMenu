@@ -64,7 +64,7 @@ export class FuzzyRater {
         this.penalizeMisses = missingPenalty > 0;
 
         this.query = query;
-        this.rater = new CoreRater(query, {
+        this.rater = new CoreRater(this.caseInsensitive ? query.toLowerCase() : query, {
             fuzziness: fuzzinessTemplates[fuzzinessType],
             missingPenalty: Math.max(1, missingPenalty),
             skipPenalty,

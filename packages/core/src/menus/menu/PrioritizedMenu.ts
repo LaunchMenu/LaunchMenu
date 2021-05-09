@@ -205,7 +205,7 @@ export class PrioritizedMenu extends AbstractMenu {
 
         // Add all updated (/added) items (and listen for max item count changes)
         this.maxCountHookDestroyer?.();
-        const [hook, destroyer] = createCallbackHook(() => this.scheduleUpdate());
+        const [hook, destroyer] = createCallbackHook(() => this.scheduleUpdate(), 0);
         this.maxCountHookDestroyer = destroyer;
         this.items.add(
             addedItems.filter(({priority}) => Priority.isPositive(priority)),

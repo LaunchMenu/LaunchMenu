@@ -1,5 +1,4 @@
 import {baseSettings} from "../../../../application/settings/baseSettings/baseSettings";
-import {IMenuItem} from "../../../../menus/items/_types/IMenuItem";
 import {Priority} from "../../../../menus/menu/priority/Priority";
 import {createContextAction} from "../../../contextMenuAction/createContextAction";
 import {sequentialExecuteHandler} from "../../execute/sequentialExecuteHandler";
@@ -15,10 +14,10 @@ export const openAtTraceAction = createContextAction({
     contextItem: {
         name: "Open in location",
         priority: [Priority.HIGH],
-        shortcut: context =>
+        shortcut: (context, h) =>
             context.settings
                 .get(baseSettings)
-                .controls.shortcuts.search.openAtTrace.get(),
+                .controls.shortcuts.search.openAtTrace.get(h),
     },
     core: (traces: (ISearchTraceNode[] | (() => ISearchTraceNode[]))[]) => {
         return {

@@ -117,7 +117,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                     className="searchSection"
                     position="relative"
                     elevation="medium"
-                    zIndex={100}
+                    zIndex={1}
                     height={fieldState.open ? fieldHeight : 0}
                     transition={`${fieldState.duration}ms height`}>
                     <StackView
