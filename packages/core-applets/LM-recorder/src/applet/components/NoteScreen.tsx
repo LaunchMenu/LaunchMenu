@@ -1,6 +1,7 @@
 import React, {FC} from "react";
 import {FillBox, mergeStyles} from "@launchmenu/core";
-import {INoteScreenProps} from "./_types/INoteScreenProps";
+import {INoteScreenJSONProps, INoteScreenProps} from "./_types/INoteScreenProps";
+import {createRemoteElementShower} from "./createRemoteElementShower";
 
 /** A remark screen overlay */
 export const NoteScreen: FC<INoteScreenProps> = ({
@@ -38,3 +39,7 @@ export const NoteScreen: FC<INoteScreenProps> = ({
         </FillBox>
     </FillBox>
 );
+
+export const showRemoteNoteScreen = createRemoteElementShower<
+    INoteScreenJSONProps & {children: string}
+>(`${__filename}>NoteScreen`);

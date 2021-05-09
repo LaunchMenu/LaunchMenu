@@ -1,6 +1,7 @@
 import React, {FC, ReactNode} from "react";
 import {Box, FillBox, IBoxProps, mergeStyles} from "@launchmenu/core";
-import {IOverlayProps} from "./_types/IOverlayProps";
+import {IOverlayProps, IOverlayJSONProps} from "./_types/IOverlayProps";
+import {createRemoteElementShower} from "./createRemoteElementShower";
 
 /** A standard overlay container */
 export const Overlay: FC<IOverlayProps> = ({

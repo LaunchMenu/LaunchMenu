@@ -2,7 +2,14 @@ import {IBoxProps, IThemeColor} from "@launchmenu/core";
 import {IRect} from "../../overlays/window/_types/IRect";
 
 /** The props for the overlay pointer */
-export type IPointerOverlayProps = IBoxProps & {
+export type IPointerOverlayProps = IBoxProps &
+    IPointerOverlayJSONProps & {
+        /** Properties to pass to the inner container */
+        innerProps?: IBoxProps;
+    };
+
+/** The props for the overlay pointer that are purely JSON */
+export type IPointerOverlayJSONProps = {
     /** The point to point at */
     pointAt: {
         /** The direction to point towards */
@@ -25,8 +32,6 @@ export type IPointerOverlayProps = IBoxProps & {
     backgroundOpacity?: number;
     /** The number of pixels to blur */
     blur?: number;
-    /** Properties to pass to the inner container */
-    innerProps?: IBoxProps;
     /** Shadow for the element */
     shadow?: string;
     /** The size of the arrow in number of pixels  */

@@ -70,7 +70,7 @@ export class KeyVisualizer {
     /**
      * Checks whether this session is still running and throws an error if not
      */
-    public checkRunning(): void {
+    protected checkRunning(): void {
         if (this.hasQuit()) throw new Error("Recording was (forcefully) exited");
     }
 

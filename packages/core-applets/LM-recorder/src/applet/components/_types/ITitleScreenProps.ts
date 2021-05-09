@@ -15,7 +15,7 @@ export type ITitleScreenJSONProps = {
 };
 
 /** All props for the title screen */
-export type ITitleScreenProps = ITitleScreenJSONProps & {
+export type ITitleScreenProps = Omit<ITitleScreenJSONProps, "title" | "description"> & {
     /** The title of the screen */
     title?: ReactNode;
     /** The description of the screen */

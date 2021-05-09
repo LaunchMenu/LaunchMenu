@@ -1,18 +1,21 @@
+import React from "react";
 import {
     createFileSetting,
     createKeyPatternSetting,
     createSettings,
     createSettingsFolder,
     KeyPattern,
+    MenuItemIcon,
 } from "@launchmenu/core";
+import {MdVideocam} from "react-icons/md";
 import Path from "path";
 
 export const info = {
     name: "Video recorder",
     description: "An applet to script and recorded footage of LM itself",
     version: "0.0.0",
-    icon: "help",
-} as const;
+    icon: <MenuItemIcon icon={<MdVideocam />} />,
+};
 
 export const settings = createSettings({
     version: "0.0.0",

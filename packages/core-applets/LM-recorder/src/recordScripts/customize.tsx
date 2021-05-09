@@ -75,7 +75,7 @@ export default declareVideoScript(
             await controller.wait(500);
             await controller.navigate([/settings manager/i, /dictionary/i]);
 
-            recording.tagTime("customise.start");
+            recording.tagTime("customize.start");
             await controller.wait(1500);
             await controller.type([
                 {key: "enter"},
@@ -88,7 +88,7 @@ export default declareVideoScript(
                 variation: 50,
             });
             await controller.wait(500);
-            recording.tagTime("customise.end");
+            recording.tagTime("customize.end");
 
             await controller.wait(4000);
             await controller.press("esc");
@@ -123,7 +123,7 @@ export default declareVideoScript(
             await controller.wait(5000);
             loadTheme(defaultTheme);
             await controller.press("esc");
-            await controller.wait(500);
+            await controller.wait(3500);
 
             await recording.stop();
             await recording.saveTimestamps();

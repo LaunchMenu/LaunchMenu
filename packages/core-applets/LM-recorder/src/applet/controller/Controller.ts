@@ -361,7 +361,7 @@ export class Controller {
             /** The base delay between key presses */
             keyDelay?: number;
         } = {}
-    ) {
+    ): Promise<void> {
         for (let i = 0; i < itemMatches.length; i++) {
             const item = itemMatches[i];
             if (i > 0) await this.wait(selectDelay);

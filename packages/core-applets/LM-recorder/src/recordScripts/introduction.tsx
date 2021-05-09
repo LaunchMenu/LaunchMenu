@@ -9,6 +9,7 @@ export default declareVideoScript(
             keyVisualizer.setListenerEnabled(false);
             await controller.resetLM();
             const recordings = `${__dirname}/../../recordings`;
+            await recorder.screenshotLM(`${recordings}/home.png`);
             const recording = await recorder.recordLM(`${recordings}/introduction.webm`);
 
             await controller.wait(4000);

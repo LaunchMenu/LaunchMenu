@@ -3,7 +3,11 @@ import {IBoxProps, IThemeColor, mergeStyles, useTheme} from "@launchmenu/core";
 import {FC} from "react";
 import {Overlay} from "./Overlay";
 import {useResizeDetector} from "react-resize-detector";
-import {IPointerOverlayProps} from "./_types/IPointerOverlayProps";
+import {
+    IPointerOverlayJSONProps,
+    IPointerOverlayProps,
+} from "./_types/IPointerOverlayProps";
+import {createRemoteElementShower} from "./createRemoteElementShower";
 
 /** An overlay with a pointer to point at something */
 export const PointerOverlay: FC<IPointerOverlayProps> = ({
@@ -119,3 +123,7 @@ const directionalProps = {
     down: {opposite: "top", offset: "left"},
 };
 const firstUpper = (text: string) => text[0].toUpperCase() + text.substring(1);
+
+export const showRemotePointerOverlay = createRemoteElementShower<
+    IPointerOverlayJSONProps & {children: string}
+>(`${__filename}>PointerOverlay`);

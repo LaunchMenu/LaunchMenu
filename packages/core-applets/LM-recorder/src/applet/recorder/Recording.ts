@@ -86,7 +86,7 @@ export class Recording {
     /**
      * Checks whether this session is still running and throws an error if not
      */
-    public checkRunning(): void {
+    protected checkRunning(): void {
         this.config.checkRunning?.();
     }
 

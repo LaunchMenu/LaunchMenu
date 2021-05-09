@@ -6,6 +6,7 @@ import Color from "color";
 import {
     IHighlightArea,
     IHighlightAreaNames,
+    IHighlightRectJSONProps,
     IHighlightRectProps,
 } from "./_types/IHighlightRectProps";
 import {IRect} from "../overlays/window/_types/IRect";
@@ -14,6 +15,7 @@ import {IShowConfig} from "../overlays/_types/IShowConfig";
 import {FadeTransition} from "./FadeTransition";
 import {PointerOverlay} from "./PointerOverlay";
 import {IDirection} from "./_types/IPointerOverlayProps";
+import {createRemoteElementShower} from "./createRemoteElementShower";
 
 /** A component used to highlight a region of the screen */
 export const HighlightRect: FC<IHighlightRectProps> = ({
@@ -252,3 +254,7 @@ export async function showHighlightRect(
         destroy,
     };
 }
+
+export const showRemoteHighlightRect = createRemoteElementShower<IHighlightRectJSONProps>(
+    `${__filename}>HighlightRect`
+);
