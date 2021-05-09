@@ -30,7 +30,7 @@ export default declare({
             destroy: destroyVisibilityControls,
             exitBindings,
         } = setupVisibilityControls(LM, window, () => {
-            returnFocus();
+            returnFocus(window);
         });
 
         // Setup startup controls

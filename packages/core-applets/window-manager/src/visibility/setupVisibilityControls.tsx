@@ -42,7 +42,6 @@ export function setupVisibilityControls(
                 window.hide();
                 onHide();
             }, 10);
-            returnFocus();
         }
     });
     document.body.classList.add("noTransition"); // Prevents half finished transitions on startup

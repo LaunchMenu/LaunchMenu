@@ -66,7 +66,7 @@ export class WindowController {
         });
 
         // Check if window is closed by user
-        this.window.on("close", ()=>{
+        this.window.on("close", () => {
             ipcMain.emit("shutdown");
         });
     }

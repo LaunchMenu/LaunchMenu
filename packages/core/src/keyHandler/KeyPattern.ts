@@ -115,6 +115,9 @@ export class KeyPattern {
      */
     public static sortKeys(keys: string[]): string[] {
         const codes = {
+            meta: -4,
+            metaLeft: -4,
+            metaRight: -4,
             ctrl: -3,
             controlLeft: -3,
             controlRight: -3,
