@@ -10,6 +10,8 @@ export class GlobalKeyHandler {
     protected keyListeners: ((event: IGlobalKeyEvent) => void)[] = [];
     protected invokeListeners: (event: IGlobalKeyEvent) => void | undefined;
     protected started: boolean = false;
+
+    // TODO: fill in details
     protected advancedManager: any;
     protected globalListeners: Record<string, (() => void)[]> = {};
 
@@ -20,14 +22,12 @@ export class GlobalKeyHandler {
      */
     public addListener(callback: (event: IGlobalKeyEvent) => void): () => void {
         this.keyListeners.push(callback);
-        this.start();
 
-        // If this is the first listener, add it to iohook
+        // If this is the first listener, add it to key hook
         if (this.keyListeners.length == 1) {
             this.invokeListeners = event =>
                 this.keyListeners.forEach(listener => listener(event));
-            // this.ioHook().on("keydown", this.invokeListeners);
-            // this.ioHook().on("keyup", this.invokeListeners);
+            // TODO: fill in details
         }
 
         // Return a function to remove the listener
@@ -35,10 +35,9 @@ export class GlobalKeyHandler {
             const index = this.keyListeners.indexOf(callback);
             if (index != -1) this.keyListeners.splice(index, 1);
 
-            // Remove the iohook listener if no listeners remain
+            // Remove the key hook listener if no listeners remain
             if (this.keyListeners.length == 0) {
-                // this.ioHook().off("keydown", this.invokeListeners);
-                // this.ioHook().off("keyup", this.invokeListeners);
+                // TODO: fill in details
             }
         };
     }
@@ -92,9 +91,7 @@ export class GlobalKeyHandler {
             };
         }
 
-        // const id = this.ioHook().registerShortcut(shortcut, callback);
-        this.start();
-        // return () => this.ioHook().unregisterShortcut(id);
+        // TODO: fill in details
         return () => {};
     }
 
@@ -153,16 +150,6 @@ export class GlobalKeyHandler {
                 )
                 .join("+");
         });
-    }
-
-    /**
-     * Starts IOHook if it wasn't started already
-     */
-    protected start(): void {
-        if (!this.started) {
-            // this.ioHook().start();
-            this.started = true;
-        }
     }
 }
 

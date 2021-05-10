@@ -11,5 +11,5 @@ export type IKeyPatternOptionMenuItemData = {
     /** The option that this item is for */
     option: IKeyArrayPatternData;
     /** Whether to only allow valid global shortcuts */
-    globalShortcutOnly?: boolean;
+    globalShortcut?: boolean;
 };

@@ -39,10 +39,10 @@ export function setupVisibilityControls(
             document.body.getBoundingClientRect(); // Force reflow to hide the element visually asap
 
             setTimeout(() => {
-                window.hide();
+                // window.hide();
+                window.minimize();
                 onHide();
             }, 10);
-            returnFocus();
         }
     });
     const hideWindow = () => LM.setWindowOpen(false);

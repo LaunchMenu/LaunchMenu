@@ -91,7 +91,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
                 createKeyPatternOptionMenuItem({
                     patternField: this.value,
                     option,
-                    globalShortcutOnly: this.config.globalShortcutOnly,
+                    globalShortcut: this.config.globalShortcut,
                 })
             );
             return [...controls, ...patterns];
@@ -169,7 +169,7 @@ export class AdvancedKeyPatternUI extends AbstractUILayer {
                     patternField: this.value,
                     option: {type: "down", pattern: []},
                     insertIfDeleted: true,
-                    globalShortcutOnly: this.config.globalShortcutOnly,
+                    globalShortcut: this.config.globalShortcut,
                 }),
                 getCategoryAction.createBinding(getControlsCategory()),
             ],

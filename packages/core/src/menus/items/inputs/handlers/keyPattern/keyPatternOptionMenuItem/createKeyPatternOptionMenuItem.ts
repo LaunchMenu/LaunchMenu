@@ -15,7 +15,7 @@ import {IMenuItem} from "../../../../_types/IMenuItem";
 export function createKeyPatternOptionMenuItem({
     patternField,
     option,
-    globalShortcutOnly,
+    globalShortcut,
 }: IKeyPatternOptionMenuItemData): IMenuItem {
     return createStandardMenuItem({
         name: KeyPattern.toStringPattern(option.pattern),
@@ -23,10 +23,10 @@ export function createKeyPatternOptionMenuItem({
             updateKeyPatternOptionExecuteHandler.createBinding({
                 patternField,
                 option,
-                globalShortcutOnly,
+                globalShortcut,
             }),
             deleteKeyPatternOptionHandler.createBinding({option, patternField}),
-            ...(globalShortcutOnly
+            ...(globalShortcut
                 ? []
                 : [
                       updateKeyPatternOptionTypeAction.createBinding({

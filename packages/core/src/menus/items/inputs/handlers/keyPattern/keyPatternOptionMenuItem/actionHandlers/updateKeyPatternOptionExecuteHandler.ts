@@ -32,7 +32,6 @@ export const updateKeyPatternOptionExecuteHandler = createAction({
                                         textField,
                                         bindingData,
                                         res,
-                                        close
                                     )
                                 ),
                             }))
@@ -58,10 +57,9 @@ const createFieldUpdateCallback = (
         patternField,
         insertIfDeleted,
         undoable,
-        globalShortcutOnly,
+        globalShortcut,
     }: IUpdateKeyPatternOptionExecuteData,
     resolve: (cmd?: ICommand) => void,
-    close: () => void
 ) => () => {
     const newOptionPattern = textField.get();
     const newOption = {
@@ -79,7 +77,7 @@ const createFieldUpdateCallback = (
 
         const newPattern = new KeyPattern(newPatternData);
 
-        if (globalShortcutOnly && globalKeyHandler.isShortcutInvalid(newPattern)) {
+        if (globalShortcut && globalKeyHandler.isShortcutInvalid(newPattern)) {
             resolve();
         } else {
             if (undoable) {
@@ -92,5 +90,4 @@ const createFieldUpdateCallback = (
     } else {
         resolve();
     }
-    close();
 };

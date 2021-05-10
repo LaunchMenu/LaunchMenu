@@ -14,7 +14,6 @@ import {PositionInputContent} from "./position/PositionInputContent";
 import {Field} from "model-react";
 import {SizeInputContent} from "./size/SizeInputContent";
 import {BrowserWindow, remote} from "electron";
-import {createGlobalShortcutSetting} from "./visibility/createGlobalShortcutSetting";
 import {createDebuggerVisibilitySetting} from "./visibility/createDebuggerVisibilitySetting";
 
 export const minSize = {
