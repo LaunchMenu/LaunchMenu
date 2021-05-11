@@ -163,6 +163,8 @@ export class Recording {
 
             console.log("Saving video");
             try {
+                await FS.mkdir(Path.dirname(this.path), {recursive: true});
+
                 // Determine the intermediate paths if needed
                 const addAudio = this.audio.length != 0;
                 const audioPath = addAudio ? getTempPath(uuid()) : this.path;

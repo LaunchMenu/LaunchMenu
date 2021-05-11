@@ -35,7 +35,7 @@ export async function setupNotes({
     let id = 1;
     while (existsSync(Path.join(dir, `notes-BU${id}.json`))) id++;
     const notesBUPath = Path.join(dir, `notes-BU${id}.json`);
-    await FS.rename(notesPath, notesBUPath);
+    if (existsSync(notesPath)) await FS.rename(notesPath, notesBUPath);
 
     // Create files for each of the notes
     const tempNotesDir = Path.join(dir, "tempNotes");
@@ -56,7 +56,7 @@ export async function setupNotes({
     // Return the function that can be used to restore the notes
     return async () => {
         await FS.unlink(notesPath);
-        await FS.rename(notesBUPath, notesPath);
+        if (existsSync(notesBUPath)) await FS.rename(notesBUPath, notesPath);
         await wait(200);
         await FS.rmdir(tempNotesDir, {recursive: true});
     };
