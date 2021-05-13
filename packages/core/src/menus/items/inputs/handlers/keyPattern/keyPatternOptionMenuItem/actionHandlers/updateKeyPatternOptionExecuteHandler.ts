@@ -10,6 +10,7 @@ import {createAction} from "../../../../../../../actions/createAction";
 import {editExecuteHandler} from "../../../../../../../actions/types/execute/types/editExecuteHandler";
 import {globalKeyHandler} from "../../../../../../../keyHandler/globalKeyHandler/globalKeyHandler";
 import {ITextField} from "../../../../../../../textFields/_types/ITextField";
+import {SelectKeyInputLayer} from "./SelectKeyInputLayer";
 
 /**
  * A execute handler that can be used to set the key pattern of a field
@@ -24,17 +25,15 @@ export const updateKeyPatternOptionExecuteHandler = createAction({
                     new Promise<ICommand | void>(res => {
                         const textField = new TextField();
                         context.open(
-                            new UILayer((context, close) => ({
-                                field: textField,
-                                fieldHandler: createKeyPatternFieldKeyHandler(
+                            new SelectKeyInputLayer({
+                                textField,
+                                onClose: createFieldUpdateCallback(
                                     textField,
-                                    createFieldUpdateCallback(
-                                        textField,
-                                        bindingData,
-                                        res,
-                                    )
+                                    bindingData,
+                                    res
                                 ),
-                            }))
+                                globalShortcut: bindingData.globalShortcut,
+                            })
                         );
                     })
             )
@@ -50,44 +49,46 @@ export const updateKeyPatternOptionExecuteHandler = createAction({
  * @param close The callback to close the selection UI
  * @returns The function to invoke when the field is exited
  */
-const createFieldUpdateCallback = (
-    textField: ITextField,
-    {
-        option,
-        patternField,
-        insertIfDeleted,
-        undoable,
-        globalShortcut,
-    }: IUpdateKeyPatternOptionExecuteData,
-    resolve: (cmd?: ICommand) => void,
-) => () => {
-    const newOptionPattern = textField.get();
-    const newOption = {
-        ...option,
-        pattern: newOptionPattern,
-    };
-    const pattern = patternField.get();
-    const newIndex = getKeyPatternOptionIndex(pattern, option);
+const createFieldUpdateCallback =
+    (
+        textField: ITextField,
+        {
+            option,
+            patternField,
+            insertIfDeleted,
+            undoable,
+            globalShortcut,
+        }: IUpdateKeyPatternOptionExecuteData,
+        resolve: (cmd?: ICommand) => void
+    ) =>
+    () => {
+        const newOptionPattern = textField.get();
+        const newOption = {
+            ...option,
+            pattern: newOptionPattern,
+        };
+        const pattern = patternField.get();
+        const newIndex = getKeyPatternOptionIndex(pattern, option);
 
-    if (newIndex != -1 || insertIfDeleted) {
-        const newPatternData =
-            newIndex != -1
-                ? pattern.patterns.map((v, i) => (i == newIndex ? newOption : v))
-                : [...pattern.patterns, newOption];
+        if (newIndex != -1 || insertIfDeleted) {
+            const newPatternData =
+                newIndex != -1
+                    ? pattern.patterns.map((v, i) => (i == newIndex ? newOption : v))
+                    : [...pattern.patterns, newOption];
 
-        const newPattern = new KeyPattern(newPatternData);
+            const newPattern = new KeyPattern(newPatternData);
 
-        if (globalShortcut && globalKeyHandler.isShortcutInvalid(newPattern)) {
-            resolve();
-        } else {
-            if (undoable) {
-                resolve(new SetFieldCommand(patternField, newPattern));
-            } else {
-                patternField.set(newPattern);
+            if (globalShortcut && globalKeyHandler.isShortcutInvalid(newPattern)) {
                 resolve();
+            } else {
+                if (undoable) {
+                    resolve(new SetFieldCommand(patternField, newPattern));
+                } else {
+                    patternField.set(newPattern);
+                    resolve();
+                }
             }
+        } else {
+            resolve();
         }
-    } else {
-        resolve();
-    }
-};
+    };

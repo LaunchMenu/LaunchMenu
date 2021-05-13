@@ -39,8 +39,7 @@ export function setupVisibilityControls(
             document.body.getBoundingClientRect(); // Force reflow to hide the element visually asap
 
             setTimeout(() => {
-                // window.hide();
-                window.minimize();
+                window.hide();
                 onHide();
             }, 10);
         }

@@ -1,33 +1,76 @@
 import {remote} from "electron";
 import {IKeyArrayPatternData} from "../../menus/items/inputs/handlers/keyPattern/_types/IKeyPatternData";
 import {KeyPattern} from "../KeyPattern";
-import {IGlobalKeyEvent} from "../_types/IGlobalKeyEvent";
 import {electronAcceleratorKeyMapping} from "./electronAcceleratorKeyMapping";
 import {primaryGlobalShortcutKeys} from "./primaryGlobalShortcutKeys";
+import {
+    GlobalKeyboardListener,
+    IGlobalKeyListener as IGKL,
+    IGlobalKey as IGK,
+    IGlobalKeyEvent as IGKE,
+} from "node-global-key-listener";
+import {IGlobalKeyListener} from "../_types/IGlobalKeyListener";
+import {nodeGlobalKeyListenerMapping} from "./nodeGlobalKeyListenerMapping";
+import {IGlobalKeyEvent} from "../_types/IGlobalKeyEvent";
+import {IKeyId} from "../keyIdentifiers/keyIds";
+import {IKeyMatcher, keyIdMapping} from "../keyIdentifiers/keys";
+import {IKeyName} from "../keyIdentifiers/keyNames";
 
 // TODO: find a library to wrap and get these events from
-export class GlobalKeyHandler {
-    protected keyListeners: ((event: IGlobalKeyEvent) => void)[] = [];
-    protected invokeListeners: (event: IGlobalKeyEvent) => void | undefined;
-    protected started: boolean = false;
+class GlobalKeyHandler {
+    protected advancedManager: GlobalKeyboardListener | undefined;
 
-    // TODO: fill in details
-    protected advancedManager: any;
-    protected globalListeners: Record<string, (() => void)[]> = {};
+    protected invokeListeners: IGKL;
+    protected keyListeners: IGlobalKeyListener[] = [];
+    protected shortcutListeners: Record<string, (() => void)[]> = {};
+
+    /**
+     * Creates a new instance of the global key handler
+     */
+    public constructor() {
+        try {
+            this.advancedManager = new GlobalKeyboardListener();
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
     /**
      * Adds a global key listeners that listens to all events
      * @param callback The key press callback
      * @returns A function that can be invoked to remove the listener
      */
-    public addListener(callback: (event: IGlobalKeyEvent) => void): () => void {
+    public addListener(callback: IGlobalKeyListener): () => void {
+        if (!this.advancedManager)
+            throw new Error("Global key listeners are not supported on this platform");
+
         this.keyListeners.push(callback);
 
         // If this is the first listener, add it to key hook
         if (this.keyListeners.length == 1) {
-            this.invokeListeners = event =>
-                this.keyListeners.forEach(listener => listener(event));
-            // TODO: fill in details
+            this.invokeListeners = (event, held) => {
+                const ev = this.convertKeyEvent(event, held);
+                if (!ev) return;
+
+                let stopPropagation = false;
+                let stopImmediatePropagation = false;
+                for (let listener of this.keyListeners) {
+                    const res = listener(ev);
+                    if (typeof res == "object") {
+                        if (res.stopPropagation) stopPropagation = true;
+                        if (res.stopImmediatePropagation) {
+                            stopImmediatePropagation = true;
+                            break;
+                        }
+                    } else if (res) stopPropagation = true;
+                }
+
+                return {
+                    stopImmediatePropagation,
+                    stopPropagation,
+                };
+            };
+            this.advancedManager?.addListener(this.invokeListeners);
         }
 
         // Return a function to remove the listener
@@ -37,8 +80,46 @@ export class GlobalKeyHandler {
 
             // Remove the key hook listener if no listeners remain
             if (this.keyListeners.length == 0) {
-                // TODO: fill in details
+                this.advancedManager?.removeListener(this.invokeListeners);
             }
+        };
+    }
+
+    /**
+     * Converts a global key event to the format as used by LM
+     * @param event The event to convert
+     * @param held The keys that are currently held
+     * @returns The LM event
+     */
+    protected convertKeyEvent(
+        event: IGKE,
+        held: {
+            [K in IGK]?: boolean;
+        }
+    ): IGlobalKeyEvent | undefined {
+        const key = nodeGlobalKeyListenerMapping[event.name];
+        if (!key) return undefined;
+
+        return {
+            key,
+            rawcode: event.name,
+            type: event.state == "UP" ? "keyup" : "keydown",
+            altKey: held["LEFT ALT"] ? "left" : held["RIGHT ALT"] ? "right" : undefined,
+            ctrlKey: held["LEFT CTRL"]
+                ? "left"
+                : held["RIGHT CTRL"]
+                ? "right"
+                : undefined,
+            metaKey: held["LEFT META"]
+                ? "left"
+                : held["RIGHT META"]
+                ? "right"
+                : undefined,
+            shiftKey: held["LEFT SHIFT"]
+                ? "left"
+                : held["RIGHT SHIFT"]
+                ? "right"
+                : undefined,
         };
     }
 
@@ -46,7 +127,7 @@ export class GlobalKeyHandler {
      * Checks whether global key listeners are supported on the current OS/environment
      */
     public areListenersSupported(): boolean {
-        return false;
+        return !!this.advancedManager;
     }
 
     /**
@@ -56,43 +137,9 @@ export class GlobalKeyHandler {
      * @returns A function that can be invoked to remove the shortcut
      */
     public addShortcut(shortcut: KeyPattern, callback: () => void): () => void {
-        if (!this.advancedManager) {
-            const accelerators = this.getElectronAccelerators(shortcut).filter(
-                (n): n is string => typeof n == "string"
-            );
+        if (!this.advancedManager) return this.addElectronShortcut(shortcut, callback);
 
-            // Register each accelerator
-            accelerators.forEach(accelerator => {
-                if (!this.globalListeners[accelerator]) {
-                    const listeners: (() => void)[] = [];
-                    this.globalListeners[accelerator] = listeners;
-
-                    const invoker = () => listeners.forEach(listener => listener());
-                    remote.globalShortcut.register(accelerator, invoker);
-                }
-                this.globalListeners[accelerator].push(callback);
-            });
-
-            // Return a function to remove the listeners
-            return () => {
-                accelerators.forEach(accelerator => {
-                    const listeners = this.globalListeners[accelerator];
-                    if (!listeners) return;
-
-                    const index = listeners.indexOf(callback);
-                    if (index != -1) {
-                        listeners.splice(index, 1);
-                        if (listeners.length == 0) {
-                            remote.globalShortcut.unregister(accelerator);
-                            delete this.globalListeners[accelerator];
-                        }
-                    }
-                });
-            };
-        }
-
-        // TODO: fill in details
-        return () => {};
+        return this.addCustomShortcut(shortcut, callback);
     }
 
     /**
@@ -108,6 +155,153 @@ export class GlobalKeyHandler {
             .map((res, index) => ({pattern: shortcut.patterns[index], error: res}))
             .filter((res): res is IError => typeof res.error != "string");
         return invalid.length > 0 ? invalid : false;
+    }
+
+    /**
+     * Adds a global shortcut using the node-global-key-listener package
+     * @param shortcut The key pattern to listen for
+     * @param callback The callback to trigger when the event is fired
+     * @returns A function that can be invoked to remove the shortcut
+     */
+    protected addCustomShortcut(shortcut: KeyPattern, callback: () => void): () => void {
+        type IModifierState = "left" | "right" | undefined;
+        type IModifiers = {
+            altKey: IModifierState[];
+            shiftKey: IModifierState[];
+            ctrlKey: IModifierState[];
+            metaKey: IModifierState[];
+        };
+
+        // Create a format that's faster to compare with
+        const keys: {[P in IKeyId]?: IModifiers[]} = {};
+
+        shortcut.patterns.forEach(({pattern}, i) => {
+            const primaryKey = pattern.find(
+                key =>
+                    !(
+                        [
+                            "altLeft",
+                            "altRight",
+                            "controlLeft",
+                            "controlRight",
+                            "shiftLeft",
+                            "shiftRight",
+                            "metaLeft",
+                            "metaRight",
+                            "alt",
+                            "ctrl",
+                            "shift",
+                            "meta",
+                        ] as IKeyMatcher[]
+                    ).includes(key)
+            );
+
+            function getState(
+                pattern: IKeyMatcher[],
+                left: IKeyId,
+                right: IKeyId,
+                either: IKeyName
+            ): IModifierState[] {
+                const includesLeft = pattern.includes(left);
+                const includesRight = pattern.includes(right);
+                const includesEither = pattern.includes(either);
+                return [
+                    ...(includesLeft || includesEither ? ["left" as const] : []),
+                    ...(includesRight || includesEither ? ["right" as const] : []),
+                    ...(!includesLeft && !includesRight && !includesEither
+                        ? [undefined]
+                        : []),
+                ];
+            }
+
+            if (primaryKey) {
+                Object.entries(keyIdMapping)
+                    .filter(([id, name]) => id == primaryKey || name == primaryKey)
+                    .forEach(([id]) => {
+                        if (!keys[id as IKeyId]) keys[id as IKeyId] = [];
+                        keys[id as IKeyId]?.push({
+                            altKey: getState(pattern, "altLeft", "altRight", "alt"),
+                            ctrlKey: getState(
+                                pattern,
+                                "controlLeft",
+                                "controlRight",
+                                "ctrl"
+                            ),
+                            shiftKey: getState(
+                                pattern,
+                                "shiftLeft",
+                                "shiftRight",
+                                "shift"
+                            ),
+                            metaKey: getState(pattern, "metaLeft", "metaRight", "meta"),
+                        });
+                    });
+            }
+        });
+
+        // Create the listener
+        const listener: IGlobalKeyListener = event => {
+            if (event.type == "keyup") return;
+
+            const modifiers = keys[event.key];
+            if (modifiers != undefined) {
+                const matches = modifiers.some(
+                    modifiers =>
+                        modifiers.altKey.includes(event.altKey) &&
+                        modifiers.ctrlKey.includes(event.ctrlKey) &&
+                        modifiers.shiftKey.includes(event.shiftKey) &&
+                        modifiers.metaKey.includes(event.metaKey)
+                );
+                if (matches) {
+                    callback();
+                    return true;
+                }
+            }
+        };
+        return this.addListener(listener);
+    }
+
+    /**
+     * Adds a global shortcut using electron's shortcut system
+     * @param shortcut The key pattern to listen for
+     * @param callback The callback to trigger when the event is fired
+     * @returns A function that can be invoked to remove the shortcut
+     */
+    protected addElectronShortcut(
+        shortcut: KeyPattern,
+        callback: () => void
+    ): () => void {
+        const accelerators = this.getElectronAccelerators(shortcut).filter(
+            (n): n is string => typeof n == "string"
+        );
+
+        // Register each accelerator
+        accelerators.forEach(accelerator => {
+            if (!this.shortcutListeners[accelerator]) {
+                const listeners: (() => void)[] = [];
+                this.shortcutListeners[accelerator] = listeners;
+
+                const invoker = () => listeners.forEach(listener => listener());
+                remote.globalShortcut.register(accelerator, invoker);
+            }
+            this.shortcutListeners[accelerator].push(callback);
+        });
+
+        // Return a function to remove the listeners
+        return () => {
+            accelerators.forEach(accelerator => {
+                const listeners = this.shortcutListeners[accelerator];
+                if (!listeners) return;
+                const index = listeners.indexOf(callback);
+                if (index != -1) {
+                    listeners.splice(index, 1);
+                    if (listeners.length == 0) {
+                        remote.globalShortcut.unregister(accelerator);
+                        delete this.shortcutListeners[accelerator];
+                    }
+                }
+            });
+        };
     }
 
     /**
@@ -150,6 +344,21 @@ export class GlobalKeyHandler {
                 )
                 .join("+");
         });
+    }
+
+    /**
+     * Disposes all listeners
+     */
+    public destroy(): void {
+        if (this.advancedManager && this.invokeListeners) {
+            this.advancedManager.removeListener(this.invokeListeners);
+            this.keyListeners = [];
+        }
+
+        for (let shortcut in this.shortcutListeners) {
+            remote.globalShortcut.unregister(shortcut);
+        }
+        this.shortcutListeners = {};
     }
 }
 

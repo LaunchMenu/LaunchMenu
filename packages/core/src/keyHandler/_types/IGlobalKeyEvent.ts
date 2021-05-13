@@ -1,10 +1,12 @@
+import {IKeyId} from "../keyIdentifiers/keyIds";
+
 /** The event type that are sent by the global key listener */
 export type IGlobalKeyEvent = {
-    keycode: number;
-    rawcode: number;
+    key: IKeyId;
+    rawcode: string;
     type: "keyup" | "keydown";
-    altKey: boolean;
-    shiftKey: boolean;
-    ctrlKey: boolean;
-    metaKey: boolean;
+    altKey?: "left" | "right";
+    shiftKey?: "left" | "right";
+    ctrlKey?: "left" | "right";
+    metaKey?: "left" | "right";
 };

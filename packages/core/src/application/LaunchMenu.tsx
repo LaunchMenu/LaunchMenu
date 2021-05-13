@@ -17,6 +17,7 @@ import {IApplet} from "./applets/_types/IApplet";
 import {ipcRenderer} from "electron";
 import {LaunchMenuProvider} from "./hooks/useLM";
 import {wait} from "../_tests/wait.helper";
+import {globalKeyHandler} from "../keyHandler/globalKeyHandler/globalKeyHandler";
 
 /**
  * The main LM class
@@ -55,6 +56,7 @@ export class LaunchMenu {
             this.sessionManager,
             this.sessionManager,
             this.appletObserver,
+            globalKeyHandler,
         ];
 
         // Destroy all items individually, making sure that if 1 item errors, the others still get destroyed
@@ -150,9 +152,9 @@ export class LaunchMenu {
 
         // Add an observer, making sure that applets always instantly reload, even if no other component requests them.
         // This is important because applets can have side effects, so even if nothing needs the applet, the applet may affect the system.
-        this.appletObserver = new Observer(h =>
-            this.appletManager.getApplets(h)
-        ).listen(() => {});
+        this.appletObserver = new Observer(h => this.appletManager.getApplets(h)).listen(
+            () => {}
+        );
     }
 
     /**
