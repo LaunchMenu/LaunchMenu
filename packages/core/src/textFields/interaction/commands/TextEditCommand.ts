@@ -1,5 +1,6 @@
 import {Command} from "../../../undoRedo/Command";
 import {Resource} from "../../../undoRedo/dependencies/Resource";
+import {wait} from "../../../_tests/wait.helper";
 import {IField} from "../../../_types/IField";
 import {ITextField} from "../../_types/ITextField";
 import {ITextSelection} from "../../_types/ITextSelection";
@@ -148,4 +149,4 @@ export class TextEditCommand extends Command implements ITextEditCommand {
 }
 
 /** A standard resource for text editing */
-export const standardTextResource = new Resource();
+export const standardTextResource = new Resource("Text edit");

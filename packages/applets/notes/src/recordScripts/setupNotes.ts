@@ -29,12 +29,12 @@ export async function setupNotes({
     // Obtain the notes json file
     const {notesDir} = LM.getSettingsManager().getSettingsContext().get(settings);
     const dir = notesDir.get();
-    const notesPath = Path.join(dir, "notes.json");
 
     // Rename the old notes file
     let id = 1;
     while (existsSync(Path.join(dir, `notes-BU${id}.json`))) id++;
     const notesBUPath = Path.join(dir, `notes-BU${id}.json`);
+    const notesPath = Path.join(dir, id == 1 ? "notes.json" : `notes-BU${id - 1}.json`);
     if (existsSync(notesPath)) await FS.rename(notesPath, notesBUPath);
 
     // Create files for each of the notes

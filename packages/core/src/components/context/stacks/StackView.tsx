@@ -36,6 +36,20 @@ type IStackViewChild = {
 };
 
 /**
+ * Retrieves the view for a given stack item
+ * @param item The item to get the view for
+ * @returns THe view
+ */
+function getView(item: IIdentifiedItem<IViewStackItem>): IViewStackItemView | undefined {
+    if ("close" in item.value) return;
+
+    let view: IViewStackItemView;
+    if ("view" in item.value) view = item.value.view;
+    else view = item.value;
+    return view;
+}
+
+/**
  * Updates the children array, replacing, adding or removing children
  * @param items The new items array
  * @param prevItems The old items array
@@ -50,9 +64,19 @@ function updateChildren(
     defaultTransitions: Required<IViewTransitions>,
     skipOpening?: boolean
 ): void {
-    const {added, removed} = findStackChanges(prevItems, items);
+    const {added, removed, updated} = findStackChanges(prevItems, items);
+    const childMap: Record<string, IStackViewChild> = {};
+    children.forEach(item => {
+        if (item.element) childMap[item.id] = item;
+    });
+
+    updated.forEach(({index, oldItem, newItem}) => {
+        const child = childMap[oldItem.ID];
+        const view = getView(newItem);
+        if (child && view) child.element = view;
+    });
     removed.forEach(({item}) => {
-        const child = children.find(({id, element}) => id == item.ID && element);
+        const child = childMap[item.ID];
         if (child) child.element = undefined;
     });
     added.forEach(({index, item}) => {
@@ -67,10 +91,7 @@ function updateChildren(
             childIndex = 0;
         }
 
-        // Create the view element
-        let view: IViewStackItemView;
-        if ("view" in item.value) view = item.value.view;
-        else view = item.value;
+        const view = getView(item);
         const {transparent, transitions} =
             "transparent" in item.value || "transitions" in item.value
                 ? item.value

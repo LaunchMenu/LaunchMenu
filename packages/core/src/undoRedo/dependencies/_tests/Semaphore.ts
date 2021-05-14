@@ -45,7 +45,7 @@ describe("Semaphore", () => {
         it("Returns the correct availability and release function", async () => {
             semaphore.acquire();
             const [conc, release] = await semaphore.acquire();
-            expect(conc).toBe(1);
+            expect(conc).toBe(0);
             expect(release).toBeInstanceOf(Function);
         });
         it("Can be used to acquire the semaphore when it gets released", async () => {

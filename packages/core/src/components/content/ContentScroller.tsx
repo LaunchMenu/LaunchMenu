@@ -3,6 +3,7 @@ import React, {FC, useEffect, useRef, useState} from "react";
 import {useResizeDetector} from "react-resize-detector";
 import {IContent} from "../../content/_types/IContent";
 import {IBoxProps} from "../../styling/box/_types/IBoxProps";
+import {useForceUpdate} from "../../utils/hooks/useForceUpdate";
 import {useSmoothScroll} from "../../utils/hooks/useSmoothScroll";
 import {useVerticalScroll} from "../../utils/hooks/useVerticalScroll";
 import {FillBox} from "../FillBox";
@@ -15,18 +16,28 @@ export const ContentScroller: FC<{content: IContent} & IBoxProps> = ({
     children,
     ...rest
 }) => {
+    // Define some functionality to update the size
     const scrollHeightRef = useRef(0);
-
-    // Sets the content size on every render, TODO: actively listen for size changes in content
-    const setRef = (ref: HTMLDivElement) => {
+    const forceUpdate = useForceUpdate();
+    const updateSize = () => {
+        const ref = resizeRef.current;
         if (!ref) return;
         const scrollHeight = Math.max(0, ref.scrollHeight - ref.clientHeight);
         content.setScrollHeight(scrollHeight);
+        const changed = scrollHeightRef.current != scrollHeight;
         scrollHeightRef.current = scrollHeight;
+        if (changed) forceUpdate();
     };
+
+    // Update the size on initial mount
+    useEffect(updateSize, []);
+
+    // Listen for reasizes
+    const {ref: resizeRef} = useResizeDetector({onResize: updateSize});
 
     // Listen to any offset changes, and auto scroll to show them
     const [h] = useDataHook();
+    // console.log(scrollHeightRef.current);
     const offset = content.getScrollOffset(scrollHeightRef.current, h);
     const [scrollRef, setScroll] = useSmoothScroll();
     useEffect(() => {
@@ -36,14 +47,10 @@ export const ContentScroller: FC<{content: IContent} & IBoxProps> = ({
     // Enable smooth scrolling
     const smoothScrollRef = useVerticalScroll();
 
-    // Listen for reasizes
-    const [_, update] = useState(0);
-    const {ref: resizeRef} = useResizeDetector({onResize: () => update(s => s + 1)});
-
     // Render a simple box element
     return (
         <FillBox
-            elRef={[setRef, scrollRef, smoothScrollRef, resizeRef]}
+            elRef={[scrollRef, smoothScrollRef, resizeRef]}
             overflow="auto"
             {...rest}>
             {children}
