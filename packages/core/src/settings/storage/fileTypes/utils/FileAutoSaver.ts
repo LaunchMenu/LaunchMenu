@@ -10,6 +10,8 @@ export class FileAutoSaver {
     protected delay: number;
     protected observer: Observer<unknown> | null = null;
 
+    protected latestChangeDate = 0;
+
     /**
      * Creates a new file autosaver
      * @param file The file to be save automatically upon changes
@@ -18,9 +20,10 @@ export class FileAutoSaver {
     public constructor(file: IFile, timeout: number = 1000) {
         this.file = file;
         this.delay = timeout;
-        this.observer = new Observer(h => file.getRaw(h)).listen(() =>
-            this.scheduleSave()
-        );
+        this.observer = new Observer(h => file.getLatestChangeDate(h)).listen(date => {
+            this.latestChangeDate = date;
+            this.scheduleSave();
+        });
     }
 
     /**
@@ -39,9 +42,8 @@ export class FileAutoSaver {
      * Saves the file to disk, only if the data has been updated
      */
     protected async save(): Promise<void> {
-        if (this.file.getRaw() != (await this.file.readRaw())) {
-            this.file.save();
-        }
+        // Don't save if the latest load caused the file changes
+        if (this.file.getLatestLoadDate() < this.latestChangeDate) this.file.save();
     }
 
     /**

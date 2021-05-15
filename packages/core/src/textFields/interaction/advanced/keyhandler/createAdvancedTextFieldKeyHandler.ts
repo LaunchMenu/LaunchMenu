@@ -50,31 +50,34 @@ export function createAdvancedTextFieldKeyHandler(
      * @param handleUndoRedoInput The key handler that handles the user's undo/redo inputs
      * @returns The advanced key input handler
      */
-    const getAdvancedKeyHandlers = (
-        undoableTextField: ITextEditTarget,
-        handleUndoRedoInput?: IKeyEventListener
-    ) => (e: KeyEvent) => {
-        if (handleIndentInput(e, undoableTextField, fieldSettings, indentCharacter))
-            return true;
-        if (multiline) {
-            if (handleVerticalCursorInput(e, textField, fieldSettings)) return true;
-            if (handleNewlineInput(e, undoableTextField, fieldSettings)) return true;
-        }
-        if (handleUndoRedoInput?.(e)) return true;
-    };
+    const getAdvancedKeyHandlers =
+        (undoableTextField: ITextEditTarget, handleUndoRedoInput?: IKeyEventListener) =>
+        (e: KeyEvent) => {
+            if (handleIndentInput(e, undoableTextField, fieldSettings, indentCharacter))
+                return true;
+            if (multiline) {
+                if (handleVerticalCursorInput(e, undoableTextField, fieldSettings))
+                    return true;
+                if (handleNewlineInput(e, undoableTextField, fieldSettings)) return true;
+            }
+            if (handleUndoRedoInput?.(e)) return true;
+        };
 
     // Use the `createUndoableTextFieldHandler` and `createTextFieldHandler` to combine all behaviors
     return createUndoableTextFieldKeyHandler(
         textField,
         context,
         ({onEditCommand, undoableTextField, handleUndoRedoInput}) =>
-            createStandardTextFieldKeyHandler(textField, context, {
-                onExit,
-                extraHandler: mergeKeyListeners(
-                    getAdvancedKeyHandlers(undoableTextField, handleUndoRedoInput),
-                    createExtraHandler?.({onEditCommand, undoableTextField})
-                ),
-                onEditCommand,
-            })
+            createStandardTextFieldKeyHandler(
+                {textField, onChange: onEditCommand},
+                context,
+                {
+                    onExit,
+                    extraHandler: mergeKeyListeners(
+                        getAdvancedKeyHandlers(undoableTextField, handleUndoRedoInput),
+                        createExtraHandler?.({onEditCommand, undoableTextField})
+                    ),
+                }
+            )
     );
 }
