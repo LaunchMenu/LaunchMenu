@@ -1,22 +1,24 @@
 import {Command} from "../../../undoRedo/Command";
 import {Resource} from "../../../undoRedo/dependencies/Resource";
 import {ITextField} from "../../_types/ITextField";
-import {ITextAlteration} from "./_types/ITextAlteration";
-import {ITextEditCommand} from "./_types/ITextEditCommand";
-import {ITextEditData} from "./_types/ITextEditData";
-import {ITextFieldChangeRetriever} from "./_types/ITextFieldChangeRetriever";
+import {ITextSelection} from "../../_types/ITextSelection";
+import {standardTextResource} from "../commands/TextEditCommand";
+import {ITextAlteration} from "../commands/_types/ITextAlteration";
+import {ITextEditCommand} from "../commands/_types/ITextEditCommand";
+import {IAdvancedTextEditData} from "./_types/IAdvancedTextEditData";
+import {IAdvancedTextFieldChangeRetriever} from "./_types/IAdvancedTextFieldChangeRetriever";
 
-/** A  base command that can be used to edit textfields */
-export class TextEditCommand extends Command implements ITextEditCommand {
+/** A base command to make a more advanced text edit command composed of multiple commands */
+export class AdvancedTextEditCommand extends Command implements ITextEditCommand {
     public metadata = {
         name: "Edit text",
     };
     protected readonly dependencies = [standardTextResource] as Resource[];
 
     protected target: ITextField;
-    protected change: ITextFieldChangeRetriever;
+    protected change: IAdvancedTextFieldChangeRetriever;
 
-    protected data?: ITextEditData;
+    protected data?: IAdvancedTextEditData;
 
     protected addedText?: string;
     protected selectionChange: boolean;
@@ -29,7 +31,7 @@ export class TextEditCommand extends Command implements ITextEditCommand {
      */
     public constructor(
         target: ITextField,
-        change: ITextFieldChangeRetriever,
+        change: IAdvancedTextFieldChangeRetriever,
         type: {addedText?: string; isSelectionChange?: boolean} = {}
     ) {
         super();
@@ -47,24 +49,25 @@ export class TextEditCommand extends Command implements ITextEditCommand {
     /**
      * Uses the change function to compute the new text and selection for the field
      */
-    protected computeChange(): ITextEditData {
+    protected computeChange(): IAdvancedTextEditData {
         const oldText = this.target.get();
         const oldSelection = this.target.getSelection();
 
         const change = this.change({selection: oldSelection, text: oldText});
-        const alteration: ITextAlteration | undefined = change.text
-            ? {
-                  ...change.text,
-                  prevContent: oldText.substring(change.text.start, change.text.end),
-              }
-            : undefined;
-        this.addedText = alteration?.content || undefined;
+        const textChanges = change.text ? [...change.text] : [];
+        textChanges.sort((a, b) => a.end - b.end);
 
-        const newText = change.text
-            ? oldText.substring(0, change.text.start) +
-              change.text.content +
-              oldText.substring(change.text.end)
-            : oldText;
+        const alterations: ITextAlteration[] = textChanges.map(change => ({
+            ...change,
+            prevContent: oldText.substring(change.start, change.end),
+        }));
+        this.addedText = alterations.map(({content}) => content).join("");
+
+        const newText = alterations.reduceRight(
+            (newText, {start, end, content}) =>
+                newText.slice(0, start) + content + newText.slice(end),
+            oldText
+        );
         const newSelection = change.selection ?? oldSelection;
 
         return {
@@ -72,7 +75,7 @@ export class TextEditCommand extends Command implements ITextEditCommand {
             oldSelection,
             newText,
             newSelection,
-            alteration,
+            alterations,
         };
     }
 
@@ -109,9 +112,6 @@ export class TextEditCommand extends Command implements ITextEditCommand {
 
     /** @override */
     public getAlterations(): ITextAlteration[] {
-        return this.data?.alteration ? [this.data?.alteration] : [];
+        return this.data?.alterations ?? [];
     }
 }
-
-/** A standard resource for text editing */
-export const standardTextResource = new Resource("Text edit");
