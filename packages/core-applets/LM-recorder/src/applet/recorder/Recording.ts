@@ -169,7 +169,8 @@ export class Recording {
                 const addAudio = this.audio.length != 0;
                 const audioPath = addAudio ? getTempPath(uuid()) : this.path;
 
-                const postProcess = this.config.bitRate || this.config.crop;
+                // TODO: find out why primary recording has no duration metadata and how to solve it without fake postProcessing
+                const postProcess = true; // this.config.bitRate || this.config.crop;
                 const renderPath = postProcess ? getTempPath(uuid()) : audioPath;
 
                 // Render the video from js
