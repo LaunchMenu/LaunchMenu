@@ -31,19 +31,29 @@ export async function setupNotes({
     const dir = notesDir.get();
 
     // Rename the old notes file
-    let id = 1;
-    while (existsSync(Path.join(dir, `notes-BU${id}.json`))) id++;
-    const notesBUPath = Path.join(dir, `notes-BU${id}.json`);
-    const notesPath = Path.join(dir, id == 1 ? "notes.json" : `notes-BU${id - 1}.json`);
+    let notesID = 1;
+    while (existsSync(Path.join(dir, `notes-BU${notesID}.json`))) notesID++;
+    const notesBUPath = Path.join(dir, `notes-BU${notesID}.json`);
+    const notesPath = Path.join(
+        dir,
+        notesID == 1 ? "notes.json" : `notes-BU${notesID - 1}.json`
+    );
     if (existsSync(notesPath)) await FS.rename(notesPath, notesBUPath);
 
+    // Rename the old notes dir
+    let dirID = 1;
+    while (existsSync(Path.join(dir, `notes-BU${dirID}`))) dirID++;
+    const dirBUPath = Path.join(dir, `notes-BU${dirID}`);
+    const dirPath = Path.join(dir, notesID == 1 ? "notes" : `notes-BU${dirID - 1}`);
+    if (existsSync(dirPath)) await FS.rename(dirPath, dirBUPath);
+
     // Create files for each of the notes
-    const tempNotesDir = Path.join(dir, "tempNotes");
-    if (!existsSync(tempNotesDir)) await FS.mkdir(tempNotesDir, {recursive: true});
+    const noteFilesDir = Path.join(dir, "notes");
+    if (!existsSync(noteFilesDir)) await FS.mkdir(noteFilesDir, {recursive: true});
     const noteLocations = await Promise.all(
         notes.map(async ({content, ...rest}, i) => {
             const ID = uuid();
-            const location = Path.join(tempNotesDir, `${ID}.txt`);
+            const location = Path.join(noteFilesDir, `${ID}.txt`);
             await FS.writeFile(location, content);
             return {ID, location, modifiedAt: Date.now() + i * 10, ...rest};
         })
@@ -56,8 +66,17 @@ export async function setupNotes({
     // Return the function that can be used to restore the notes
     return async () => {
         await FS.unlink(notesPath);
-        if (existsSync(notesBUPath)) await FS.rename(notesBUPath, notesPath);
+        if (existsSync(notesBUPath)) {
+            const nextScriptStarted = existsSync(
+                Path.join(dir, `notes-BU${notesID + 1}.json`)
+            );
+            if (!nextScriptStarted) await FS.rename(notesBUPath, notesPath);
+        }
         await wait(200);
-        await FS.rmdir(tempNotesDir, {recursive: true});
+        await FS.rmdir(noteFilesDir, {recursive: true});
+        if (existsSync(dirBUPath)) {
+            const nextScriptStarted = existsSync(Path.join(dir, `notes-BU${dirID + 1}`));
+            if (!nextScriptStarted) await FS.rename(dirBUPath, dirPath);
+        }
     };
 }

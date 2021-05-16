@@ -37,7 +37,7 @@ export async function handleCopyPasteInput(
         if (await copyText(textField)) return true;
     }
     if (patterns.cut.matches(event)) {
-        if (copyText(textField)) {
+        if (await copyText(textField)) {
             onChange(new InsertTextCommand(textField, ""));
             return true;
         }
