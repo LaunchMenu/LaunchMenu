@@ -134,8 +134,6 @@ export default declareVideoScript(
                 {key: "up"},
             ]);
             await recorder.screenshotLM(`${recordings}/color.png`);
-
-            //
         } finally {
             restoreNotes();
         }
