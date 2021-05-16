@@ -29,18 +29,18 @@ export default declareVideoScript(
             await controller.navigate([/inline/im]);
             await controller.type("true");
             await controller.press("enter");
-            await controller.press(["shift", "esc"]);
+            await controller.hold(["shift", "esc"]);
 
             await controller.type("notes");
             await controller.navigate([/^Notes$/m]);
             await recorder.screenshotLM(`${recordings}/settingsInlineCategories.png`);
 
-            await controller.press(["shift", "esc"]);
+            await controller.hold(["shift", "esc"]);
             await controller.type("s: inline categories");
             await controller.navigate([/inline/im]);
             await controller.type("false");
             await controller.press("enter");
-            await controller.press(["shift", "esc"]);
+            await controller.hold(["shift", "esc"]);
 
             /* Usage */
             // Banner
@@ -49,13 +49,13 @@ export default declareVideoScript(
             await recorder.screenshotLM(`${recordings}/banner.png`);
 
             // Search pattern
-            await controller.press(["shift", "esc"]);
+            await controller.hold(["shift", "esc"]);
             await controller.type("note: physics");
             await controller.selectItem(/physics/im);
             await recorder.screenshotLM(`${recordings}/searchPattern.png`);
 
             // Syntax highlighting
-            await controller.press(["shift", "esc"]);
+            await controller.hold(["shift", "esc"]);
             await controller.type("notes");
             await controller.navigate([/^Notes$/m, /Add note/m]);
             await controller.type([
