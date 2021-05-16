@@ -96,10 +96,11 @@ export const OverlayManager: FC = () => {
                     if (!fade) return el;
                     return (
                         <FadeTransition
+                            key={key}
                             deps={[visible]}
                             inDuration={fadeIn}
                             outDuration={fadeOut}>
-                            {visible ? el : <Fragment />}
+                            {visible ? el : <Fragment key={key} />}
                         </FadeTransition>
                     );
                 })}

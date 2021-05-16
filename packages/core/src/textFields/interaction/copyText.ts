@@ -1,23 +1,27 @@
 import {ITextField} from "../_types/ITextField";
-import {ITextSelection} from "../_types/ITextSelection";
 import {clipboard} from "electron";
+import {standardTextResource} from "./commands/TextEditCommand";
 
 /**
  * Copies the selected text
  * @param textField The text field ot move the cursor for
- * @param caret The caret to copy the text from
  * @returns Whether anything was copied
  */
-export function copyText(
-    textField: ITextField,
-    caret: ITextSelection = textField.getSelection()
-): boolean {
-    const text = textField.get();
-    const start = Math.min(caret.start, caret.end);
-    const end = Math.max(caret.start, caret.end);
-    if (start == end) return false;
+export async function copyText(textField: ITextField): Promise<boolean> {
+    const release = await (textField.resource || standardTextResource).acquire();
 
-    const selectedText = text.slice(start, end);
-    clipboard.writeText(selectedText);
-    return true;
+    try {
+        const text = textField.get();
+        const selection = textField.getSelection();
+        const start = Math.min(selection.start, selection.end);
+        const end = Math.max(selection.start, selection.end);
+        if (start == end) return false;
+
+        const selectedText = text.slice(start, end);
+        clipboard.writeText(selectedText);
+
+        return true;
+    } finally {
+        release();
+    }
 }

@@ -52,7 +52,10 @@ export const settings = createSettings({
                         }),
                         goHome: createKeyPatternSetting({
                             name: "Go home (clear session)",
-                            init: new KeyPattern("ctrl+h"),
+                            init: new KeyPattern([
+                                {pattern: "ctrl+h", type: "down"},
+                                {pattern: "shift+esc", type: "down"},
+                            ]),
                         }),
                     },
                 }),

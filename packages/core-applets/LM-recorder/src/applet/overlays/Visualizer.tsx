@@ -2,6 +2,7 @@ import React, {cloneElement, FC, Fragment} from "react";
 import {IField, IJSON, wait} from "@launchmenu/core";
 import {Field, IDataHook, IDataRetriever, Loader} from "model-react";
 import {IRect} from "./window/_types/IRect";
+import {remote} from "electron";
 import {v4 as uuid} from "uuid";
 import Path from "path";
 import {IRemoteElement} from "./window/_types/IRemoteElement";
@@ -118,7 +119,7 @@ export class Visualizer<T extends Record<string, IJSON> = Record<string, IJSON>>
                 {
                     componentPath: absPath,
                     key: id,
-                    props: {...currentOverlays.find(({key}) => key != id), props},
+                    props: {...currentOverlays.find(({key}) => key != id), ...props},
                     fadeIn: typeof fadeIn == "number" ? fadeIn : fadeIn ? 200 : 0,
                     fadeOut: typeof fadeOut == "number" ? fadeOut : fadeOut ? 200 : 0,
                 },
@@ -269,11 +270,30 @@ export class Visualizer<T extends Record<string, IJSON> = Record<string, IJSON>>
 
     /**
      * Sets the rectangle of the overlay screen to use
-     * @param rect The rectangle
+     * @param rect The rectangle to set, or a point within the monitor whose rectangle to use
      */
-    public setScreenOverlayRect(rect: IRect): void {
+    public setScreenOverlayRect(rect: IRect | {x: number; y: number}): void {
         this.checkRunning();
-        this.screenOverlayRectangle.set(rect);
+        if (!("width" in rect)) {
+            const displays = remote.screen.getAllDisplays();
+            const display = displays.find(display => {
+                const {x, y, width, height} = display.bounds;
+                return (
+                    x <= rect.x &&
+                    rect.x <= x + width &&
+                    y <= rect.y &&
+                    rect.y <= y + height
+                );
+            });
+            if (!display)
+                throw Error(
+                    `No display containing the point (${rect.x}, ${rect.y}) could be found`
+                );
+
+            this.screenOverlayRectangle.set(display.bounds);
+        } else {
+            this.screenOverlayRectangle.set(rect);
+        }
     }
 
     /**

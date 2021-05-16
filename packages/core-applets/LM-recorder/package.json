@@ -2,7 +2,7 @@
     "name": "@launchmenu/applet-lm-recorder",
     "version": "0.0.5-alpha.20",
     "description": "An applet to show some information for when first using LaunchMenu",
-    "types": "build/index.d.ts",
+    "types": "build/applet/index.d.ts",
     "files": [
         "build/**/*"
     ],

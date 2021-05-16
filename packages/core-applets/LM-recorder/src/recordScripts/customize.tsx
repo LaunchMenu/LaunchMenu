@@ -52,7 +52,7 @@ export default declareVideoScript(
             recording.tagTime("settings.end");
 
             await controller.wait(500);
-            await controller.press(["shift", "esc"]);
+            await controller.hold(["shift", "esc"]);
             await controller.wait(500);
 
             recording.tagTime("shortcuts.start");
@@ -132,8 +132,9 @@ export default declareVideoScript(
 
             // Restore the changed setting
             const settingsContext = LM.getSettingsManager().getSettingsContext();
-            const selectAll = settingsContext.getUI(baseSettings).children.controls
-                .children.field.children.selectAll;
+            const selectAll =
+                settingsContext.getUI(baseSettings).children.controls.children.field
+                    .children.selectAll;
             const language = settingsContext.getUI(
                 require("@launchmenu/applet-dictionary").settings
             ).children.language;

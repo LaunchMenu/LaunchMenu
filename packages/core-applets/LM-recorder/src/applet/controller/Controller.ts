@@ -374,10 +374,11 @@ export class Controller {
     // Sequencing
     /**
      * Retrieves a promise that resolves once LM is visible
+     * @param open Whether to wait for open, or for close
      * @returns A promise that resolves once LM is opened
      */
-    public async waitForOpen(): Promise<void> {
-        await waitFor(h => this.LM.isWindowOpen(h) || this.hasQuit(h));
+    public async waitOpen(open: boolean = true): Promise<void> {
+        await waitFor(h => this.LM.isWindowOpen(h) == open || this.hasQuit(h));
         this.checkRunning();
     }
 

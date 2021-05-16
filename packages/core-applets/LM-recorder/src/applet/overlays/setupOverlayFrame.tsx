@@ -28,7 +28,7 @@ export function setupOverlayFrame(
         return (
             <Fragment>
                 {mainEl}
-                <FillBox font="paragraph" zIndex={1}>
+                <FillBox font="paragraph" zIndex={1} pointerEvents="none">
                     {currentOverlays}
                 </FillBox>
             </Fragment>

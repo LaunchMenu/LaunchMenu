@@ -1,22 +1,23 @@
-import {ITextField} from "../../_types/ITextField";
-import {jumpCursor} from "../jumpCursor";
 import {KeyEvent} from "../../../keyHandler/KeyEvent";
 import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {TSettingsFromFactory} from "../../../settings/_types/TSettingsFromFactory";
 import {createFieldControlsSettingsFolder} from "../../../application/settings/baseSettings/controls/createFieldControlsSettingsFolder";
 import {isFieldControlsSettingsFolder} from "./isFieldControlsSettingsFolder";
-import {moveCursorHorizontal} from "../moveCursorHorizontal";
+import {MoveCursorHorizontalCommand} from "../commands/MoveCursorHorizontalCommand";
+import {JumpCursorCommand} from "../commands/JumpCursorCommand";
+import {CompoundTextEditCommand} from "../commands/CompoundTextEditCommand";
+import {ITextEditTarget} from "../_types/ITextEditTarget";
 
 /**
  * Handles cursor jump input (home/end)
  * @param event The event to test
- * @param textField The text field to perform the event for
+ * @param targetField The text field to perform the event for
  * @param patterns The key patterns to detect, or the base settings to extract them from
  * @returns Whether the event was caught
  */
 export function handleCursorJumpInput(
     event: KeyEvent,
-    textField: ITextField,
+    {textField, onChange}: ITextEditTarget,
     patterns:
         | {
               end: KeyPattern;
@@ -52,36 +53,52 @@ export function handleCursorJumpInput(
         };
     }
 
+    const expand = patterns.expandSelection;
     if (patterns.jumpWordLeft.matches(event)) {
-        moveCursorHorizontal(
-            textField,
-            -1,
-            patterns.expandSelection.matchesModifier(event),
-            true
+        onChange(
+            new MoveCursorHorizontalCommand(
+                textField,
+                -1,
+                expand.matchesModifier(event),
+                true
+            )
         );
         return true;
     }
     if (patterns.jumpWordRight.matches(event)) {
-        moveCursorHorizontal(
-            textField,
-            1,
-            patterns.expandSelection.matchesModifier(event),
-            true
+        onChange(
+            new MoveCursorHorizontalCommand(
+                textField,
+                1,
+                expand.matchesModifier(event),
+                true
+            )
         );
         return true;
     }
 
     if (patterns.end.matches(event)) {
-        jumpCursor(textField, {dx: 1}, patterns.expandSelection.matchesModifier(event));
+        onChange(
+            new JumpCursorCommand(textField, {dx: 1}, expand.matchesModifier(event))
+        );
         return true;
     }
     if (patterns.home.matches(event)) {
-        jumpCursor(textField, {dx: -1}, patterns.expandSelection.matchesModifier(event));
+        onChange(
+            new JumpCursorCommand(textField, {dx: -1}, expand.matchesModifier(event))
+        );
         return true;
     }
     if (patterns.selectAll.matches(event)) {
-        jumpCursor(textField, {dx: -1, dy: -1});
-        jumpCursor(textField, {dx: 1, dy: 1}, true);
+        onChange(
+            new CompoundTextEditCommand(
+                [
+                    new JumpCursorCommand(textField, {dx: -1, dy: -1}),
+                    new JumpCursorCommand(textField, {dx: 1, dy: 1}, true),
+                ],
+                {name: "Select all"}
+            )
+        );
         return true;
     }
 }

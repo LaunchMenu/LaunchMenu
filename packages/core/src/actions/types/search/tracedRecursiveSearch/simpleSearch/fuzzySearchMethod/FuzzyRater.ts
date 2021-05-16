@@ -155,8 +155,34 @@ export class FuzzyRater {
  */
 const fuzzinessTemplates = {
     none: {},
-    minimal: {4: 1},
-    medium: {4: 1, 7: 2},
-    strong: {3: 1, 6: 2, 9: 3},
-    "super strong": {3: 1, 4: 2, 7: 3},
+    minimal: {
+        4: 1,
+        // Step down again to protect against lag (setup time is exponential in length of the query)
+        25: 0,
+    },
+    medium: {
+        4: 1,
+        7: 2,
+        // Step down again to protect against lag (setup time is exponential in length of the query)
+        25: 1,
+        30: 0,
+    },
+    strong: {
+        3: 1,
+        6: 2,
+        9: 3,
+        // Step down again to protect against lag (setup time is exponential in length of the query)
+        20: 2,
+        25: 1,
+        35: 0,
+    },
+    "super strong": {
+        3: 1,
+        4: 2,
+        7: 3,
+        // Step down again to protect against lag (setup time is exponential in length of the query)
+        18: 2,
+        30: 1,
+        40: 0,
+    },
 };

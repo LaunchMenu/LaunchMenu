@@ -274,6 +274,7 @@ export class Recorder {
     ): Promise<void> {
         console.log("Saving screenshot");
         try {
+            path = Path.resolve(path);
             const {stream} = await this.getStream(id);
 
             const postProcess = !!crop;
