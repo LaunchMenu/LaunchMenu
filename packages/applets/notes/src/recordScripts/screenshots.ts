@@ -43,6 +43,12 @@ export default declareVideoScript(
             await controller.hold(["shift", "esc"]);
 
             /* Usage */
+            // Search
+            await controller.type("todo");
+            await controller.selectItem(/^todo$/im);
+            await recorder.screenshotLM(`${recordings}/search.png`);
+            await controller.press("esc");
+
             // Banner
             await controller.type("notes");
             await controller.navigate([/^Notes$/m]);

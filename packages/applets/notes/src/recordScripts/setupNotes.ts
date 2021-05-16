@@ -65,18 +65,22 @@ export async function setupNotes({
 
     // Return the function that can be used to restore the notes
     return async () => {
-        await FS.unlink(notesPath);
         if (existsSync(notesBUPath)) {
             const nextScriptStarted = existsSync(
                 Path.join(dir, `notes-BU${notesID + 1}.json`)
             );
-            if (!nextScriptStarted) await FS.rename(notesBUPath, notesPath);
+            if (!nextScriptStarted) {
+                await FS.unlink(notesPath);
+                await FS.rename(notesBUPath, notesPath);
+            }
         }
         await wait(200);
-        await FS.rmdir(noteFilesDir, {recursive: true});
         if (existsSync(dirBUPath)) {
             const nextScriptStarted = existsSync(Path.join(dir, `notes-BU${dirID + 1}`));
-            if (!nextScriptStarted) await FS.rename(dirBUPath, dirPath);
+            if (!nextScriptStarted) {
+                await FS.rmdir(noteFilesDir, {recursive: true});
+                await FS.rename(dirBUPath, dirPath);
+            }
         }
     };
 }
