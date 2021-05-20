@@ -1,7 +1,7 @@
 import {KeyEvent} from "../../../keyHandler/KeyEvent";
 import {ITextEditTarget} from "../_types/ITextEditTarget";
-import {isPlatform} from "../../../utils/ isPlatform";
 import {InsertTextCommand} from "../commands/InsertTextCommand";
+import {isPlatform} from "../../../utils/platform/isPlatform";
 
 /**
  * Handles typing of characters

@@ -16,7 +16,7 @@ export const exitLMExecuteHandler = createAction({
         const execute = async ({context}: IExecuteArg) => {
             // Exit the LM window
             const {session} = context;
-            // await session?.LM.setWindowOpen(false);
+            await session?.LM.setWindowOpen(false);
 
             // Execute all on exit handlers
             const results = await Promise.all(

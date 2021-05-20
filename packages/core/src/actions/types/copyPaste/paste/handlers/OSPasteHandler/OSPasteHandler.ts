@@ -1,4 +1,4 @@
-import {isPlatform} from "../../../../../../utils/ isPlatform";
+import {cmdModifier} from "../../../../../../utils/platform/cmdModifier";
 import {createAction} from "../../../../../createAction";
 import {sendOSKeys} from "../../../sendKeys/sendOSKeys";
 import {pasteExecuteHandler} from "../../pasteExecuteHandler";
@@ -8,8 +8,7 @@ export const OSPasteHandler = createAction({
     name: "OS native paste",
     parents: [pasteExecuteHandler],
     core: (data: void[]) => {
-        const paste = () =>
-            sendOSKeys([{key: "v", modifiers: isPlatform("mac") ? ["meta"] : ["ctrl"]}]);
+        const paste = () => sendOSKeys([{key: "v", modifiers: [cmdModifier]}]);
         return {
             result: {
                 /** Sends an OS paste command  */

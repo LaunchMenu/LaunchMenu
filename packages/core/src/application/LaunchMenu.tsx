@@ -15,7 +15,6 @@ import {IApplet} from "./applets/_types/IApplet";
 import {ipcRenderer, remote} from "electron";
 import {LaunchMenuProvider} from "./hooks/useLM";
 import {wait} from "../_tests/wait.helper";
-import {isPlatform} from "../utils/ isPlatform";
 import {IWindowFrameProps} from "./components/_types/IWindowFrameProps";
 
 /**

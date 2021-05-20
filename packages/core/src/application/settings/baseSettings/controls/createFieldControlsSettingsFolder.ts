@@ -3,6 +3,8 @@ import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {createKeyPatternSetting} from "../../../../settings/inputs/createKeyPatternSetting";
 import {createSettingsFolder} from "../../../../settings/inputs/createSettingsFolder";
 import {constGetter} from "../../../../utils/constGetter";
+import {cmdModifier} from "../../../../utils/platform/cmdModifier";
+import {wordJumpModifier} from "../../../../utils/platform/wordJumpModifier";
 
 /**
  * The categories used for the field folder
@@ -26,19 +28,19 @@ export function createFieldControlsSettingsFolder() {
             // clipboard
             copy: createKeyPatternSetting({
                 name: "Copy text",
-                init: new KeyPattern("ctrl+c"),
+                init: new KeyPattern(`${cmdModifier}+c`),
                 category: getFieldControlsFolderCategories().clipboard,
                 tags: ["text", "input"],
             }),
             paste: createKeyPatternSetting({
                 name: "Paste text",
-                init: new KeyPattern("ctrl+v"),
+                init: new KeyPattern(`${cmdModifier}+v`),
                 category: getFieldControlsFolderCategories().clipboard,
                 tags: ["text", "input"],
             }),
             cut: createKeyPatternSetting({
                 name: "Cut text",
-                init: new KeyPattern("ctrl+x"),
+                init: new KeyPattern(`${cmdModifier}+x`),
                 category: getFieldControlsFolderCategories().clipboard,
                 tags: ["text", "input"],
             }),
@@ -62,7 +64,7 @@ export function createFieldControlsSettingsFolder() {
             }),
             selectAll: createKeyPatternSetting({
                 name: "Select all text",
-                init: new KeyPattern("ctrl+a"),
+                init: new KeyPattern(`${cmdModifier}+a`),
                 category: getFieldControlsFolderCategories().jumps,
                 tags: ["text", "input"],
             }),
@@ -184,19 +186,20 @@ export function createFieldControlsSettingsFolder() {
             // Meta controls
             undo: createKeyPatternSetting({
                 name: "Undo text",
-                init: new KeyPattern([{pattern: ["ctrl", "z"], type: "down or repeat"}]),
+                init: new KeyPattern([
+                    {pattern: [cmdModifier, "z"], type: "down or repeat"},
+                ]),
                 category: getFieldControlsFolderCategories().meta,
                 tags: ["text", "input"],
             }),
             redo: createKeyPatternSetting({
                 name: "Redo text",
-                init: new KeyPattern([{pattern: ["ctrl", "y"], type: "down or repeat"}]),
+                init: new KeyPattern([
+                    {pattern: [cmdModifier, "y"], type: "down or repeat"},
+                ]),
                 category: getFieldControlsFolderCategories().meta,
                 tags: ["text", "input"],
             }),
         },
     });
 }
-
-/** The modifier to make the arrow keys jump entire words at once */
-export const wordJumpModifier = process.platform == "darwin" ? "alt" : "ctrl";

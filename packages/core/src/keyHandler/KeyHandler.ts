@@ -4,7 +4,7 @@ import {IKey} from "./_types/IKey";
 import {KeyEvent} from "./KeyEvent";
 import {keyIds} from "./keyIdentifiers/keyIds";
 import {keyIdMapping} from "./keyIdentifiers/keys";
-import {isPlatform} from "../utils/ isPlatform";
+import {isPlatform} from "../utils/platform/isPlatform";
 
 /**
  * A key handler class
@@ -58,7 +58,8 @@ export class KeyHandler {
     ): void {
         if (event.type == "up" && store) delete this.pressedKeys[event.key.id];
         if (insertHeldKeys) {
-            if(event.held.length>0) event.setHeldKeys([...event.held, ...Object.values(this.pressedKeys)]);
+            if (event.held.length > 0)
+                event.setHeldKeys([...event.held, ...Object.values(this.pressedKeys)]);
             else event.setHeldKeys(Object.values(this.pressedKeys));
         }
         if (event.type != "up" && store) this.pressedKeys[event.key.id] = event.key;
