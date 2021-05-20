@@ -276,7 +276,7 @@ export class CoreSearchExecuter<Q, I> {
         const version = ++node.executeVersion;
         node.destroyHook?.();
 
-        const [hook, destroyHook] = createCallbackHook(() => this.scheduleUpdate(ID));
+        const [hook, destroyHook] = createCallbackHook(() => this.scheduleUpdate(ID), 0);
         const {children, item, patternMatch} = await node.searchable.search(
             query,
             hook,

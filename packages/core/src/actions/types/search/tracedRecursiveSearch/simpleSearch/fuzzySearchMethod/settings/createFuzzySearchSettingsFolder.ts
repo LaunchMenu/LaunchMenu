@@ -1,5 +1,5 @@
-import {createBooleanMenuItem} from "../../../../../../../menus/items/inputs/types/createBooleanMenuItem";
-import {createNumberMenuItem} from "../../../../../../../menus/items/inputs/types/createNumberMenuItem";
+import {createBooleanSetting} from "../../../../../../../settings/inputs/createBooleanSetting";
+import {createNumberSetting} from "../../../../../../../settings/inputs/createNumberSetting";
 import {createSettingsFolder} from "../../../../../../../settings/inputs/createSettingsFolder";
 import {createFuzzinessSetting} from "./createFuzzinessSetting";
 
@@ -12,35 +12,35 @@ export function createFuzzySearchSettingsFolder() {
         name: "Fuzzy Search",
         children: {
             fuzziness: createFuzzinessSetting(),
-            caseSensitive: createBooleanMenuItem({name: "Case sensitive", init: false}),
-            allowPartialMatches: createBooleanMenuItem({
+            caseSensitive: createBooleanSetting({name: "Case sensitive", init: false}),
+            allowPartialMatches: createBooleanSetting({
                 name: "Allow partial matches",
                 init: false,
             }),
             advanced: createSettingsFolder({
                 name: "Advanced",
                 children: {
-                    typoPenalty: createNumberMenuItem({
+                    typoPenalty: createNumberSetting({
                         name: "Typo penalty",
                         min: 0,
                         init: 20,
                     }),
-                    skipPenalty: createNumberMenuItem({
+                    skipPenalty: createNumberSetting({
                         name: "Skip penalty",
                         min: 0,
                         init: 40,
                     }),
-                    missingPenalty: createNumberMenuItem({
+                    missingPenalty: createNumberSetting({
                         name: "Missing penalty",
                         min: 0,
                         init: 100,
                     }),
-                    distancePenalty: createNumberMenuItem({
+                    distancePenalty: createNumberSetting({
                         name: "Distance penalty",
                         min: 0,
                         init: 1,
                     }),
-                    maximumCost: createNumberMenuItem({
+                    maximumCost: createNumberSetting({
                         name: "Maximum cost",
                         min: 0,
                         init: 150,

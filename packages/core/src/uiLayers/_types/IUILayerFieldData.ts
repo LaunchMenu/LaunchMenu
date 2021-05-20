@@ -22,4 +22,6 @@ export type IUILayerFieldData = {
     icon?: IThemeIcon | ReactElement;
     /** The overlay group to use, making sure that only the bottom view with the same group in a continuous sequence is shown */
     overlayGroup?: Symbol;
+    /** Whether to prevent the layer from closing when the user uses their back key, defaults to false */
+    handleClose?: boolean;
 };

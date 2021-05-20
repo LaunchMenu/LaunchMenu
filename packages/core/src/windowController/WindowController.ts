@@ -1,5 +1,6 @@
 import {BrowserWindow, shell, ipcMain} from "electron";
 import Path from "path";
+import {standardWindowSize} from "./standardWindowSize";
 
 export class WindowController {
     protected window: BrowserWindow;
@@ -16,8 +17,7 @@ export class WindowController {
     public constructor() {
         // Create the browser window
         this.window = new BrowserWindow({
-            width: 700,
-            height: 450,
+            ...standardWindowSize,
             frame: false,
             transparent: true,
             resizable: false,

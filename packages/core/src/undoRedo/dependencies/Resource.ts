@@ -6,12 +6,15 @@ import {IDataHook} from "model-react";
  */
 export class Resource {
     protected semaphore: Semaphore;
+    protected name?: string;
 
     /**
      * Creates a new resource
+     * @param name A name that can be used for debugging
      * @param concurrency The number of processes that may use the resource at a given time
      */
-    public constructor(concurrency: number = 1) {
+    public constructor(name?: string, concurrency: number = 1) {
+        this.name = name;
         this.semaphore = new Semaphore(concurrency);
     }
 

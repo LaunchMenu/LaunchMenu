@@ -15,7 +15,7 @@ export function setupModifierCatcherHandler(
     /** Stores whether any keys were caught since reset */
     let caughtKey = false;
 
-    return e => {
+    return async e => {
         // Handle modifier key catching
         const isModifier = modifiers().find(p => p.matches(e, true));
         if (isModifier) {
@@ -24,7 +24,7 @@ export function setupModifierCatcherHandler(
             if (e.type == "up" && caughtKey) return true;
         }
 
-        if (listener(e)) {
+        if (await listener(e)) {
             caughtKey = true;
             return true;
         }

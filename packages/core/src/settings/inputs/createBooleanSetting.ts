@@ -12,6 +12,7 @@ export function createBooleanSetting(
     data: IBooleanMenuItemData
 ): IFieldMenuItem<boolean> {
     return createBooleanMenuItem({
+        icon: "settings",
         resetable: true,
         searchPattern: settingPatternMatcher,
         ...data,

@@ -33,6 +33,10 @@ export class FieldsFile<F extends IFieldsTree> implements IFile {
     protected observers: Observer<any>[] = [];
     protected listeners: IFieldFileChangeListener[] = [];
 
+    protected savedDate = new Field(0);
+    protected loadedDate = new Field(0);
+    protected changedDate = new Field(0);
+
     // The fields to interact with (equivalent to the input fields)
     public fields: F;
 
@@ -78,7 +82,7 @@ export class FieldsFile<F extends IFieldsTree> implements IFile {
      * Reads the raw contents on disk
      * @returns The contents on disk
      */
-    public async readRaw(): Promise<string | undefined> {
+    protected async readRaw(): Promise<string | undefined> {
         try {
             const data = await promisify(FS.readFile)(this.filePath, "utf8");
             return data;
@@ -100,26 +104,28 @@ export class FieldsFile<F extends IFieldsTree> implements IFile {
         }
 
         // If the data isn't loading currently, reload it
-        return this.loading.add(async () => {
-            if (!FS.existsSync(this.filePath)) {
-                const err = new Error(`File "${this.filePath}" could not be found`);
-                if (!allowFileNotFound) throw err;
+        return this.loading
+            .add(async () => {
+                if (!FS.existsSync(this.filePath)) {
+                    const err = new Error(`File "${this.filePath}" could not be found`);
+                    if (!allowFileNotFound) throw err;
 
-                console.warn(err);
-                return;
-            }
-
-            const data = await this.readRaw();
-            if (data) {
-                this.loadTime = Date.now();
-                try {
-                    if (this.isDataDifferent(data)) this.setData(JSON.parse(data));
-                    if (this.dirty.get()) this.dirty.set(false);
-                } catch (e) {
-                    console.error(e);
+                    console.warn(err);
+                    return;
                 }
-            }
-        });
+
+                const data = await this.readRaw();
+                if (data) {
+                    this.loadTime = Date.now();
+                    try {
+                        if (this.isDataDifferent(data)) this.setData(JSON.parse(data));
+                        if (this.dirty.get()) this.dirty.set(false);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            })
+            .finally(() => this.loadedDate.set(Date.now()));
     }
 
     /**
@@ -139,6 +145,7 @@ export class FieldsFile<F extends IFieldsTree> implements IFile {
         const data = this.getRaw();
         await promisify(FS.writeFile)(this.filePath, data, "utf8");
         if (this.dirty.get()) this.dirty.set(false);
+        this.savedDate.set(Date.now());
     }
 
     // Data encoding
@@ -241,8 +248,35 @@ export class FieldsFile<F extends IFieldsTree> implements IFile {
      * @param hook The hook to subscribe to changes
      * @returns The data that could be written to disk
      */
-    public getRaw(hook?: IDataHook): any {
+    protected getRaw(hook?: IDataHook): any {
         return this.encodedValue.get(hook);
+    }
+
+    /**
+     * Retrieves the last date at which this virtual file instance was saved (time represents when saving finished)
+     * @param hook The hook to subscribe to changes
+     * @returns The date represented in milliseconds using Date.now() or 0 if not saved yet
+     */
+    public getLatestSaveDate(hook?: IDataHook): number {
+        return this.savedDate.get(hook);
+    }
+
+    /**
+     * Retrieves the last date at which this virtual file instance was loaded from disk (time represents when loading finished)
+     * @param hook The hook to subscribe to changes
+     * @returns The date represented in milliseconds using Date.now() or 0 if not loaded yet
+     */
+    public getLatestLoadDate(hook?: IDataHook): number {
+        return this.loadedDate.get(hook);
+    }
+
+    /**
+     * Retrieves the last date at which this virtual file instance's contents were changed'
+     * @param hook The hook to subscribe to changes
+     * @returns The date represented in milliseconds using Date.now() or 0 if not loaded yet
+     */
+    public getLatestChangeDate(hook?: IDataHook): number {
+        return this.changedDate.get(hook);
     }
 
     // Change listener setup
@@ -299,6 +333,7 @@ export class FieldsFile<F extends IFieldsTree> implements IFile {
         path: string
     ): void {
         if (!this.dirty.get()) this.dirty.set(true);
+        this.changedDate.set(Date.now());
         this.listeners.forEach(listener => listener(field, path));
     }
 

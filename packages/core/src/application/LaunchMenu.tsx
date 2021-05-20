@@ -1,23 +1,22 @@
-import React from "react";
+import React, {FC, Fragment} from "react";
 import Path from "path";
 import {Field, IDataHook, Loader, Observer} from "model-react";
 import {KeyHandler} from "../keyHandler/KeyHandler";
 import {ThemeProvider} from "../styling/theming/ThemeContext";
 import {loadTheme} from "../styling/theming/loadTheme";
 import {defaultTheme} from "../styling/theming/defaultTheme";
-import {FillBox} from "../components/FillBox";
 import {Transition} from "../components/context/stacks/transitions/Transition";
 import {AppletManager} from "./applets/AppletManager";
 import {SettingsFile} from "../settings/storage/fileTypes/SettingsFile";
 import {baseSettings} from "./settings/baseSettings/baseSettings";
 import {SessionManager} from "./LMSession/SessionManager";
 import {SettingsManager} from "./settings/SettingsManager";
-import {Box} from "../styling/box/Box";
 import {IApplet} from "./applets/_types/IApplet";
 import {ipcRenderer, remote} from "electron";
 import {LaunchMenuProvider} from "./hooks/useLM";
 import {wait} from "../_tests/wait.helper";
-import { isPlatform } from "../utils/ isPlatform"; 
+import {isPlatform} from "../utils/ isPlatform";
+import {IWindowFrameProps} from "./components/_types/IWindowFrameProps";
 
 /**
  * The main LM class
@@ -39,12 +38,15 @@ export class LaunchMenu {
 
     // Whether the LM window should be opened (A window manager applet will 'visualize' this state)
     protected windowVisible = new Field(false);
+    protected windowWrapper = new Field<FC<IWindowFrameProps>>(({children}) => (
+        <Fragment>{children}</Fragment>
+    ));
 
     /***
      * Creates a new instance of the LaunchMenu application,
      * requires setup to be called before doing anything.
      */
-    public constructor() { }
+    public constructor() {}
 
     /**
      * Disposes of all runtime data
@@ -76,8 +78,8 @@ export class LaunchMenu {
         if (this.keyHandler as any) throw Error("Instance has already been set up");
         this.setupKeyHandler();
         this.setupTheme();
-        this.setupApplets();
         this.setupSettings();
+        this.setupApplets();
         this.setupView();
         this.sessionManager = new SessionManager(this);
         this.sessionManager.addSession();
@@ -108,30 +110,18 @@ export class LaunchMenu {
         this.view = (
             <ThemeProvider>
                 <LaunchMenuProvider value={this}>
-                    <FillBox
-                        className="Application"
-                        font="paragraph"
-                        boxSizing="border-box"
-                        display="flex"
-                        css={{padding: isPlatform("mac") ? 0 : 18}}>
-                        <Box
-                            position="relative"
-                            background="bgPrimary"
-                            borderRadius="medium"
-                            overflow="hidden"
-                            flex="1 1 auto"
-                            css={{
-                                boxShadow: "0px 3px 20px -10px rgba(0,0,0,0.8)",
-                            }}>
-                            <Loader>
-                                {h => (
+                    <Loader>
+                        {h => {
+                            const Wrapper = this.windowWrapper.get(h);
+                            return (
+                                <Wrapper>
                                     <Transition>
                                         {this.sessionManager.getSelectedSession(h)?.view}
                                     </Transition>
-                                )}
-                            </Loader>
-                        </Box>
-                    </FillBox>
+                                </Wrapper>
+                            );
+                        }}
+                    </Loader>
                 </LaunchMenuProvider>
             </ThemeProvider>
         );
@@ -141,13 +131,19 @@ export class LaunchMenu {
      * Initializes the applets manager
      */
     protected setupApplets(): void {
-        this.appletManager = new AppletManager(this, this.settingsDirectory);
+        this.appletManager = new AppletManager(this, {
+            directory: this.settingsDirectory,
+            getSettings: (applet, version) =>
+                this.settingsManager.updateAppletSettings(applet, version),
+            removeSettings: appletID =>
+                this.settingsManager.destroyAppletSetting(appletID),
+        });
 
         // Add an observer, making sure that applets always instantly reload, even if no other component requests them.
         // This is important because applets can have side effects, so even if nothing needs the applet, the applet may affect the system.
-        this.appletObserver = new Observer(h =>
-            this.appletManager.getApplets(h)
-        ).listen(() => {});
+        this.appletObserver = new Observer(h => this.appletManager.getApplets(h)).listen(
+            () => {}
+        );
     }
 
     /**
@@ -155,7 +151,6 @@ export class LaunchMenu {
      */
     protected setupSettings(): void {
         this.settingsManager = new SettingsManager(
-            h => this.appletManager.getAppletsData(h),
             this.settingsDirectory,
             this.dataDirectory
         );
@@ -207,6 +202,23 @@ export class LaunchMenu {
         // Add some delay for safety, since closing the window  usually doesn't close instantly
         // TODO: look into the possibility of making model-react listen for promises of listeners to resolve
         return wait(10);
+    }
+
+    /**
+     * Sets the frame component to wrap all LM sessions in
+     * @param frame The component to use
+     */
+    public setWindowFrame(frame: FC<IWindowFrameProps>): void {
+        this.windowWrapper.set(frame);
+    }
+
+    /**
+     * Retrieves the currently used frame component
+     * @param hook The hook to subscribe to changes
+     * @returns The functional component to use as the window frame
+     */
+    public getWindowFrame(hook?: IDataHook): FC<IWindowFrameProps> {
+        return this.windowWrapper.get(hook);
     }
 
     // Utils

@@ -1,5 +1,7 @@
 import {IIdentifiedSettingsConfig} from "../../../settings/_types/IIdentifiedSettingsConfig";
 import {ISettingsFolderMenuItem} from "../../../settings/_types/ISettingsFolderMenuItem";
+import {TConfigSettings} from "../../../settings/_types/TConfigSettings";
+import {TSettingsTree} from "../../../settings/_types/TSettingsTree";
 import {IJSON} from "../../../_types/IJSON";
 import {CoreAppletType} from "../declaration/CoreAppletType";
 import {IAppletExecutionConfig} from "./IAppletExecutionConfig";
@@ -30,7 +32,7 @@ export type IAppletConfig<
         watchDirectory?: string;
     };
     /** A function to get the execution data of the config given a LM (and potentially session) instance */
-    init?: IAppletLMInitializer;
+    init?: IAppletLMInitializer<TConfigSettings<S>>;
     /** A function to get the execution data of the config given a session instance  */
     withSession?: IAppletSessionInitializer;
 } & Partial<IAppletExecutionConfig>;

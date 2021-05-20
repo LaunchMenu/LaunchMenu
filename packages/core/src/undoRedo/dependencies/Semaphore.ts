@@ -26,6 +26,7 @@ export class Semaphore {
     public acquire(): Promise<[number, () => void]> {
         const locked = this.isLocked();
         const ticket = new Promise<[number, () => void]>(r => this.queue.push(r));
+        this.value.set(this.value.get() - 1);
 
         if (!locked) this._dispatch();
 
@@ -76,26 +77,21 @@ export class Semaphore {
 
     /**
      * Dispatches an update in order to continue with the next consumer if present
-     * @param delta THe delta in available resources
      */
-    protected _dispatch(delta: number = 0): void {
+    protected _dispatch(): void {
         const nextConsumer = this.queue.shift();
 
-        if (!nextConsumer) {
-            if (delta != 0) this.value.set(this.value.get() + delta);
-            return;
-        }
+        if (!nextConsumer) return;
 
         let released = false;
         this.currentReleaser = () => {
             if (released) return;
 
             released = true;
-            this._dispatch(1);
+            this.value.set(this.value.get() + 1);
+            this._dispatch();
         };
 
-        const value = this.value.get();
-        this.value.set(value - 1 + delta);
-        nextConsumer([value, this.currentReleaser]);
+        nextConsumer([this.value.get(), this.currentReleaser]);
     }
 }

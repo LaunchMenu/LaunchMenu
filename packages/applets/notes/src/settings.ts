@@ -7,12 +7,22 @@ import {
     createSettings,
     createSettingsFolder,
     createStandardMenuItem,
+    IIdentifiedSettingsConfig,
+    TSettingsTree,
+    TConfigSettings,
 } from "@launchmenu/core";
-import {info} from ".";
+import {notesIcon} from "./notesIcon";
 import {
     highlightLanguages,
     IHighlightLanguage,
 } from "./dataModel/_types/IHighlightLanguage";
+
+export const info = {
+    name: "Notes",
+    description: "A notes applet",
+    version: "0.0.0",
+    icon: notesIcon,
+} as const;
 
 /**
  * All the settings for the notes applet
@@ -89,3 +99,4 @@ export const settings = createSettings({
             },
         }),
 });
+export type ISettings = TConfigSettings<typeof settings>;

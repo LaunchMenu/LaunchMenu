@@ -80,10 +80,7 @@ export abstract class UnifiedAbstractUILayer extends AbstractUILayer implements 
             .flatMap((item): IUILayerData[] =>
                 "getContentData" in item ? item.getContentData(hook) : [item]
             )
-            .filter(
-                (el): el is IUILayerContentData =>
-                    "contentView" in el && el.contentView !== undefined
-            );
+            .filter((el): el is IUILayerContentData => "contentView" in el);
         return super.getContentData(hook, content);
     }
 }

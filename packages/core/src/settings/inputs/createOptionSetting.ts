@@ -10,6 +10,7 @@ import {settingPatternMatcher} from "./settingPatternMatcher";
  */
 export function createOptionSetting<T extends IJSON>(data: IOptionMenuItemData<T>) {
     return createOptionMenuItem({
+        icon: "settings",
         resetable: true,
         searchPattern: settingPatternMatcher,
         ...data,

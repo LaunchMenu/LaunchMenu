@@ -24,10 +24,8 @@ export function setupVisibilityControls(
         debounce: -1,
     }).listen(open => {
         if (open) {
-            document.body.classList.add("noTransition");
             setTimeout(() => {
                 document.body.style.visibility = "inherit";
-                document.body.classList.remove("noTransition");
             }, 50);
 
             window.show();
@@ -44,7 +42,6 @@ export function setupVisibilityControls(
             }, 10);
         }
     });
-    document.body.classList.add("noTransition"); // Prevents half finished transitions on startup
     const hideWindow = () => LM.setWindowOpen(false);
     const showWindow = () => LM.setWindowOpen(true);
 

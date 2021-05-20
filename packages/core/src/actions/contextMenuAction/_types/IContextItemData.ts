@@ -1,3 +1,4 @@
+import {IDataHook} from "model-react";
 import {ReactElement, ReactNode} from "react";
 import {IIOContext} from "../../../context/_types/IIOContext";
 import {KeyPattern} from "../../../keyHandler/KeyPattern";
@@ -14,7 +15,7 @@ export type IContextItemData = {
     closeOnExecute?: boolean;
 
     /** The keyboard shortcut for the action */
-    shortcut?: KeyPattern | ((context: IIOContext) => KeyPattern);
+    shortcut?: KeyPattern | ((context: IIOContext, hook?: IDataHook) => KeyPattern);
 
     /** The extra action bindings for the item  */
     actionBindings?: IActionBinding<any>[];

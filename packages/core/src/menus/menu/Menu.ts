@@ -123,7 +123,7 @@ export class Menu extends AbstractMenu {
                 this.removeItems([item], category);
                 this.addItem(item);
             } else this.categoryConfig.getCategory(item, categoryChangeCallback);
-        }); // TODO: store the destroyHook somewhere and call it when item gets removed
+        }, 0); // TODO: store the destroyHook somewhere and call it when item gets removed
 
         // Obtain the category
         const category = this.categoryConfig.getCategory(item, categoryChangeCallback);

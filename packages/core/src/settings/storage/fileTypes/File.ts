@@ -23,6 +23,10 @@ export class File<T = string, I extends T = T> extends Field<T> implements IFile
     protected loadTime: number = 0;
     protected encoding: BufferEncoding;
 
+    protected savedDate = new Field(0);
+    protected loadedDate = new Field(0);
+    protected changedDate = new Field(0);
+
     /**
      * Creates a new file
      * @param path The path to store the file at
@@ -68,7 +72,7 @@ export class File<T = string, I extends T = T> extends Field<T> implements IFile
      * Reads the raw contents on disk
      * @returns The contents on disk
      */
-    public async readRaw(): Promise<any> {
+    protected async readRaw(): Promise<any> {
         try {
             const data = await promisify(FS.readFile)(this.filePath, this.encoding);
             return data;
@@ -106,7 +110,7 @@ export class File<T = string, I extends T = T> extends Field<T> implements IFile
                 console.error(e);
             }
             return this.get();
-        })();
+        })().finally(() => this.loadedDate.set(Date.now()));
         return this.loading.add(this.loadPromise);
     }
 
@@ -128,6 +132,7 @@ export class File<T = string, I extends T = T> extends Field<T> implements IFile
 
         // IF the data changed, write the new data
         await promisify(FS.writeFile)(this.filePath, this.getRaw(), this.encoding);
+        this.savedDate.set(Date.now());
     }
 
     /**
@@ -171,8 +176,35 @@ export class File<T = string, I extends T = T> extends Field<T> implements IFile
      * @param hook The hook to subscribe to changes
      * @returns The data that could be written to disk
      */
-    public getRaw(hook?: IDataHook): any {
+    protected getRaw(hook?: IDataHook): any {
         return this.encodedValue.get(hook);
+    }
+
+    /**
+     * Retrieves the last date at which this virtual file instance was saved (time represents when saving finished)
+     * @param hook The hook to subscribe to changes
+     * @returns The date represented in milliseconds using Date.now() or 0 if not saved yet
+     */
+    public getLatestSaveDate(hook?: IDataHook): number {
+        return this.savedDate.get(hook);
+    }
+
+    /**
+     * Retrieves the last date at which this virtual file instance was loaded from disk (time represents when loading finished)
+     * @param hook The hook to subscribe to changes
+     * @returns The date represented in milliseconds using Date.now() or 0 if not loaded yet
+     */
+    public getLatestLoadDate(hook?: IDataHook): number {
+        return this.loadedDate.get(hook);
+    }
+
+    /**
+     * Retrieves the last date at which this virtual file instance's contents were changed'
+     * @param hook The hook to subscribe to changes
+     * @returns The date represented in milliseconds using Date.now() or 0 if not loaded yet
+     */
+    public getLatestChangeDate(hook?: IDataHook): number {
+        return this.changedDate.get(hook);
     }
 
     // Data interaction
@@ -182,6 +214,7 @@ export class File<T = string, I extends T = T> extends Field<T> implements IFile
      */
     public set(data: T): void {
         super.set(data);
+        this.changedDate.set(Date.now());
         if (this.loadPromise) this.loading.remove(this.loadPromise);
     }
 

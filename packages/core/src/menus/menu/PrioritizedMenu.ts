@@ -1,5 +1,6 @@
 import {Field, IDataHook} from "model-react";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
+import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {createCallbackHook} from "../../utils/createCallbackHook";
@@ -204,7 +205,7 @@ export class PrioritizedMenu extends AbstractMenu {
 
         // Add all updated (/added) items (and listen for max item count changes)
         this.maxCountHookDestroyer?.();
-        const [hook, destroyer] = createCallbackHook(() => this.scheduleUpdate());
+        const [hook, destroyer] = createCallbackHook(() => this.scheduleUpdate(), 0);
         this.maxCountHookDestroyer = destroyer;
         this.items.add(
             addedItems.filter(({priority}) => Priority.isPositive(priority)),
@@ -228,8 +229,11 @@ export class PrioritizedMenu extends AbstractMenu {
     protected deselectRemovedItems(): void {
         const items = this.items.get().map(({item}) => item);
         const selected = this.selected.get();
+        // TODO: look into a good way of using the item identities rather tha shallow equivalence
         const remaining = selected.filter(item => items.includes(item));
         if (selected.length != remaining.length) {
+            const removed = selected.filter(item => !items.includes(item));
+            onSelectAction.get(removed).onSelect(false, this);
             this.selected.set(remaining);
         }
 

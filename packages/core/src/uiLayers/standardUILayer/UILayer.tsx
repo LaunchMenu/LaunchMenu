@@ -102,7 +102,7 @@ export class UILayer extends UnifiedAbstractUILayer {
             let menuHandler = data.menuHandler;
             if (!menuHandler) {
                 const disposableHandler = createStandardMenuKeyHandler(data.menu, {
-                    onExit: close,
+                    onExit: data.handleClose === false ? undefined : close,
                     onExecute: data.onExecute,
                 });
                 menuHandler = disposableHandler.handler;
@@ -160,7 +160,9 @@ export class UILayer extends UnifiedAbstractUILayer {
                 ),
                 fieldHandler:
                     data.fieldHandler ??
-                    createStandardTextFieldKeyHandler(field, context),
+                    createStandardTextFieldKeyHandler(field, context, {
+                        onExit: !res.menuHandler && data.handleClose ? close : undefined,
+                    }),
                 ...res,
             };
         } else if (data.fieldView) {
@@ -181,7 +183,12 @@ export class UILayer extends UnifiedAbstractUILayer {
                 contentView: data.contentView ?? <ContentView content={content} />,
                 contentHandler:
                     data.contentHandler ??
-                    createStandardContentKeyHandler(content, context),
+                    createStandardContentKeyHandler(content, context, {
+                        onExit:
+                            !res.menuHandler && !res.fieldHandler && data.handleClose
+                                ? close
+                                : undefined,
+                    }),
                 ...res,
             };
         } else if (data.contentView) {
@@ -198,6 +205,7 @@ export class UILayer extends UnifiedAbstractUILayer {
             empty = false;
             res = {
                 contentView: undefined,
+                contentHandler: data.contentHandler,
                 ...res,
             };
         }

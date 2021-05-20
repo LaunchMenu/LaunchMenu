@@ -30,7 +30,7 @@ export const setCategoryAction = createContextAction({
                             .filter((c): c is NoteCategory => !!c),
                         undefined,
                     ],
-                    valueRetriever: field =>
+                    valueRetriever: ({field}) =>
                         promptSelectExecuteHandler.createBinding({
                             field,
                             options: [...options, undefined],

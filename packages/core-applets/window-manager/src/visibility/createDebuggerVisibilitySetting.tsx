@@ -17,6 +17,7 @@ export function createDebuggerVisibilitySetting() {
         data: field => ({
             name: "Show debugger",
             resetUndoable: true,
+            icon: "settings",
             searchPattern: settingPatternMatcher,
             keywords: ["dev", "console", "dev-tools", "developer", "javascript"],
             resetable: true,

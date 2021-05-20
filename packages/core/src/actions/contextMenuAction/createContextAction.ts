@@ -9,11 +9,12 @@ import {IContextFolderAction} from "./contextFolders/_types/IContextFolderAction
 import {IContextActionTransformer} from "./_types/IContextActionTransformer";
 import {IContextItemData} from "./_types/IContextItemData";
 import {IContextMenuItemData} from "./_types/IContextMenuItemData";
-
+import {getStringHash} from "../../utils/getStringHash";
 import {contextMenuAction} from "./contextMenuAction";
 import {executeAction} from "../types/execute/executeAction";
 import {createAction} from "../createAction";
 import {adjustBindings} from "../../menus/items/adjustBindings";
+import {IActionTarget} from "../_types/IActionTarget";
 
 /**
  * Creates an action that conforms to all constraints of a proper action
@@ -98,7 +99,6 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
     if (contextItem && (contextItem instanceof Function || "item" in contextItem)) {
         item = contextItem;
     } else {
-        // TODO: add a last part of priority based on the name of the action, to resolve conflicts
         const {
             name: itemName = name,
             shortcut,
@@ -109,6 +109,10 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
             content,
             priority = Priority.MEDIUM,
         } = contextItem ?? {};
+
+        const normalizedPriority = priority instanceof Array ? priority : [priority];
+        const augmentedPriority = [...normalizedPriority, getStringHash(name)];
+
         item = execute => ({
             // Use dynamic import to prevent nasty dependency cycles...
             item: (require("../../menus/items/createStandardMenuItem")
@@ -123,7 +127,7 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
                     ? adjustBindings(execute, actionBindings)
                     : actionBindings,
             }),
-            priority,
+            priority: augmentedPriority,
         });
     }
 
@@ -133,11 +137,17 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
             name,
             parents: parents ? [...parents, targetMenu] : [targetMenu],
             createBinding,
-            core: (bindingData: I[], indices: number[], hook: IDataHook) => {
+            core: (
+                bindingData: I[],
+                indices: number[],
+                hook: IDataHook,
+                items: IActionTarget[]
+            ) => {
                 const {execute, actionBindings = [], result, children} = core(
                     bindingData,
                     indices,
-                    hook
+                    hook,
+                    items
                 );
                 const executeBindings = execute
                     ? adjustBindings(actionBindings, [

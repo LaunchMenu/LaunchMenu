@@ -13,6 +13,7 @@ export function createKeyPatternSetting(
     data: IKeyPatternMenuItemData
 ): IFieldMenuItem<KeyPattern> {
     return createKeyPatternMenuItem({
+        icon: "settings",
         resetable: true,
         searchPattern: settingPatternMatcher,
         ...data,

@@ -1,12 +1,10 @@
 import {Command} from "../../../undoRedo/Command";
 import {Resource} from "../../../undoRedo/dependencies/Resource";
-import {IField} from "../../../_types/IField";
 import {ITextField} from "../../_types/ITextField";
-import {ITextSelection} from "../../_types/ITextSelection";
-import {TextAlterationTools} from "./TextAlterationTools";
 import {ITextAlteration} from "./_types/ITextAlteration";
-import {ITextAlterationInput} from "./_types/ITextAlterationInput";
 import {ITextEditCommand} from "./_types/ITextEditCommand";
+import {ITextEditData} from "./_types/ITextEditData";
+import {ITextFieldChangeRetriever} from "./_types/ITextFieldChangeRetriever";
 
 /** A  base command that can be used to edit textfields */
 export class TextEditCommand extends Command implements ITextEditCommand {
@@ -15,137 +13,105 @@ export class TextEditCommand extends Command implements ITextEditCommand {
     };
     protected readonly dependencies = [standardTextResource] as Resource[];
 
-    protected target: IField<string> | ITextField;
-    protected alterationInput: ITextAlterationInput;
-    protected alteration?: ITextAlteration;
+    protected target: ITextField;
+    protected change: ITextFieldChangeRetriever;
 
-    protected oldSelection?: ITextSelection;
-    protected oldText?: string;
+    protected data?: ITextEditData;
 
-    protected newSelection?: ITextSelection;
-    protected newText?: string;
+    protected addedText?: string;
+    protected selectionChange: boolean;
 
     /**
      * Creates a new text edit command
      * @param target The field of which to alter the text
-     * @param alteration The change to make in the text, where indices correspond to indices in the original text
-     */
-    public constructor(target: IField<string>, alteration: ITextAlterationInput);
-    /**
-     * Creates a new text edit command
-     * @param target The field of which to alter the text
-     * @param alteration The change to make in the text, where indices correspond to indices in the original text
-     * @param selection The selection after executing this command
+     * @param change The function to retrieve the new contents of the text field
+     * @param type The type of the command, used for undo/redo merging
      */
     public constructor(
         target: ITextField,
-        alterations: ITextAlterationInput,
-        selection?: ITextSelection
-    );
-    public constructor(
-        target: IField<string> | ITextField,
-        alteration: ITextAlterationInput,
-        selection?: ITextSelection
+        change: ITextFieldChangeRetriever,
+        type: {addedText?: string; isSelectionChange?: boolean} = {}
     ) {
         super();
         this.target = target;
-        this.alterationInput = alteration;
-        this.newSelection = selection;
 
         if ("resource" in target && target.resource)
             this.dependencies = [target.resource];
+
+        this.change = change;
+
+        this.addedText = type.addedText;
+        this.selectionChange = type.isSelectionChange ?? false;
     }
 
     /**
-     * Retrieves the alteration made by this command, the `prevText` is only stable if the command is already executed
-     * @returns The alteration
+     * Uses the change function to compute the new text and selection for the field
      */
-    public getAlterations(): ITextAlteration[] {
-        if (!this.alteration) {
-            const text = this.oldText ?? this.target.get();
-            this.alteration = {
-                ...this.alterationInput,
-                prevText: text.substring(
-                    this.alterationInput.start,
-                    this.alterationInput.end
-                ),
-            };
-        }
-        return [this.alteration];
-    }
+    protected computeChange(): ITextEditData {
+        const oldText = this.target.get();
+        const oldSelection = this.target.getSelection();
 
-    /**
-     * Retrieves the text selection after executing this command
-     * @returns The text selection
-     */
-    public getSelection(): ITextSelection | undefined {
-        return this.newSelection;
-    }
+        const change = this.change({selection: oldSelection, text: oldText});
+        const alteration: ITextAlteration | undefined = change.text
+            ? {
+                  ...change.text,
+                  prevContent: oldText.substring(change.text.start, change.text.end),
+              }
+            : undefined;
+        this.addedText = alteration?.content || undefined;
 
-    /**
-     * Retrieves the text target
-     * @returns The field to change the text of
-     */
-    public getTarget(): ITextField | IField<string> {
-        return this.target;
-    }
+        const newText = change.text
+            ? oldText.substring(0, change.text.start) +
+              change.text.content +
+              oldText.substring(change.text.end)
+            : oldText;
+        const newSelection = change.selection ?? oldSelection;
 
-    /**
-     * Retrieves the text that this command will be executed on, or was executed on
-     * @returns The text that this command is/was executed on
-     */
-    public getTargetText(): string {
-        return this.oldText ?? this.target.get();
-    }
-
-    /**
-     * Retrieves the selection that the target has/had before this command executed
-     * @returns The selection that was present before execution of this command
-     */
-    public getTargetSelection(): ITextSelection | undefined {
-        return (
-            this.oldSelection ??
-            ("getSelection" in this.target ? this.target.getSelection() : undefined)
-        );
-    }
-
-    // Text alteration
-    /**
-     * Retrieves the new text of the field based on the current text and the changes
-     */
-    protected getNewText(): string {
-        if (this.newText != undefined) return this.newText;
-
-        let text = TextAlterationTools.performAlterations(this.target.get(), [
-            this.alterationInput,
-        ]);
-        this.newText = text;
-        return text;
+        return {
+            oldText,
+            oldSelection,
+            newText,
+            newSelection,
+            alteration,
+        };
     }
 
     /** @override */
     protected onExecute(): void {
-        // Store the old value
-        if (this.oldText == undefined) {
-            this.alteration = undefined;
-            this.oldText = this.target.get();
-            if ("getSelection" in this.target)
-                this.oldSelection = this.target.getSelection();
+        // Compute the data for execution (and reverting)
+        if (this.data == undefined) {
+            this.data = this.computeChange();
         }
 
         // Set the new value
-        this.target.set(this.getNewText());
-        if (this.newSelection && "setSelection" in this.target)
-            this.target.setSelection(this.newSelection);
+        this.target.set(this.data.newText);
+        this.target.setSelection(this.data.newSelection);
     }
 
     /** @override */
     protected onRevert(): void {
-        if (this.oldText != undefined) this.target.set(this.oldText);
-        if (this.oldSelection != undefined && "setSelection" in this.target)
-            this.target.setSelection(this.oldSelection);
+        if (this.data) {
+            this.target.set(this.data.oldText);
+            this.target.setSelection(this.data.oldSelection);
+        }
+    }
+
+    // Getters
+    /** @override */
+    public getAddedText(): string | undefined {
+        return this.addedText;
+    }
+
+    /** @override */
+    public isSelectionChange(): boolean {
+        return this.selectionChange;
+    }
+
+    /** @override */
+    public getAlterations(): ITextAlteration[] {
+        return this.data?.alteration ? [this.data?.alteration] : [];
     }
 }
 
 /** A standard resource for text editing */
-export const standardTextResource = new Resource();
+export const standardTextResource = new Resource("Text edit");

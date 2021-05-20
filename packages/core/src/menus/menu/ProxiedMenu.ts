@@ -1,6 +1,6 @@
 import {DataCacher, IDataHook, IDataRetriever} from "model-react";
-import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {onMenuChangeAction} from "../../actions/types/onMenuChange/onMenuChangAction";
+import {onSelectAction} from "../../actions/types/onSelect/onSelectAction";
 import {baseSettings} from "../../application/settings/baseSettings/baseSettings";
 import {IIOContext} from "../../context/_types/IIOContext";
 import {TRequired} from "../../_types/TRequired";
@@ -117,9 +117,13 @@ export class ProxiedMenu extends AbstractMenu {
         }
 
         // Remove any removed items from the selection
-        const selection= this.selected.get();
-        const presentSelected = selection.filter(item=>items.includes(item));
-        if(selection.length!=presentSelected.length) this.selected.set(presentSelected);
+        const selection = this.selected.get();
+        const presentSelected = selection.filter(item => items.includes(item));
+        if (selection.length != presentSelected.length) {
+            const removed = selection.filter(item => !items.includes(item));
+            onSelectAction.get(removed).onSelect(false, this);
+            this.selected.set(presentSelected);
+        }
     }
 
     // Item retrieval

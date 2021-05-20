@@ -1,3 +1,4 @@
+import {IIOContext} from "../../../../../context/_types/IIOContext";
 import {ICommand} from "../../../../../undoRedo/_types/ICommand";
 import {IField} from "../../../../../_types/IField";
 import {IActionBinding} from "../../../../_types/IActionBinding";
@@ -16,12 +17,15 @@ export type ISinglePromptExecuteData<T> = {
 
     // The function to perform the value retrieval
     /** Retrieves the execute action binding to update the field, or the value itself*/
-    valueRetriever: ((field: IField<T>) => IActionBinding) | (() => Promise<T>);
+    valueRetriever: (data: {
+        field: IField<T>;
+        context: IIOContext;
+    }) => IActionBinding | Promise<T>;
 
     // Additional config
     /** Tests whether two values are equal to one and another, for determining the initial field value */
     equals?: (a: T, b: T) => boolean;
-    /** Whether the value update should be undoable */
+    /** Whether the value update should be undoable, defaults to true */
     undoable?: boolean;
     /** The name that the command should display */
     commandName?: string;

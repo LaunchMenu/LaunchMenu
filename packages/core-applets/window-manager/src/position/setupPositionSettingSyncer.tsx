@@ -14,22 +14,22 @@ export function setupPositionSettingSyncer(
     window: BrowserWindow
 ): () => void {
     // Sync the setting to the position
-    let timeoutID: number | undefined;
     const observer = new Observer(h =>
         settingsManager.getSettingsContext(h).get(settings).position.get(h)
     ).listen(({x, y}) => {
-        clearTimeout(timeoutID);
-        timeoutID = setTimeout(() => {
-            const [pX, pY] = window.getPosition();
-            if (pX != x || pY != y) window.setPosition(x, y);
-        }, 100) as any;
+        const [pX, pY] = window.getPosition();
+        if (pX != x || pY != y) window.setPosition(x, y);
     }, true);
 
     // Sync the position to the setting
+    let timeoutID: number | undefined;
     const positionListener = () => {
         const [x, y] = window.getPosition();
-        const field = settingsManager.getSettingsContext().get(settings).position;
-        field.set({x, y});
+        clearTimeout(timeoutID);
+        timeoutID = setTimeout(() => {
+            const field = settingsManager.getSettingsContext().get(settings).position;
+            field.set({x, y});
+        }, 100) as any;
     };
     window.on("move", positionListener);
 

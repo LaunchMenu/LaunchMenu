@@ -42,7 +42,7 @@ export class KeyEvent {
      * @param keys The keys that are held, overrides the previous keys
      */
     public setHeldKeys(keys: IKey[]): void {
-        this.held = [...this.held, ...keys];
+        this.held = [...keys];
         this.ctrl = !!this.held.find(k => k.name == "ctrl");
         this.shift = !!this.held.find(k => k.name == "shift");
         this.alt = !!this.held.find(k => k.name == "alt");
@@ -59,7 +59,7 @@ export class KeyEvent {
     }
 
     /**
-     * Checkers whether this event is equal to the given description
+     * Checks whether this event is equal to the given description
      * @param keys The keys to check for
      * @param type The event type to check for, defaults to "down"
      */
@@ -83,7 +83,7 @@ export class KeyEvent {
     }
 
     /**
-     * Checkers whether this event includes the pressed sequence (more keys may be held)
+     * Checks whether this event includes the pressed sequence (more keys may be held)
      * @param keys The keys to check for
      * @param type The event type to check for, defaults to "down"
      */
@@ -98,7 +98,7 @@ export class KeyEvent {
         )
             return false;
 
-        // Make sure nothing more than the specified keys was pressed
+        // Make sure that the specified event is included
         if (!(keys instanceof Array)) keys = [keys];
         const sequenceIncludesEvent = keys.find(
             key => this.key.id == key || this.key.name == key

@@ -39,6 +39,7 @@ export const EditorField: LFC<IEditorFieldProps> = ({
                 highlightActiveLine: false,
                 showPrintMargin: false,
                 highlightGutterLine: false,
+                enableMultiselect: false,
                 ...options,
             }}
             value={value}

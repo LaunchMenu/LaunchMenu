@@ -8,31 +8,29 @@ import {ISettingsData} from "./_types/ISettingsData";
 import Path from "path";
 import {IAppletData} from "../applets/_types/IAppletData";
 import {fileInputBasePathConfigurationSymbol} from "../../menus/items/inputs/types/createFileMenuItem";
+import {ISettingsTree} from "../../settings/_types/ISettingsTree";
 
 /**
  * Manages the settings within LaunchMenu
  */
 export class SettingsManager {
-    protected appletsSource: IDataRetriever<IAppletData[]>;
     protected settingsDirectory: string;
     protected dataDirectory: string;
 
     protected extraFiles = new Field([] as ISettingsData[]);
 
     protected destroyed = new Field(false);
+    protected appletSettings = new Field([] as ISettingsData[]);
 
     /**
      * Creates a new settings manager, which auto loads the settings of the passed applets
-     * @param appletsSource The retriever for the applets
      * @param settingsDirectory The directory to load the settings for the applets from
      * @param dataDirectory The directory that LM data is stored in
      */
     public constructor(
-        appletsSource: IDataRetriever<IAppletData[]>,
         settingsDirectory: string,
         dataDirectory: string = Path.join(settingsDirectory, "data")
     ) {
-        this.appletsSource = appletsSource;
         this.settingsDirectory = settingsDirectory;
         this.dataDirectory = dataDirectory;
     }
@@ -41,9 +39,12 @@ export class SettingsManager {
      * Disposes of all data
      */
     public destroy(): void {
+        if (!this.destroyed.get()) {
+            [...this.extraFiles.get(), ...this.appletSettings.get()].forEach(({file}) =>
+                file.destroy()
+            );
+        }
         this.destroyed.set(true);
-        // Force retrieve the applets to uninitialize old settings
-        this.appletSettings.get();
     }
 
     // Getters
@@ -164,66 +165,59 @@ export class SettingsManager {
 
     // Applet settings management
     /**
-     * Retrieves the applet settings given the applets source
+     * Updates the settings for a given applet, used by the applet manager
+     * @param appletData The applet data to update
+     * @param version The new version of the applet
+     * @returns The tree of settings for this applet
      */
-    protected appletSettings = new DataCacher<ISettingsData[]>(
-        (h, prevAppletSettings = []) => {
-            const destroyed = this.destroyed.get(h);
-            const applets = destroyed ? [] : this.appletsSource(h);
+    public updateAppletSettings(applet: IApplet, version?: IUUID): ISettingsTree {
+        this.destroyAppletSetting(applet.ID);
 
-            // Remove any old applets settings
-            prevAppletSettings.forEach(({ID, file, appletVersion}) => {
-                const used = applets.find(
-                    ({applet, version}) => applet.ID == ID && version == appletVersion
-                );
-                if (!used) file.destroy();
-            });
+        const settings = applet.settings;
+        settings.ID = applet.ID;
 
-            // Obtain the new applet settings
-            const appletSettings = applets.flatMap(({applet, version}) => {
-                const current = prevAppletSettings.find(
-                    p => p.appletVersion == version && p.ID == applet.ID
-                );
-                if (current) return current;
+        // Create the settings file at the correct file path
+        const settingsFile = new SettingsFile({
+            ...settings,
+            path: Path.join(this.settingsDirectory, "applets", applet.ID + ".json"),
+        });
 
-                const settings = applet.settings;
-                settings.ID = applet.ID;
+        // Inject the base directory for file settings to use
+        settingsFile.configure({
+            [fileInputBasePathConfigurationSymbol]: Path.join(
+                this.dataDirectory,
+                "appletData",
+                `${applet.ID}`
+            ),
+        });
 
-                try {
-                    // Create the settings file at the correct file path
-                    const settingsFile = new SettingsFile({
-                        ...settings,
-                        path: Path.join(
-                            this.settingsDirectory,
-                            "applets",
-                            applet.ID + ".json"
-                        ),
-                    });
+        // Load the settings from the file if present
+        settingsFile.load();
 
-                    // Inject the base directory for file settings to use
-                    settingsFile.configure({
-                        [fileInputBasePathConfigurationSymbol]: Path.join(
-                            this.dataDirectory,
-                            "appletData",
-                            `${applet.ID}`
-                        ),
-                    });
+        this.appletSettings.set([
+            ...this.appletSettings.get(),
+            {
+                ID: applet.ID,
+                file: settingsFile,
+                appletVersion: version,
+                applet,
+            },
+        ]);
 
-                    // Load the settings from the file if present
-                    settingsFile.load();
+        // Return the settings tree
+        return settingsFile.fields;
+    }
 
-                    return {
-                        ID: applet.ID,
-                        file: settingsFile,
-                        appletVersion: version,
-                        applet,
-                    };
-                } catch (e) {
-                    console.error(e);
-                    return [];
-                }
-            });
-            return appletSettings;
+    /**
+     * Removes the settings of an applet
+     * @param appletID The ID of the applet to remove
+     */
+    public destroyAppletSetting(appletID: IUUID): void {
+        const allSettings = this.appletSettings.get();
+        const settings = allSettings.find(({ID}) => appletID == ID);
+        if (settings) {
+            settings.file.destroy();
+            this.appletSettings.set(allSettings.filter(({ID}) => ID != appletID));
         }
-    );
+    }
 }

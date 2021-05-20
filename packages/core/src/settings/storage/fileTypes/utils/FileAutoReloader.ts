@@ -1,5 +1,6 @@
 import {IFile} from "../_types/IFile";
 import {FSWatcher, watch} from "chokidar";
+import FS from "fs";
 
 /**
  * A file watcher that can be used to actively watch a given file, and reload it on changes
@@ -44,7 +45,11 @@ export class FileAutoReloader {
      * Loads the file from disk, only if the current data differs than that on disk
      */
     protected async load(): Promise<void> {
-        if (this.file.getRaw() != (await this.file.readRaw())) {
+        // Only load if the file change wasn't caused by a save
+        if (
+            this.file.getLatestSaveDate() <
+            FS.statSync(this.file.getPath()).mtime.getTime()
+        ) {
             this.file.load();
         }
     }
@@ -57,6 +62,7 @@ export class FileAutoReloader {
         if (this.timeoutID) {
             clearTimeout(this.timeoutID);
             this.timeoutID = null;
+            console.log("Destroy");
             if (load) this.load();
         }
 

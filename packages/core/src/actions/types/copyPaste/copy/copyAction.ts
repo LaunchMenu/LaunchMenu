@@ -12,8 +12,8 @@ export const copyAction = addBindingCreatorRequirement(
         name: "Copy",
         contextItem: {
             icon: "copy",
-            shortcut: context =>
-                context.settings.get(baseSettings).controls.shortcuts.copy.get(),
+            shortcut: (context, h) =>
+                context.settings.get(baseSettings).controls.shortcuts.copy.get(h),
         },
         core: (actionBindings: IActionBinding[]) => ({
             actionBindings,
