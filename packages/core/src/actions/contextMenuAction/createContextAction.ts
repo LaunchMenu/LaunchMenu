@@ -111,12 +111,19 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
         } = contextItem ?? {};
 
         const normalizedPriority = priority instanceof Array ? priority : [priority];
-        const augmentedPriority = [...normalizedPriority, getStringHash(name)];
+        const augmentedPriority = [
+            ...normalizedPriority,
+            // Add a priority between medium and high, based on the name
+            Priority.MEDIUM +
+                getStringHash(name, true) * (Priority.HIGH - Priority.MEDIUM - 1),
+        ];
 
         item = execute => ({
             // Use dynamic import to prevent nasty dependency cycles...
-            item: (require("../../menus/items/createStandardMenuItem")
-                .createStandardMenuItem as typeof createStandardMenuItem)({
+            item: (
+                require("../../menus/items/createStandardMenuItem")
+                    .createStandardMenuItem as typeof createStandardMenuItem
+            )({
                 name: itemName,
                 shortcut,
                 icon,
@@ -143,12 +150,12 @@ IAction<I, O, TPureAction<F> & (P extends void ? unknown : P)> &
                 hook: IDataHook,
                 items: IActionTarget[]
             ) => {
-                const {execute, actionBindings = [], result, children} = core(
-                    bindingData,
-                    indices,
-                    hook,
-                    items
-                );
+                const {
+                    execute,
+                    actionBindings = [],
+                    result,
+                    children,
+                } = core(bindingData, indices, hook, items);
                 const executeBindings = execute
                     ? adjustBindings(actionBindings, [
                           executeAction.createBinding(execute),
