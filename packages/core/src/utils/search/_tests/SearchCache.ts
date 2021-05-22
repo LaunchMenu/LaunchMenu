@@ -25,8 +25,20 @@ describe("SearchCache", () => {
                 const v23 = cache.get(23);
                 expect(cache.get(23)).toBe(v23);
                 cache.get(5);
-                cache.get(6);
+                const v6 = cache.get(6);
                 expect(cache.get(23)).not.toBe(v23);
+                expect(cache.get(6)).toBe(v6);
+            });
+            it("Resets item 'age' when item is requested", () => {
+                // See: https://github.com/LaunchMenu/LaunchMenu/issues/90
+                const cache = new SearchCache((key: number) => Math.random(), 3);
+                const v1 = cache.get(1);
+                const v2 = cache.get(2);
+                expect(cache.get(1)).toBe(v1);
+                const v3 = cache.get(3);
+                expect(cache.get(1)).toBe(v1);
+                const v4 = cache.get(4);
+                expect(cache.get(1)).toBe(v1);
             });
         });
         describe("multiple part keys", () => {
@@ -58,8 +70,23 @@ describe("SearchCache", () => {
                 const v23 = cache.get(23, "hoi", false);
                 expect(cache.get(23, "hoi", false)).toBe(v23);
                 cache.get(23, "shit", true);
-                cache.get(23, "hoi", true);
+                const v23True = cache.get(23, "hoi", true);
                 expect(cache.get(23, "hoi", false)).not.toBe(v23);
+                expect(cache.get(23, "hoi", true)).toBe(v23True);
+            });
+            it("Resets item 'age' when item is requested", () => {
+                // See: https://github.com/LaunchMenu/LaunchMenu/issues/90
+                const cache = new SearchCache(
+                    (k1: string, k2: number) => Math.random(),
+                    3
+                );
+                const vA1 = cache.get("A", 1);
+                const vA2 = cache.get("A", 2);
+                expect(cache.get("A", 1)).toBe(vA1);
+                const vB1 = cache.get("B", 1);
+                expect(cache.get("A", 1)).toBe(vA1);
+                const vB2 = cache.get("B", 2);
+                expect(cache.get("A", 1)).toBe(vA1);
             });
         });
         it("Cleans up the cache", () => {
