@@ -21,7 +21,12 @@ export function setupFrame(LM: LaunchMenu): () => void {
                 font="paragraph"
                 boxSizing="border-box"
                 display="flex"
-                css={{padding: shadow ? 18 : 0}}>
+                css={{
+                    padding: shadow ? 18 : 0,
+                    "*": {
+                        userSelect: "none",
+                    },
+                }}>
                 <Box
                     position="relative"
                     background="bgPrimary"
