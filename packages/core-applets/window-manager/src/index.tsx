@@ -24,8 +24,7 @@ export default declare({
             destroy: destroyVisibilityControls,
             exitBindings,
         } = setupVisibilityControls(LM, window, () => {
-            returnFocus();
-            LM.getKeyHandler().resetKeys();
+            returnFocus(window);
         });
 
         // Setup startup controls

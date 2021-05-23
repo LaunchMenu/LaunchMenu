@@ -12,7 +12,7 @@ import {baseSettings} from "./settings/baseSettings/baseSettings";
 import {SessionManager} from "./LMSession/SessionManager";
 import {SettingsManager} from "./settings/SettingsManager";
 import {IApplet} from "./applets/_types/IApplet";
-import {ipcRenderer} from "electron";
+import {ipcRenderer, remote} from "electron";
 import {LaunchMenuProvider} from "./hooks/useLM";
 import {wait} from "../_tests/wait.helper";
 import {IWindowFrameProps} from "./components/_types/IWindowFrameProps";
@@ -140,9 +140,9 @@ export class LaunchMenu {
 
         // Add an observer, making sure that applets always instantly reload, even if no other component requests them.
         // This is important because applets can have side effects, so even if nothing needs the applet, the applet may affect the system.
-        this.appletObserver = new Observer(h =>
-            this.appletManager.getApplets(h)
-        ).listen(() => {});
+        this.appletObserver = new Observer(h => this.appletManager.getApplets(h)).listen(
+            () => {}
+        );
     }
 
     /**

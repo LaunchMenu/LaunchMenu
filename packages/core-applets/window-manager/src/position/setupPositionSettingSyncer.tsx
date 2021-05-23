@@ -13,12 +13,14 @@ export function setupPositionSettingSyncer(
     settingsManager: SettingsManager,
     window: BrowserWindow
 ): () => void {
+    let ignoreUpdate = false;
+
     // Sync the setting to the position
     const observer = new Observer(h =>
         settingsManager.getSettingsContext(h).get(settings).position.get(h)
     ).listen(({x, y}) => {
-        const [pX, pY] = window.getPosition();
-        if (pX != x || pY != y) window.setPosition(x, y);
+        if (!ignoreUpdate) window.setPosition(x, y);
+        ignoreUpdate = false;
     }, true);
 
     // Sync the position to the setting
@@ -28,6 +30,7 @@ export function setupPositionSettingSyncer(
         clearTimeout(timeoutID);
         timeoutID = setTimeout(() => {
             const field = settingsManager.getSettingsContext().get(settings).position;
+            ignoreUpdate = true;
             field.set({x, y});
         }, 100) as any;
     };

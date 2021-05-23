@@ -21,7 +21,6 @@ export function setupTrayMenu(LM: LaunchMenu): () => void {
         tray = new remote.Tray(nativeImage.createEmpty());
         tray.setImage(trayIcon);
 
-        tray.setTitle("LaunchMenu");
         tray.setToolTip("LaunchMenu");
         tray.on("click", showWindow);
 

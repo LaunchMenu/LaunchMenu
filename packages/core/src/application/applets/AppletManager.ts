@@ -148,9 +148,7 @@ export class AppletManager {
     protected initApplet({ID, directory}: IAppletSource, version: IUUID): IApplet {
         // Obtain the module export and check if it has a valid applet export
         const appletExport = referencelessRequire(
-            [".", "/"].includes(directory[0])
-                ? Path.join(process.cwd(), directory)
-                : directory
+            Path.isAbsolute(directory) ? directory : Path.join(process.cwd(), directory)
         );
         if (appletExport?.default?.info) {
             // Load the applet if valid
@@ -176,9 +174,9 @@ export class AppletManager {
      */
     protected setupAppletWatcher(source: IAppletSource, applet: IApplet): HMRWatcher {
         const baseDir = source.directory;
-        const absoluteBaseDir = [".", "/"].includes(baseDir[0])
-            ? Path.join(process.cwd(), baseDir)
-            : Path.dirname(require.resolve(`${baseDir}/package.json`));
+        const absoluteBaseDir = Path.isAbsolute(baseDir)
+            ? Path.dirname(require.resolve(`${baseDir}/package.json`))
+            : Path.join(process.cwd(), baseDir);
 
         const buildDir = Path.resolve(
             absoluteBaseDir,

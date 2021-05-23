@@ -14,6 +14,7 @@ export function setupFrame(LM: LaunchMenu): () => void {
             .getSettingsContext()
             .get(settings)
             .windowShadow.get(h);
+
         return (
             <FillBox
                 className="Application"

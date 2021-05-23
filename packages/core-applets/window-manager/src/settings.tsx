@@ -4,6 +4,7 @@ import {
     createKeyPatternSetting,
     createSettings,
     createSettingsFolder,
+    isPlatform,
     KeyPattern,
     scrollableContentHandler,
 } from "@launchmenu/core";
@@ -73,7 +74,7 @@ export const settings = createSettings({
                 }),
                 windowShadow: createBooleanSetting({
                     name: "Window shadow",
-                    init: true,
+                    init: isPlatform("mac") ? false : true,
                 }),
                 visibility: createSettingsFolder({
                     name: "Visibility",

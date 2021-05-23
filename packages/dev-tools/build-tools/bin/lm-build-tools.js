@@ -3,7 +3,7 @@ const Args = require("args");
 const buildTools = require("@launchmenu/build-tools");
 const {defaults} = buildTools;
 const chalk = require("chalk");
-const Path = require("path");
+const Path = require("path"); 
 
 const error = chalk.rgb(200, 0, 0);
 

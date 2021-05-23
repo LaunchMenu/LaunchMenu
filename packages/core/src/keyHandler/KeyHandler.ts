@@ -4,6 +4,7 @@ import {IKey} from "./_types/IKey";
 import {KeyEvent} from "./KeyEvent";
 import {keyIds} from "./keyIdentifiers/keyIds";
 import {keyIdMapping} from "./keyIdentifiers/keys";
+import {isPlatform} from "../utils/platform/isPlatform";
 
 /**
  * A key handler class
@@ -57,12 +58,39 @@ export class KeyHandler {
     ): void {
         if (event.type == "up" && store) delete this.pressedKeys[event.key.id];
         if (insertHeldKeys) {
-            if(event.held.length>0) event.setHeldKeys([...event.held, ...Object.values(this.pressedKeys)]);
+            if (event.held.length > 0)
+                event.setHeldKeys([...event.held, ...Object.values(this.pressedKeys)]);
             else event.setHeldKeys(Object.values(this.pressedKeys));
         }
         if (event.type != "up" && store) this.pressedKeys[event.key.id] = event.key;
 
         this.callListeners(event);
+        this.handleMetaIssues(event);
+    }
+
+    /**
+     * Fixes some issues with the meta key on windows and mac.
+     * @param event the key event to handle meta issues for if relevant
+     */
+    protected handleMetaIssues(event: KeyEvent) {
+        /*
+          On Mac: {Meta down}{a down}{a up}{meta up} is not picked up correctly
+          {Meta down}{a down}{meta up}{a up} is, instead {Meta down}{a down}{meta up}
+          is received. I.E. key up events of keys are not sent while meta is down.
+         */
+        if (isPlatform("mac")) {
+            const isKeyDown = event.type == "down";
+            const metaHeld =
+                this.pressedKeys["metaLeft"] || this.pressedKeys["metaRight"];
+            const isModifier = ["meta", "shift", "ctrl", "alt"].includes(event.key.name);
+            if (isKeyDown && metaHeld && !isModifier)
+                this.emit(new KeyEvent({key: event.key, type: "up"}));
+        }
+
+        /*
+          Force all keys to release when meta is released, since sometimes meta consume release of other key presses
+         */
+        if (event.key.name == "meta" && event.type == "up") this.resetKeys();
     }
 
     /**
