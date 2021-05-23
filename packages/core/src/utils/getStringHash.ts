@@ -2,9 +2,10 @@
 /**
  * Retrieves the hash for a given string
  * @param string The string to get the hash for
+ * @param normalized Whether normalize the output number to the range [0, 1]
  * @returns The hash number
  */
-export function getStringHash(string: string): number {
+export function getStringHash(string: string, normalized?: boolean): number {
     var hash = 0,
         i: number,
         chr: number;
@@ -14,5 +15,7 @@ export function getStringHash(string: string): number {
         hash = (hash << 5) - hash + chr;
         hash |= 0; // Convert to 32bit integer
     }
+
+    if(normalized) hash = (hash < 0 ?-1 : 1)*hash/Number.MAX_SAFE_INTEGER
     return hash;
 }

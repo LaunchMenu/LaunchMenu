@@ -1,7 +1,4 @@
-type IQueueNode<I> = {
-    value: I;
-    next?: IQueueNode<I>;
-};
+import {IQueueNode} from "./search/_types/IQueueNode";
 
 /**
  * A simple queue data type
@@ -14,13 +11,19 @@ export class Queue<I> {
     /**
      * Adds an item to the queue
      * @param item The item to be added
+     * @returns THe created node which can be used to remove the item from the queue
      */
-    public push(item: I): void {
-        const node = {value: item};
-        if (this.head && this.tail) this.tail.next = node;
-        else this.head = node;
+    public push(item: I): IQueueNode<I> {
+        // Link the nodes (and possibly set the head)
+        const node: IQueueNode<I> = {value: item};
+        if (this.head && this.tail) {
+            this.tail.prev = node;
+            node.next = this.tail;
+        } else this.head = node;
         this.tail = node;
         this.size++;
+
+        return node;
     }
 
     /**
@@ -29,12 +32,33 @@ export class Queue<I> {
      */
     public pop(): I | undefined {
         if (this.head) {
-            const {value, next} = this.head;
-            this.head = next;
+            const head = this.head;
+            this.head = head.prev;
+            if (head.prev) {
+                head.prev.next = undefined;
+                head.prev = undefined;
+            }
             this.size--;
-            return value;
+            return head.value;
         }
         return undefined;
+    }
+
+    /**
+     * Removes a given node from the queue
+     * @param node The node to be removed
+     * @returns Whether the node was still present
+     */
+    public removeNode(node: IQueueNode<I>): boolean {
+        if (node.prev && node.next) {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        } else if (node.prev) this.head = node.prev;
+        else if (node.next) this.tail = node.next;
+        else return false;
+
+        this.size--;
+        return true;
     }
 
     /**
