@@ -8,8 +8,6 @@ LaunchMenu runs in the background, and launches when the user presses the "open 
 
 https://user-images.githubusercontent.com/7938900/119280109-c0d71680-bc27-11eb-93f9-b969751b639a.mp4
 
-introduction.webm)
-
 Contact us if you want to contribute to the project.
 
 For an extensive list of features please see the [LaunchMenu website](https://launchmenu.github.io/). For an extensive list of built-in applets see the [applets section of the website](https://launchmenu.github.io/#utility-applets).
