@@ -43,6 +43,7 @@
     "devDependencies": {
         "@testing-library/jest-dom": "^5.5.0",
         "@testing-library/react": "^10.0.3",
+        "@types/auto-launch": "^5.0.1",
         "@types/jest": "^26.0.0",
         "@types/react": "^17.0.0",
         "electron": "^11.2.1",
@@ -53,7 +54,7 @@
     },
     "dependencies": {
         "@launchmenu/core": "^0.0.5-alpha.20",
-        "regedit": "^3.0.3"
+        "auto-launch": "^5.0.5"
     },
     "gitHead": "3949c98b3ab4954d2b8351d98283fecca72b7e74",
     "publishConfig": {

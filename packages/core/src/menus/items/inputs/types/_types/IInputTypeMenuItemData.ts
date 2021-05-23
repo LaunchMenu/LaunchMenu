@@ -1,5 +1,8 @@
+import {IDataHook} from "model-react";
+import {ReactElement} from "react";
 import {ICategory} from "../../../../../actions/types/category/_types/ICategory";
 import {ISimpleSearchPatternMatcher} from "../../../../../actions/types/search/_types/ISimpleSearchPatternMatcher";
+import {IThemeIcon} from "../../../../../styling/theming/_types/IBaseTheme";
 import {IViewStackItemView} from "../../../../../uiLayers/_types/IViewStackItem";
 import {ISubscribable} from "../../../../../utils/subscribables/_types/ISubscribable";
 import {ISubscribableActionBindings} from "../../../_types/ISubscribableActionBindings";
@@ -22,6 +25,11 @@ export type IInputTypeMenuItemData = {
     category?: ICategory;
     /** Content to show when this item is selected */
     content?: IViewStackItemView;
+    /** The icon for the item */
+    icon?:
+        | IThemeIcon
+        | ReactElement
+        | ((h?: IDataHook) => IThemeIcon | ReactElement | undefined);
     /** The extra action bindings */
     actionBindings?: ISubscribableActionBindings;
     /** Whether the field should be resetable to the initial value, defaults to false */

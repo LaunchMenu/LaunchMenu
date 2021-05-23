@@ -14,6 +14,8 @@ export type IMenuItemFrameProps = {
     item?: IMenuItem;
     /** Whether to make the background transparent */
     transparent?: boolean;
+    /** Whether to make the item appear disabled, defaults to whether the item is not selectable */
+    disabled?: boolean;
     /** Custom color overrides */
     colors?: {
         selection?: IColors;

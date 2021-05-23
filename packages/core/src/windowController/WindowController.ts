@@ -1,5 +1,6 @@
-import {BrowserWindow, shell} from "electron";
+import {BrowserWindow, shell, ipcMain} from "electron";
 import Path from "path";
+import {standardWindowSize} from "./standardWindowSize";
 
 export class WindowController {
     protected window: BrowserWindow;
@@ -16,8 +17,7 @@ export class WindowController {
     public constructor() {
         // Create the browser window
         this.window = new BrowserWindow({
-            width: 700,
-            height: 450,
+            ...standardWindowSize,
             frame: false,
             transparent: true,
             resizable: false,
@@ -33,7 +33,7 @@ export class WindowController {
 
         // Load the index.html of the app
         const indexPath = Path.join(__dirname, "index.html");
-        this.window.loadURL(indexPath);
+        this.window.loadFile(indexPath);
 
         // Handle links
         const webview = this.window.webContents;
@@ -63,6 +63,11 @@ export class WindowController {
         // Track whether the window has been shown. To be used by the installer
         this.shown = new Promise(res => {
             this.window.on("show", () => res());
+        });
+
+        // Check if window is closed by user
+        this.window.on("close", () => {
+            ipcMain.emit("shutdown");
         });
     }
 

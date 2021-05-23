@@ -8,7 +8,7 @@ import {IBackgroundColorData} from "./_types/IBackgroundColorData";
  * A context to pass background color info down the tree, used by menu items, since their bg changes based on selection
  */
 export const BackgroundColorContext = createContext<IBackgroundColorData>({
-    isDark: false,
+    isHighlight: false,
 });
 
 /**
@@ -19,7 +19,7 @@ export const BackgroundColorProvider: FC<{isDark?: boolean; color?: string | num
     color,
     children,
 }) => {
-    const valueRef = useRef<IBackgroundColorData>({isDark: false});
+    const valueRef = useRef<IBackgroundColorData>({isHighlight: false});
     const inpRef = useRef<{
         color?: string | number;
         isDark?: boolean;
@@ -35,15 +35,21 @@ export const BackgroundColorProvider: FC<{isDark?: boolean; color?: string | num
                 typeof color == "string" && !!theme.color[color as IThemeColor];
             const c = isThemeColor ? theme.color[color as IThemeColor] : color;
             if (isDark === undefined) isDark = new Color(c).isDark();
+            const isHighlight = isThemeColor
+                ? !["bgPrimary", "bgSecondary", "bgTertiary"].includes(
+                      color as IThemeColor
+                  )
+                : isDark != new Color(theme.color.bgPrimary).isDark();
 
             valueRef.current = {
-                isDark: isDark,
+                isHighlight: isHighlight,
+                isDark,
                 color: c,
                 themeColorName: isThemeColor ? (color as string) : undefined,
             };
         } else {
             // Otherwise just forward the isDark property
-            valueRef.current = {isDark: isDark || false};
+            valueRef.current = {isHighlight: isDark || false};
         }
 
         // Update the input data to later compare for changes

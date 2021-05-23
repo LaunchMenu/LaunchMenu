@@ -10,6 +10,7 @@ import {settingPatternMatcher} from "./settingPatternMatcher";
  */
 export function createStringSetting(data: IStringMenuItemData): IFieldMenuItem<string> {
     return createStringMenuItem({
+        icon: "settings",
         resetable: true,
         searchPattern: settingPatternMatcher,
         ...data,

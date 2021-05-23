@@ -13,6 +13,7 @@ export function createFileSetting(
     data: IFileMenuItemData
 ): IFieldMenuItem<string> & ISettingConfigurer {
     return createFileMenuItem({
+        icon: "settings",
         resetable: true,
         searchPattern: settingPatternMatcher,
         ...data,

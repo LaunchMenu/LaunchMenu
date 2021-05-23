@@ -30,8 +30,8 @@ export function createExitContextMenuBinding(
                         session?.goHome();
                         hideWindow();
                     },
-                    shortcut: context =>
-                        context.settings.get(settings).controls.exit.get(),
+                    shortcut: (context, h) =>
+                        context.settings.get(settings).controls.exit.get(h),
                 }),
             },
             windowManagementFolderHandler
@@ -42,8 +42,8 @@ export function createExitContextMenuBinding(
                 item: createStandardMenuItem({
                     name: "Exit keep state",
                     onExecute: hideWindow,
-                    shortcut: context =>
-                        context.settings.get(settings).controls.exitState.get(),
+                    shortcut: (context, h) =>
+                        context.settings.get(settings).controls.exitState.get(h),
                 }),
             },
             windowManagementFolderHandler
@@ -54,8 +54,8 @@ export function createExitContextMenuBinding(
                 item: createStandardMenuItem({
                     name: "Restart",
                     onExecute: () => LM.restart(),
-                    shortcut: context =>
-                        context.settings.get(settings).controls.restart.get(),
+                    shortcut: (context, h) =>
+                        context.settings.get(settings).controls.restart.get(h),
                 }),
             },
             windowManagementFolderHandler
@@ -66,8 +66,8 @@ export function createExitContextMenuBinding(
                 item: createStandardMenuItem({
                     name: "Quit",
                     onExecute: () => LM.shutdown(),
-                    shortcut: context =>
-                        context.settings.get(settings).controls.shutdown.get(),
+                    shortcut: (context, h) =>
+                        context.settings.get(settings).controls.shutdown.get(h),
                 }),
             },
             windowManagementFolderHandler

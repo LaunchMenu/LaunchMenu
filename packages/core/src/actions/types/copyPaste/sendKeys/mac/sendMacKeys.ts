@@ -48,8 +48,13 @@ export async function sendMacKeys(keys: ISendKey[]): Promise<void> {
     await run((sequence: IMergedKeys[]) => {
         const events = Application("System Events");
         sequence.forEach(data => {
-            if ("keys" in data) events.keystroke(data.keys, {using: data.modifiers});
-            if ("codes" in data) events.keyCode(data.codes, {using: data.modifiers});
+            if ("keys" in data)
+                events.keystroke(
+                    data.keys,
+                    data.modifiers ? {using: data.modifiers} : {}
+                );
+            if ("codes" in data)
+                events.keyCode(data.codes, data.modifiers ? {using: data.modifiers} : {});
         });
     }, mergedKeys);
 }

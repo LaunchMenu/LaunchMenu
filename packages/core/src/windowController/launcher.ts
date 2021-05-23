@@ -13,6 +13,8 @@ export function launch(): Promise<{
     show: () => void;
     /** A promise that resolves once the window has been opened in some way */
     shown: Promise<void>;
+    /** Used to fully exit LM */
+    exit: () => void;
 }> {
     let allowQuit = false;
     app.on("will-quit", event => {
@@ -29,6 +31,7 @@ export function launch(): Promise<{
                     res({
                         show: () => windowController.show(),
                         shown: windowController.shown,
+                        exit: () => ipcMain.emit("shutdown"),
                     })
                 );
 
@@ -54,7 +57,10 @@ export function launch(): Promise<{
                 };
 
                 ipcMain.on("restart", restart);
+                let quit = false;
                 ipcMain.on("shutdown", async () => {
+                    if (quit) return;
+                    quit = true;
                     await windowController.destroy();
                     allowQuit = true;
                     app.quit();

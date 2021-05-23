@@ -29,8 +29,8 @@ export function handleContentScrollInput(
         };
 
     if (patterns.contentUp.matches(event)) {
-        scrollContent(content, -scrollSpeed);
+        return scrollContent(content, -scrollSpeed);
     } else if (patterns.contentDown.matches(event)) {
-        scrollContent(content, scrollSpeed);
+        return scrollContent(content, scrollSpeed);
     }
 }

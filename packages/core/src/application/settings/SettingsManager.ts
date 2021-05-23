@@ -217,7 +217,7 @@ export class SettingsManager {
         const settings = allSettings.find(({ID}) => appletID == ID);
         if (settings) {
             settings.file.destroy();
-            this.appletSettings.set(allSettings.filter(({ID}) => ID == appletID));
+            this.appletSettings.set(allSettings.filter(({ID}) => ID != appletID));
         }
     }
 }

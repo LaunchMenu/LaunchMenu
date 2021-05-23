@@ -90,6 +90,16 @@ export class KeyPattern {
             .join(", ");
     }
 
+    // Serialization
+    /**
+     * Serializes the pattern
+     * @returns The serialized pattern
+     */
+    public serialize(): IKeyArrayPatternData[] {
+        return this.patterns;
+    }
+
+    // Helpers
     /**
      * Retrieves the purely string representation of a key pattern
      * @param keys The keys in the pattern
@@ -115,6 +125,9 @@ export class KeyPattern {
      */
     public static sortKeys(keys: string[]): string[] {
         const codes = {
+            meta: -4,
+            metaLeft: -4,
+            metaRight: -4,
             ctrl: -3,
             controlLeft: -3,
             controlRight: -3,
@@ -130,14 +143,5 @@ export class KeyPattern {
             const code2 = codes[b] ?? b.charCodeAt(0);
             return code1 - code2;
         });
-    }
-
-    // Serialization
-    /**
-     * Serializes the pattern
-     * @returns The serialized pattern
-     */
-    public serialize() {
-        return this.patterns;
     }
 }

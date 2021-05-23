@@ -4,6 +4,7 @@ import hmr from "@launchmenu/hmr";
 import {ipcRenderer} from "electron";
 
 export function startApplication() {
+    // Globally inject a DEV variable indicating whether running in production or development mode
     global.DEV = process.env.NODE_ENV == "dev";
 
     // Prevent accidental global close usage

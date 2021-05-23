@@ -5,5 +5,5 @@ import {createStandardSearchPatternMatcher} from "../../actions/types/search/cre
  */
 export const settingPatternMatcher = createStandardSearchPatternMatcher({
     name: "Settings",
-    matcher: /^s:/,
+    matcher: /^(s|setting):\s*/,
 });

@@ -112,3 +112,7 @@ packages/core/data
 recordings/
 
 eslintLog.tap
+
+.DS_Store
+recordings/
+

@@ -1,0 +1,71 @@
+{
+    "name": "@launchmenu/applet-lm-recorder",
+    "version": "0.0.5-alpha.20",
+    "description": "An applet to show some information for when first using LaunchMenu",
+    "types": "build/applet/index.d.ts",
+    "files": [
+        "build/**/*"
+    ],
+    "main": "build/applet/index.js",
+    "scripts": {
+        "build": "lm-build-tools --build --production",
+        "dev": "lm-build-tools --watch",
+        "start": "lm-build-tools --launch --production",
+        "start:dev": "lm-build-tools --launch",
+        "clean": "lm-build-tools --cleanup",
+        "test": "jest -i",
+        "test-watch": "jest --watch -i",
+        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\"",
+        "prepare": "npm run build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/LaunchMenu/LaunchMenu.git"
+    },
+    "keywords": [
+        "LaunchMenu",
+        "Record",
+        "Video",
+        "Applet",
+        "LaunchMenu Applet"
+    ],
+    "author": "Tar van Krieken",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/LaunchMenu/LaunchMenu/issues"
+    },
+    "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/core-applets/help#readme",
+    "peerDependencies": {
+        "model-react": "^4.0.1",
+        "react": "^17.0.0"
+    },
+    "dependencies": {
+        "@launchmenu/hmr": "^0.0.5-alpha.19",
+        "@ffmpeg-installer/ffmpeg": "^1.0.20",
+        "fluent-ffmpeg": "^2.1.2",
+        "@launchmenu/core": "^0.0.5-alpha.20",
+        "color": "^3.1.2",
+        "jimp": "^0.16.1",
+        "react-transition-group": "^4.4.1",
+        "uuid": "^8.2.0"
+    },
+    "devDependencies": {
+        "@testing-library/jest-dom": "^5.5.0",
+        "@testing-library/react": "^10.0.3",
+        "@types/dom-mediacapture-record": "^1.0.7",
+        "@types/ffmpeg-installer__ffmpeg": "^1.0.0",
+        "@types/fluent-ffmpeg": "^2.1.17",
+        "@types/jest": "^26.0.0",
+        "@types/react": "^17.0.0",
+        "@types/react-transition-group": "^4.4.1",
+        "@types/w3c-image-capture": "^1.0.2",
+        "jest": "^26.0.1",
+        "model-react": "^4.0.1",
+        "react": "^17.0.0",
+        "ts-jest": "^26.1.0"
+    },
+    "gitHead": "3949c98b3ab4954d2b8351d98283fecca72b7e74",
+    "publishConfig": {
+        "access": "public"
+    }
+}

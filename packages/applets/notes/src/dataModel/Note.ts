@@ -16,14 +16,12 @@ export class Note {
     protected notesSource: NotesSource;
 
     // Manage the note file
-    protected file = new DataCacher<
-        | {
+    protected file = new DataCacher< {
               file: File;
               fileSaver: FileAutoSaver;
               fileReloader: FileAutoReloader;
           }
-        | undefined
-    >((h, prev) => {
+        | undefined    >((h, prev) => {
         const filePath = this.dataSource(h).location;
 
         if (prev) {

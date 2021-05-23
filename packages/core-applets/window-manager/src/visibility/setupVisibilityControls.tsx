@@ -24,10 +24,8 @@ export function setupVisibilityControls(
         debounce: -1,
     }).listen(open => {
         if (open) {
-            document.body.classList.add("noTransition");
             setTimeout(() => {
                 document.body.style.visibility = "inherit";
-                document.body.classList.remove("noTransition");
             }, 50);
 
             window.show();
@@ -48,12 +46,15 @@ export function setupVisibilityControls(
     const showWindow = () => LM.setWindowOpen(true);
 
     // Auto hide when losing focus
-    const hideSettingObserver = new Observer(h =>
-        settingsManager.getSettingsContext(h).get(settings).visibility.hideOnBlur.get(h)
-    ).listen(hideOnBlur => {
-        window.removeListener("blur", hideWindow);
-        if (hideOnBlur) window.on("blur", hideWindow);
-    }, true);
+    const blurListener = () => {
+        LM.getKeyHandler().resetKeys();
+        const hideOnBlur = settingsManager
+            .getSettingsContext()
+            .get(settings)
+            .visibility.hideOnBlur.get();
+        if (hideOnBlur) hideWindow();
+    };
+    window.on("blur", blurListener);
 
     // Shortcut handler
     let disposeOpenShortcutHandler: () => void;
@@ -81,6 +82,10 @@ export function setupVisibilityControls(
         }
     }, true);
 
+    // Hide the taskbar/dock icons for LM
+    remote.app.dock?.hide();
+    window.setSkipTaskbar(true);
+
     // Setup a listener to hide the window when hitting escape when in the home screen
     const exitListener = hideWindow;
     const sessionObserver = new Observer(h =>
@@ -95,7 +100,6 @@ export function setupVisibilityControls(
         destroy: () => {
             window.removeListener("blur", hideWindow);
             shortcutSettingObserver.destroy();
-            hideSettingObserver.destroy();
             debugSettingObserver.destroy();
             visibilityObserver.destroy();
             sessionObserver.destroy();

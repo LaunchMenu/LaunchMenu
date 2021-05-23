@@ -1,14 +1,14 @@
 import {DataCacher, IDataHook} from "model-react";
-import {hasHigherOrEqualPriority} from "../../../menus/menu/priority/hasHigherOrEqualPriority";
-import {getHooked} from "../../../utils/subscribables/getHooked";
-import {createAction} from "../../createAction";
-import {collectContextMenuItems} from "../collectContextMenuItems";
-import {contextMenuAction} from "../contextMenuAction";
 import {IContextMenuItemData} from "../_types/IContextMenuItemData";
 import {IContextFolderAction} from "./_types/IContextFolderAction";
 import {IContextFolderHandlerConfig} from "./_types/IContextFolderHandlerConfig";
-import {Priority} from "../../../menus/menu/priority/Priority";
 import {IQuery} from "../../../menus/menu/_types/IQuery";
+import {Priority} from "../../../menus/menu/priority/Priority";
+import {getHooked} from "../../../utils/subscribables/getHooked";
+import {hasHigherOrEqualPriority} from "../../../menus/menu/priority/hasHigherOrEqualPriority";
+import {createAction} from "../../createAction";
+import {collectContextMenuItems} from "../collectContextMenuItems";
+import {contextMenuAction} from "../contextMenuAction";
 import {createContextFolderMenuItem} from "../../../menus/items/types/createContextFolderMenuItem";
 
 /**

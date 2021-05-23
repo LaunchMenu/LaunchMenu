@@ -1,13 +1,12 @@
-import {pasteText} from "../pasteText";
 import {copyText} from "../copyText";
-import {insertText} from "../insertText";
 import {KeyEvent} from "../../../keyHandler/KeyEvent";
 import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {TSettingsFromFactory} from "../../../settings/_types/TSettingsFromFactory";
 import {createFieldControlsSettingsFolder} from "../../../application/settings/baseSettings/controls/createFieldControlsSettingsFolder";
 import {isFieldControlsSettingsFolder} from "./isFieldControlsSettingsFolder";
 import {ITextEditTarget} from "../_types/ITextEditTarget";
-import {getEditTargetTextField} from "../performNormalizedTextEdit";
+import {InsertTextCommand} from "../commands/InsertTextCommand";
+import {PasteTextCommand} from "../commands/PasteTextCommand";
 
 /**
  * Handles copying and pasting of text
@@ -16,9 +15,9 @@ import {getEditTargetTextField} from "../performNormalizedTextEdit";
  * @param patterns The key patterns to detect, or the base settings to extract them from
  * @returns Whether the event was caught
  */
-export function handleCopyPasteInput(
+export async function handleCopyPasteInput(
     event: KeyEvent,
-    targetField: ITextEditTarget,
+    {textField, onChange}: ITextEditTarget,
     patterns:
         | {
               copy: KeyPattern;
@@ -26,7 +25,7 @@ export function handleCopyPasteInput(
               cut: KeyPattern;
           }
         | TSettingsFromFactory<typeof createFieldControlsSettingsFolder>
-): void | boolean {
+): Promise<void | boolean> {
     if (isFieldControlsSettingsFolder(patterns))
         patterns = {
             copy: patterns.copy.get(),
@@ -35,15 +34,17 @@ export function handleCopyPasteInput(
         };
 
     if (patterns.copy.matches(event)) {
-        if (copyText(getEditTargetTextField(targetField))) return true;
+        if (await copyText(textField)) return true;
     }
     if (patterns.cut.matches(event)) {
-        if (copyText(getEditTargetTextField(targetField))) {
-            insertText(targetField, "");
+        if (await copyText(textField)) {
+            onChange(new InsertTextCommand(textField, ""));
             return true;
         }
     }
     if (patterns.paste.matches(event)) {
-        if (pasteText(targetField)) return true;
+        const cmd = new PasteTextCommand(textField);
+        onChange(cmd);
+        if (await cmd.pasted) return true;
     }
 }

@@ -10,6 +10,7 @@ import {settingPatternMatcher} from "./settingPatternMatcher";
  */
 export function createNumberSetting(data: INumberMenuItemData): IFieldMenuItem<number> {
     return createNumberMenuItem({
+        icon: "settings",
         resetable: true,
         searchPattern: settingPatternMatcher,
         ...data,

@@ -89,7 +89,8 @@ export const keyIds = {
     bracketRight: "bracketRight",
     quote: "quote",
     space: "space",
-    printscreen: "printscreen",
+    printScreen: "printScreen",
+    contextMenu: "contextMenu",
 } as const;
 
 /** A valid key id */

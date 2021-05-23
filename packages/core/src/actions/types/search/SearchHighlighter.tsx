@@ -23,7 +23,7 @@ export const SearchHighlighter: LFC<{
     searchHighlighter: ISearchHighlighter;
 }> = memo(({text: inpText, query, searchHighlighter, searchText}) => {
     const [h] = useDataHook();
-    const {isDark} = useBackgroundColor();
+    const {isHighlight} = useBackgroundColor();
 
     // Get the highlight data
     const text = getHooked(inpText, h);
@@ -60,7 +60,7 @@ export const SearchHighlighter: LFC<{
     }
 
     // Make the highlighting dark, if the current background isn't dark
-    if (!isDark)
+    if (!isHighlight)
         normalizedNodes.forEach(node => node.tags.push(highlightTags.darkBackground));
 
     // Highlight the data

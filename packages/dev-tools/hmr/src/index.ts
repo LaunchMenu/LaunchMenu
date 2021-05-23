@@ -87,3 +87,17 @@ export type HMRWatcher = {
      */
     destroy(fully?: boolean): void;
 };
+
+/**
+ * Requires without storing child references, such that HMR doesn't think you're dependent on the module and you should be invalidated
+ * @param path The path to be required
+ * @returns The output of the require call
+ */
+export function referencelessRequire(path: string): any {
+    try {
+        const result = require(path);
+        return result;
+    } finally {
+        module.children = [];
+    }
+}

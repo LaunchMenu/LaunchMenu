@@ -48,6 +48,7 @@ export type IAceEditorOptions = {
     dragEnabled?: boolean;
     focusTimout?: number;
     tooltipFollowsMouse?: boolean;
+    enableMultiselect?: boolean;
 
     // Session options
     firstLineNumber?: number;
@@ -60,7 +61,8 @@ export type IAceEditorOptions = {
     indentedSoftWrap?: boolean;
     foldStyle?: "manual" | "markbegin" | "markbeginend";
     mode?: string;
-} & { // Custom options
+} & {
+    // Custom options
     unfocusable?: boolean;
     followCursor?: boolean;
 };

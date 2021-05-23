@@ -12,15 +12,23 @@ export type IFile = ISavable & {
     getPath(): string;
 
     /**
-     * Retrieves the raw data that could be written to disk
-     * @param hook The hook to subscribe to changes and possibly indicate to reload the data
-     * @returns The current data
+     * Retrieves the last date at which this virtual file instance was saved (time represents when saving finished)
+     * @param hook The hook to subscribe to changes
+     * @returns The date represented in milliseconds using Date.now() or 0 if not saved yet
      */
-    getRaw(hook?: IDataHook): any;
+    getLatestSaveDate(hook?: IDataHook): number;
 
     /**
-     * Reads the current raw data on disk for this file
-     * @returns The raw data on disk
+     * Retrieves the last date at which this virtual file instance was loaded from disk (time represents when loading finished)
+     * @param hook The hook to subscribe to changes
+     * @returns The date represented in milliseconds using Date.now() or 0 if not loaded yet
      */
-    readRaw(): Promise<any>;
+    getLatestLoadDate(hook?: IDataHook): number;
+
+    /**
+     * Retrieves the last date at which this virtual file instance's contents were changed'
+     * @param hook The hook to subscribe to changes
+     * @returns The date represented in milliseconds using Date.now() or 0 if not loaded yet
+     */
+    getLatestChangeDate(hook?: IDataHook): number;
 };

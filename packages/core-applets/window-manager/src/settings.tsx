@@ -1,11 +1,11 @@
 import React from "react";
-import {info} from "./";
 import {
     createBooleanSetting,
     createGlobalKeyPatternSetting,
     createKeyPatternSetting,
     createSettings,
     createSettingsFolder,
+    isPlatform,
     KeyPattern,
     scrollableContentHandler,
 } from "@launchmenu/core";
@@ -15,6 +15,13 @@ import {Field} from "model-react";
 import {SizeInputContent} from "./size/SizeInputContent";
 import {BrowserWindow, remote} from "electron";
 import {createDebuggerVisibilitySetting} from "./visibility/createDebuggerVisibilitySetting";
+
+export const info = {
+    name: "Window manager",
+    description: "An window to manage LaunchMenu's window",
+    version: "0.0.0",
+    icon: "window",
+} as const;
 
 export const minSize = {
     width: 600,
@@ -64,6 +71,10 @@ export const settings = createSettings({
                             />
                         ),
                     ],
+                }),
+                windowShadow: createBooleanSetting({
+                    name: "Window shadow",
+                    init: isPlatform("mac") ? false : true,
                 }),
                 visibility: createSettingsFolder({
                     name: "Visibility",

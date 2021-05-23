@@ -53,6 +53,7 @@ export function createNumberMenuItem({
                           max,
                           baseValue,
                           increment,
+                          checkValidity,
                       })
                     : promptNumberInputExecuteHandler.createBinding({
                           field,
@@ -62,6 +63,7 @@ export function createNumberMenuItem({
                           max,
                           baseValue,
                           increment,
+                          checkValidity,
                       }),
             ]),
             ...rest,
