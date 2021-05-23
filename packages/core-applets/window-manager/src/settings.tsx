@@ -80,7 +80,7 @@ export const settings = createSettings({
                     children: {
                         open: createGlobalKeyPatternSetting({
                             name: "Open LaunchMenu",
-                            init: new KeyPattern("ctrl+o"),
+                            init: new KeyPattern("meta+space"),
                         }),
                         exit: createKeyPatternSetting({
                             name: "Exit LaunchMenu",

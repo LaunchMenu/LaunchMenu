@@ -50,7 +50,7 @@
         "fuzzy-rater": "^0.0.0",
         "mkdirp": "^1.0.4",
         "model-react": "^4.0.1",
-        "node-global-key-listener": "0.0.3",
+        "node-global-key-listener": "0.0.4",
         "react": "^17.0.0",
         "react-dom": "^17.0.0",
         "react-icons": "^3.10.0",

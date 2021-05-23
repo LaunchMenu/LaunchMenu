@@ -7790,10 +7790,10 @@ node-fetch@^2.5.0, node-fetch@^2.6.1:
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
   integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
 
-node-global-key-listener@0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/node-global-key-listener/-/node-global-key-listener-0.0.3.tgz#bb72fc20cb5eb21161a3ca5751d21870c922e5dc"
-  integrity sha512-iZmobJzy9xD44bIR5UT+w+A3sWkZsD+letKUcU7Mh0SzJtlclvc1Pow18cPpHD/OVswFgOELmGPh5/s1tx/5DQ==
+node-global-key-listener@0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/node-global-key-listener/-/node-global-key-listener-0.0.4.tgz#1417ffc52c9396a66a1fc9aad9d7510212665653"
+  integrity sha512-rREEqi+kD2jpVErV2US3qDqhXnqRjgrZEFS+gtLIpT83huSdW5KxGBf3axyRh8K4lJ61B3E50zfQ9uMc5B1JmQ==
 
 node-gyp@^5.0.2, node-gyp@^5.1.0:
   version "5.1.1"

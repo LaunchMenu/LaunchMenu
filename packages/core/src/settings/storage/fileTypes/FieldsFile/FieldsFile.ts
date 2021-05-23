@@ -17,7 +17,6 @@ import {IFieldFileChangeListener} from "./_types/IFieldsFileChangeListener";
 import {IField} from "../../../../_types/IField";
 import {ISerializeField} from "./_types/ISerializedField";
 import {promisify} from "util";
-import {getLCS} from "../../../../utils/getLCS";
 import {IFile} from "../_types/IFile";
 
 /**
@@ -198,6 +197,12 @@ export class FieldsFile<F extends IFieldsTree> implements IFile {
     protected decode(data: IJSON, fields: IFieldsTree): void {
         ExtendedObject.map(data, (val, key) => {
             const field = fields[key];
+            if (!field) {
+                console.error(
+                    `Property ${key} not found in the field structure for '${this.filePath}'`
+                );
+                return;
+            }
             if (
                 "setSerialized" in field &&
                 field.setSerialized instanceof Function &&
