@@ -8,7 +8,9 @@ LaunchMenu runs in the background, and launches when the user presses the "open 
 
 ![img](https://launchmenu.github.io/applets/dictionary/search.png)
 
-![video](https://launchmenu.github.io/demoVideos/introduction.webm)
+![video](https://user-images.githubusercontent.com/7938900/119280109-c0d71680-bc27-11eb-93f9-b969751b639a.mp4)
+
+introduction.webm)
 
 Contact us if you want to contribute to the project.
 
