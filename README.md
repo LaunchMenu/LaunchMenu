@@ -6,8 +6,6 @@ LaunchMenu is an free, open source, cross-platform utility application which bri
 
 LaunchMenu runs in the background, and launches when the user presses the "open LaunchMenu" hotkey (`⌘ + space`/`⊞ + space` by default).
 
-![img](https://launchmenu.github.io/applets/dictionary/search.png)
-
 https://user-images.githubusercontent.com/7938900/119280109-c0d71680-bc27-11eb-93f9-b969751b639a.mp4
 
 introduction.webm)
