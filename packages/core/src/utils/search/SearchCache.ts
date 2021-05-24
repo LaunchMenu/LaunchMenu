@@ -69,7 +69,6 @@ export class SearchCache<K extends [any, ...any], V> {
         const node = this.queue.push(keys);
         const value = this.create(...keys);
         this.add(this.map, keys, value, node);
-
         if (this.queue.getSize() > this.maxSize) {
             const removeKey = this.queue.pop();
             if (removeKey) this.remove(this.map, removeKey);

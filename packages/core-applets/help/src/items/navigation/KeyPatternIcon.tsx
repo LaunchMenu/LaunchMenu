@@ -40,9 +40,9 @@ export const KeyPatternIcon: LFC<{patterns: KeyPattern | string | string[]}> = (
     if (uis.length > 1) {
         return (
             <>
-                {uis.reduce((patterns, pattern) => {
+                {uis.reduce((patterns, pattern, i) => {
                     const wrappedPattern = (
-                        <Box display="inline-block" background="bgTertiary">
+                        <Box display="inline-block" background="bgTertiary" key={i}>
                             {pattern}
                         </Box>
                     );

@@ -10,6 +10,7 @@ import Path from "path";
 import {promisify} from "util";
 import {InstallerWindow} from "./installerWindow/InstallerWindow";
 
+app.commandLine.appendSwitch("ignore-certificate-errors", "true"); // https://github.com/electron/electron/issues/25354#issuecomment-739804891
 global.DEV = process.env.NODE_ENV == "dev";
 
 launch();
@@ -83,7 +84,7 @@ async function firstTimeSetup(
         });
         await promisify(FS.writeFile)(
             Path.join(process.cwd(), "errorReport.txt"),
-            e.toString(),
+            e.toString() + "\n" + (e instanceof Error ? e.stack : ""),
             "utf8"
         );
         console.error(e);
