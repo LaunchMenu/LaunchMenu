@@ -45,17 +45,22 @@ export class SearchCache<K extends [any, ...any], V> {
      */
     public get(...keys: K): V {
         // If the map contains the value, return it
-        let map: Map<any, any> | IMapVal<K, V> = this.map;
-        for (let key of keys) {
+        let map: Map<any, any> = this.map;
+        for (let i = 0; i < keys.length - 1; i++) {
+            const key = keys[i];
             if (!(map instanceof Map)) break;
             map = map.get(key);
         }
-        if (map) {
-            const {node, value} = map as IMapVal<K, V>;
+
+        const lastKey = keys[keys.length - 1];
+        const data: IMapVal<K, V> = map?.get(lastKey);
+        if (data) {
+            const {node, value} = data;
 
             // Add the keys to the back of the queue
             this.queue.removeNode(node);
-            this.queue.push(keys);
+            const newNode = this.queue.push(keys);
+            map.set(lastKey, {value, node: newNode});
 
             return value;
         }
@@ -64,6 +69,7 @@ export class SearchCache<K extends [any, ...any], V> {
         const node = this.queue.push(keys);
         const value = this.create(...keys);
         this.add(this.map, keys, value, node);
+
         if (this.queue.getSize() > this.maxSize) {
             const removeKey = this.queue.pop();
             if (removeKey) this.remove(this.map, removeKey);
