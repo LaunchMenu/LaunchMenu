@@ -39,6 +39,7 @@ describe("SearchCache", () => {
                 expect(cache.get(1)).toBe(v1);
                 const v4 = cache.get(4);
                 expect(cache.get(1)).toBe(v1);
+                expect((cache as any).queue.getSize()).toBe(3);
             });
         });
         describe("multiple part keys", () => {
@@ -87,6 +88,7 @@ describe("SearchCache", () => {
                 expect(cache.get("A", 1)).toBe(vA1);
                 const vB2 = cache.get("B", 2);
                 expect(cache.get("A", 1)).toBe(vA1);
+                expect((cache as any).queue.getSize()).toBe(3);
             });
         });
         it("Cleans up the cache", () => {
