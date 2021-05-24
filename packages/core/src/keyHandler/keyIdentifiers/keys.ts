@@ -91,7 +91,7 @@ export const keyIdMapping: {[K in IKeyId]: IKeyName} = {
     pageDown: "pageDown",
     pageUp: "pageUp",
     period: "period",
-    printscreen: "printscreen",
+    printScreen: "printScreen",
     quote: "quote",
     semicolon: "semicolon",
     shiftLeft: "shift",

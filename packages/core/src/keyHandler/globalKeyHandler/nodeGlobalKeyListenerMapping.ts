@@ -103,7 +103,7 @@ export const nodeGlobalKeyListenerMapping: Record<IGlobalKey, IKeyId | undefined
     "NUMPAD MULTIPLY": undefined,
     "NUMPAD PLUS": undefined,
     "NUMPAD RETURN": undefined,
-    "PRINT SCREEN": "printscreen",
+    "PRINT SCREEN": "printScreen",
     "SCROLL LOCK": undefined,
     "SQUARE BRACKET CLOSE": "bracketRight",
     "SQUARE BRACKET OPEN": "bracketLeft",

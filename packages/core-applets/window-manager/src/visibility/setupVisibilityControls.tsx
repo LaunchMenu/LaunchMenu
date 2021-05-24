@@ -1,9 +1,8 @@
 import {IActionBinding, LaunchMenu} from "@launchmenu/core";
-import {BrowserWindow} from "electron";
+import {BrowserWindow, remote} from "electron";
 import {Observer} from "model-react";
 import {settings} from "../settings";
 import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
-import {returnFocus} from "./returnFocus";
 
 /**
  * Sets up all listeners and UI to control window visibility
@@ -37,8 +36,8 @@ export function setupVisibilityControls(
             document.body.getBoundingClientRect(); // Force reflow to hide the element visually asap
 
             setTimeout(() => {
-                window.hide();
                 onHide();
+                window.hide();
             }, 10);
         }
     });

@@ -16,6 +16,8 @@ export function launch(): Promise<{
     /** Used to fully exit LM */
     exit: () => void;
 }> {
+    ipcMain.on("log", (event, ...args) => console.log(...args));
+
     let allowQuit = false;
     app.on("will-quit", event => {
         if (!allowQuit) event.preventDefault();

@@ -20,12 +20,10 @@ export default declare({
         const settingsManager = LM.getSettingsManager();
 
         // Setup visibility controls
-        const {
-            destroy: destroyVisibilityControls,
-            exitBindings,
-        } = setupVisibilityControls(LM, window, () => {
-            returnFocus(window);
-        });
+        const {destroy: destroyVisibilityControls, exitBindings} =
+            setupVisibilityControls(LM, window, () => {
+                returnFocus(window);
+            });
 
         // Setup startup controls
         const destroyWindowController = setupStartupController(settingsManager, h =>

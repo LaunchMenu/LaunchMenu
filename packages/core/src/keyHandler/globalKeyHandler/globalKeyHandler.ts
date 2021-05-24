@@ -353,11 +353,11 @@ class GlobalKeyHandler {
         if (this.advancedManager && this.invokeListeners) {
             this.advancedManager.removeListener(this.invokeListeners);
             this.keyListeners = [];
+            this.advancedManager.kill();
         }
 
-        for (let shortcut in this.shortcutListeners) {
+        for (let shortcut in this.shortcutListeners)
             remote.globalShortcut.unregister(shortcut);
-        }
         this.shortcutListeners = {};
     }
 }
