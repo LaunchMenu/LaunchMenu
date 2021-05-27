@@ -8,8 +8,10 @@ import {advancedKeyInputEditAction} from "../handlers/keyPattern/advancedKeyInpu
 import {adjustSubscribable} from "../../../../utils/subscribables/adjustSubscribable";
 import {IKeyArrayPatternData} from "../handlers/keyPattern/_types/IKeyPatternData";
 import {ShortcutLabel} from "../../../../components/items/ShortcutLabel";
-import {globalKeyHandler} from "../../../../keyHandler/globalKeyHandler/globalKeyHandler";
 import {ITriggerablePatternMenuItem} from "./_types/ITriggerableKeyPatternMenuItem";
+import {ISettingConfigurer} from "../../../../settings/_types/ISettingConfigurer";
+import {LaunchMenu} from "../../../../application/LaunchMenu";
+import {v4 as uuid} from "uuid";
 
 /**
  * Creates a new global key pattern menu item, which can listens to key events even when LM isn't focused
@@ -24,8 +26,9 @@ export function createGlobalKeyPatternMenuItem({
     actionBindings = [],
     tags = [],
     resetUndoable = undoable,
+    keyHandler,
     ...rest
-}: IKeyPatternMenuItemData): ITriggerablePatternMenuItem {
+}: IKeyPatternMenuItemData): ITriggerablePatternMenuItem & ISettingConfigurer {
     // Pattern data maintenance
     const field = new Field(init);
     const serializableField = {
@@ -40,6 +43,7 @@ export function createGlobalKeyPatternMenuItem({
     const listeners: (() => void)[] = [];
     let observer: undefined | Observer<KeyPattern>;
     let removeInvoker: (() => void) | undefined;
+    const id = uuid();
 
     // Create and return the item
     return {
@@ -78,13 +82,19 @@ export function createGlobalKeyPatternMenuItem({
         }),
         // Add a method to register shortcut handlers
         onTrigger: (callback: () => void) => {
+            if (!keyHandler)
+                throw new Error(
+                    `"onTrigger" can not be used if no key handler is provided`
+                );
+            const kh = keyHandler;
+
             listeners.push(callback);
 
             // Register the shortcut listener and listen for setting changes to update it when needed
             if (listeners.length == 1) {
                 const updatePattern = () => {
                     removeInvoker?.();
-                    removeInvoker = globalKeyHandler.addShortcut(field.get(), () =>
+                    removeInvoker = kh.addShortcut(field.get(), () =>
                         listeners.forEach(listener => listener())
                     );
                 };
@@ -92,11 +102,11 @@ export function createGlobalKeyPatternMenuItem({
                 updatePattern();
             }
 
-            // Return the
+            // Return the remove callback
             return () => {
                 const index = listeners.indexOf(callback);
                 if (index != -1) {
-                    listeners.slice(index, 1);
+                    listeners.splice(index, 1);
 
                     // Dispose the listeners if this was the last one
                     if (listeners.length == 0) {
@@ -106,5 +116,13 @@ export function createGlobalKeyPatternMenuItem({
                 }
             };
         },
+        // Allow configuration of the absolute base path
+        configure: (data: {[LMConfigurationSymbol]?: LaunchMenu}) => {
+            const LM = data[LMConfigurationSymbol];
+            if (!keyHandler && LM) keyHandler = LM.getGlobalKeyHandler();
+        },
     };
 }
+
+/** The symbol that LM for field configuration is stored under */
+export const LMConfigurationSymbol = Symbol("LM");

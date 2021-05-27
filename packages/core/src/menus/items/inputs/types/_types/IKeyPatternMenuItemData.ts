@@ -1,3 +1,4 @@
+import {GlobalKeyHandler} from "../../../../../keyHandler/globalKeyHandler/GlobalKeyHandler";
 import {KeyPattern} from "../../../../../keyHandler/KeyPattern";
 import {IInputTypeMenuItemData} from "./IInputTypeMenuItemData";
 
@@ -5,4 +6,6 @@ import {IInputTypeMenuItemData} from "./IInputTypeMenuItemData";
 export type IKeyPatternMenuItemData = {
     /** The default value for the field */
     init: KeyPattern;
+    /** The global key handler to use for onTrigger */
+    keyHandler?: GlobalKeyHandler;
 } & IInputTypeMenuItemData;

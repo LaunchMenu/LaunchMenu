@@ -1,4 +1,4 @@
-import {DataCacher, Field, IDataHook, IDataRetriever} from "model-react";
+import {DataCacher, Field, IDataHook} from "model-react";
 import {SettingsContext} from "../../settings/SettingsContext";
 import {SettingsFile} from "../../settings/storage/fileTypes/SettingsFile";
 import {ISettingsFolderMenuItem} from "../../settings/_types/ISettingsFolderMenuItem";
@@ -6,9 +6,10 @@ import {IUUID} from "../../_types/IUUID";
 import {IApplet} from "../applets/_types/IApplet";
 import {ISettingsData} from "./_types/ISettingsData";
 import Path from "path";
-import {IAppletData} from "../applets/_types/IAppletData";
 import {fileInputBasePathConfigurationSymbol} from "../../menus/items/inputs/types/createFileMenuItem";
 import {ISettingsTree} from "../../settings/_types/ISettingsTree";
+import {LaunchMenu} from "../LaunchMenu";
+import {LMConfigurationSymbol} from "../../menus/items/inputs/types/createGlobalKeyPatternMenuItem";
 
 /**
  * Manages the settings within LaunchMenu
@@ -16,6 +17,7 @@ import {ISettingsTree} from "../../settings/_types/ISettingsTree";
 export class SettingsManager {
     protected settingsDirectory: string;
     protected dataDirectory: string;
+    protected LM: LaunchMenu;
 
     protected extraFiles = new Field([] as ISettingsData[]);
 
@@ -24,13 +26,16 @@ export class SettingsManager {
 
     /**
      * Creates a new settings manager, which auto loads the settings of the passed applets
+     * @param LM The LaunchMenu instance to pass to settings
      * @param settingsDirectory The directory to load the settings for the applets from
      * @param dataDirectory The directory that LM data is stored in
      */
     public constructor(
+        LM: LaunchMenu,
         settingsDirectory: string,
         dataDirectory: string = Path.join(settingsDirectory, "data")
     ) {
+        this.LM = LM;
         this.settingsDirectory = settingsDirectory;
         this.dataDirectory = dataDirectory;
     }
@@ -189,6 +194,7 @@ export class SettingsManager {
                 "appletData",
                 `${applet.ID}`
             ),
+            [LMConfigurationSymbol]: this.LM,
         });
 
         // Load the settings from the file if present

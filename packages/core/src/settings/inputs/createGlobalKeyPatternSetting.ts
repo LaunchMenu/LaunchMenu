@@ -12,6 +12,7 @@ export function createGlobalKeyPatternSetting(
     data: IKeyPatternMenuItemData
 ): ITriggerablePatternMenuItem {
     return createGlobalKeyPatternMenuItem({
+        icon: "settings",
         resetable: true,
         searchPattern: settingPatternMatcher,
         ...data,

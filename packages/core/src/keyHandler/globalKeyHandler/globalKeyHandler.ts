@@ -15,24 +15,42 @@ import {IGlobalKeyEvent} from "../_types/IGlobalKeyEvent";
 import {IKeyId} from "../keyIdentifiers/keyIds";
 import {IKeyMatcher, keyIdMapping} from "../keyIdentifiers/keys";
 import {IKeyName} from "../keyIdentifiers/keyNames";
+import {IDataHook, IDataRetriever, Observer} from "model-react";
 
-// TODO: find a library to wrap and get these events from
-class GlobalKeyHandler {
+/** A class that can be used for registering keyboard shortcuts. Should be used as a singleton obtained from LaunchMenu */
+export class GlobalKeyHandler {
     protected advancedManager: GlobalKeyboardListener | undefined;
 
-    protected invokeListeners: IGKL;
+    protected invokeListeners?: IGKL;
     protected keyListeners: IGlobalKeyListener[] = [];
-    protected shortcutListeners: Record<string, (() => void)[]> = {};
+    protected electronListeners: Record<string, (() => void)[]> = {};
+
+    // Track whether the handler is disposed in order to not register new handlers when it is
+    protected silentError = true; // TODO: May want to change this in the future and/or make it configurable (but it currently happens on every reload, so silent error is preferable)
+    protected disposed = false;
+
+    // Some methods to allow switching between electron's key listener and the custom key listener
+    protected useElectronListener: IDataRetriever<boolean>;
+    protected useElectronListenerObserver: Observer<boolean>;
+    protected currentUseElectronListener: boolean = false;
+    protected shortcutListeners: {
+        shortcut: KeyPattern;
+        callback: () => void;
+        dispose: () => void;
+    }[] = [];
 
     /**
      * Creates a new instance of the global key handler
+     * @param useElectronListener A data retriever to determine whether to force use electron's listener
      */
-    public constructor() {
+    public constructor(useElectronListener: IDataRetriever<boolean> = () => true) {
         try {
             this.advancedManager = new GlobalKeyboardListener();
         } catch (e) {
             console.error(e);
         }
+        this.useElectronListener = useElectronListener;
+        this.useElectronListenerObserver = this.setupShortcutMethodObserver();
     }
 
     /**
@@ -41,6 +59,10 @@ class GlobalKeyHandler {
      * @returns A function that can be invoked to remove the listener
      */
     public addListener(callback: IGlobalKeyListener): () => void {
+        if (this.disposed) {
+            if (this.silentError) return () => {};
+            throw new Error("Handler already disposed");
+        }
         if (!this.advancedManager)
             throw new Error("Global key listeners are not supported on this platform");
 
@@ -49,6 +71,8 @@ class GlobalKeyHandler {
         // If this is the first listener, add it to key hook
         if (this.keyListeners.length == 1) {
             this.invokeListeners = (event, held) => {
+                if (this.currentUseElectronListener) return;
+
                 const ev = this.convertKeyEvent(event, held);
                 if (!ev) return;
 
@@ -79,7 +103,7 @@ class GlobalKeyHandler {
             if (index != -1) this.keyListeners.splice(index, 1);
 
             // Remove the key hook listener if no listeners remain
-            if (this.keyListeners.length == 0) {
+            if (this.keyListeners.length == 0 && this.invokeListeners) {
                 this.advancedManager?.removeListener(this.invokeListeners);
             }
         };
@@ -97,6 +121,7 @@ class GlobalKeyHandler {
             [K in IGK]?: boolean;
         }
     ): IGlobalKeyEvent | undefined {
+        if (!event.name) return undefined;
         const key = nodeGlobalKeyListenerMapping[event.name];
         if (!key) return undefined;
 
@@ -125,9 +150,44 @@ class GlobalKeyHandler {
 
     /**
      * Checks whether global key listeners are supported on the current OS/environment
+     * @param hook The hook to subscribe to changes
+     * @returns Whether listeners are supported
      */
-    public areListenersSupported(): boolean {
-        return !!this.advancedManager;
+    public areListenersSupported(hook?: IDataHook): boolean {
+        return !this.useElectronListener(hook) && !!this.advancedManager;
+    }
+
+    /**
+     * Sets up an observer that takes care of moving the shortcut listeners if the setting changed
+     */
+    protected setupShortcutMethodObserver(): Observer<boolean> {
+        return new Observer(h => !this.areListenersSupported(h)).listen(useElectron => {
+            if (this.currentUseElectronListener != useElectron) {
+                this.currentUseElectronListener = useElectron;
+
+                // Dispose all the old listeners
+                const allListeners = this.shortcutListeners;
+                this.shortcutListeners = [];
+                allListeners.forEach(({dispose}) => dispose());
+
+                // Unregister all listeners
+                allListeners.forEach(bundle => {
+                    const newDispose = this.addShortcut(bundle.shortcut, bundle.callback);
+                    // Make sure that the original dispose method can still be used (since this was returned from the original addShortcut callback)
+                    bundle.dispose = newDispose;
+                });
+
+                // Add or remove the global listener
+                if (this.advancedManager && this.invokeListeners) {
+                    if (useElectron) {
+                        this.advancedManager.removeListener(this.invokeListeners);
+                        this.advancedManager.kill();
+                    } else {
+                        this.advancedManager.addListener(this.invokeListeners);
+                    }
+                }
+            }
+        }, true);
     }
 
     /**
@@ -137,9 +197,31 @@ class GlobalKeyHandler {
      * @returns A function that can be invoked to remove the shortcut
      */
     public addShortcut(shortcut: KeyPattern, callback: () => void): () => void {
-        if (!this.advancedManager) return this.addElectronShortcut(shortcut, callback);
+        if (this.disposed) {
+            if (this.silentError) return () => {};
+            throw new Error("Handler already disposed");
+        }
 
-        return this.addCustomShortcut(shortcut, callback);
+        const invalid = this.isShortcutInvalid(shortcut);
+        if (invalid) throw invalid[0].error;
+
+        // Use one of the two shortcut methods
+        let dispose: () => void;
+        if (!this.areListenersSupported())
+            dispose = this.addElectronShortcut(shortcut, callback);
+        else dispose = this.addCustomShortcut(shortcut, callback);
+
+        // Setup a callback to dispose all data associated to a shortcut
+        const fullDispose = () => {
+            const index = this.shortcutListeners.indexOf(bundle);
+            if (index != -1) this.shortcutListeners.splice(index, 1);
+            dispose();
+        };
+        const bundle = {shortcut, callback, dispose: fullDispose};
+        this.shortcutListeners.push(bundle);
+
+        // Note that bundle's fullDispose method can be changed throughout its lifetime, the bundle object mutates (to support dynamic `useElectronListener`)
+        return () => bundle.dispose();
     }
 
     /**
@@ -253,7 +335,7 @@ class GlobalKeyHandler {
                         modifiers.metaKey.includes(event.metaKey)
                 );
                 if (matches) {
-                    callback();
+                    setTimeout(callback); // Prevents reaching timeout (apart from when node is already busy while triggering the shortcut :/)
                     return true;
                 }
             }
@@ -277,27 +359,27 @@ class GlobalKeyHandler {
 
         // Register each accelerator
         accelerators.forEach(accelerator => {
-            if (!this.shortcutListeners[accelerator]) {
+            if (!this.electronListeners[accelerator]) {
                 const listeners: (() => void)[] = [];
-                this.shortcutListeners[accelerator] = listeners;
+                this.electronListeners[accelerator] = listeners;
 
                 const invoker = () => listeners.forEach(listener => listener());
                 remote.globalShortcut.register(accelerator, invoker);
             }
-            this.shortcutListeners[accelerator].push(callback);
+            this.electronListeners[accelerator].push(callback);
         });
 
         // Return a function to remove the listeners
         return () => {
             accelerators.forEach(accelerator => {
-                const listeners = this.shortcutListeners[accelerator];
+                const listeners = this.electronListeners[accelerator];
                 if (!listeners) return;
                 const index = listeners.indexOf(callback);
                 if (index != -1) {
                     listeners.splice(index, 1);
                     if (listeners.length == 0) {
                         remote.globalShortcut.unregister(accelerator);
-                        delete this.shortcutListeners[accelerator];
+                        delete this.electronListeners[accelerator];
                     }
                 }
             });
@@ -350,19 +432,18 @@ class GlobalKeyHandler {
      * Disposes all listeners
      */
     public destroy(): void {
-        if (this.advancedManager && this.invokeListeners) {
-            this.advancedManager.removeListener(this.invokeListeners);
+        this.disposed = true;
+        this.useElectronListenerObserver.destroy();
+
+        if (this.advancedManager) {
+            if (this.invokeListeners)
+                this.advancedManager.removeListener(this.invokeListeners);
             this.keyListeners = [];
             this.advancedManager.kill();
         }
 
-        for (let shortcut in this.shortcutListeners)
+        for (let shortcut in this.electronListeners)
             remote.globalShortcut.unregister(shortcut);
-        this.shortcutListeners = {};
+        this.electronListeners = {};
     }
 }
-
-/**
- * The manager to handle global key events (events that occur even when LM isn't focused)
- */
-export const globalKeyHandler = new GlobalKeyHandler();

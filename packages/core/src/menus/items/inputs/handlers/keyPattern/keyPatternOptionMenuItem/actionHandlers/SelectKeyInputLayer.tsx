@@ -1,4 +1,3 @@
-import {globalKeyHandler} from "../../../../../../../keyHandler/globalKeyHandler/globalKeyHandler";
 import {keyIdMapping} from "../../../../../../../keyHandler/keyIdentifiers/keys";
 import {ITextField} from "../../../../../../../textFields/_types/ITextField";
 import {UILayer} from "../../../../../../../uiLayers/standardUILayer/UILayer";
@@ -25,16 +24,22 @@ export class SelectKeyInputLayer extends UILayer {
         /** Whether to shortcut to store should be a global shortcut */
         globalShortcut?: boolean;
     }) {
-        if (!globalShortcut || !globalKeyHandler.areListenersSupported())
-            super((context, close) => ({
-                field: textField,
-                fieldHandler: createKeyPatternFieldKeyHandler(textField, () => {
-                    close();
-                }),
-                onClose,
-            }));
-        else
-            super((context, close) => {
+        super((context, close) => {
+            if (!context.session)
+                throw Error(
+                    "This layer must be opened in a context containing a session"
+                );
+            const globalKeyHandler = context.session.LM.getGlobalKeyHandler();
+
+            if (!globalShortcut || !globalKeyHandler.areListenersSupported())
+                return {
+                    field: textField,
+                    fieldHandler: createKeyPatternFieldKeyHandler(textField, () => {
+                        close();
+                    }),
+                    onClose,
+                };
+            else {
                 const removeListener = globalKeyHandler.addListener(event => {
                     if (
                         ![
@@ -60,15 +65,18 @@ export class SelectKeyInputLayer extends UILayer {
                             close();
                         }
                     }
+                    return true;
                 });
 
                 return {
                     field: textField,
+                    fieldHandler: close,
                     onClose: () => {
                         removeListener();
                         onClose();
                     },
                 };
-            });
+            }
+        });
     }
 }

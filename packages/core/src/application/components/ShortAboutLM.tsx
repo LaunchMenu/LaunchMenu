@@ -6,7 +6,7 @@ import {Box} from "../../styling/box/Box";
 import {IBoxProps} from "../../styling/box/_types/IBoxProps";
 import {ThemeIcon} from "../../components/ThemeIcon";
 import {useLMSession} from "../hooks/useLMSession";
-import {menuNavigationModifier} from "../settings/baseSettings/createBaseSettingsFolder";
+import {menuNavigationModifier} from "../../utils/platform/menuNavigationModifier";
 
 /**
  * A component to show some general LM information

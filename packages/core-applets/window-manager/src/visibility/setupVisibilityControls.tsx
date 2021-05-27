@@ -56,7 +56,7 @@ export function setupVisibilityControls(
     window.on("blur", blurListener);
 
     // Shortcut handler
-    let disposeOpenShortcutHandler: () => void;
+    let disposeOpenShortcutHandler: (() => void) | undefined;
     const shortcutSettingObserver = new Observer(
         h => settingsManager.getSettingsContext(h).get(settings).controls.open
     ).listen(openSetting => {
@@ -97,6 +97,7 @@ export function setupVisibilityControls(
     // Return a function to dispose all listeners
     return {
         destroy: () => {
+            disposeOpenShortcutHandler?.();
             window.removeListener("blur", hideWindow);
             shortcutSettingObserver.destroy();
             debugSettingObserver.destroy();
@@ -105,7 +106,6 @@ export function setupVisibilityControls(
             LM.getSessionManager()
                 .getSessions()
                 .forEach(session => session.removeCloseListener(exitListener));
-            disposeOpenShortcutHandler?.();
         },
         exitBindings: createExitContextMenuBinding(LM, hideWindow),
     };

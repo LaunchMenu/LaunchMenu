@@ -1,16 +1,14 @@
 import {IUpdateKeyPatternOptionExecuteData} from "../_types/IUpdateKeyPatternOptionExecuteData";
-import {createKeyPatternFieldKeyHandler} from "../../createKeyPatternFieldKeyHandler";
 import {getKeyPatternOptionIndex} from "../getKeyPatternOptionIndex";
 import {KeyPattern} from "../../../../../../../keyHandler/KeyPattern";
 import {ICommand} from "../../../../../../../undoRedo/_types/ICommand";
 import {TextField} from "../../../../../../../textFields/TextField";
 import {SetFieldCommand} from "../../../../../../../undoRedo/commands/SetFieldCommand";
-import {UILayer} from "../../../../../../../uiLayers/standardUILayer/UILayer";
 import {createAction} from "../../../../../../../actions/createAction";
 import {editExecuteHandler} from "../../../../../../../actions/types/execute/types/editExecuteHandler";
-import {globalKeyHandler} from "../../../../../../../keyHandler/globalKeyHandler/globalKeyHandler";
 import {ITextField} from "../../../../../../../textFields/_types/ITextField";
 import {SelectKeyInputLayer} from "./SelectKeyInputLayer";
+import {GlobalKeyHandler} from "../../../../../../../keyHandler/globalKeyHandler/GlobalKeyHandler";
 
 /**
  * A execute handler that can be used to set the key pattern of a field
@@ -30,7 +28,8 @@ export const updateKeyPatternOptionExecuteHandler = createAction({
                                 onClose: createFieldUpdateCallback(
                                     textField,
                                     bindingData,
-                                    res
+                                    res,
+                                    context.session?.LM.getGlobalKeyHandler()
                                 ),
                                 globalShortcut: bindingData.globalShortcut,
                             })
@@ -45,8 +44,8 @@ export const updateKeyPatternOptionExecuteHandler = createAction({
  * Creates the update callback handler, which updates the pattern data
  * @param textField The textfield to get the input from
  * @param config The config provided by the binding
+ * @param keyHandler The global key handler to use to check validity
  * @param resolve The function to call when triggered, and to return the command to
- * @param close The callback to close the selection UI
  * @returns The function to invoke when the field is exited
  */
 const createFieldUpdateCallback =
@@ -59,7 +58,8 @@ const createFieldUpdateCallback =
             undoable,
             globalShortcut,
         }: IUpdateKeyPatternOptionExecuteData,
-        resolve: (cmd?: ICommand) => void
+        resolve: (cmd?: ICommand) => void,
+        keyHandler?: GlobalKeyHandler
     ) =>
     () => {
         const newOptionPattern = textField.get();
@@ -78,7 +78,7 @@ const createFieldUpdateCallback =
 
             const newPattern = new KeyPattern(newPatternData);
 
-            if (globalShortcut && globalKeyHandler.isShortcutInvalid(newPattern)) {
+            if (globalShortcut && keyHandler?.isShortcutInvalid(newPattern)) {
                 resolve();
             } else {
                 if (undoable) {
