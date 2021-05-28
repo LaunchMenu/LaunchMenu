@@ -8309,10 +8309,12 @@ node-fetch@^2.5.0, node-fetch@^2.6.1:
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
   integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
 
-node-global-key-listener@0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/node-global-key-listener/-/node-global-key-listener-0.0.4.tgz#1417ffc52c9396a66a1fc9aad9d7510212665653"
-  integrity sha512-rREEqi+kD2jpVErV2US3qDqhXnqRjgrZEFS+gtLIpT83huSdW5KxGBf3axyRh8K4lJ61B3E50zfQ9uMc5B1JmQ==
+node-global-key-listener@0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/node-global-key-listener/-/node-global-key-listener-0.0.7.tgz#054bc2d805929bb1ab3f4c05d2181b5153635479"
+  integrity sha512-7xfupFbpcPjiaGI6EnwTMBZ5yxriWN3lGhFxe1h0MIqkO2xrf2zLah269C/d4PIiSw4m6pKo5mPqBdkEI4MrOw==
+  dependencies:
+    run-script-os "^1.1.6"
 
 node-gyp@^5.0.2, node-gyp@^5.1.0:
   version "5.1.1"
@@ -10130,6 +10132,11 @@ run-queue@^1.0.0, run-queue@^1.0.3:
   integrity sha1-6Eg5bwV9Ij8kOGkkYY4laUFh7Ec=
   dependencies:
     aproba "^1.1.1"
+
+run-script-os@^1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/run-script-os/-/run-script-os-1.1.6.tgz#8b0177fb1b54c99a670f95c7fdc54f18b9c72347"
+  integrity sha512-ql6P2LzhBTTDfzKts+Qo4H94VUKpxKDFz6QxxwaUZN0mwvi7L3lpOI7BqPCq7lgDh3XLl0dpeXwfcVIitlrYrw==
 
 rxjs@^6.4.0, rxjs@^6.5.2:
   version "6.6.3"
