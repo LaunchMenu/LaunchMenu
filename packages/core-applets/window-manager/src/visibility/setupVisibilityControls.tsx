@@ -1,9 +1,8 @@
 import {IActionBinding, LaunchMenu} from "@launchmenu/core";
-import {remote, BrowserWindow} from "electron";
+import {BrowserWindow, remote} from "electron";
 import {Observer} from "model-react";
 import {settings} from "../settings";
 import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
-import {returnFocus} from "./returnFocus";
 
 /**
  * Sets up all listeners and UI to control window visibility
@@ -37,8 +36,8 @@ export function setupVisibilityControls(
             document.body.getBoundingClientRect(); // Force reflow to hide the element visually asap
 
             setTimeout(() => {
-                window.hide();
                 onHide();
+                window.hide();
             }, 10);
         }
     });
@@ -57,12 +56,12 @@ export function setupVisibilityControls(
     window.on("blur", blurListener);
 
     // Shortcut handler
-    let latestShortcut: null | string = null;
-    const shortcutSettingObserver = new Observer(h =>
-        settingsManager.getSettingsContext(h).get(settings).controls.open.get(h)
-    ).listen(pattern => {
-        latestShortcut = pattern;
-        remote.globalShortcut.register(pattern, showWindow);
+    let disposeOpenShortcutHandler: (() => void) | undefined;
+    const shortcutSettingObserver = new Observer(
+        h => settingsManager.getSettingsContext(h).get(settings).controls.open
+    ).listen(openSetting => {
+        disposeOpenShortcutHandler?.();
+        disposeOpenShortcutHandler = openSetting.onTrigger(showWindow);
     }, true);
 
     // Debug handler
@@ -98,6 +97,7 @@ export function setupVisibilityControls(
     // Return a function to dispose all listeners
     return {
         destroy: () => {
+            disposeOpenShortcutHandler?.();
             window.removeListener("blur", hideWindow);
             shortcutSettingObserver.destroy();
             debugSettingObserver.destroy();
@@ -106,7 +106,6 @@ export function setupVisibilityControls(
             LM.getSessionManager()
                 .getSessions()
                 .forEach(session => session.removeCloseListener(exitListener));
-            if (latestShortcut) remote.globalShortcut.unregister(latestShortcut);
         },
         exitBindings: createExitContextMenuBinding(LM, hideWindow),
     };

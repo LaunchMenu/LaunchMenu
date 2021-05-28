@@ -10,4 +10,6 @@ export type IKeyPatternOptionMenuItemData = {
     patternField: IField<KeyPattern>;
     /** The option that this item is for */
     option: IKeyArrayPatternData;
+    /** Whether to only allow valid global shortcuts */
+    globalShortcut?: boolean;
 };

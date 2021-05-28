@@ -172,7 +172,9 @@ export class KeyHandler {
      * @returns The input for the event
      */
     public static getKeyEvent(event: KeyboardEvent): KeyEvent | null {
-        const cc = event.code[0].toLowerCase() + event.code.substr(1);
+        const sourceId = event.code || event.key;
+        if (!sourceId) return null;
+        const cc = sourceId[0].toLowerCase() + sourceId.substr(1);
         const keyId = keyIds[cc as keyof typeof keyIds];
         const keyName = keyIdMapping[keyId];
         const char = event.key.length == 1 ? event.key : "";

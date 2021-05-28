@@ -1,7 +1,7 @@
 import {KeyPattern} from "../../../../keyHandler/KeyPattern";
 import {createKeyPatternSetting} from "../../../../settings/inputs/createKeyPatternSetting";
 import {createSettingsFolder} from "../../../../settings/inputs/createSettingsFolder";
-import {menuNavigationModifier} from "../createBaseSettingsFolder";
+import {menuNavigationModifier} from "../../../../utils/platform/menuNavigationModifier";
 
 /**
  * Creates a new settings folder with field settings

@@ -5,4 +5,6 @@ export type IUpdateKeyPatternOptionExtrasExecuteData = IKeyPatternOptionMenuItem
     liveUpdate?: boolean;
     /** Whether the change action is undoable, not combinable with live update*/
     undoable?: boolean;
+    /** Whether to only allow valid global shortcuts */
+    globalShortcut?: boolean;
 };

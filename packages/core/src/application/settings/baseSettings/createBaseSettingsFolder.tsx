@@ -1,4 +1,4 @@
-import React from "react";
+import React, {Fragment} from "react";
 import {createBooleanSetting} from "../../../settings/inputs/createBooleanSetting";
 import {createSettingsFolder} from "../../../settings/inputs/createSettingsFolder";
 import {constGetter} from "../../../utils/constGetter";
@@ -54,9 +54,20 @@ export function createBaseSettingsFolder() {
             menu: createMenuSettingsFolder(),
             field: createFieldSettingsFolder(),
             content: createContentSettingsFolder(),
+            customGlobalKeyListener: createBooleanSetting({
+                name: "Custom global key handler",
+                init: true,
+                content: (
+                    <Fragment>
+                        The global key handler allows for adding of shortcuts that trigger
+                        even when LaunchMenu is hidden. The custom global key listener is
+                        more powerful than the standard one - E.g. allowing for shortcuts
+                        like meta+space - but it may also cause typing lag on slower
+                        systems. Additionally the custom handler is currently only
+                        supported on Mac and Windows.
+                    </Fragment>
+                ),
+            }),
         },
     });
 }
-
-/** The modifier to make the arrow keys act for menu navigation instead of text navigation */
-export const menuNavigationModifier = process.platform == "darwin" ? "ctrl" : "alt";

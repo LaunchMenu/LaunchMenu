@@ -1,6 +1,6 @@
 import {IInputExecuteData} from "./_types/IInputExecuteData";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
-import {Input} from "./Input";
+import {InputLayer} from "./InputLayer";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {createAction, createStandardBinding} from "../../../actions/createAction";
 import {IActionBinding} from "../../../actions/_types/IActionBinding";
@@ -21,7 +21,7 @@ export const promptInputExecuteHandler = createAction({
                     new Promise<ICommand | void>(res => {
                         let cmd: ICommand | undefined;
                         context.open(
-                            new Input(field, {
+                            new InputLayer(field, {
                                 ...config,
                                 onSubmit: undoable
                                     ? result => {

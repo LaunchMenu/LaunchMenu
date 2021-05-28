@@ -1,6 +1,4 @@
-import {createBooleanMenuItem} from "../../menus/items/inputs/types/createBooleanMenuItem";
 import {IFieldMenuItem} from "../../menus/items/inputs/_types/IFieldMenuItem";
-import {IBooleanMenuItemData} from "../../menus/items/inputs/types/_types/IBooleanMenuItemData";
 import {settingPatternMatcher} from "./settingPatternMatcher";
 import {ISettingConfigurer} from "../_types/ISettingConfigurer";
 import {createFileMenuItem} from "../../menus/items/inputs/types/createFileMenuItem";

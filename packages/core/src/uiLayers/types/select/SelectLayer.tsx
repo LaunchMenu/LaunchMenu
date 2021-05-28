@@ -7,7 +7,7 @@ import {IMenuItem} from "../../../menus/items/_types/IMenuItem";
 import {SearchMenu} from "../../../menus/menu/SearchMenu";
 import {IField} from "../../../_types/IField";
 import {IUILayerMenuData} from "../../_types/IUILayerMenuData";
-import {Input} from "../input/Input";
+import {InputLayer} from "../input/InputLayer";
 import {IInputConfig} from "../input/_types/IInputConfig";
 import {ISelectConfig} from "./_types/ISelectConfig";
 import {v4 as uuid} from "uuid";
@@ -32,7 +32,7 @@ export function getSelectOptionValue<T>(option: ISelectOption<T>): T {
     return isSelectObject(option) ? option.value : option;
 }
 
-export class Select<T> extends Input<T> {
+export class SelectLayer<T> extends InputLayer<T> {
     protected menuData = new Field(null as null | IUILayerMenuData);
     protected config: IInputConfig<T> & ISelectConfig<T>;
 

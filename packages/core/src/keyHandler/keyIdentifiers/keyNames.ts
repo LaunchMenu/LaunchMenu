@@ -85,6 +85,7 @@ export const keyNames = {
     bracketRight: "bracketRight",
     quote: "quote",
     space: "space",
+    printScreen: "printScreen",
     contextMenu: "contextMenu",
 } as const;
 

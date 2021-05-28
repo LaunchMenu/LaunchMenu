@@ -1,11 +1,4 @@
-import {
-    DataCacher,
-    Field,
-    IDataHook,
-    IDataRetriever,
-    Loader,
-    Observer,
-} from "model-react";
+import {DataCacher, Field, IDataHook, IDataRetriever, Observer} from "model-react";
 import React from "react";
 import {IOContext} from "../../context/IOContext";
 import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
@@ -36,6 +29,8 @@ import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
 import {MainMenuView} from "../components/MainMenuView";
 import {LMSessionLayer} from "./LMSessionLayer";
 import {LMSessionProvider} from "../hooks/useLMSession";
+import {TextFieldView} from "../../components/fields/TextFieldView";
+import {InstantOpenTransition} from "../../components/context/stacks/transitions/open/InstantOpenTransition";
 
 /**
  * An application session
@@ -253,6 +248,16 @@ export class LMSession {
                 field: this.searchField,
                 highlighter,
                 icon: "search",
+                fieldView: {
+                    view: (
+                        <TextFieldView
+                            highlighter={highlighter}
+                            icon="search"
+                            field={this.searchField}
+                        />
+                    ),
+                    transitions: {Open: InstantOpenTransition},
+                },
             },
         ];
     }

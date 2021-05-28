@@ -109,6 +109,7 @@ build/
 dist/
 
 packages/core/data
+recordings/
 
 eslintLog.tap
 

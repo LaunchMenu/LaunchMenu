@@ -21,7 +21,7 @@ import {mergeKeyListeners} from "../../../keyHandler/mergeKeyListeners";
 import {baseSettings} from "../../../application/settings/baseSettings/baseSettings";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 
-export class Input<T> extends AbstractUILayer {
+export class InputLayer<T> extends AbstractUILayer {
     protected target: IField<T>;
     protected config: IInputConfig<T>;
 

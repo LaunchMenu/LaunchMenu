@@ -5,7 +5,7 @@ import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
-import {Select} from "./Select";
+import {SelectLayer} from "./SelectLayer";
 import {ISelectExecuteData} from "./_types/ISelectExecuteData";
 
 /**
@@ -21,7 +21,7 @@ export const promptSelectExecuteHandler = createAction({
                     new Promise<ICommand | void>(res => {
                         let cmd: ICommand | undefined;
                         context.open(
-                            new Select(field, {
+                            new SelectLayer(field, {
                                 ...config,
                                 onSubmit: undoable
                                     ? result => {

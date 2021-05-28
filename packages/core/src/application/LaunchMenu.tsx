@@ -12,9 +12,10 @@ import {baseSettings} from "./settings/baseSettings/baseSettings";
 import {SessionManager} from "./LMSession/SessionManager";
 import {SettingsManager} from "./settings/SettingsManager";
 import {IApplet} from "./applets/_types/IApplet";
-import {ipcRenderer, remote} from "electron";
+import {ipcRenderer} from "electron";
 import {LaunchMenuProvider} from "./hooks/useLM";
 import {wait} from "../_tests/wait.helper";
+import {GlobalKeyHandler} from "../keyHandler/globalKeyHandler/GlobalKeyHandler";
 import {IWindowFrameProps} from "./components/_types/IWindowFrameProps";
 
 /**
@@ -29,6 +30,7 @@ export class LaunchMenu {
     public view: JSX.Element;
 
     protected keyHandler: KeyHandler;
+    protected globalKeyHandler: GlobalKeyHandler;
 
     protected appletManager: AppletManager;
     protected sessionManager: SessionManager;
@@ -57,6 +59,7 @@ export class LaunchMenu {
             this.sessionManager,
             this.sessionManager,
             this.appletObserver,
+            this.globalKeyHandler,
         ];
 
         // Destroy all items individually, making sure that if 1 item errors, the others still get destroyed
@@ -80,6 +83,7 @@ export class LaunchMenu {
         this.setupSettings();
         this.setupApplets();
         this.setupView();
+        this.setupGlobalKeyHandler();
         this.sessionManager = new SessionManager(this);
         this.sessionManager.addSession();
     }
@@ -150,6 +154,7 @@ export class LaunchMenu {
      */
     protected setupSettings(): void {
         this.settingsManager = new SettingsManager(
+            this,
             this.settingsDirectory,
             this.dataDirectory
         );
@@ -161,6 +166,17 @@ export class LaunchMenu {
             path: Path.join(this.settingsDirectory, "baseSettings.json"),
         });
         this.settingsManager.addSettings(baseSettings.ID, settings);
+    }
+
+    /**
+     * Initialized the global key handler
+     */
+    protected setupGlobalKeyHandler(): void {
+        const context = this.settingsManager.getSettingsContext();
+        const customGlobalKeyListener = context.get(baseSettings).customGlobalKeyListener;
+        this.globalKeyHandler = new GlobalKeyHandler(
+            h => !customGlobalKeyListener.get(h)
+        );
     }
 
     // Dev mode
@@ -274,5 +290,13 @@ export class LaunchMenu {
      */
     public getSettingsManager(): SettingsManager {
         return this.settingsManager;
+    }
+
+    /**
+     * Retrieves the global key handler that can be used to register keyboard callbacks even when LM is hidden
+     * @returns The global keyboard handler
+     */
+    public getGlobalKeyHandler(): GlobalKeyHandler {
+        return this.globalKeyHandler;
     }
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import {
     createBooleanSetting,
+    createGlobalKeyPatternSetting,
     createKeyPatternSetting,
     createSettings,
     createSettingsFolder,
@@ -13,7 +14,6 @@ import {PositionInputContent} from "./position/PositionInputContent";
 import {Field} from "model-react";
 import {SizeInputContent} from "./size/SizeInputContent";
 import {BrowserWindow, remote} from "electron";
-import {createGlobalShortcutSetting} from "./visibility/createGlobalShortcutSetting";
 import {createDebuggerVisibilitySetting} from "./visibility/createDebuggerVisibilitySetting";
 
 export const info = {
@@ -89,10 +89,9 @@ export const settings = createSettings({
                 controls: createSettingsFolder({
                     name: "Controls",
                     children: {
-                        open: createGlobalShortcutSetting({
+                        open: createGlobalKeyPatternSetting({
                             name: "Open LaunchMenu",
-                            init: "Control+O",
-                            options: ["Control+O", "Control+Space"],
+                            init: new KeyPattern("meta+space"),
                         }),
                         exit: createKeyPatternSetting({
                             name: "Exit LaunchMenu",

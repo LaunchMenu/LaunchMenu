@@ -5,7 +5,7 @@ import {IActionBinding} from "../../../actions/_types/IActionBinding";
 import {IBindingCreatorConfig} from "../../../actions/_types/IBindingCreator";
 import {SetFieldCommand} from "../../../undoRedo/commands/SetFieldCommand";
 import {ICommand} from "../../../undoRedo/_types/ICommand";
-import {MultiSelect} from "./MultiSelect";
+import {MultiSelectLayer} from "./MultiSelectLayer";
 import {IMultiSelectExecuteData} from "./_types/IMultiSelectExecuteData";
 
 /**
@@ -21,7 +21,7 @@ export const promptMultiSelectExecuteHandler = createAction({
                     new Promise<ICommand | void>(res => {
                         let cmd: ICommand | undefined;
                         context.open(
-                            new MultiSelect(field, {
+                            new MultiSelectLayer(field, {
                                 ...config,
                                 onSubmit: undoable
                                     ? result => {

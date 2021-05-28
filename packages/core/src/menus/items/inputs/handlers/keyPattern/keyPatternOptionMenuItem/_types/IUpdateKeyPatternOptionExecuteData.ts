@@ -5,4 +5,6 @@ export type IUpdateKeyPatternOptionExecuteData = IKeyPatternOptionMenuItemData &
     undoable?: boolean;
     /** Whether to insert the option if not found */
     insertIfDeleted?: boolean;
+    /** Whether to only allow valid global shortcuts */
+    globalShortcut?: boolean;
 };

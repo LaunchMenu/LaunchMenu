@@ -7,6 +7,12 @@ export function startApplication() {
     // Globally inject a DEV variable indicating whether running in production or development mode
     global.DEV = process.env.NODE_ENV == "dev";
 
+    // Prevent accidental global close usage
+    global.close = () =>
+        console.log(
+            "LM shouldn't be closed this way, did you call global close on accident?"
+        );
+
     let lm: import("../application/LaunchMenu").LaunchMenu;
     async function startup() {
         const {
