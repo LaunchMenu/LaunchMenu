@@ -12,6 +12,7 @@
         "build": "lerna run --stream build",
         "publish-all": "lerna publish",
         "publish-all-alpha": "lerna publish --dist-tag alpha",
+        "publish-all-beta": "lerna publish --dist-tag beta",
         "prepare": "lerna run --stream prepare"
     },
     "devDependencies": {
