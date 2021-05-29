@@ -5,8 +5,8 @@ import PuffLoader from "react-spinners/PuffLoader";
 import {IState} from "../_types/IState";
 
 const applets = {
-    Dictionary: "@launchmenu/applet-dictionary@alpha",
-    Notes: "@launchmenu/applet-notes@alpha",
+    Dictionary: "@launchmenu/applet-dictionary@beta",
+    Notes: "@launchmenu/applet-notes@beta",
 };
 
 export const WindowUI: FC = () => {
@@ -40,7 +40,10 @@ export const WindowUI: FC = () => {
             ) : state.type == "finished" ? (
                 <>
                     {state.name}
-                    <Box>Press ctrl+o or use the tray icon to open LM.</Box>
+                    <Box>
+                        Press {process.platform == "win32" ? "windows" : "command"}+space
+                        or use the tray icon to open LM.
+                    </Box>
                 </>
             ) : (
                 <InstallSelectionHandler />

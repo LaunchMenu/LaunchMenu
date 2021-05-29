@@ -51,14 +51,14 @@ async function firstTimeSetup(
         // Present the user with some first time setup stuff
         const chosenApplets = await window.getInitialApplets();
         const applets = [
-            "@launchmenu/applet-applet-manager@alpha",
-            "@launchmenu/applet-session-manager@alpha",
-            "@launchmenu/applet-settings-manager@alpha",
-            "@launchmenu/applet-window-manager@alpha",
-            "@launchmenu/applet-help@alpha",
+            "@launchmenu/applet-applet-manager@beta",
+            "@launchmenu/applet-session-manager@beta",
+            "@launchmenu/applet-settings-manager@beta",
+            "@launchmenu/applet-window-manager@beta",
+            "@launchmenu/applet-help@beta",
             ...chosenApplets,
         ] as string[];
-        const packages = ["@launchmenu/core@alpha", ...applets];
+        const packages = ["@launchmenu/core@beta", ...applets];
 
         // Create an initial package
         await initPackage();
