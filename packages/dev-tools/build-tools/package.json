@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/build-tools",
-    "version": "0.0.5-alpha.20",
+    "version": "0.0.5-beta.0",
     "bin": {
         "lm-build-tools": "./bin/lm-build-tools.js"
     },

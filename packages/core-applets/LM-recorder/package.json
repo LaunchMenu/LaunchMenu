@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-lm-recorder",
-    "version": "0.0.5-alpha.20",
+    "version": "0.0.5-beta.0",
     "description": "An applet to show some information for when first using LaunchMenu",
     "types": "build/applet/index.d.ts",
     "files": [
@@ -40,11 +40,11 @@
         "react": "^17.0.0"
     },
     "dependencies": {
-        "@launchmenu/hmr": "^0.0.5-alpha.19",
         "@ffmpeg-installer/ffmpeg": "^1.0.20",
-        "fluent-ffmpeg": "^2.1.2",
-        "@launchmenu/core": "^0.0.5-alpha.20",
+        "@launchmenu/core": "^0.0.5-beta.0",
+        "@launchmenu/hmr": "^0.0.5-beta.0",
         "color": "^3.1.2",
+        "fluent-ffmpeg": "^2.1.2",
         "jimp": "^0.16.1",
         "react-transition-group": "^4.4.1",
         "uuid": "^8.2.0"
