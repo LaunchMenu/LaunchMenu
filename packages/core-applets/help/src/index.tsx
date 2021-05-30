@@ -42,6 +42,10 @@ export default declare({
         };
     },
     open({context, onClose}) {
-        context.open(new UILayer(() => ({menu: new Menu(context, helpItems), onClose})));
+        context.open(
+            new UILayer(() => ({menu: new Menu(context, helpItems), onClose}), {
+                path: "Help",
+            })
+        );
     },
 });

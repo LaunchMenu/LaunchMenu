@@ -9,6 +9,7 @@ import {setupStartupController} from "./startup/setupStartupController";
 import {setupTrayMenu} from "./tray/setupTrayMenu";
 import {windowIcon} from "./tray/icon";
 import {setupFrame} from "./setupFrame";
+import {ipcRenderer} from "electron/renderer";
 
 export default declare({
     info,
@@ -44,6 +45,11 @@ export default declare({
 
         // Set the window image
         remote.getCurrentWindow().setIcon(windowIcon);
+
+        // Indicate that LM is now fully started
+        ipcRenderer.emit("LM-started");
+
+        // Return disposer and global bindings
         return {
             globalContextMenuBindings: exitBindings,
             onDispose: () => {

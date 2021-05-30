@@ -28,7 +28,6 @@ export function setupVisibilityControls(
             }, 50);
 
             window.show();
-            window.focus();
         } else {
             if (!window.isVisible()) return;
 
@@ -40,6 +39,13 @@ export function setupVisibilityControls(
                 window.hide();
             }, 10);
         }
+    });
+    window.on("show", () => {
+        // Timeout seems needed because of race conditions: https://stackoverflow.com/a/60314425/8521718
+        setTimeout(() => {
+            window.focus();
+            window.moveTop();
+        }, 200);
     });
     const hideWindow = () => LM.setWindowOpen(false);
     const showWindow = () => LM.setWindowOpen(true);

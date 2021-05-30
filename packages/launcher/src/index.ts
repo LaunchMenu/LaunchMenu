@@ -39,7 +39,11 @@ async function launch(): Promise<void> {
  * @param launchLM The function to LM after installation
  */
 async function firstTimeSetup(
-    launchLM: () => Promise<{show: () => void; shown: Promise<void>}>
+    launchLM: () => Promise<{
+        show: () => void;
+        shown: Promise<void>;
+        started: Promise<void>;
+    }>
 ): Promise<void> {
     await app.whenReady();
     const window = new InstallerWindow();
@@ -71,8 +75,9 @@ async function firstTimeSetup(
         await initAppletsFile(applets);
 
         // Launch LM
+        const {show, started, shown} = await launchLM();
+        await started;
         window.setState({type: "finished", name: "Finished"});
-        const {show, shown} = await launchLM();
 
         // Wait for the user to open LM
         await shown;

@@ -5,10 +5,11 @@ import {standardWindowSize} from "./standardWindowSize";
 export class WindowController {
     protected window: BrowserWindow;
 
-    /**
-     * A promise that resolves once the window has been opened at least once
-     */
+    /** A promise that resolves once the window has been opened at least once */
     public shown: Promise<void>;
+
+    /** A promise that resolves once the window has been opened at least once */
+    public started: Promise<void>;
 
     /**
      * Creates a new window manager
@@ -60,9 +61,12 @@ export class WindowController {
             c({cancel: false, responseHeaders: d.responseHeaders});
         });
 
-        // Track whether the window has been shown. To be used by the installer
+        // Track whether the window has been started and shown. To be used by the installer
         this.shown = new Promise(res => {
-            this.window.on("show", () => res());
+            this.window.once("show", () => res());
+        });
+        this.started = new Promise(res => {
+            ipcMain.once("LM-started", () => res());
         });
 
         // Check if window is closed by user

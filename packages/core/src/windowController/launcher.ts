@@ -13,6 +13,8 @@ export function launch(): Promise<{
     show: () => void;
     /** A promise that resolves once the window has been opened in some way */
     shown: Promise<void>;
+    /** A promise that resolves once the LM window has been fully initialized*/
+    started: Promise<void>;
     /** Used to fully exit LM */
     exit: () => void;
 }> {
@@ -33,6 +35,7 @@ export function launch(): Promise<{
                     res({
                         show: () => windowController.show(),
                         shown: windowController.shown,
+                        started: windowController.started,
                         exit: () => ipcMain.emit("shutdown"),
                     })
                 );
