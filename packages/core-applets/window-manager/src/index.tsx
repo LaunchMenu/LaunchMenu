@@ -47,7 +47,7 @@ export default declare({
         remote.getCurrentWindow().setIcon(windowIcon);
 
         // Indicate that LM is now fully started
-        ipcRenderer.emit("LM-started");
+        ipcRenderer.send("LM-started");
 
         // Return disposer and global bindings
         return {
