@@ -19,3 +19,13 @@ can be used to run the launcher in test mode. When running in test mode, the ins
 ### Distributing
 
 After having called `yarn build` one can create a distribution for the platform they are currently on by running `yarn dist`. This will generate the installer and place it in the `dist` folder.
+
+### Issues and Fixes
+
+#### hdiutil exited with code `ERR_ELECTRON_BUILDER_CANNOT_EXECUTE`
+
+Seems like this occurs when Electron-builder tries to overwrite a DMG file which has been opened by another file browser. If you use Finder, make sure the DMG volume is ejected and try again. If this fails, relaunch Finder application (Alt+RightClick on the logo in the dock and select relaunch). If this fails, restart your mac and try again.
+
+Hopefully this will fix the error.
+
+> Note: this can also occur when you try to build 2 separate DMGs to the same path.
