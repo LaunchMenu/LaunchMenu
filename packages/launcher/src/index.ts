@@ -1,4 +1,4 @@
-import {app} from "electron";
+import {app, systemPreferences} from "electron";
 import {
     install,
     getInstalledPath,
@@ -8,6 +8,7 @@ import {
 import FS from "fs";
 import Path from "path";
 import {promisify} from "util";
+import {handleMacPermissionsDialog} from "./handleMacPermissionsDialog";
 import {InstallerWindow} from "./installerWindow/InstallerWindow";
 
 app.commandLine.appendSwitch("ignore-certificate-errors", "true"); // https://github.com/electron/electron/issues/25354#issuecomment-739804891
@@ -71,6 +72,10 @@ async function firstTimeSetup(
             await install(p);
         }
 
+        // Ask for permissions on mac if needed
+        if (process.platform == "darwin") await handleMacPermissionsDialog(window);
+
+        // Finalize
         window.setState({type: "loading", name: `Finishing up`});
         await initAppletsFile(applets);
 

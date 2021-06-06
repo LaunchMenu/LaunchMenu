@@ -1,4 +1,4 @@
-import {Box, Button, Checkbox} from "@material-ui/core";
+import {Box, Button, Checkbox, makeStyles} from "@material-ui/core";
 import {ipcRenderer} from "electron/renderer";
 import React, {FC, useEffect, useState} from "react";
 import PuffLoader from "react-spinners/PuffLoader";
@@ -9,7 +9,15 @@ const applets = {
     Notes: "@launchmenu/applet-notes@beta",
 };
 
+const useStyles = makeStyles(theme => ({
+    button: {
+        margin: theme.spacing(1),
+        flex: 1,
+    },
+}));
+
 export const WindowUI: FC = () => {
+    const classes = useStyles();
     const [state, setState] = useState({type: "loading", name: "Initializing"} as IState);
     useEffect(() => {
         ipcRenderer.send("ready");
@@ -37,6 +45,28 @@ export const WindowUI: FC = () => {
                         <PuffLoader color="#00F" size={60} />
                     </Box>
                 </>
+            ) : state.type == "prompt" ? (
+                <Box display="flex" flexDirection="column" width="100%" height="100%">
+                    <Box
+                        mb={1}
+                        flex={1}
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center">
+                        {state.text}
+                    </Box>
+                    <Box display="flex" width="100%">
+                        {state.buttons.map((button, i) => (
+                            <Button
+                                className={classes.button}
+                                variant="contained"
+                                color={button.type == "primary" ? "primary" : "default"}
+                                onClick={() => ipcRenderer.send("clickButton", i)}>
+                                {button.text}
+                            </Button>
+                        ))}
+                    </Box>
+                </Box>
             ) : state.type == "finished" ? (
                 <>
                     {state.name}
