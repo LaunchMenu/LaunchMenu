@@ -1,5 +1,5 @@
 import {Box, Button, Checkbox, makeStyles} from "@material-ui/core";
-import {ipcRenderer} from "electron/renderer";
+import {ipcRenderer, remote} from "electron/renderer";
 import React, {FC, useEffect, useState} from "react";
 import PuffLoader from "react-spinners/PuffLoader";
 import {IState} from "../_types/IState";
@@ -71,7 +71,12 @@ export const WindowUI: FC = () => {
                 <>
                     {state.name}
                     <Box>
-                        Press {process.platform == "win32" ? "windows" : "command"}+space
+                        Press{" "}
+                        {process.platform == "win32"
+                            ? "Windows+Space"
+                            : remote.systemPreferences.isTrustedAccessibilityClient(false)
+                            ? "Command+Space"
+                            : "Command+L"}{" "}
                         or use the tray icon to open LM.
                     </Box>
                 </>

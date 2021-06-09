@@ -50,7 +50,7 @@ export async function handleMacPermissionsDialog(window: InstallerWindow): Promi
             });
             hasPermissions = systemPreferences.isTrustedAccessibilityClient(false);
             message =
-                "It seems the permissions weren't successfully granted, please try again and then click the button below.";
+                "It seems the permissions weren't successfully granted, please try again and then click the button below. If the box is already checked, you may need to uncheck and recheck it.";
         }
     }
 }

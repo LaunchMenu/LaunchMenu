@@ -91,7 +91,14 @@ export const settings = createSettings({
                     children: {
                         open: createGlobalKeyPatternSetting({
                             name: "Open LaunchMenu",
-                            init: new KeyPattern("meta+space"),
+                            init: new KeyPattern(
+                                !isPlatform("mac") ||
+                                remote.systemPreferences.isTrustedAccessibilityClient(
+                                    false
+                                )
+                                    ? "meta+space"
+                                    : "meta+l"
+                            ),
                         }),
                         exit: createKeyPatternSetting({
                             name: "Exit LaunchMenu",
