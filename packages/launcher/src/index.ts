@@ -1,4 +1,4 @@
-import {app, systemPreferences} from "electron";
+import {app} from "electron";
 import {
     install,
     getInstalledPath,
@@ -13,22 +13,24 @@ import {InstallerWindow} from "./installerWindow/InstallerWindow";
 
 app.commandLine.appendSwitch("ignore-certificate-errors", "true"); // https://github.com/electron/electron/issues/25354#issuecomment-739804891
 global.DEV = process.env.NODE_ENV == "dev";
-
-launch();
+launch(process.platform == "darwin" ? "poop" : process.cwd());
 
 /**
  * The launch process is currently a bit messy and hacky in order to get later installed applets to share the same packages with LM.
  * Launching the application will actually install a number of packages beforehand - in the same directory as the exe is in - if they aren't there yet. Afterwards it will run the launcher of core to start LM.
+ * @param installDir The directory that the modules as well as all LM data should be stored in
  */
-async function launch(): Promise<void> {
+async function launch(installDir: string): Promise<void> {
     setupWorkingDir();
 
     const launchLM = () =>
         require(getInstalledPath(
+            installDir,
             "@launchmenu/core/build/windowController/launcher"
-        )).launch();
+        )).launch({root: installDir});
 
-    if (!isInstalled("@launchmenu/core")) await firstTimeSetup(launchLM);
+    if (!isInstalled(installDir, "@launchmenu/core"))
+        await firstTimeSetup(installDir, launchLM);
     else launchLM();
 }
 
@@ -37,13 +39,14 @@ async function launch(): Promise<void> {
  * + Prompts user to install applets
  * - Installs packages
  * - Adds required initial settings files
+ * @param installDir The directory that the modules as well as all LM data should be stored in
  * @param launchLM The function to LM after installation
  */
 async function firstTimeSetup(
+    installDir: string,
     launchLM: () => Promise<{
         show: () => void;
         shown: Promise<void>;
-        started: Promise<void>;
     }>
 ): Promise<void> {
     await app.whenReady();
@@ -69,7 +72,7 @@ async function firstTimeSetup(
         await initPackage();
         for (let p of packages) {
             window.setState({type: "loading", name: `Installing ${p}`});
-            await install(p);
+            await install(installDir, p);
         }
 
         // Ask for permissions on mac if needed
@@ -77,11 +80,10 @@ async function firstTimeSetup(
 
         // Finalize
         window.setState({type: "loading", name: `Finishing up`});
-        await initAppletsFile(applets);
+        await initAppletsFile(installDir, applets);
 
         // Launch LM
-        const {show, started, shown} = await launchLM();
-        await started;
+        const {show, shown} = await launchLM();
         window.setState({type: "finished", name: "Finished"});
 
         // Wait for the user to open LM
@@ -130,7 +132,7 @@ async function initPackage(): Promise<void> {
     await promisify(FS.writeFile)(path, JSON.stringify(file, null, 4), "utf8");
 }
 
-async function initAppletsFile(applet: string[]): Promise<void> {
+async function initAppletsFile(installDir: string, applet: string[]): Promise<void> {
     if (DEV) return;
 
     const path = Path.join(process.cwd(), "data/settings/applets.json");
@@ -147,7 +149,10 @@ async function initAppletsFile(applet: string[]): Promise<void> {
         const name = match[3];
         const path = namespace ? `${namespace}@${name}` : name;
         try {
-            file[path] = getInstalledPath(getPackageNameWithoutVersion(module));
+            file[path] = getInstalledPath(
+                installDir,
+                getPackageNameWithoutVersion(module)
+            );
         } catch (e) {
             console.error(e);
         }

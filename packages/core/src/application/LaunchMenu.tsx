@@ -17,6 +17,7 @@ import {LaunchMenuProvider} from "./hooks/useLM";
 import {wait} from "../_tests/wait.helper";
 import {GlobalKeyHandler} from "../keyHandler/globalKeyHandler/GlobalKeyHandler";
 import {IWindowFrameProps} from "./components/_types/IWindowFrameProps";
+import {IApplicationConfig} from "../windowController/_types/IApplicationConfig";
 
 /**
  * The main LM class
@@ -24,8 +25,8 @@ import {IWindowFrameProps} from "./components/_types/IWindowFrameProps";
 export class LaunchMenu {
     protected devMode = new Field(false);
 
-    protected dataDirectory = Path.join(process.cwd(), "data");
-    protected settingsDirectory = Path.join(this.dataDirectory, "settings");
+    protected dataDirectory: string;
+    protected settingsDirectory: string;
 
     public view: JSX.Element;
 
@@ -46,8 +47,12 @@ export class LaunchMenu {
     /***
      * Creates a new instance of the LaunchMenu application,
      * requires setup to be called before doing anything.
+     * @param config The application configuration
      */
-    public constructor() {}
+    public constructor(config: IApplicationConfig) {
+        this.dataDirectory = Path.join(config.root, "data");
+        this.settingsDirectory = Path.join(this.dataDirectory, "settings");
+    }
 
     /**
      * Disposes of all runtime data
@@ -118,7 +123,7 @@ export class LaunchMenu {
                             const Wrapper = this.windowWrapper.get(h);
                             return (
                                 <Wrapper>
-                                    <Transition>
+                                    <Transition skipMountAnimation>
                                         {this.sessionManager.getSelectedSession(h)?.view}
                                     </Transition>
                                 </Wrapper>
