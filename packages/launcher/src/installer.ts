@@ -62,14 +62,14 @@ export function install(
 
 /**
  * Checks whether a package with the specified name is installed
- * @param packageName The package to check for
  * @param externalRoot The path to check for external packages
+ * @param packageName The package to check for
  * @param externalOnly Whether to only check for external packages
  * @returns Whether the specified package is installed
  */
 export function isInstalled(
-    packageName: string,
     externalRoot: string,
+    packageName: string,
     externalOnly: boolean = true
 ): boolean {
     try {
@@ -78,6 +78,7 @@ export function isInstalled(
         else console.log(`Found ${getInstalledPath(externalRoot, packageName)}`);
         return true;
     } catch (e) {
+        console.error(`Could not find ${packageName}`);
         return false;
     }
 }

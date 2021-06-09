@@ -25,6 +25,7 @@ export class InstallerWindow {
                 height: 250,
                 frame: false,
                 show: false,
+                resizable: false,
                 webPreferences: {
                     nodeIntegration: true,
                 },

@@ -10,10 +10,15 @@ import Path from "path";
 import {promisify} from "util";
 import {handleMacPermissionsDialog} from "./handleMacPermissionsDialog";
 import {InstallerWindow} from "./installerWindow/InstallerWindow";
+import OS from "os";
 
 app.commandLine.appendSwitch("ignore-certificate-errors", "true"); // https://github.com/electron/electron/issues/25354#issuecomment-739804891
 global.DEV = process.env.NODE_ENV == "dev";
-launch(process.platform == "darwin" ? "poop" : process.cwd());
+launch(
+    process.platform == "darwin"
+        ? `${OS.homedir()}/Library/Application Support/LaunchMenu`
+        : process.cwd()
+);
 
 /**
  * The launch process is currently a bit messy and hacky in order to get later installed applets to share the same packages with LM.
@@ -54,7 +59,7 @@ async function firstTimeSetup(
 
     try {
         // Perform some initialization
-        await Promise.all([setupDirs(), window.init()]);
+        await Promise.all([setupDirs(installDir), window.init()]);
 
         // Present the user with some first time setup stuff
         const chosenApplets = await window.getInitialApplets();
@@ -69,7 +74,7 @@ async function firstTimeSetup(
         const packages = ["@launchmenu/core@beta", ...applets];
 
         // Create an initial package
-        await initPackage();
+        await initPackage(installDir);
         for (let p of packages) {
             window.setState({type: "loading", name: `Installing ${p}`});
             await install(installDir, p);
@@ -95,7 +100,7 @@ async function firstTimeSetup(
             name: `Something went wrong during installation`,
         });
         await promisify(FS.writeFile)(
-            Path.join(process.cwd(), "errorReport.txt"),
+            Path.join(installDir, "errorReport.txt"),
             e.toString() + "\n" + (e instanceof Error ? e.stack : ""),
             "utf8"
         );
@@ -110,17 +115,17 @@ async function firstTimeSetup(
 /*********************************************
  * Some helpers to perform the initial setup *
  *********************************************/
-async function setupDirs(): Promise<void> {
+async function setupDirs(root: string): Promise<void> {
     const dirs = ["node_modules", "data/settings"];
     for (let dir of dirs) {
-        const dirPath = Path.join(process.cwd(), dir);
+        const dirPath = Path.join(root, dir);
         if (!FS.existsSync(dirPath))
             await promisify(FS.mkdir)(dirPath, {recursive: true});
     }
 }
 
-async function initPackage(): Promise<void> {
-    const path = Path.join(process.cwd(), "package.json");
+async function initPackage(root: string): Promise<void> {
+    const path = Path.join(root, "package.json");
     if (FS.existsSync(path)) return;
 
     const file = {
@@ -132,10 +137,10 @@ async function initPackage(): Promise<void> {
     await promisify(FS.writeFile)(path, JSON.stringify(file, null, 4), "utf8");
 }
 
-async function initAppletsFile(installDir: string, applet: string[]): Promise<void> {
+async function initAppletsFile(root: string, applet: string[]): Promise<void> {
     if (DEV) return;
 
-    const path = Path.join(process.cwd(), "data/settings/applets.json");
+    const path = Path.join(root, "data/settings/applets.json");
     if (FS.existsSync(path)) return;
 
     const file = {} as Record<string, string>;
@@ -149,10 +154,7 @@ async function initAppletsFile(installDir: string, applet: string[]): Promise<vo
         const name = match[3];
         const path = namespace ? `${namespace}@${name}` : name;
         try {
-            file[path] = getInstalledPath(
-                installDir,
-                getPackageNameWithoutVersion(module)
-            );
+            file[path] = getInstalledPath(root, getPackageNameWithoutVersion(module));
         } catch (e) {
             console.error(e);
         }
