@@ -29,6 +29,7 @@ export class InstallerWindow {
                 webPreferences: {
                     nodeIntegration: true,
                 },
+                icon: Path.join(__dirname, "..", "icon.png"),
             });
 
             this.window.loadFile(Path.join(__dirname, "index.html"));

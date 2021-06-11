@@ -58,6 +58,7 @@ export const WindowUI: FC = () => {
                     <Box display="flex" width="100%">
                         {state.buttons.map((button, i) => (
                             <Button
+                                key={i}
                                 className={classes.button}
                                 variant="contained"
                                 color={button.type == "primary" ? "primary" : "default"}

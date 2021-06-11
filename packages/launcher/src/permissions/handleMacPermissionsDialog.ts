@@ -1,5 +1,5 @@
 import {systemPreferences} from "electron";
-import {InstallerWindow} from "./installerWindow/InstallerWindow";
+import {InstallerWindow} from "../installerWindow/InstallerWindow";
 
 /**
  * Manages the process of granting permissions for mac from the installer window

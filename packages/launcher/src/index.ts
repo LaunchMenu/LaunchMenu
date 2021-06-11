@@ -8,9 +8,10 @@ import {
 import FS from "fs";
 import Path from "path";
 import {promisify} from "util";
-import {handleMacPermissionsDialog} from "./handleMacPermissionsDialog";
+import {handleMacPermissionsDialog} from "./permissions/handleMacPermissionsDialog";
 import {InstallerWindow} from "./installerWindow/InstallerWindow";
 import OS from "os";
+import {handleWindowsPermissionsDialog} from "./permissions/handleWindowsPermissionsDialog";
 
 app.commandLine.appendSwitch("ignore-certificate-errors", "true"); // https://github.com/electron/electron/issues/25354#issuecomment-739804891
 global.DEV = process.env.NODE_ENV == "dev";
@@ -82,6 +83,7 @@ async function firstTimeSetup(
 
         // Ask for permissions on mac if needed
         if (process.platform == "darwin") await handleMacPermissionsDialog(window);
+        if (process.platform == "win32") await handleWindowsPermissionsDialog(window);
 
         // Finalize
         window.setState({type: "loading", name: `Finishing up`});
