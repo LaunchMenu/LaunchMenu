@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-dictionary",
-    "version": "0.0.5-beta.6",
+    "version": "0.0.5-beta.7",
     "description": "An applet to find dictionary definitions",
     "types": "build/index.d.ts",
     "files": [
@@ -35,7 +35,7 @@
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/applets/dictionary#readme",
     "dependencies": {
-        "@launchmenu/core": "^0.0.5-beta.6",
+        "@launchmenu/core": "^0.0.5-beta.7",
         "react-icons": "^3.10.0",
         "sanitize-html": "^2.3.1",
         "uuid": "^8.2.0"
