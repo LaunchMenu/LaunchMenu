@@ -40,13 +40,17 @@ export function setupVisibilityControls(
             }, 10);
         }
     });
-    window.on("show", () => {
+    const showListener = () => {
         // Timeout seems needed because of race conditions: https://stackoverflow.com/a/60314425/8521718
         setTimeout(() => {
             window.focus();
+            window.focusOnWebView();
             window.moveTop();
+            remote.app.focus({steal: true});
         }, 200);
-    });
+    };
+    window.on("show", showListener);
+
     const hideWindow = () => LM.setWindowOpen(false);
     const showWindow = () => LM.setWindowOpen(true);
 
@@ -105,6 +109,7 @@ export function setupVisibilityControls(
         destroy: () => {
             disposeOpenShortcutHandler?.();
             window.removeListener("blur", hideWindow);
+            window.removeListener("show", showListener);
             shortcutSettingObserver.destroy();
             debugSettingObserver.destroy();
             visibilityObserver.destroy();

@@ -18,7 +18,7 @@ import {createDebuggerVisibilitySetting} from "./visibility/createDebuggerVisibi
 
 export const info = {
     name: "Window manager",
-    description: "An window to manage LaunchMenu's window",
+    description: "An applet to manage LaunchMenu's window",
     version: "0.0.0",
     icon: "window",
 } as const;

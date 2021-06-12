@@ -32,6 +32,7 @@ export class WindowController {
                 nodeIntegration: true,
                 contextIsolation: false,
                 backgroundThrottling: false,
+                nativeWindowOpen: true,
             },
         });
         this.window.menuBarVisible = false;

@@ -1,8 +1,10 @@
 import {SettingsManager} from "@launchmenu/core";
 import {settings} from "../settings";
 import {IDataHook, Observer} from "model-react";
-import AutoLaunch from "auto-launch";
-import {remote} from "electron";
+import Path from "path";
+import {IStartupController} from "./_types/IStartupController";
+
+const testing = false;
 
 /**
  * Sets up the startup controller that syncs with the setting
@@ -13,14 +15,10 @@ export function setupStartupController(
     settingsManager: SettingsManager,
     isInDevMode: (h?: IDataHook) => boolean = () => false
 ): () => void {
+    const installer = startupControllers[process.platform]?.();
+
+    const exePath = Path.join(process.cwd(), "LaunchMenu.exe");
     let changingPromise = Promise.resolve();
-    const autoLauncher = new AutoLaunch({
-        path: remote.process.execPath,
-        name: "LaunchMenu",
-        mac: {
-            useLaunchAgent: true, //TODO: After we have signing working for Mac OS X distro then switch this value to false.
-        },
-    });
 
     const observer = new Observer(h => ({
         automaticStartup: settingsManager
@@ -30,15 +28,22 @@ export function setupStartupController(
         devMode: isInDevMode(h),
     })).listen(async ({automaticStartup, devMode}) => {
         changingPromise = changingPromise.then(async () => {
-            if (!devMode) {
-                const valueChanged = (await autoLauncher.isEnabled()) != automaticStartup;
-                if (valueChanged) {
-                    if (automaticStartup) await autoLauncher.enable();
-                    else await autoLauncher.disable();
-                }
+            if (
+                // TODO: get dev from a LM property
+                (!devMode || testing) &&
+                installer &&
+                (await installer.isRegistered(exePath)) != automaticStartup
+            ) {
+                if (automaticStartup) await installer.register(exePath);
+                else await installer.deregister(exePath);
             }
         });
     }, true);
 
     return () => observer.destroy();
 }
+
+const startupControllers = {
+    win32: () => require("./OScontrollers/windowsStartup").default,
+    darwin: () => require("./OScontrollers/macStartup").default,
+} as any as {[key: string]: (() => IStartupController) | undefined};
