@@ -13,28 +13,30 @@ import {InstallerWindow} from "./installerWindow/InstallerWindow";
 import OS from "os";
 import {handleWindowsPermissionsDialog} from "./permissions/handleWindowsPermissionsDialog";
 
-app.commandLine.appendSwitch("ignore-certificate-errors", "true"); // https://github.com/electron/electron/issues/25354#issuecomment-739804891
-global.DEV = process.env.NODE_ENV == "dev";
-launch(
-    process.platform == "darwin"
-        ? `${OS.homedir()}/Library/Application Support/LaunchMenu`
-        : process.cwd()
-);
+launch();
 
 /**
  * The launch process is currently a bit messy and hacky in order to get later installed applets to share the same packages with LM.
  * Launching the application will actually install a number of packages beforehand - in the same directory as the exe is in - if they aren't there yet. Afterwards it will run the launcher of core to start LM.
- * @param installDir The directory that the modules as well as all LM data should be stored in
  */
-async function launch(installDir: string): Promise<void> {
+async function launch(): Promise<void> {
+    // Some setup
     setupWorkingDir();
+    app.commandLine.appendSwitch("ignore-certificate-errors", "true"); // https://github.com/electron/electron/issues/25354#issuecomment-739804891
+    global.DEV = process.env.NODE_ENV == "dev";
 
+    // Specify program directory and launch function
+    const installDir =
+        process.platform == "darwin"
+            ? `${OS.homedir()}/Library/Application Support/LaunchMenu`
+            : process.cwd();
     const launchLM = () =>
         require(getInstalledPath(
             installDir,
             "@launchmenu/core/build/windowController/launcher"
         )).launch({root: installDir});
 
+    // Install LM if necessary, and launch it
     if (!isInstalled(installDir, "@launchmenu/core"))
         await firstTimeSetup(installDir, launchLM);
     else launchLM();
@@ -164,6 +166,9 @@ async function initAppletsFile(root: string, applet: string[]): Promise<void> {
     await promisify(FS.writeFile)(path, JSON.stringify(file, null, 4), "utf8");
 }
 
+/**
+ * Fixes the working directory. Window's auto startup doesn't use the file location as the working dir by default.
+ */
 function setupWorkingDir(): void {
     const regex = /workingDir=(.*)/;
     const dir = process.argv.reduce((cur, arg) => {

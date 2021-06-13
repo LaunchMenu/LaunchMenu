@@ -1,7 +1,6 @@
 import {SettingsManager} from "@launchmenu/core";
 import {settings} from "../settings";
 import {IDataHook, Observer} from "model-react";
-import Path from "path";
 import {IStartupController} from "./_types/IStartupController";
 
 const testing = false;
@@ -17,9 +16,7 @@ export function setupStartupController(
 ): () => void {
     const installer = startupControllers[process.platform]?.();
 
-    const exePath = Path.join(process.cwd(), "LaunchMenu.exe");
     let changingPromise = Promise.resolve();
-
     const observer = new Observer(h => ({
         automaticStartup: settingsManager
             .getSettingsContext(h)
@@ -32,10 +29,10 @@ export function setupStartupController(
                 // TODO: get dev from a LM property
                 (!devMode || testing) &&
                 installer &&
-                (await installer.isRegistered(exePath)) != automaticStartup
+                (await installer.isRegistered()) != automaticStartup
             ) {
-                if (automaticStartup) await installer.register(exePath);
-                else await installer.deregister(exePath);
+                if (automaticStartup) await installer.register();
+                else await installer.deregister();
             }
         });
     }, true);
