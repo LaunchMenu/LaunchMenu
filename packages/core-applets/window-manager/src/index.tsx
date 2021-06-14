@@ -4,7 +4,6 @@ import {settings, info, settingsBrowserWindow} from "./settings";
 import {setupPositionSettingSyncer} from "./position/setupPositionSettingSyncer";
 import {setupSizeSettingSyncer} from "./size/setupSizeSettingSyncer";
 import {setupVisibilityControls} from "./visibility/setupVisibilityControls";
-import {returnFocus} from "./visibility/returnFocus";
 import {setupStartupController} from "./startup/setupStartupController";
 import {setupTrayMenu} from "./tray/setupTrayMenu";
 import {windowIcon} from "./tray/icon";
@@ -22,9 +21,7 @@ export default declare({
 
         // Setup visibility controls
         const {destroy: destroyVisibilityControls, exitBindings} =
-            setupVisibilityControls(LM, window, () => {
-                returnFocus(window);
-            });
+            setupVisibilityControls(LM, window);
 
         // Setup startup controls
         const destroyWindowController = setupStartupController(settingsManager, h =>
