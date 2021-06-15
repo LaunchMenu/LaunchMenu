@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-notes",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "description": "An applet to make short notes",
     "types": "build/index.d.ts",
     "files": [
@@ -35,7 +35,7 @@
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/applets/notes#readme",
     "dependencies": {
-        "@launchmenu/core": "^0.1.1",
+        "@launchmenu/core": "^0.1.2",
         "iframe-resizer-react": "^1.1.0",
         "react-icons": "^3.10.0",
         "uuid": "^8.2.0",
