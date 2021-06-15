@@ -5,8 +5,8 @@ import PuffLoader from "react-spinners/PuffLoader";
 import {IState} from "../_types/IState";
 
 const applets = {
-    Dictionary: "@launchmenu/applet-dictionary@beta",
-    Notes: "@launchmenu/applet-notes@beta",
+    Dictionary: "@launchmenu/applet-dictionary",
+    Notes: "@launchmenu/applet-notes",
 };
 
 const useStyles = makeStyles(theme => ({
