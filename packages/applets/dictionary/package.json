@@ -35,7 +35,7 @@
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/applets/dictionary#readme",
     "dependencies": {
-        "@launchmenu/core": "^0.1.0",
+        "@launchmenu/core": "^0.1.1",
         "react-icons": "^3.10.0",
         "sanitize-html": "^2.3.1",
         "uuid": "^8.2.0"
