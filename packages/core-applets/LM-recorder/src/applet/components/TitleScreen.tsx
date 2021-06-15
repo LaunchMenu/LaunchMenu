@@ -40,7 +40,7 @@ export const TitleScreen: FC<ITitleScreenProps & IBoxProps> = ({
             </Box>
         )}
         {list && (
-            <Box css={{fontSize: "1em"}} margin="none" as="ul">
+            <Box css={{fontSize: "0.8em"}} margin="none" as="ul">
                 {list.map((item, i) => (
                     <li key={i}>{item}</li>
                 ))}

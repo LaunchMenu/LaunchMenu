@@ -8,7 +8,7 @@ import {setupStartupController} from "./startup/setupStartupController";
 import {setupTrayMenu} from "./tray/setupTrayMenu";
 import {windowIcon} from "./tray/icon";
 import {setupFrame} from "./setupFrame";
-import {ipcRenderer} from "electron/renderer";
+import {ipcRenderer} from "electron";
 
 export default declare({
     info,

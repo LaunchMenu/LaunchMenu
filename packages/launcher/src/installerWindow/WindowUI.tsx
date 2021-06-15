@@ -1,5 +1,5 @@
 import {Box, Button, Checkbox, makeStyles} from "@material-ui/core";
-import {ipcRenderer, remote} from "electron/renderer";
+import {ipcRenderer, remote} from "electron";
 import React, {FC, useEffect, useState} from "react";
 import PuffLoader from "react-spinners/PuffLoader";
 import {IState} from "../_types/IState";
