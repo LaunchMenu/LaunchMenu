@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-session-manager",
-    "version": "0.0.5-beta.7",
+    "version": "0.1.0",
     "description": "An applet to manage sessions",
     "types": "build/index.d.ts",
     "files": [
@@ -49,7 +49,7 @@
         "ts-jest": "^26.1.0"
     },
     "dependencies": {
-        "@launchmenu/core": "^0.0.5-beta.7"
+        "@launchmenu/core": "^0.1.0"
     },
     "gitHead": "3949c98b3ab4954d2b8351d98283fecca72b7e74",
     "publishConfig": {

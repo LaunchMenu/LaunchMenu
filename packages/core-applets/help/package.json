@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-help",
-    "version": "0.0.5-beta.7",
+    "version": "0.1.0",
     "description": "An applet to show some information for when first using LaunchMenu",
     "types": "build/index.d.ts",
     "files": [
@@ -50,7 +50,7 @@
         "ts-jest": "^26.1.0"
     },
     "dependencies": {
-        "@launchmenu/core": "^0.0.5-beta.7"
+        "@launchmenu/core": "^0.1.0"
     },
     "gitHead": "3949c98b3ab4954d2b8351d98283fecca72b7e74",
     "publishConfig": {
