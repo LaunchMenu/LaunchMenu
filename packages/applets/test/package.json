@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-test",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "private": true,
     "description": "A test applet for LaunchMenu",
     "types": "build/index.d.ts",
@@ -47,6 +47,6 @@
         "ts-jest": "^26.1.0"
     },
     "dependencies": {
-        "@launchmenu/core": "^0.1.3"
+        "@launchmenu/core": "^0.1.4"
     }
 }
