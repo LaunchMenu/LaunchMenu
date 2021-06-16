@@ -2,7 +2,7 @@ import React from "react";
 import {ISimpleSearchData} from "./_types/ISimpleSearchData";
 import {v4 as uuid} from "uuid";
 import {IActionBinding} from "../../../../_types/IActionBinding";
-import {Field, IDataHook, proxyHook, useDataHook} from "model-react";
+import {DataCacher, Field, IDataHook, proxyHook, useDataHook} from "model-react";
 import {IMenuSearchable} from "../../_types/IMenuSearchable";
 import {getHooked} from "../../../../../utils/subscribables/getHooked";
 import {IAction} from "../../../../_types/IAction";
@@ -31,7 +31,7 @@ export const simpleSearchHandler = createAction({
     name: "simple search",
     parents: [tracedRecursiveSearchHandler],
     core: (data: ISimpleSearchData[]) => {
-        let search: ISimpleSearchExecutor | undefined;
+        let search: DataCacher<ISimpleSearchExecutor> | undefined;
         return {
             children: data.map(searchData => {
                 const {ID, itemID, children, showChild} = searchData;
@@ -42,17 +42,19 @@ export const simpleSearchHandler = createAction({
                     showChild,
                     search: (query, getItem, hook) => {
                         if (!search)
-                            search = getSimpleSearchMethod(
-                                query.context,
-                                proxyHook(hook, {
-                                    onCall: () => {
-                                        // Reset the cached search
-                                        search = undefined;
-                                    },
-                                })
+                            search = new DataCacher(h =>
+                                getSimpleSearchExecutor(
+                                    query.context,
+                                    proxyHook(h, {
+                                        onCall: () => {
+                                            // Reset the cached search
+                                            search = undefined;
+                                        },
+                                    })
+                                )
                             );
 
-                        return search(searchData, getItem, query, hook);
+                        return search.get(hook)(searchData, getItem, query, hook);
                     },
                 });
             }),
@@ -139,12 +141,12 @@ export const simpleSearchHandler = createAction({
 });
 
 /**
- * Retrieves the currently configured search method
+ * Retrieves the search executor for the currently configured search method
  * @param context The context to extract the search method from
  * @param raterHook The data hook to listen for query rater changes
  * @returns The function to retrieve a searchable for a given item
  */
-function getSimpleSearchMethod(
+function getSimpleSearchExecutor(
     context: IIOContext,
     raterHook?: IDataHook
 ): ISimpleSearchExecutor {
