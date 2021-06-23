@@ -43,11 +43,6 @@ export default declare({
                 // TODO:
                 console.log("detect");
             },
-            development: {
-                onReload(): void {
-                    // session.searchField.set("or");
-                },
-            },
         };
     },
 });

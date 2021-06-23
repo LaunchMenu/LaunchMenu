@@ -8,10 +8,10 @@ import {
 import FS from "fs";
 import Path from "path";
 import {promisify} from "util";
+import {handleMacPermissionsDialog} from "./permissions/handleMacPermissionsDialog";
 import {InstallerWindow} from "./installerWindow/InstallerWindow";
-
-app.commandLine.appendSwitch("ignore-certificate-errors", "true"); // https://github.com/electron/electron/issues/25354#issuecomment-739804891
-global.DEV = process.env.NODE_ENV == "dev";
+import OS from "os";
+import {handleWindowsPermissionsDialog} from "./permissions/handleWindowsPermissionsDialog";
 
 launch();
 
@@ -20,14 +20,25 @@ launch();
  * Launching the application will actually install a number of packages beforehand - in the same directory as the exe is in - if they aren't there yet. Afterwards it will run the launcher of core to start LM.
  */
 async function launch(): Promise<void> {
+    // Some setup
     setupWorkingDir();
+    app.commandLine.appendSwitch("ignore-certificate-errors", "true"); // https://github.com/electron/electron/issues/25354#issuecomment-739804891
+    global.DEV = process.env.NODE_ENV == "dev";
 
+    // Specify program directory and launch function
+    const installDir =
+        process.platform == "darwin"
+            ? `${OS.homedir()}/Library/Application Support/LaunchMenu`
+            : process.cwd();
     const launchLM = () =>
         require(getInstalledPath(
+            installDir,
             "@launchmenu/core/build/windowController/launcher"
-        )).launch();
+        )).launch({root: installDir});
 
-    if (!isInstalled("@launchmenu/core")) await firstTimeSetup(launchLM);
+    // Install LM if necessary, and launch it
+    if (!isInstalled(installDir, "@launchmenu/core"))
+        await firstTimeSetup(installDir, launchLM);
     else launchLM();
 }
 
@@ -36,43 +47,53 @@ async function launch(): Promise<void> {
  * + Prompts user to install applets
  * - Installs packages
  * - Adds required initial settings files
+ * @param installDir The directory that the modules as well as all LM data should be stored in
  * @param launchLM The function to LM after installation
  */
 async function firstTimeSetup(
-    launchLM: () => Promise<{show: () => void; shown: Promise<void>}>
+    installDir: string,
+    launchLM: () => Promise<{
+        show: () => void;
+        shown: Promise<void>;
+    }>
 ): Promise<void> {
     await app.whenReady();
     const window = new InstallerWindow();
 
     try {
         // Perform some initialization
-        await Promise.all([setupDirs(), window.init()]);
+        await Promise.all([setupDirs(installDir), window.init()]);
 
         // Present the user with some first time setup stuff
         const chosenApplets = await window.getInitialApplets();
         const applets = [
-            "@launchmenu/applet-applet-manager@alpha",
-            "@launchmenu/applet-session-manager@alpha",
-            "@launchmenu/applet-settings-manager@alpha",
-            "@launchmenu/applet-window-manager@alpha",
-            "@launchmenu/applet-help@alpha",
+            "@launchmenu/applet-applet-manager",
+            "@launchmenu/applet-session-manager",
+            "@launchmenu/applet-settings-manager",
+            "@launchmenu/applet-window-manager",
+            "@launchmenu/applet-help",
             ...chosenApplets,
         ] as string[];
-        const packages = ["@launchmenu/core@alpha", ...applets];
+        const packages = ["@launchmenu/core", ...applets];
 
         // Create an initial package
-        await initPackage();
+        await initPackage(installDir);
         for (let p of packages) {
             window.setState({type: "loading", name: `Installing ${p}`});
-            await install(p);
+            await install(installDir, p);
         }
 
+        // Ask for permissions on mac if needed
+        if (process.platform == "darwin") await handleMacPermissionsDialog(window);
+        if (process.platform == "win32") await handleWindowsPermissionsDialog(window);
+
+        // Finalize
         window.setState({type: "loading", name: `Finishing up`});
-        await initAppletsFile(applets);
+        await initAppletsFile(installDir, applets);
 
         // Launch LM
-        window.setState({type: "finished", name: "Finished"});
         const {show, shown} = await launchLM();
+        window.setState({type: "finished", name: "Finished"});
 
         // Wait for the user to open LM
         await shown;
@@ -83,7 +104,7 @@ async function firstTimeSetup(
             name: `Something went wrong during installation`,
         });
         await promisify(FS.writeFile)(
-            Path.join(process.cwd(), "errorReport.txt"),
+            Path.join(installDir, "errorReport.txt"),
             e.toString() + "\n" + (e instanceof Error ? e.stack : ""),
             "utf8"
         );
@@ -98,17 +119,17 @@ async function firstTimeSetup(
 /*********************************************
  * Some helpers to perform the initial setup *
  *********************************************/
-async function setupDirs(): Promise<void> {
+async function setupDirs(root: string): Promise<void> {
     const dirs = ["node_modules", "data/settings"];
     for (let dir of dirs) {
-        const dirPath = Path.join(process.cwd(), dir);
+        const dirPath = Path.join(root, dir);
         if (!FS.existsSync(dirPath))
             await promisify(FS.mkdir)(dirPath, {recursive: true});
     }
 }
 
-async function initPackage(): Promise<void> {
-    const path = Path.join(process.cwd(), "package.json");
+async function initPackage(root: string): Promise<void> {
+    const path = Path.join(root, "package.json");
     if (FS.existsSync(path)) return;
 
     const file = {
@@ -120,10 +141,10 @@ async function initPackage(): Promise<void> {
     await promisify(FS.writeFile)(path, JSON.stringify(file, null, 4), "utf8");
 }
 
-async function initAppletsFile(applet: string[]): Promise<void> {
+async function initAppletsFile(root: string, applet: string[]): Promise<void> {
     if (DEV) return;
 
-    const path = Path.join(process.cwd(), "data/settings/applets.json");
+    const path = Path.join(root, "data/settings/applets.json");
     if (FS.existsSync(path)) return;
 
     const file = {} as Record<string, string>;
@@ -137,7 +158,7 @@ async function initAppletsFile(applet: string[]): Promise<void> {
         const name = match[3];
         const path = namespace ? `${namespace}@${name}` : name;
         try {
-            file[path] = getInstalledPath(getPackageNameWithoutVersion(module));
+            file[path] = getInstalledPath(root, getPackageNameWithoutVersion(module));
         } catch (e) {
             console.error(e);
         }
@@ -145,6 +166,9 @@ async function initAppletsFile(applet: string[]): Promise<void> {
     await promisify(FS.writeFile)(path, JSON.stringify(file, null, 4), "utf8");
 }
 
+/**
+ * Fixes the working directory. Window's auto startup doesn't use the file location as the working dir by default.
+ */
 function setupWorkingDir(): void {
     const regex = /workingDir=(.*)/;
     const dir = process.argv.reduce((cur, arg) => {

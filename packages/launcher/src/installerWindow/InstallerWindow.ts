@@ -25,9 +25,11 @@ export class InstallerWindow {
                 height: 250,
                 frame: false,
                 show: false,
+                resizable: false,
                 webPreferences: {
                     nodeIntegration: true,
                 },
+                icon: Path.join(__dirname, "..", "icon.png"),
             });
 
             this.window.loadFile(Path.join(__dirname, "index.html"));
@@ -51,9 +53,18 @@ export class InstallerWindow {
     /**
      * Sets the state to be displayed in the window
      * @param state The state to be displayed
+     * @returns The selected value if a prompt state was specified
      */
-    public async setState(state: IState): Promise<void> {
+    public async setState<T>(state: IState<T>): Promise<T> {
         this.window.webContents.send("state", state);
+        if (state.type == "prompt") {
+            return new Promise(res => {
+                ipcMain.once("clickButton", (event, index: number) => {
+                    res(state.buttons[index].value);
+                });
+            });
+        }
+        return Promise.resolve() as any as Promise<T>;
     }
 
     /**

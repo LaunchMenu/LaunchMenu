@@ -1,6 +1,6 @@
 {
     "name": "@launchmenu/applet-window-manager",
-    "version": "0.0.5-alpha.20",
+    "version": "0.1.4",
     "description": "An applet to manage LMs window",
     "types": "build/index.d.ts",
     "files": [
@@ -53,8 +53,9 @@
         "ts-jest": "^26.1.0"
     },
     "dependencies": {
-        "@launchmenu/core": "^0.0.5-alpha.20",
-        "auto-launch": "^5.0.5"
+        "@launchmenu/core": "^0.1.4",
+        "auto-launch": "^5.0.5",
+        "regedit": "^3.0.3"
     },
     "gitHead": "3949c98b3ab4954d2b8351d98283fecca72b7e74",
     "publishConfig": {

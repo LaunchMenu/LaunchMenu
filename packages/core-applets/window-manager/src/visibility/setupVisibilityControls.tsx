@@ -3,6 +3,7 @@ import {BrowserWindow, remote} from "electron";
 import {Observer} from "model-react";
 import {settings} from "../settings";
 import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
+import {IVisibilityController} from "./_types/IVisibilityController";
 
 /**
  * Sets up all listeners and UI to control window visibility
@@ -13,12 +14,13 @@ import {createExitContextMenuBinding} from "./createExitContextMenuBindings";
  */
 export function setupVisibilityControls(
     LM: LaunchMenu,
-    window: BrowserWindow,
-    onHide: () => void
+    window: BrowserWindow
 ): {destroy: () => void; exitBindings: IActionBinding[]} {
     const settingsManager = LM.getSettingsManager();
 
     // Synchronize with LM visibility state and deal with the fact that transitions don't run while the window is hidden
+    const visibilityController = visibilityControllers[process.platform]?.();
+    visibilityController?.init(window);
     const visibilityObserver = new Observer(h => LM.isWindowOpen(h), {
         debounce: -1,
     }).listen(open => {
@@ -27,20 +29,15 @@ export function setupVisibilityControls(
                 document.body.style.visibility = "inherit";
             }, 50);
 
-            window.show();
-            window.focus();
+            visibilityController?.show(window);
         } else {
-            if (!window.isVisible()) return;
-
             document.body.style.visibility = "hidden";
             document.body.getBoundingClientRect(); // Force reflow to hide the element visually asap
 
-            setTimeout(() => {
-                onHide();
-                window.hide();
-            }, 10);
+            visibilityController?.hide(window);
         }
     });
+
     const hideWindow = () => LM.setWindowOpen(false);
     const showWindow = () => LM.setWindowOpen(true);
 
@@ -110,3 +107,8 @@ export function setupVisibilityControls(
         exitBindings: createExitContextMenuBinding(LM, hideWindow),
     };
 }
+
+const visibilityControllers = {
+    win32: () => require("./OScontrollers/windowsVisibility").default,
+    darwin: () => require("./OScontrollers/macVisibility").default,
+} as any as {[key: string]: (() => IVisibilityController) | undefined};

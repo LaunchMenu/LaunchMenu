@@ -1,15 +1,23 @@
-import {Box, Button, Checkbox} from "@material-ui/core";
-import {ipcRenderer} from "electron/renderer";
+import {Box, Button, Checkbox, makeStyles} from "@material-ui/core";
+import {ipcRenderer, remote} from "electron";
 import React, {FC, useEffect, useState} from "react";
 import PuffLoader from "react-spinners/PuffLoader";
 import {IState} from "../_types/IState";
 
 const applets = {
-    Dictionary: "@launchmenu/applet-dictionary@alpha",
-    Notes: "@launchmenu/applet-notes@alpha",
+    Dictionary: "@launchmenu/applet-dictionary",
+    Notes: "@launchmenu/applet-notes",
 };
 
+const useStyles = makeStyles(theme => ({
+    button: {
+        margin: theme.spacing(1),
+        flex: 1,
+    },
+}));
+
 export const WindowUI: FC = () => {
+    const classes = useStyles();
     const [state, setState] = useState({type: "loading", name: "Initializing"} as IState);
     useEffect(() => {
         ipcRenderer.send("ready");
@@ -37,10 +45,41 @@ export const WindowUI: FC = () => {
                         <PuffLoader color="#00F" size={60} />
                     </Box>
                 </>
+            ) : state.type == "prompt" ? (
+                <Box display="flex" flexDirection="column" width="100%" height="100%">
+                    <Box
+                        mb={1}
+                        flex={1}
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center">
+                        {state.text}
+                    </Box>
+                    <Box display="flex" width="100%">
+                        {state.buttons.map((button, i) => (
+                            <Button
+                                key={i}
+                                className={classes.button}
+                                variant="contained"
+                                color={button.type == "primary" ? "primary" : "default"}
+                                onClick={() => ipcRenderer.send("clickButton", i)}>
+                                {button.text}
+                            </Button>
+                        ))}
+                    </Box>
+                </Box>
             ) : state.type == "finished" ? (
                 <>
                     {state.name}
-                    <Box>Press ctrl+o or use the tray icon to open LM.</Box>
+                    <Box>
+                        Press{" "}
+                        {process.platform == "win32"
+                            ? "Windows+Space"
+                            : remote.systemPreferences.isTrustedAccessibilityClient(false)
+                            ? "Command+Space"
+                            : "Command+L"}{" "}
+                        or use the tray icon to open LM.
+                    </Box>
                 </>
             ) : (
                 <InstallSelectionHandler />

@@ -1,20 +1,25 @@
 import {BrowserWindow, shell, ipcMain} from "electron";
 import Path from "path";
 import {standardWindowSize} from "./standardWindowSize";
+import {IApplicationConfig} from "./_types/IApplicationConfig";
 
 export class WindowController {
     protected window: BrowserWindow;
+    protected config: IApplicationConfig;
 
-    /**
-     * A promise that resolves once the window has been opened at least once
-     */
+    /** A promise that resolves once the window has been opened at least once */
     public shown: Promise<void>;
+
+    /** A promise that resolves once the window has been opened at least once */
+    public started: Promise<void>;
 
     /**
      * Creates a new window manager
-     * @param shortcutManager The shortcut manager to manage the global shortcuts
+     * @param config The configuration for the application
      */
-    public constructor() {
+    public constructor(config: IApplicationConfig) {
+        this.config = config;
+
         // Create the browser window
         this.window = new BrowserWindow({
             ...standardWindowSize,
@@ -27,6 +32,7 @@ export class WindowController {
                 nodeIntegration: true,
                 contextIsolation: false,
                 backgroundThrottling: false,
+                nativeWindowOpen: true,
             },
         });
         this.window.menuBarVisible = false;
@@ -60,14 +66,29 @@ export class WindowController {
             c({cancel: false, responseHeaders: d.responseHeaders});
         });
 
-        // Track whether the window has been shown. To be used by the installer
+        // Track whether the window has been started and shown. To be used by the installer
         this.shown = new Promise(res => {
-            this.window.on("show", () => res());
+            this.window.once("show", () => res());
+        });
+        this.started = new Promise(res => {
+            ipcMain.once("LM-started", () => res());
         });
 
         // Check if window is closed by user
         this.window.on("close", () => {
             ipcMain.emit("shutdown");
+        });
+
+        // Initialize the window's config
+        this.initWindowConfig();
+    }
+
+    /**
+     * Shares the configuration data with the window
+     */
+    protected initWindowConfig(): void {
+        ipcMain.once("LM-requestConfig", () => {
+            this.window.webContents.send("LM-sendConfig", this.config);
         });
     }
 

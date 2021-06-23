@@ -68,7 +68,7 @@ const specialKeys = {
     tab: {big: <BigKeyView>⇥</BigKeyView>, small: <KeyView>⇥</KeyView>},
     pageUp: {big: <BigKeyView>⇞ PgUp</BigKeyView>, small: <KeyView>⇞ PgUp</KeyView>},
     pageDown: {big: <BigKeyView>⇟ PgDn</BigKeyView>, small: <KeyView>⇟ PgDn</KeyView>},
-    home: {big: <BigKeyView>⇱ home</BigKeyView>, small: <KeyView>⇱ hame</KeyView>},
+    home: {big: <BigKeyView>⇱ home</BigKeyView>, small: <KeyView>⇱ home</KeyView>},
     end: {big: <BigKeyView>⇲ end</BigKeyView>, small: <KeyView>⇲ end</KeyView>},
     contextMenu: {big: <BigKeyView>☰</BigKeyView>, small: <KeyView>☰</KeyView>},
 } as const;

@@ -19,7 +19,7 @@ export function createDebuggerVisibilitySetting() {
             resetUndoable: true,
             icon: "settings",
             searchPattern: settingPatternMatcher,
-            keywords: ["dev", "console", "dev-tools", "developer", "javascript"],
+            tags: ["dev", "console", "dev-tools", "developer", "javascript"],
             resetable: true,
             valueView: <Loader>{h => field.get(h)}</Loader>,
             actionBindings: [

@@ -3,18 +3,23 @@ import Path from "path";
 
 /**
  * Install the core LM module
+ * @param root The root directory to install the packages in
  * @param packageName The package to install
  * @param packages Additional packages to install
  */
-export function install(packageName: string, ...packages: string[]): Promise<void> {
+export function install(
+    root: string,
+    packageName: string,
+    ...packages: string[]
+): Promise<void> {
     // Fake installation if in dev mode
     if (DEV) return new Promise(res => setTimeout(res, 500));
 
     packages = [packageName, ...packages];
-    packages = packages.filter(p => !isInstalled(getPackageNameWithoutVersion(p)));
+    packages = packages.filter(p => !isInstalled(root, getPackageNameWithoutVersion(p)));
     if (packages.length == 0) return Promise.resolve();
 
-    const prefix = process.cwd();
+    const prefix = root;
     return new Promise((res, rej) => {
         npm.load(
             {
@@ -57,16 +62,23 @@ export function install(packageName: string, ...packages: string[]): Promise<voi
 
 /**
  * Checks whether a package with the specified name is installed
+ * @param externalRoot The path to check for external packages
  * @param packageName The package to check for
- * @param external Whether to only check for external packages
+ * @param externalOnly Whether to only check for external packages
  * @returns Whether the specified package is installed
  */
-export function isInstalled(packageName: string, external: boolean = true): boolean {
+export function isInstalled(
+    externalRoot: string,
+    packageName: string,
+    externalOnly: boolean = true
+): boolean {
     try {
-        if (external) console.log(`Found ${getExternalInstallPath(packageName)}`);
-        else console.log(`Found ${getInstalledPath(packageName)}`);
+        if (externalOnly)
+            console.log(`Found ${getExternalInstallPath(externalRoot, packageName)}`);
+        else console.log(`Found ${getInstalledPath(externalRoot, packageName)}`);
         return true;
     } catch (e) {
+        console.error(`Could not find ${packageName}`);
         return false;
     }
 }
@@ -84,16 +96,17 @@ export function getPackageNameWithoutVersion(packageName: string): string {
 
 /**
  * Retrieves the absolute path to a package with the given name
+ * @param root The root directory to look for packages in
  * @param packageName The package to get the path of
  * @returns The path to the package
  * @throw Throws an error if no such path exists
  */
-export function getInstalledPath(packageName: string): string {
+export function getInstalledPath(root: string, packageName: string): string {
     try {
         return require.resolve(packageName);
     } catch (e) {
         try {
-            return getExternalInstallPath(packageName);
+            return getExternalInstallPath(root, packageName);
         } catch (e) {}
         throw e;
     }
@@ -101,10 +114,11 @@ export function getInstalledPath(packageName: string): string {
 
 /**
  * Retrieves the absolute path to a package with the given name, if externally installed
+ * @param root The root directory to look for packages in
  * @param packageName The package to get the path of
  * @returns The path to the package
  * @throw Throws an error if no such path exists
  */
-export function getExternalInstallPath(packageName: string): string {
-    return require.resolve(Path.join(process.cwd(), "node_modules", packageName));
+export function getExternalInstallPath(root: string, packageName: string): string {
+    return require.resolve(Path.join(root, "node_modules", packageName));
 }

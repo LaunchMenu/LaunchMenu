@@ -18,7 +18,7 @@ import {createDebuggerVisibilitySetting} from "./visibility/createDebuggerVisibi
 
 export const info = {
     name: "Window manager",
-    description: "An window to manage LaunchMenu's window",
+    description: "An applet to manage LaunchMenu's window",
     version: "0.0.0",
     icon: "window",
 } as const;
@@ -91,7 +91,14 @@ export const settings = createSettings({
                     children: {
                         open: createGlobalKeyPatternSetting({
                             name: "Open LaunchMenu",
-                            init: new KeyPattern("meta+space"),
+                            init: new KeyPattern(
+                                !isPlatform("mac") ||
+                                remote.systemPreferences.isTrustedAccessibilityClient(
+                                    false
+                                )
+                                    ? "meta+space"
+                                    : "meta+l"
+                            ),
                         }),
                         exit: createKeyPatternSetting({
                             name: "Exit LaunchMenu",

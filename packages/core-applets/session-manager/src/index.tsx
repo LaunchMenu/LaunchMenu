@@ -133,13 +133,17 @@ export default declare({
             toggleSessionsItem,
         ];
 
+        const switchSessionsName = "Switch session";
         return {
             open({context, onClose}) {
                 context.open(
-                    new UILayer(() => ({
-                        menu: new ProxiedMenu(context, getSessionMenuItems),
-                        onClose,
-                    }))
+                    new UILayer(
+                        () => ({
+                            menu: new ProxiedMenu(context, getSessionMenuItems),
+                            onClose,
+                        }),
+                        {path: switchSessionsName}
+                    )
                 );
             },
             globalContextMenuBindings: [
@@ -156,7 +160,7 @@ export default declare({
                 createGlobalContextBinding({
                     priority: [Priority.LOW, 49], // Arbitrary suffix after priority to enforce consistent ordering
                     item: createContextFolderMenuItem({
-                        name: "Switch session",
+                        name: switchSessionsName,
                         children: getSessionMenuItems,
                         shortcut: (context, h) =>
                             context.settings.get(settings).controls.openMenu.get(h),

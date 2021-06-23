@@ -5,7 +5,7 @@ app.commandLine.appendSwitch("ignore-certificate-errors", "true"); // https://gi
 
 // Only run this code if we are in the main electron process
 if (app) {
-    launch().then(({exit}) => {
+    launch({root: process.cwd()}).then(({exit}) => {
         process.on("exit", code => {
             exit();
         });

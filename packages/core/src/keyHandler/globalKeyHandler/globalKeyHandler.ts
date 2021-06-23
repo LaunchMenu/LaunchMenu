@@ -16,6 +16,7 @@ import {IKeyId} from "../keyIdentifiers/keyIds";
 import {IKeyMatcher, keyIdMapping} from "../keyIdentifiers/keys";
 import {IKeyName} from "../keyIdentifiers/keyNames";
 import {IDataHook, IDataRetriever, Observer} from "model-react";
+import {isPlatform} from "../../utils/platform/isPlatform";
 
 /** A class that can be used for registering keyboard shortcuts. Should be used as a singleton obtained from LaunchMenu */
 export class GlobalKeyHandler {
@@ -154,7 +155,12 @@ export class GlobalKeyHandler {
      * @returns Whether listeners are supported
      */
     public areListenersSupported(hook?: IDataHook): boolean {
-        return !this.useElectronListener(hook) && !!this.advancedManager;
+        return (
+            !this.useElectronListener(hook) &&
+            !!this.advancedManager &&
+            (!isPlatform("mac") ||
+                remote.systemPreferences.isTrustedAccessibilityClient(false))
+        );
     }
 
     /**

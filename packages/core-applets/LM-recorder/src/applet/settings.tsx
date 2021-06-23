@@ -37,7 +37,7 @@ export const settings = createSettings({
                     description:
                         "The directory that the recording scripts can be found in",
                     folder: true,
-                    init: Path.join(process.cwd(), "/build/recording"),
+                    init: Path.join(process.cwd(), "/build/recordScripts"),
                 }),
             },
         }),

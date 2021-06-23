@@ -2,8 +2,17 @@ import ReactDOM from "react-dom";
 import Path from "path";
 import hmr from "@launchmenu/hmr";
 import {ipcRenderer} from "electron";
+import {IApplicationConfig} from "./_types/IApplicationConfig";
 
-export function startApplication() {
+export async function startApplication() {
+    // Retrieve the application config
+    ipcRenderer.send("LM-requestConfig");
+    const config = await new Promise<IApplicationConfig>(res => {
+        ipcRenderer.once("LM-sendConfig", (event, config: IApplicationConfig) => {
+            res(config);
+        });
+    });
+
     // Globally inject a DEV variable indicating whether running in production or development mode
     global.DEV = process.env.NODE_ENV == "dev";
 
@@ -19,12 +28,12 @@ export function startApplication() {
             LaunchMenu,
         }: typeof import("../application/LaunchMenu") = require("../application/LaunchMenu");
 
-        (window as any).launchmenu = lm = new LaunchMenu();
+        (window as any).launchmenu = lm = new LaunchMenu(config);
         lm.setDevMode(global.DEV);
         await lm.setup();
         ReactDOM.render(lm.view, document.getElementById("root"));
     }
-    let prevStartup = startup().then(() => ipcRenderer.send("LM-launched"));
+    let prevStartup = startup();
 
     // Listen for dispose requests, to properly dispose of all data
     ipcRenderer.on("LM-dispose", async () => {

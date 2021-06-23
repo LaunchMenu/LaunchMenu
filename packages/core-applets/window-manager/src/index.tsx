@@ -4,11 +4,11 @@ import {settings, info, settingsBrowserWindow} from "./settings";
 import {setupPositionSettingSyncer} from "./position/setupPositionSettingSyncer";
 import {setupSizeSettingSyncer} from "./size/setupSizeSettingSyncer";
 import {setupVisibilityControls} from "./visibility/setupVisibilityControls";
-import {returnFocus} from "./visibility/returnFocus";
 import {setupStartupController} from "./startup/setupStartupController";
 import {setupTrayMenu} from "./tray/setupTrayMenu";
 import {windowIcon} from "./tray/icon";
 import {setupFrame} from "./setupFrame";
+import {ipcRenderer} from "electron";
 
 export default declare({
     info,
@@ -21,9 +21,7 @@ export default declare({
 
         // Setup visibility controls
         const {destroy: destroyVisibilityControls, exitBindings} =
-            setupVisibilityControls(LM, window, () => {
-                returnFocus(window);
-            });
+            setupVisibilityControls(LM, window);
 
         // Setup startup controls
         const destroyWindowController = setupStartupController(settingsManager, h =>
@@ -44,6 +42,11 @@ export default declare({
 
         // Set the window image
         remote.getCurrentWindow().setIcon(windowIcon);
+
+        // Indicate that LM is now fully started
+        ipcRenderer.send("LM-started");
+
+        // Return disposer and global bindings
         return {
             globalContextMenuBindings: exitBindings,
             onDispose: () => {
