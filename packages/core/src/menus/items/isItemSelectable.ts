@@ -13,5 +13,4 @@ import {IMenuItem} from "./_types/IMenuItem";
  */
 export function isItemSelectable(item: IMenuItem, hook?: IDataHook): boolean {
     return isSelectableAction.get([item], hook);
-    // return hasActionBindingFor(executeAction, item, hook);
 }
