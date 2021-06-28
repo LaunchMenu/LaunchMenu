@@ -9,6 +9,7 @@ import {createAction} from "../../createAction";
 import {IAction} from "../../_types/IAction";
 import {IActionBinding} from "../../_types/IActionBinding";
 import {IActionTarget} from "../../_types/IActionTarget";
+import {isSelectableAction} from "../isSelectable/isSelectableAction";
 import {IExecutable, IExecutableResponse} from "./_types/IExecutable";
 import {IItemExecuteCallback} from "./_types/IItemExecuteCallback";
 
@@ -20,7 +21,7 @@ const priority: IPriority = new Array(5).fill(Priority.EXTRAHIGH);
  */
 export const executeAction = createAction({
     name: "executeAction",
-    parents: [contextMenuAction],
+    parents: [contextMenuAction, isSelectableAction],
     core: function (executors: IExecutable[]) {
         const combineExecutables: IExecutable = async data => {
             const results = await Promise.all(
@@ -48,8 +49,8 @@ export const executeAction = createAction({
         return {
             result: combineExecutables,
 
-            // Create a context menu item for this action, such that it also shows up in the context menu
             children: [
+                // Create a context menu item for this action, such that it also shows up in the context menu
                 contextMenuAction.createBinding({
                     action: this,
                     execute: [this.createBinding(combineExecutables)], // Gets passed to the context item
@@ -62,6 +63,8 @@ export const executeAction = createAction({
                         }),
                     }),
                 }) as any,
+                // Indicate the item is selectable
+                isSelectableAction.createBinding(true),
             ],
         };
     },

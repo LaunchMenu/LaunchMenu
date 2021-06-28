@@ -1085,6 +1085,19 @@
   resolved "https://registry.yarnpkg.com/@jxa/types/-/types-1.3.4.tgz#57fc58164d9eac7bbb0088d51b7a8ba980887519"
   integrity sha512-BKwO4l/NXJUXRBIYWfCOyf3k/pBTzP70h/zx5GkKaAdqpSaCZUhh48ZW16jPUb99f4je2CrtMezppBxREMUgaw==
 
+"@launchmenu/build-tools@^0.0.5-alpha.20":
+  version "0.0.5-beta.1"
+  resolved "https://registry.yarnpkg.com/@launchmenu/build-tools/-/build-tools-0.0.5-beta.1.tgz#1323345667083553fe5aa8064edcbe408ab3a3d6"
+  integrity sha512-7OlluoWFa8B9HPLMeJq5IzmqgjZO/yG3FATiC8ePWBz752iFQI31v+5hIy9Q4FY7+z5PGJV31i4h9MuDwxvWPQ==
+  dependencies:
+    args "^5.0.1"
+    chalk "^4.1.0"
+    chokidar "^3.4.2"
+    cpx "^1.5.0"
+    cross-spawn-promise "0.10.2"
+    rimraf "^3.0.2"
+    typescript "4.1.3"
+
 "@lerna/add@3.21.0":
   version "3.21.0"
   resolved "https://registry.yarnpkg.com/@lerna/add/-/add-3.21.0.tgz#27007bde71cc7b0a2969ab3c2f0ae41578b4577b"
