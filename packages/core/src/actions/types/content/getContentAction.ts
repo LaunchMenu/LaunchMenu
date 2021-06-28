@@ -8,6 +8,7 @@ import {adjustBindingInput} from "../../utils/adjustBindingInput";
 import {IUUID} from "../../../_types/IUUID";
 import {IGetContentData} from "./_types/IGetContentData";
 import {IIOContext} from "../../../context/_types/IIOContext";
+import {isSelectableAction} from "../isSelectable/isSelectableAction";
 
 /**
  * An action that can be used to extract preview/extended contents from items
@@ -16,7 +17,9 @@ export const getContentAction = createAction({
     name: "open menu item content handler",
     core: (contents: IGetContentData[]) => ({
         result: contents,
+        children: [isSelectableAction.createBinding(true)],
     }),
+    parents: [isSelectableAction],
 
     /**
      * Creates a new action binding and generates an ID for this item identity

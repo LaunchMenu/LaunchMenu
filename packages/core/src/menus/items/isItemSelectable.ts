@@ -1,5 +1,6 @@
 import {IDataHook} from "model-react";
 import {executeAction} from "../../actions/types/execute/executeAction";
+import {isSelectableAction} from "../../actions/types/isSelectable/isSelectableAction";
 import {hasActionBindingFor} from "../../actions/utils/hasActionBindingFor";
 import {IMenuItem} from "./_types/IMenuItem";
 
@@ -11,5 +12,5 @@ import {IMenuItem} from "./_types/IMenuItem";
  * @exportTo ./menus/helpers
  */
 export function isItemSelectable(item: IMenuItem, hook?: IDataHook): boolean {
-    return hasActionBindingFor(executeAction, item, hook);
+    return isSelectableAction.get([item], hook);
 }
