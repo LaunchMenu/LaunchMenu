@@ -13,7 +13,7 @@ export function checkTextNumberConstraints(
 ): IInputError | undefined {
     // Make sure the text is numeric
     if (!/^\-?(\d*\.)?\d+$/.exec(text)) {
-        const res = /(\-?\d*\.)?\d+/.exec(text);
+        const res = /\-?(\d*\.)?\d+/.exec(text);
         return {
             message: "Value must be a number",
             ranges: res
