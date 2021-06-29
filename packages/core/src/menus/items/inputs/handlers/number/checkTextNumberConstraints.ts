@@ -12,7 +12,7 @@ export function checkTextNumberConstraints(
     {min, max, increment, baseValue, checkValidity}: INumberConstraints
 ): IInputError | undefined {
     // Make sure the text is numeric
-    if (!/^(\-?\d*\.)?\d+$/.exec(text)) {
+    if (!/^\-?(\d*\.)?\d+$/.exec(text)) {
         const res = /(\-?\d*\.)?\d+/.exec(text);
         return {
             message: "Value must be a number",
