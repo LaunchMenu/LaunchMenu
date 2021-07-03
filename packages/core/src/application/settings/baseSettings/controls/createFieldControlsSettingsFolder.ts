@@ -4,7 +4,10 @@ import {createKeyPatternSetting} from "../../../../settings/inputs/createKeyPatt
 import {createSettingsFolder} from "../../../../settings/inputs/createSettingsFolder";
 import {constGetter} from "../../../../utils/constGetter";
 import {cmdModifier} from "../../../../utils/platform/cmdModifier";
-import {wordJumpModifier} from "../../../../utils/platform/wordJumpModifier";
+import {
+    wordDeleteModifier,
+    wordJumpModifier,
+} from "../../../../utils/platform/wordJumpModifier";
 
 /**
  * The categories used for the field folder
@@ -91,6 +94,32 @@ export function createFieldControlsSettingsFolder() {
                 ]),
                 category: getFieldControlsFolderCategories().jumps,
                 tags: ["text", "input", "caret", "cursor"],
+            }),
+
+            // Word deletion
+            backwardsDeleteWord: createKeyPatternSetting({
+                name: "Deletes a word backwards",
+                init: new KeyPattern([
+                    {
+                        pattern: `${wordDeleteModifier}+backspace`,
+                        type: "down or repeat",
+                        allowExtra: ["shift"],
+                    },
+                ]),
+                category: getFieldControlsFolderCategories().insertDelete,
+                tags: ["text", "input", "delete"],
+            }),
+            forwardsDeleteWord: createKeyPatternSetting({
+                name: "Deletes a word forwards",
+                init: new KeyPattern([
+                    {
+                        pattern: `${wordDeleteModifier}+delete`,
+                        type: "down or repeat",
+                        allowExtra: ["shift"],
+                    },
+                ]),
+                category: getFieldControlsFolderCategories().insertDelete,
+                tags: ["text", "input", "delete"],
             }),
 
             // Text navigation

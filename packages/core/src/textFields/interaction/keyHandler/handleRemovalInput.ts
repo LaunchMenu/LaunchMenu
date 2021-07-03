@@ -5,6 +5,7 @@ import {KeyPattern} from "../../../keyHandler/KeyPattern";
 import {isFieldControlsSettingsFolder} from "./isFieldControlsSettingsFolder";
 import {ITextEditTarget} from "../_types/ITextEditTarget";
 import {RemoveTextCommand} from "../commands/RemoveTextCommand";
+import {RemoveWordCommand} from "../commands/RemoveWordCommand";
 
 /**
  * Handles text removal inputs
@@ -20,6 +21,8 @@ export function handleRemovalInput(
         | {
               backspace: KeyPattern;
               delete: KeyPattern;
+              backwardsDeleteWord: KeyPattern;
+              forwardsDeleteWord: KeyPattern;
           }
         | TSettingsFromFactory<typeof createFieldControlsSettingsFolder>
 ): void | boolean {
@@ -27,8 +30,18 @@ export function handleRemovalInput(
         patterns = {
             backspace: patterns.backspace.get(),
             delete: patterns.delete.get(),
+            backwardsDeleteWord: patterns.backwardsDeleteWord.get(),
+            forwardsDeleteWord: patterns.forwardsDeleteWord.get(),
         };
 
+    if (patterns.backwardsDeleteWord.matches(event)) {
+        onChange(new RemoveWordCommand(textField, -1));
+        return true;
+    }
+    if (patterns.forwardsDeleteWord.matches(event)) {
+        onChange(new RemoveWordCommand(textField, 1));
+        return true;
+    }
     if (patterns.backspace.matches(event)) {
         onChange(new RemoveTextCommand(textField, -1));
         return true;
