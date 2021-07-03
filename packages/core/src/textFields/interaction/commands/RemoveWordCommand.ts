@@ -51,8 +51,8 @@ export class RemoveWordCommand extends TextEditCommand {
      */
     private backwardsSearchString(text: string, startIndex: number): number {
         text = text.split("").reverse().join("");
-        var reversedStartIndex = text.length - startIndex;
-        var endIndex = this.forwardsSearchString(text, reversedStartIndex);
+        let reversedStartIndex = text.length - startIndex;
+        let endIndex = this.forwardsSearchString(text, reversedStartIndex);
         if (endIndex < 0) return -1;
 
         return text.length - endIndex;
@@ -65,11 +65,11 @@ export class RemoveWordCommand extends TextEditCommand {
      * @returns The end index
      */
     private forwardsSearchString(text: string, startIndex: number): number {
-        var searchStartIndex = startIndex + text.substr(startIndex).search(/[^\s]/);
-        var firstSpaceIndex = text.substr(searchStartIndex).search(/\s/);
+        let searchStartIndex = startIndex + text.substr(startIndex).search(/[^\s]/);
+        let firstSpaceIndex = text.substr(searchStartIndex).search(/\s/);
         if (firstSpaceIndex < 0) return -1;
 
-        var firstCharAfterSpace =
+        let firstCharAfterSpace =
             text.substr(searchStartIndex + firstSpaceIndex).search(/[^\s]/) - 1;
         if (firstCharAfterSpace < 0) return -1;
 
