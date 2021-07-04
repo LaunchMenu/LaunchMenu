@@ -4,10 +4,7 @@ import {createKeyPatternSetting} from "../../../../settings/inputs/createKeyPatt
 import {createSettingsFolder} from "../../../../settings/inputs/createSettingsFolder";
 import {constGetter} from "../../../../utils/constGetter";
 import {cmdModifier} from "../../../../utils/platform/cmdModifier";
-import {
-    wordDeleteModifier,
-    wordJumpModifier,
-} from "../../../../utils/platform/wordJumpModifier";
+import {wordJumpModifier} from "../../../../utils/platform/wordJumpModifier";
 
 /**
  * The categories used for the field folder
@@ -101,7 +98,7 @@ export function createFieldControlsSettingsFolder() {
                 name: "Deletes a word backwards",
                 init: new KeyPattern([
                     {
-                        pattern: `${wordDeleteModifier}+backspace`,
+                        pattern: `${wordJumpModifier}+backspace`,
                         type: "down or repeat",
                         allowExtra: ["shift"],
                     },
@@ -113,7 +110,7 @@ export function createFieldControlsSettingsFolder() {
                 name: "Deletes a word forwards",
                 init: new KeyPattern([
                     {
-                        pattern: `${wordDeleteModifier}+delete`,
+                        pattern: `${wordJumpModifier}+delete`,
                         type: "down or repeat",
                         allowExtra: ["shift"],
                     },
