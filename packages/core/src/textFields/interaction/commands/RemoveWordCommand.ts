@@ -1,4 +1,6 @@
+import {FaMaxcdn} from "react-icons/fa";
 import {ITextField} from "../../_types/ITextField";
+import {getJumpTokenPos} from "../getJumpTokenPos";
 import {retrieveArgument} from "./retrieveArgument";
 import {TextEditCommand} from "./TextEditCommand";
 import {IRetrievableArgument} from "./_types/IRetrievableArgument";
@@ -25,54 +27,18 @@ export class RemoveWordCommand extends TextEditCommand {
 
             // If text is currently selected, ignore the direction and just remove it
             if (start != end) alteration = {start, end, content: ""};
-            // If the direction is backwards remove before the cursor till whitespace and move the cursor backwards
-            else if (direction < 0) {
-                let startIndex = this.backwardsSearchString(textField.get(), start);
-                alteration = {start: startIndex, end, content: ""};
-                newCaretPos = startIndex;
-            }
-            // If the direction is forwards remove after the cursor till whitespace
-            else {
-                let endIndex = this.forwardsSearchString(textField.get(), start);
-                endIndex = endIndex >= 0 ? endIndex : textField.get().length;
-                alteration = {start: start, end: endIndex, content: ""};
-            }
+
+            newCaretPos = getJumpTokenPos(textField.get(), start, direction, false);
+            let min = Math.min(newCaretPos, start);
+            let max = Math.max(newCaretPos, start);
+            alteration = {
+                start: min,
+                end: max,
+                content: "",
+            };
 
             // Return the new changes and new selection
-            return {text: alteration, selection: {start: newCaretPos, end: newCaretPos}};
+            return {text: alteration, selection: {start: min, end: min}};
         });
-    }
-
-    /**
-     * Backwards searches the string for the position next word including all spaces around it
-     * @param text The text to search in
-     * @param startIndex The start index from where the search will start
-     * @returns The end index
-     */
-    private backwardsSearchString(text: string, startIndex: number): number {
-        text = text.split("").reverse().join("");
-        let reversedStartIndex = text.length - startIndex;
-        let endIndex = this.forwardsSearchString(text, reversedStartIndex);
-        if (endIndex < 0) return -1;
-
-        return text.length - endIndex;
-    }
-
-    /**
-     * Forward searches the string for the position next word including all spaces around it
-     * @param text The text to search in
-     * @param startIndex The start index from where the search will start
-     * @returns The end index
-     */
-    private forwardsSearchString(text: string, startIndex: number): number {
-        let searchStartIndex = startIndex + text.substr(startIndex).search(/[^\s]/);
-        let firstSpaceIndex = text.substr(searchStartIndex).search(/\s/);
-        if (firstSpaceIndex < 0) return -1;
-
-        let firstCharAfterSpace =
-            text.substr(searchStartIndex + firstSpaceIndex).search(/[^\s]/) - 1;
-        if (firstCharAfterSpace < 0) return -1;
-
-        return searchStartIndex + firstSpaceIndex + firstCharAfterSpace;
     }
 }
