@@ -94,3 +94,39 @@ To install all dependencies, simply run `yarn` in the root of the repository. Th
 When you're working on either the core of LM or an applet, run `yarn dev` within `packages/core`. This will start the core of LM, launching the program.
 
 Then in the case of working on an applet, simply run `yarn dev` again, but now within the directory of the applet you're working on. HMR will automatically take care of reloading your applet in the running LM instance when any changes occur. Do notice however that you may need to exit and open any menus of your applet again to see the changes.
+
+#### Branches/merging
+
+This repo 2 permanent branches, and 4 more branch types:
+
+-   master: This branch is up to date with the latest release.
+-   development: This branch contains all finished features for the next release.
+-   feature/\[featureName]: Branches matching this pattern contain a unfinished new feature
+-   fix/\[bugName]: Branches matching this pattern contain a unfinished fix for a bug
+-   other/\[change]: Branches matching this pattern contain changes not fitting under `feature` or `fix`, such as code refactors
+-   release/\[versionNumber]: Branches matching this pattern contain commits for alpha, beta and final releases before merging them to master
+
+All of the feature and bug names follow the camelCase convention. Additionally, we try to keep branch names as explicit as possible, without adding irrelevant information. E.g.:
+`fix/caretAlwaysFlashing`.
+New branches should be created from the development branch, and merged back into development once finished. 
+
+##### Changelog
+
+Whenever a fix or feature is merged to the development branch, it should be added to the changelog.
+The changelog contains a history of changes of previous versions, as well as a `vNext` at the top. Any new changes should be added under `vNext` and this title will be replaced by the new version number when it's released from development into master.
+
+If any of the API changed in a non-backwards compatible manor the change should be listed under `breaking`, everything else goes under `non-breaking`. Next, every change should fall under a change type header corresponding with the branch type: feature, fix, or other. Finally the change should fall under the name of the package that got changed (the `@launchmenu/` can be omitted). The actual change itself should mention a very concise description, and a link to the PR.
+
+For instance, if I were to add `mnemonics` support to LM in a way that's fully opt-in and backwards compatible, I would add something like this to the `CHANGELOG.md` file:
+
+```markdown
+# vNext
+
+## Non-breaking
+
+### Feature
+
+#### core
+
+-   Added mnemonics support [#142](https://github.com/LaunchMenu/LaunchMenu/pull/142)
+```
