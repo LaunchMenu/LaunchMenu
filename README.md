@@ -109,14 +109,17 @@ This repo 2 permanent branches, and 3 more branch types:
 All of the feature and bug names follow the camelCase convention. Additionally, we try to keep branch names as explicit as possible, without adding irrelevant information. E.g.:
 `fix/caretAlwaysFlashing`
 
-##### Changelog
+Any new branches must be created from the development branch, and should be merged back into development before getting moved to master when development is released.
+So in case you want to contribute, always pull from development and make PRs to development.
+
+##### Changelog.md
 
 Whenever a fix or feature is merged to the development branch, it should be added to the changelog.
 The changelog contains a history of changes of previous versions, as well as a `vNext` at the top. Any new changes should be added under `vNext` and this title will be replaced by the new version number when it's released from development into master.
 
 If any of the API changed in a non-backwards compatible manor the change should be listed under `breaking`, everything else goes under `non-breaking`. Next, every change should fall under a change type header corresponding with the branch type: feature, fix, or other. Finally the change should fall under the name of the package that got changed (the `@launchmenu/` can be omitted). The actual change itself should mention a very concise description, and a link to the PR.
 
-For instance, if I were to add `mnemonics` support to LM in a way that's fully opt-in and backwards compatible, I would add something like this to the `CHANGELOG.md` file:
+For instance, if I were to add `mnemonics` support to LM in a way that's fully opt-in and backwards compatible, I would add something like this to the [`CHANGELOG.md`](https://github.com/LaunchMenu/LaunchMenu/tree/development#changelog) file:
 
 ```markdown
 # vNext
