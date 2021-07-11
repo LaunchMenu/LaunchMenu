@@ -93,6 +93,32 @@ export function createFieldControlsSettingsFolder() {
                 tags: ["text", "input", "caret", "cursor"],
             }),
 
+            // Word deletion
+            backwardsDeleteWord: createKeyPatternSetting({
+                name: "Deletes a word backwards",
+                init: new KeyPattern([
+                    {
+                        pattern: `${wordJumpModifier}+backspace`,
+                        type: "down or repeat",
+                        allowExtra: ["shift"],
+                    },
+                ]),
+                category: getFieldControlsFolderCategories().insertDelete,
+                tags: ["text", "input", "delete"],
+            }),
+            forwardsDeleteWord: createKeyPatternSetting({
+                name: "Deletes a word forwards",
+                init: new KeyPattern([
+                    {
+                        pattern: `${wordJumpModifier}+delete`,
+                        type: "down or repeat",
+                        allowExtra: ["shift"],
+                    },
+                ]),
+                category: getFieldControlsFolderCategories().insertDelete,
+                tags: ["text", "input", "delete"],
+            }),
+
             // Text navigation
             left: createKeyPatternSetting({
                 name: "Move caret left",
