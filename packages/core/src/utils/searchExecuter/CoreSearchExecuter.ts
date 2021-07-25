@@ -277,33 +277,37 @@ export class CoreSearchExecuter<Q, I> {
         node.destroyHook?.();
 
         const [hook, destroyHook] = createCallbackHook(() => this.scheduleUpdate(ID), 0);
-        const {children, item, patternMatch} = await node.searchable.search(
-            query,
-            hook,
-            this.executer
-        );
+        try {
+            const {children, item, patternMatch} = await node.searchable.search(
+                query,
+                hook,
+                this.executer
+            );
 
-        node.destroyHook = destroyHook;
-        if (node.deleted || node.executeVersion != version) return;
+            node.destroyHook = destroyHook;
+            if (node.deleted || node.executeVersion != version) return;
 
-        // Store the data
-        const oldResult = node.result ?? {children: new Set()};
-        const newChildren = new Set((children ?? []).map(({ID}) => ID));
-        node.result = {
-            item,
-            patternMatch,
-            children: newChildren,
-        };
+            // Store the data
+            const oldResult = node.result ?? {children: new Set()};
+            const newChildren = new Set((children ?? []).map(({ID}) => ID));
+            node.result = {
+                item,
+                patternMatch,
+                children: newChildren,
+            };
 
-        // Schedule the child additions and removals
-        const parentID = ID;
-        const added = children?.filter(({ID}) => !oldResult.children.has(ID));
-        const removed = [...oldResult.children].filter(ID => !newChildren.has(ID));
-        added?.forEach(n => this.scheduleAddition(n, parentID));
-        removed.forEach(ID => this.scheduleRemoval(ID, parentID));
+            // Schedule the child additions and removals
+            const parentID = ID;
+            const added = children?.filter(({ID}) => !oldResult.children.has(ID));
+            const removed = [...oldResult.children].filter(ID => !newChildren.has(ID));
+            added?.forEach(n => this.scheduleAddition(n, parentID));
+            removed.forEach(ID => this.scheduleRemoval(ID, parentID));
 
-        // Update the results
-        this.onUpdate(ID, node.result, oldResult);
+            // Update the results
+            this.onUpdate(ID, node.result, oldResult);
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     /**
