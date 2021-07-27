@@ -36,7 +36,7 @@
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/core-applets/help#readme",
     "peerDependencies": {
-        "model-react": "^4.0.1",
+        "model-react": "^4.0.2",
         "react": "^17.0.0"
     },
     "devDependencies": {
@@ -45,7 +45,7 @@
         "@types/jest": "^26.0.0",
         "@types/react": "^17.0.0",
         "jest": "^26.0.1",
-        "model-react": "^4.0.1",
+        "model-react": "^4.0.2",
         "react": "^17.0.0",
         "ts-jest": "^26.1.0"
     },
