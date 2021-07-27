@@ -41,7 +41,7 @@
         "uuid": "^8.2.0"
     },
     "peerDependencies": {
-        "model-react": "^4.0.1",
+        "model-react": "^4.0.2",
         "react": "^17.0.0"
     },
     "devDependencies": {
@@ -51,7 +51,7 @@
         "@types/react": "^17.0.0",
         "@types/sanitize-html": "^1.27.1",
         "jest": "^26.0.1",
-        "model-react": "^4.0.1",
+        "model-react": "^4.0.2",
         "react": "^17.0.0",
         "ts-jest": "^26.1.0"
     },

@@ -11,3 +11,4 @@
 #### core
 
 -   Added input word deletion support [#154](https://github.com/LaunchMenu/LaunchMenu/pull/154)
+-   Fixed syntax highlighting updating [#159](https://github.com/LaunchMenu/LaunchMenu/pull/159)

@@ -42,7 +42,7 @@
         "zod": "^1.11.11"
     },
     "peerDependencies": {
-        "model-react": "^4.0.1",
+        "model-react": "^4.0.2",
         "react": "^17.0.0"
     },
     "devDependencies": {
@@ -53,7 +53,7 @@
         "@types/sanitize-html": "^1.27.1",
         "color": "^3.1.2",
         "jest": "^26.0.1",
-        "model-react": "^4.0.1",
+        "model-react": "^4.0.2",
         "react": "^17.0.0",
         "regexp-match-indices": "^1.0.2",
         "ts-jest": "^26.1.0"
