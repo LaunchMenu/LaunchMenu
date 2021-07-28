@@ -37,9 +37,8 @@ export namespace Interpreter {
     export function prettyPrint(input: string): IPrettyPrintResult {
         try {
             const resultTex = parse(input).toTex({});
-            // TODO: get react raw latex plugin, such that errors can be detected and have a fallback
             return {
-                formatted: <Latex latex={resultTex} />,
+                formatted: <Latex latex={resultTex} fallback={input} />,
             };
         } catch (e) {
             // TODO: Find out error messages and properly type them
@@ -79,7 +78,7 @@ export namespace Interpreter {
                 result: {
                     raw: result,
                     text: formatted,
-                    formatted: <Latex latex={resultTex} />,
+                    formatted: <Latex latex={resultTex} fallback={formatted} />,
                 },
             };
         } catch (e) {

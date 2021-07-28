@@ -36,6 +36,7 @@
     "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/applets/calculator#readme",
     "dependencies": {
         "@launchmenu/core": "^0.1.4",
+        "katex": "^0.13.13",
         "mathjs": "^9.4.4",
         "react-icons": "^3.10.0",
         "sanitize-html": "^2.3.1",
@@ -49,6 +50,7 @@
         "@testing-library/jest-dom": "^5.5.0",
         "@testing-library/react": "^10.0.3",
         "@types/jest": "^26.0.0",
+        "@types/katex": "^0.11.1",
         "@types/react": "^17.0.0",
         "@types/sanitize-html": "^1.27.1",
         "jest": "^26.0.1",
