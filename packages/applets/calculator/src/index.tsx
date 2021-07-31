@@ -1,4 +1,4 @@
-import React, {FC} from "react";
+import React, {cloneElement, FC, useMemo} from "react";
 
 import {
     Box,
@@ -20,6 +20,7 @@ import {
 import {BiCalculator} from "react-icons/bi";
 import {useDataHook} from "model-react";
 import {Interpreter} from "./Interpreter";
+import {useResizeDetector} from "react-resize-detector";
 
 const info = {
     name: "Calculator",
@@ -74,33 +75,45 @@ export const settings = createSettings({
 });
 
 const Content: FC<{query: string; result: JSX.Element}> = ({query, result}) => {
-    const context = useIOContext();
-    const [h] = useDataHook();
-    const pretty = Interpreter.prettyPrint(query);
+    const {ref: resizeRef, width} = useResizeDetector();
+
+    const prettyPrintResult = useMemo(() => Interpreter.prettyPrint(query), [query]);
+    const prettyPrint = useMemo(
+        () =>
+            "formatted" in prettyPrintResult
+                ? cloneElement(prettyPrintResult.formatted)
+                : query,
+        [prettyPrintResult, width]
+    );
+    const resultEl = useMemo(() => cloneElement(result), [result, width]); // Forces react to rerender result when width changes
 
     return (
         <FillBox
             display="flex"
             justifyContent="center"
             alignItems="center"
-            padding="extraLarge">
-            <Box flexGrow={1}>
+            padding="extraLarge"
+            elRef={resizeRef}>
+            <Box flexGrow={1} css={{maxWidth: "100%", fontSize: "25px"}}>
                 <Box
                     color="fontBgSecondary"
                     textAlign="center"
-                    css={{
-                        fontSize: "25px",
-                    }}>
-                    {"formatted" in pretty ? pretty.formatted : query} =
-                    <Box
-                        borderBottom="normal"
-                        borderColor="fontBgSecondary"
-                        opacity={0.2}
-                        marginY="small"
-                    />
+                    display="flex"
+                    justifyContent="center"
+                    flexWrap="wrap">
+                    {prettyPrint}{" "}
+                    <Box display="inline-block" marginLeft="small">
+                        =
+                    </Box>
                 </Box>
-                <Box textAlign="center" css={{fontSize: "25px"}} color="primary">
-                    {result}
+                <Box
+                    borderBottom="normal"
+                    borderColor="fontBgSecondary"
+                    opacity={0.2}
+                    marginY="small"
+                />
+                <Box textAlign="center" color="primary">
+                    {resultEl}
                 </Box>
             </Box>
         </FillBox>

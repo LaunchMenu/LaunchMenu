@@ -1,9 +1,17 @@
-import React, {Fragment, ReactNode, useLayoutEffect, useState} from "react";
-import {constGetter, LFC} from "@launchmenu/core";
+import React, {
+    Fragment,
+    ReactNode,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from "react";
+import {Box, constGetter, IBoxProps, LFC} from "@launchmenu/core";
 import {Global, css} from "@emotion/react";
 import Path from "path";
 import FS from "fs";
 import {renderToString} from "katex";
+import {useFontFitter} from "./useFontFitter";
 
 /** A retriever for the latex css */
 const getKatexCss = constGetter(() => {
@@ -17,8 +25,11 @@ const getKatexCss = constGetter(() => {
     return cssCorrectedFontPaths;
 });
 
-// TODO: add dynamic zoom to fit parent
-export const Latex: LFC<{latex: string; fallback?: ReactNode}> = ({latex, fallback}) => {
+export const Latex: LFC<{latex: string; fallback?: ReactNode} & IBoxProps> = ({
+    latex,
+    fallback,
+    ...rest
+}) => {
     const [html, setHtml] = useState<string | undefined>();
     useLayoutEffect(() => {
         try {
@@ -29,10 +40,18 @@ export const Latex: LFC<{latex: string; fallback?: ReactNode}> = ({latex, fallba
         }
     }, [latex]);
 
+    const [boxRef, htmlRef] = useFontFitter();
+
     return (
-        <Fragment>
+        <Box elRef={boxRef} {...rest}>
             <Global styles={css(getKatexCss())} />
-            {html ? <span dangerouslySetInnerHTML={{__html: html}} /> : fallback}
-        </Fragment>
+            {html ? (
+                <span ref={htmlRef} dangerouslySetInnerHTML={{__html: html}} />
+            ) : (
+                fallback
+            )}
+        </Box>
     );
 };
+
+// fib(a) = a <= 1? a : fib(a-2) + fib(a-1)

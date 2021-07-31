@@ -38,7 +38,7 @@ export namespace Interpreter {
         try {
             const resultTex = parse(input).toTex({});
             return {
-                formatted: <Latex latex={resultTex} fallback={input} />,
+                formatted: <Latex maxWidth="100%" latex={resultTex} fallback={input} />,
             };
         } catch (e) {
             // TODO: Find out error messages and properly type them

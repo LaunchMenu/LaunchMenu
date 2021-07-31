@@ -40,7 +40,8 @@
         "mathjs": "^9.4.4",
         "react-icons": "^3.10.0",
         "sanitize-html": "^2.3.1",
-        "uuid": "^8.2.0"
+        "uuid": "^8.2.0",
+        "react-resize-detector": "^6.4.0"
     },
     "peerDependencies": {
         "model-react": "^4.0.1",
