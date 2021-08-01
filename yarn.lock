@@ -8251,10 +8251,10 @@ mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@^0.5.4, mkdirp@^0.5.5, mkdirp@~0.5.0:
   dependencies:
     minimist "^1.2.5"
 
-model-react@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/model-react/-/model-react-4.0.1.tgz#d00f1993d775d83b329a5263ef3b18deb1c41d10"
-  integrity sha512-8gJaKAHRejqQNbuayaqIDShCJC68L7qC64VtNKNn/9H1Kq9UagbQDa4BFYPgDfr9gcHxlDcD0pB/t9docw2QnQ==
+model-react@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/model-react/-/model-react-4.0.2.tgz#788074275c4aeac3afc5e5753a1865f86c676cd6"
+  integrity sha512-hNTFf5sJmUOTS2mdQzOvIYJGaAyBDPRtZ1+Gs/O0PR0ro44BXYTiFeadXynhrh2zt0mEnr4MLvk6qQQpCtHe7g==
 
 modify-values@^1.0.0:
   version "1.0.1"

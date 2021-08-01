@@ -12,7 +12,7 @@ import {useCursorScroll} from "./useCursorScroll";
 import {LFC} from "../../../_types/LFC";
 import {useIOContext} from "../../../context/react/useIOContext";
 import {baseSettings} from "../../../application/settings/baseSettings/baseSettings";
-import {useDataHook} from "model-react";
+import {useDataHook, useMemoDataHook} from "model-react";
 import {ITextSelection} from "../../../textFields/_types/ITextSelection";
 import {ISyntaxHighlighterNodesListenerProps} from "../syntaxField/_types/ISyntaxHighlighterNodesProps";
 import {getJumpTokenPos} from "../../../textFields/interaction/getJumpTokenPos";
@@ -33,28 +33,34 @@ export const SyntaxHighlighter: LFC<ISyntaxHighlighterProps> = ({
 }) => {
     // Allow the highlighter to force updates
     const highlightChangeID = useRef(0);
-    const [h] = useDataHook({onChange: () => highlightChangeID.current++});
 
     // Obtain the highlight nodes
     let nodes: IHighlightNode[];
     if ("value" in rest) {
         const ioContext = useIOContext();
-        const highlighting = ioContext?.settings
-            .get(baseSettings)
-            .field.highlightingEnabled.get(h);
-        nodes = useMemo(() => {
-            if (!highlighting)
-                return [{start: 0, end: rest.value.length, text: rest.value, tags: []}];
+        [nodes] = useMemoDataHook(
+            h => {
+                const highlighting = ioContext?.settings
+                    .get(baseSettings)
+                    .field.highlightingEnabled.get(h);
+                if (!highlighting)
+                    return [
+                        {start: 0, end: rest.value.length, text: rest.value, tags: []},
+                    ];
 
-            // Highlight the text including error tags
-            const {nodes, errors} = rest.highlighter.highlight(rest.value, h);
-            if (rest.setErrors) rest.setErrors(errors);
-            const errorHighlighted =
-                rest.highlightErrors == false ? nodes : highlightTagErrors(nodes, errors);
+                // Highlight the text including error tags
+                const {nodes, errors} = rest.highlighter.highlight(rest.value, h);
+                if (rest.setErrors) rest.setErrors(errors);
+                const errorHighlighted =
+                    rest.highlightErrors == false
+                        ? nodes
+                        : highlightTagErrors(nodes, errors);
 
-            // Return all nodes
-            return errorHighlighted;
-        }, [rest.value, rest.highlightErrors, highlightChangeID.current, highlighting]);
+                // Return all nodes
+                return errorHighlighted;
+            },
+            [rest.value, rest.highlightErrors, highlightChangeID.current]
+        );
     } else {
         nodes = rest.nodes;
     }
@@ -142,9 +148,10 @@ export function useTextSelector(
     onDragStart: (event: React.MouseEvent<Element, MouseEvent>) => void;
     onDragEnd: (event: React.MouseEvent<Element, MouseEvent>) => void;
 } {
-    const text = useMemo(() => nodes.reduce((text, node) => text + node.text, ""), [
-        nodes,
-    ]);
+    const text = useMemo(
+        () => nodes.reduce((text, node) => text + node.text, ""),
+        [nodes]
+    );
 
     // The drag listeners used to select multiple characters
     const dragging = useRef(false);

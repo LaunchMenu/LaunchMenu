@@ -49,7 +49,7 @@
         "color": "^3.1.2",
         "fuzzy-rater": "^0.0.0",
         "mkdirp": "^1.0.4",
-        "model-react": "^4.0.1",
+        "model-react": "^4.0.2",
         "node-global-key-listener": "^0.0.11",
         "react": "^17.0.0",
         "react-dom": "^17.0.0",
