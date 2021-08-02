@@ -81,7 +81,7 @@ const Content: FC<{query: string; result: JSX.Element}> = ({query, result}) => {
     const prettyPrint = useMemo(
         () =>
             "formatted" in prettyPrintResult
-                ? cloneElement(prettyPrintResult.formatted)
+                ? cloneElement(prettyPrintResult.formatted, {key: Math.random()})
                 : query,
         [prettyPrintResult, width]
     );
@@ -144,7 +144,7 @@ export default declare({
         const calculation = patternMatch?.searchText ?? query.search;
         const output = Interpreter.evaluate(calculation);
         if ("result" in output) {
-            const result = output.result;
+            const {result, expression} = output;
             return {
                 patternMatch,
                 item: {
@@ -157,9 +157,7 @@ export default declare({
                     item: createStandardMenuItem({
                         name: result.text,
                         icon: <BiCalculator />,
-                        content: (
-                            <Content query={calculation} result={result.formatted} />
-                        ),
+                        content: <Content query={expression} result={result.formatted} />,
                         actionBindings: [
                             copyExitPasteHandler.createBinding({
                                 copy: copyTextHandler.createBinding(result.text),

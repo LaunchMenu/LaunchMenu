@@ -1092,6 +1092,19 @@
   resolved "https://registry.yarnpkg.com/@jxa/types/-/types-1.3.4.tgz#57fc58164d9eac7bbb0088d51b7a8ba980887519"
   integrity sha512-BKwO4l/NXJUXRBIYWfCOyf3k/pBTzP70h/zx5GkKaAdqpSaCZUhh48ZW16jPUb99f4je2CrtMezppBxREMUgaw==
 
+"@launchmenu/build-tools@^0.0.5-alpha.20":
+  version "0.0.5-beta.1"
+  resolved "https://registry.yarnpkg.com/@launchmenu/build-tools/-/build-tools-0.0.5-beta.1.tgz#1323345667083553fe5aa8064edcbe408ab3a3d6"
+  integrity sha512-7OlluoWFa8B9HPLMeJq5IzmqgjZO/yG3FATiC8ePWBz752iFQI31v+5hIy9Q4FY7+z5PGJV31i4h9MuDwxvWPQ==
+  dependencies:
+    args "^5.0.1"
+    chalk "^4.1.0"
+    chokidar "^3.4.2"
+    cpx "^1.5.0"
+    cross-spawn-promise "0.10.2"
+    rimraf "^3.0.2"
+    typescript "4.1.3"
+
 "@lerna/add@3.21.0":
   version "3.21.0"
   resolved "https://registry.yarnpkg.com/@lerna/add/-/add-3.21.0.tgz#27007bde71cc7b0a2969ab3c2f0ae41578b4577b"
@@ -8251,7 +8264,7 @@ mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@^0.5.4, mkdirp@^0.5.5, mkdirp@~0.5.0:
   dependencies:
     minimist "^1.2.5"
 
-model-react@^4.0.2:
+model-react@^4.0.1, model-react@^4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/model-react/-/model-react-4.0.2.tgz#788074275c4aeac3afc5e5753a1865f86c676cd6"
   integrity sha512-hNTFf5sJmUOTS2mdQzOvIYJGaAyBDPRtZ1+Gs/O0PR0ro44BXYTiFeadXynhrh2zt0mEnr4MLvk6qQQpCtHe7g==
@@ -9647,6 +9660,16 @@ react-markdown@^5.0.3:
     unified "^9.0.0"
     unist-util-visit "^2.0.0"
     xtend "^4.0.1"
+
+react-resize-detector@^6.4.0:
+  version "6.7.4"
+  resolved "https://registry.yarnpkg.com/react-resize-detector/-/react-resize-detector-6.7.4.tgz#594cc026115af05484e8011157b5dc2137492680"
+  integrity sha512-wzvGmUdEDMhiUHVZGnl4kuyj/TEQhvbB5LyAGkbYXetwJ2O+u/zftmPvU+kxiO1h+d9aUqQBKcNLS7TvB3ytqA==
+  dependencies:
+    "@types/resize-observer-browser" "^0.1.5"
+    lodash.debounce "^4.0.8"
+    lodash.throttle "^4.1.1"
+    resize-observer-polyfill "^1.5.1"
 
 react-resize-detector@^6.4.0-rc.0:
   version "6.4.0-rc.0"

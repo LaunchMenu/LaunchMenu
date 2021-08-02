@@ -1,5 +1,5 @@
 import React from "react";
-import {parse, compile, evaluate, format} from "mathjs";
+import {parse, compile, evaluate, format, MathNode} from "mathjs";
 import {IEvaluationResult} from "./_types/IEvaluationResult";
 import {IPrettyPrintResult} from "./_types/IPrettyPrintResult";
 import {
@@ -11,6 +11,7 @@ import {
 import {settings} from ".";
 import {IDataHook} from "model-react";
 import {Latex} from "./Latex";
+import {isSyntaxError} from "./_types/errors/ISyntaxError";
 
 /** A wrapper around mathjs */
 export namespace Interpreter {
@@ -41,8 +42,6 @@ export namespace Interpreter {
                 formatted: <Latex maxWidth="100%" latex={resultTex} fallback={input} />,
             };
         } catch (e) {
-            // TODO: Find out error messages and properly type them
-            console.log(e);
             return {error: e};
         }
     }
@@ -62,7 +61,6 @@ export namespace Interpreter {
         const s = settingsContext?.get(settings);
         let roundTo = s?.roundTo.get(hook) ?? 10;
 
-        // TODO: add bracket recovery
         // TODO: add percentage support
         // TODO: add date manipulation functions (now(), subtract, etc.)
         // TODO: add feet/inch pattern support
@@ -70,11 +68,14 @@ export namespace Interpreter {
         // TODO: monetary units
 
         try {
-            const result = parse(expression).compile().evaluate({shit: 4});
+            let node: MathNode;
+            ({node, expression} = getBracketCorrectedNode(expression));
+            const result = node.compile().evaluate({shit: 4});
             const formatted = format(result, {precision: roundTo});
             const resultTex = parse(formatted).toTex({}); //parenthesis: "keep", implicit: "hide"?
 
             return {
+                expression,
                 result: {
                     raw: result,
                     text: formatted,
@@ -82,9 +83,34 @@ export namespace Interpreter {
                 },
             };
         } catch (e) {
-            // TODO: Find out error messages and properly display them
-            console.log(e);
             return {error: e};
+        }
+    }
+
+    /**
+     * Retrieves the expression node, and applies bracket correction if needed
+     * @param expression The expression to get the node for
+     * @returns The obtained node, and the corrected suggestion
+     * @throws Exceptions if failed to parse
+     */
+    function getBracketCorrectedNode(expression: string): {
+        node: MathNode;
+        expression: string;
+    } {
+        while (true) {
+            try {
+                return {node: parse(expression), expression};
+            } catch (e) {
+                if (isSyntaxError(e)) {
+                    const char = expression[e.char - 1];
+                    if (char == ")") expression = "(" + expression;
+                    else if (e.message.includes("Parenthesis ) expected"))
+                        expression = expression + ")";
+                    else throw e;
+                } else {
+                    throw e;
+                }
+            }
         }
     }
 }

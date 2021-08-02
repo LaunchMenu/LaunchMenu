@@ -1,8 +1,13 @@
+import {ISyntaxError} from "./errors/ISyntaxError";
+
 export type IEvaluationResult =
     | {
-          error: any;
+          error: ISyntaxError | Error;
       }
     | {
+          /** The evaluated expression, which may include fixes */
+          expression: string;
+          /** The result */
           result: {
               text: string;
               raw: any;

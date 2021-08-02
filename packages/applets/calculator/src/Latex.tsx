@@ -1,13 +1,5 @@
-import React, {
-    Fragment,
-    ReactNode,
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    useState,
-} from "react";
+import React, {ReactNode, useLayoutEffect, useState} from "react";
 import {Box, constGetter, IBoxProps, LFC} from "@launchmenu/core";
-import {Global, css} from "@emotion/react";
 import {ClassNames} from "@emotion/react";
 import Path from "path";
 import FS from "fs";
