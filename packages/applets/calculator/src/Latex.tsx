@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import {Box, constGetter, IBoxProps, LFC} from "@launchmenu/core";
 import {Global, css} from "@emotion/react";
+import {ClassNames} from "@emotion/react";
 import Path from "path";
 import FS from "fs";
 import {renderToString} from "katex";
@@ -43,14 +44,29 @@ export const Latex: LFC<{latex: string; fallback?: ReactNode} & IBoxProps> = ({
     const [boxRef, htmlRef] = useFontFitter();
 
     return (
-        <Box elRef={boxRef} {...rest}>
-            <Global styles={css(getKatexCss())} />
-            {html ? (
-                <span ref={htmlRef} dangerouslySetInnerHTML={{__html: html}} />
-            ) : (
-                fallback
+        <ClassNames>
+            {({css, cx}) => (
+                <Box
+                    elRef={[
+                        boxRef,
+                        ...(!rest.elRef
+                            ? []
+                            : !(rest.elRef instanceof Array)
+                            ? [rest.elRef]
+                            : rest.elRef),
+                    ]}
+                    {...rest}
+                    className={
+                        css(getKatexCss()) + (rest.className ? " " + rest.className : "")
+                    }>
+                    {html ? (
+                        <span ref={htmlRef} dangerouslySetInnerHTML={{__html: html}} />
+                    ) : (
+                        fallback
+                    )}
+                </Box>
             )}
-        </Box>
+        </ClassNames>
     );
 };
 
