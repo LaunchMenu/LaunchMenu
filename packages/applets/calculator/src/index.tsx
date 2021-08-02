@@ -168,6 +168,7 @@ export default declare({
                                 copyTextHandler.createBinding(result.text)
                             ),
                         ],
+                        TextHighlighter: null,
                     }),
                 },
             };
