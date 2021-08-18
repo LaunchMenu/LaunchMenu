@@ -15,20 +15,14 @@ import {
     declare,
     FillBox,
     Priority,
+    ErrorMessage,
     useIOContext,
 } from "@launchmenu/core";
 import {BiCalculator} from "react-icons/bi";
 import {useDataHook} from "model-react";
 import {Interpreter} from "./Interpreter";
 import {useResizeDetector} from "react-resize-detector";
-
-const info = {
-    name: "Calculator",
-    description: "Perform simple calculations in LaunchMenu",
-    version: "0.0.0",
-    icon: <BiCalculator />,
-    tags: ["launchmenu-applet", "calculator"],
-};
+import {info} from "./info";
 
 export const settings = createSettings({
     version: "0.0.0",
@@ -56,7 +50,7 @@ export const settings = createSettings({
                             }[option],
                         }),
                 }),
-                implicit: createOptionSetting({
+                multiplicationDot: createOptionSetting({
                     name: "Multiplication display mode",
                     init: "hide" as "show" | "hide",
                     options: ["show", "hide"] as const,
@@ -77,7 +71,11 @@ export const settings = createSettings({
 const Content: FC<{query: string; result: JSX.Element}> = ({query, result}) => {
     const {ref: resizeRef, width} = useResizeDetector();
 
-    const prettyPrintResult = useMemo(() => Interpreter.prettyPrint(query), [query]);
+    const context = useIOContext();
+    const prettyPrintResult = useMemo(
+        () => Interpreter.prettyPrint(query, context?.settings),
+        [query]
+    );
     const prettyPrint = useMemo(
         () =>
             "formatted" in prettyPrintResult
@@ -120,17 +118,10 @@ const Content: FC<{query: string; result: JSX.Element}> = ({query, result}) => {
     );
 };
 
-// const math = new MathInterpreter();
-
 const searchPatternMatcher = createStandardSearchPatternMatcher({
     name: "Calculator",
     matcher: /^=/,
-    highlighter: Interpreter,
 });
-
-// const res = parser.execute(field.get());
-// if (res.result) alert(res.result);
-// else alert("Parsing error!");
 
 export default declare({
     info,
@@ -155,7 +146,7 @@ export default declare({
 
                     //Create returned item
                     item: createStandardMenuItem({
-                        name: result.text,
+                        name: `= ${result.text}`,
                         icon: <BiCalculator />,
                         content: <Content query={expression} result={result.formatted} />,
                         actionBindings: [
@@ -166,6 +157,26 @@ export default declare({
                                 copyTextHandler.createBinding(result.text)
                             ),
                         ],
+                        TextHighlighter: null,
+                    }),
+                },
+            };
+        } else if (patternMatch) {
+            return {
+                patternMatch,
+                item: {
+                    //Top priority
+                    priority: /[0-9\-]+/.test(query.search)
+                        ? Priority.HIGH
+                        : Priority.EXTRAHIGH,
+                    item: createStandardMenuItem({
+                        name: output.error.name,
+                        icon: <BiCalculator />,
+                        content: (
+                            <ErrorMessage background={undefined}>
+                                {output.error.message}
+                            </ErrorMessage>
+                        ),
                         TextHighlighter: null,
                     }),
                 },

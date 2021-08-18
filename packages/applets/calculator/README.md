@@ -25,6 +25,7 @@ A simple calculator applet.
             -   Has `as` syntax
             -   Easily allows custom syntax
             -   Implicit multiplication is a higher priority than Explicit multiplication and division (e.g. `3kg / 2m` == `(3kg) / (2m)` instead of `(3kg/2)m` as in mathJS)
+            -   We can make sure that our syntax focusses on common simple use cases (which is the goal of this applet), rather than advanced mathematical concepts
         -   Cons of unitary-math-parser:
             -   Code started to get messy
             -   Initial design decisions not holding water
@@ -48,4 +49,4 @@ A simple calculator applet.
                 -   custom functions
                 -   custom constants
                 -   Number formats (binary, hex, oct)
-    -   **Our decision:** Will use MathJS for now.
+    -   **Our decision:** Will use MathJS for now, and keep a more limited feature set. In the future we will likely still update to our own parser however, since there isn't an awful lot to be maintained to begin with.
