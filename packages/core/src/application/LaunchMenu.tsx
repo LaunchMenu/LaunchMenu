@@ -18,6 +18,8 @@ import {wait} from "../_tests/wait.helper";
 import {GlobalKeyHandler} from "../keyHandler/globalKeyHandler/GlobalKeyHandler";
 import {IWindowFrameProps} from "./components/_types/IWindowFrameProps";
 import {IApplicationConfig} from "../windowController/_types/IApplicationConfig";
+import {ErrorBoundary} from "../components/error/ErrorBoundary";
+import {ErrorBoundaryController} from "../components/error/ErrorBoundaryController";
 
 /**
  * The main LM class
@@ -32,6 +34,8 @@ export class LaunchMenu {
 
     protected keyHandler: KeyHandler;
     protected globalKeyHandler: GlobalKeyHandler;
+
+    protected errorBoundaryController = new ErrorBoundaryController();
 
     protected appletManager: AppletManager;
     protected sessionManager: SessionManager;
@@ -117,20 +121,28 @@ export class LaunchMenu {
     protected setupView(): void {
         this.view = (
             <ThemeProvider>
-                <LaunchMenuProvider value={this}>
-                    <Loader>
-                        {h => {
-                            const Wrapper = this.windowWrapper.get(h);
-                            return (
-                                <Wrapper>
-                                    <Transition skipMountAnimation>
-                                        {this.sessionManager.getSelectedSession(h)?.view}
-                                    </Transition>
-                                </Wrapper>
-                            );
-                        }}
-                    </Loader>
-                </LaunchMenuProvider>
+                <this.errorBoundaryController.Provider>
+                    <LaunchMenuProvider value={this}>
+                        <Loader>
+                            {h => {
+                                const Wrapper = this.windowWrapper.get(h);
+                                return (
+                                    <Wrapper>
+                                        <ErrorBoundary>
+                                            <Transition skipMountAnimation>
+                                                {
+                                                    this.sessionManager.getSelectedSession(
+                                                        h
+                                                    )?.view
+                                                }
+                                            </Transition>
+                                        </ErrorBoundary>
+                                    </Wrapper>
+                                );
+                            }}
+                        </Loader>
+                    </LaunchMenuProvider>
+                </this.errorBoundaryController.Provider>
             </ThemeProvider>
         );
     }
@@ -150,7 +162,12 @@ export class LaunchMenu {
         // Add an observer, making sure that applets always instantly reload, even if no other component requests them.
         // This is important because applets can have side effects, so even if nothing needs the applet, the applet may affect the system.
         this.appletObserver = new Observer(h => this.appletManager.getApplets(h)).listen(
-            () => {}
+            () => {
+                // Reload error boundaries if any applet reloaded
+                wait(100).then(() => {
+                    this.errorBoundaryController.reloadBoundaries();
+                });
+            }
         );
     }
 

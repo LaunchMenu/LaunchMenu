@@ -1,36 +1,40 @@
 import {DataCacher, Field, IDataHook, IDataRetriever, Observer} from "model-react";
 import React from "react";
-import {IOContext} from "../../context/IOContext";
-import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
-import {IQuery} from "../../menus/menu/_types/IQuery";
-import {SettingsContext} from "../../settings/SettingsContext";
-import {KeyEvent} from "../../keyHandler/KeyEvent";
-import {TextField} from "../../textFields/TextField";
-import {createHighlighterWithSearchPattern} from "../../uiLayers/types/menuSearch/createHighlighterWithSearchPattern";
-import {UndoRedoFacility} from "../../undoRedo/UndoRedoFacility";
-import {ApplicationLayout} from "../components/ApplicationLayout";
-import {LaunchMenu} from "../LaunchMenu";
 import {v4 as uuid} from "uuid";
-import {IApplet} from "../applets/_types/IApplet";
-import {LMSessionMenu} from "./LMSessionMenu";
-import {adjustSearchable} from "../../utils/searchExecuter/adjustSearchable";
-import {IMenuItem} from "../../menus/items/_types/IMenuItem";
-import {IUUID} from "../../_types/IUUID";
-import {withSession} from "../applets/declaration/withSession";
-import {UILayer} from "../../uiLayers/standardUILayer/UILayer";
-import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
-import {createStandardMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createStandardMenuKeyHandler";
 import {getCategoryAction} from "../../actions/types/category/getCategoryAction";
 import {IMenuSearchable} from "../../actions/types/search/_types/IMenuSearchable";
 import {IActionBinding} from "../../actions/_types/IActionBinding";
-import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
-import {IStandardUILayerData} from "../../uiLayers/standardUILayer/_types/IStandardUILayerData";
-import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
-import {MainMenuView} from "../components/MainMenuView";
-import {LMSessionLayer} from "./LMSessionLayer";
-import {LMSessionProvider} from "../hooks/useLMSession";
-import {TextFieldView} from "../../components/fields/TextFieldView";
+import {Button} from "../../components/Button";
 import {InstantOpenTransition} from "../../components/context/stacks/transitions/open/InstantOpenTransition";
+import {ErrorBoundary} from "../../components/error/ErrorBoundary";
+import {TextFieldView} from "../../components/fields/TextFieldView";
+import {IErrorComp} from "../../components/error/_types/IErrorComp";
+import {IOContext} from "../../context/IOContext";
+import {emitContextEvent} from "../../context/uiExtracters/emitContextEvent";
+import {KeyEvent} from "../../keyHandler/KeyEvent";
+import {IMenuItem} from "../../menus/items/_types/IMenuItem";
+import {createStandardMenuKeyHandler} from "../../menus/menu/interaction/keyHandler/createStandardMenuKeyHandler";
+import {IPrioritizedMenuItem} from "../../menus/menu/_types/IPrioritizedMenuItem";
+import {IQuery} from "../../menus/menu/_types/IQuery";
+import {SettingsContext} from "../../settings/SettingsContext";
+import {TextField} from "../../textFields/TextField";
+import {UILayer} from "../../uiLayers/standardUILayer/UILayer";
+import {IStandardUILayerData} from "../../uiLayers/standardUILayer/_types/IStandardUILayerData";
+import {createHighlighterWithSearchPattern} from "../../uiLayers/types/menuSearch/createHighlighterWithSearchPattern";
+import {UndoRedoFacility} from "../../undoRedo/UndoRedoFacility";
+import {adjustSearchable} from "../../utils/searchExecuter/adjustSearchable";
+import {SearchExecuter} from "../../utils/searchExecuter/SearchExecuter";
+import {adjustSubscribable} from "../../utils/subscribables/adjustSubscribable";
+import {wait} from "../../_tests/wait.helper";
+import {IUUID} from "../../_types/IUUID";
+import {withSession} from "../applets/declaration/withSession";
+import {IApplet} from "../applets/_types/IApplet";
+import {ApplicationLayout} from "../components/ApplicationLayout";
+import {MainMenuView} from "../components/MainMenuView";
+import {LMSessionProvider} from "../hooks/useLMSession";
+import {LaunchMenu} from "../LaunchMenu";
+import {LMSessionLayer} from "./LMSessionLayer";
+import {LMSessionMenu} from "./LMSessionMenu";
 
 /**
  * An application session
@@ -143,9 +147,36 @@ export class LMSession {
      * Initializes the view for this session
      */
     protected setupView(): void {
+        const onReload = async () => {
+            await this.goHome();
+            await wait(200);
+        };
+
+        // Additional error components to show when a part of the application layout crashes
+        const ErrorAdditionComp: IErrorComp = ({reload}) =>
+            reload ? (
+                <Button
+                    onClick={async () => {
+                        if (reload) {
+                            await onReload();
+                            reload();
+                        }
+                    }}>
+                    Reload (reset session)
+                </Button>
+            ) : (
+                <></>
+            );
+
         this.view = (
             <LMSessionProvider value={this}>
-                <ApplicationLayout key={this.ID} context={this.context} />
+                <ErrorBoundary reloadMessage="Reload (reset session)" onReload={onReload}>
+                    <ApplicationLayout
+                        ErrorAdditionComp={ErrorAdditionComp}
+                        key={this.ID}
+                        context={this.context}
+                    />
+                </ErrorBoundary>
             </LMSessionProvider>
         );
     }
