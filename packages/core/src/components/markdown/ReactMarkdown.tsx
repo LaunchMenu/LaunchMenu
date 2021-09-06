@@ -4,7 +4,7 @@ import RemarkMathPlugin from "remark-math";
 import FS from "fs";
 import {LFC} from "../../_types/LFC";
 import Path from "path";
-import {Global, css} from "@emotion/react";
+import {ClassNames} from "@emotion/react";
 import {markdownSyntaxRenderer} from "./markdownSyntaxRenderer";
 const {InlineMath, BlockMath} = require("react-katex"); // No ts available, and too lazy to make declarations
 
@@ -55,9 +55,23 @@ export namespace IReactMarkdown {
     export const types = typesOr;
 }
 
-const mathRenderer: LFC<{value: string}> = ({value}) => <BlockMath children={value} />;
+const mathRenderer: LFC<{value: string}> = ({value}) => (
+    <ClassNames>
+        {({css, cx}) => (
+            <div className={css(getKatexCss())}>
+                <BlockMath children={value} />
+            </div>
+        )}
+    </ClassNames>
+);
 const inlineMathRenderer: LFC<{value: string}> = ({value}) => (
-    <InlineMath children={value} />
+    <ClassNames>
+        {({css, cx}) => (
+            <span className={css(getKatexCss())}>
+                <InlineMath children={value} />
+            </span>
+        )}
+    </ClassNames>
 );
 const autoFitImageRenderer: LFC<{
     alt?: string;
@@ -91,14 +105,6 @@ export const ReactMarkdown: LFC<
         />
     );
 
-    if (allowLatex) {
-        return (
-            <>
-                <Global styles={css(getKatexCss())} />
-                {markdown}
-            </>
-        );
-    }
     return markdown;
 };
 

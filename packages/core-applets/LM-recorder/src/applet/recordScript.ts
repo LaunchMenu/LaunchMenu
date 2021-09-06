@@ -94,6 +94,8 @@ export async function recordScript({
     const finished = (async () => {
         try {
             await script(scriptingData);
+        }catch(e){
+            console.error(e);
         } finally {
             // Perform the final cleanup
             dispose();
