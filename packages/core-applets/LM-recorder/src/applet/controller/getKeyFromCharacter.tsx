@@ -73,6 +73,7 @@ const keyCharMap = {
     ".": "period",
     ",": "comma",
     "\n": "enter",
+    "/": "slash",
     A: {key: "a", usesShift: true},
     B: {key: "b", usesShift: true},
     C: {key: "c", usesShift: true},
@@ -119,4 +120,5 @@ const keyCharMap = {
     '"': {key: "quote", usesShift: true},
     "<": {key: "comma", usesShift: true},
     ">": {key: "period", usesShift: true},
+    "?": {key: "slash", usesShift: true},
 } as const;
