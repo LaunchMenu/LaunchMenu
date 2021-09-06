@@ -119,7 +119,7 @@ The changelog contains a history of changes of previous versions, as well as a `
 
 If any of the API changed in a non-backwards compatible manor the change should be listed under `breaking`, everything else goes under `non-breaking`. Next, every change should fall under a change type header corresponding with the branch type: feature, fix, or other. Finally the change should fall under the name of the package that got changed (the `@launchmenu/` can be omitted). The actual change itself should mention a very concise description, and a link to the PR.
 
-For instance, if I were to add `mnemonics` support to LM in a way that's fully opt-in and backwards compatible, I would add something like this to the [`CHANGELOG.md`](https://github.com/LaunchMenu/LaunchMenu/tree/development#changelog) file:
+For instance, if I were to add `mnemonics` support to LM in a way that's fully opt-in and backwards compatible, I would add something like this to the [`CHANGELOG.md`](https://github.com/LaunchMenu/LaunchMenu/blob/development/CHANGELOG.md) file:
 
 ```markdown
 # vNext
