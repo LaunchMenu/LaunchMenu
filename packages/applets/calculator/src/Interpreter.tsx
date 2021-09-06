@@ -57,13 +57,15 @@ export namespace Interpreter {
         const roundTo = s.roundTo.get(hook);
 
         try {
+            // Obtain the result
             let node: MathNode;
             ({node, expression} = parse(expression));
             const result = node.compile().evaluate();
+
+            // Round the result and format it as a string, then parse that output in order to render it as tex
             const formatted = format(result, {precision: roundTo});
             const parsedResult = math().parse!(formatted);
-            const cleanedParsedResult = parsedResult;
-            const resultTex = cleanedParsedResult.toTex({
+            const resultTex = parsedResult.toTex({
                 implicit: s.multiplicationDot.get(hook),
                 parenthesis: s.parenthesis.get(hook),
             });
@@ -106,16 +108,24 @@ export namespace Interpreter {
         node: MathNode;
         expression: string;
     } {
+        let prevErrorPos = -1;
         while (true) {
             try {
                 return {node: math().parse!(expression), expression};
             } catch (e) {
                 if (isSyntaxError(e)) {
+                    // If no progress was made after the previous alteration, stop applying changes
+                    if (prevErrorPos == e.char) throw e;
+
+                    // Obtain the expression character that the error was about, and determine whether to add an opening or closing bracket
                     const char = expression[e.char - 1];
-                    if (char == ")") expression = "(" + expression;
-                    else if (e.message.includes("Parenthesis ) expected"))
+                    if (char == ")") {
+                        expression = "(" + expression;
+                        prevErrorPos = e.char + 1;
+                    } else if (e.message.includes("Parenthesis ) expected")) {
                         expression = expression + ")";
-                    else throw e;
+                        prevErrorPos = e.char;
+                    } else throw e;
                 } else {
                     throw e;
                 }
