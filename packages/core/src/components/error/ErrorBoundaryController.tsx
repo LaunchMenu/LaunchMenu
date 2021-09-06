@@ -55,7 +55,6 @@ export class ErrorBoundaryController {
      * Reloads all the error boundaries
      */
     public reloadBoundaries(): void {
-        console.log(this.errorData.get());
         this.errorData.get().forEach(({reload}) => reload());
     }
 
