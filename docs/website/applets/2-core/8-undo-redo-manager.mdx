@@ -1,0 +1,18 @@
+# Undo-redo manager
+
+<StatusNotice />
+
+## Roadmap
+
+LaunchMenu has support to create undoable actions built in. It however currently has no means to actual perform the undo. Almost all aspects of undoing/redoing actions is setup, except for the user controls.
+
+Actions won't automagically be undoable, but actions can return commands that provide undo functionality.
+
+## Controls
+
+The most important aspect of the Undo-redo-manager will be to provide simple <Key>ctrl</Key> + <Key>z</Key> and <Key>ctrl</Key> + <Key>y</Key> controls to interact with the already existing undo/redo facility.
+
+## Visualisation
+
+In addition, it would be neat to setup a system that allows you to view the commands that have been executed, and are in the 'future' and 'past' stacks.
+I am not sure whether there are many cases where this is useful, but it would be neat.

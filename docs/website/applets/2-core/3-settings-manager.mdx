@@ -1,0 +1,55 @@
+# Settings manager
+
+The settings manager is in charge of providing the UI for changing both core settings, and applet specific settings.
+
+<ScreenShot
+    src="/applets/settings-manager/banner.png"
+    alt="Settings-manager banner"
+/>
+
+## Features
+
+### Search for settings
+
+Settings don't show up in the main search by default. This was decided in order to reduce the amount of clutter caused by these settings, since it will be relatively rare you want to change these.
+
+Instead the pattern `setting:` or `s:` must be used explicitly when you're looking for a specific setting:
+
+<ScreenShot
+    src="/applets/settings-manager/search pattern.png"
+    alt="Search only settings"
+/>
+
+### Browse settings
+
+If you want to just browse all settings, you can use the [applet-manager](/applets/core/applet-manager) to open all settings:
+
+<ScreenShot
+    src="/applets/settings-manager/allSettings.png"
+    alt="Browse settings"
+/>
+
+### Open settings for the current applet
+
+Settings can also be accessed through the global section of the context-menu. Here you can also find the settings of the applet you're currently using.
+
+<ScreenRecording src="/applets/settings-manager/appletSettings.webm" />
+
+Accessing the settings through the global context can be particularly useful in situations where you're deeply within nested menus.
+
+## Roadmap
+
+### Settings sets
+
+One feature that would be really neat, is the ability to group certain settings 'sets'. This would be a subset of all settings, together with the value that they should have.
+
+Then one could execute this set, and instantly initialise all settings to the values defined in the set.
+If we add the ability of binding shortcuts to these sets, it would give is a very fast way of changing LaunchMenu configurations on the fly.
+
+I am not sure whether this should be part of the settings-manager applet, or might be better suited as a stand-alone core applet. But it's just listed here since it's at least closely related to the settings-manager.
+
+### Importing/exporting
+
+All settings are saved in JSON files, so you can already share parts of your settings with other people. It would however be neat if there was some dedicated UI within this applet that would allow you to more easily do this.
+
+Being able to share configurations on forms and such would be quite valuable. This feature could tie in rather well with the "settings sets" described above, but doesn't strictly depend on them.

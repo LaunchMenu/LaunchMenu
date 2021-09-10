@@ -1,0 +1,64 @@
+# File manager
+
+<StatusNotice />
+
+## Roadmap
+
+The features of this applet haven't been properly planned yet.
+This applet will however be one of the most ambitious and most important applets within LaunchMenu, so we want to make sure we do things right.
+
+We do know the overall goal and have some vague planning: allow users to fully control a file manager from within LaunchMenu.
+
+This should include the features covered below.
+
+### Navigation
+
+The user should be able to step through directories just like one does in a regular file explorer such as the one on windows.
+
+### Interaction
+
+All common file operations should be present, such as:
+
+-   Execute/open a file
+-   Copy/cut a file
+-   Paste a file
+-   Delete a file
+-   Create a file
+
+### Searching
+
+There should be several types of supprted searches:
+
+-   Perform non-recursive searches in any folder
+-   Perform recursive searches in customly configured folders, whose names and descendant paths will be loaded into RAM for quick searches.
+-   Perform slow background searches that include the contents of files
+
+We will have to do some proper planning to try and keep these searches relatively efficient, since they will search through a lot of data at once. We would like to suport some regex like search system, where the folder hierarchy can be tested too. In addition it would be nice to try and keep this search system flexible and extensible through other applets too.
+
+### Preview
+
+Most file formats should have a dedicated preview associated to them. Some research was already done in how to create a preview for microsoft excel and powerpoint files.
+This preview would automatically show up when the file menu item is selected in the menu.
+
+### Usage by applets
+
+We want to make sure that other applets are able to interact with the file manager applet through an interface. This interface will probably be released as a dedicated package, in order to allow for creation of other implementations of the file-manager that still interact well with other applets.
+
+This way any applet can request the user to select a file by using the file-manager applet, amongst other things.
+
+#### Extensionality
+
+Other applets should also be able to extend the behavior of the file-manager, including the following aspects:
+
+-   Add previews methods for file types (e.g. rendering a specialized data format)
+-   Add open/execution methods for file types (e.g. open file in VScode)
+-   Add additional operations in the context menu for file types (e.g. rotating pictures)
+-   Alter the listed files of a folder, this allows for:
+    -   Bundling of specific related files to only show 1 item in the overview
+    -   Represent 1 file as a number of files
+    -   Represent 1 or more 'regular' file (e.g. zip) as a directory
+
+### Dynamic 'applets'
+
+We want to add support for files in a special format, which contain JavaScript or TypeScript to be read by the file-manager, and interpreted as an applet itself.
+This will probably be a dedicated special purpose applet format, rather than the general format, but allow for some simplistic way of making interactable content files.

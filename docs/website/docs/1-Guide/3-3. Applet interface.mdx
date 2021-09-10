@@ -1,0 +1,150 @@
+# Applet interface
+
+Any applet has to export data about itself in a specific format from the main module entry. This way LaunchMenu knows what to expect and can properly load and interact with your applet.
+
+The `declare` function can be used to verify the structure of your export. Each applet requires at least some info about itself and settings to be present. For now we will provide the settings structure, but not provide any actual settings yet. Below is a minimal applet:
+
+```ts title=index.tsx
+import {createSettings, createSettingsFolder, declare} from "@launchmenu/core";
+
+const info = {
+    name: "HelloWorld",
+    description: "A minimal example applet",
+    version: "0.0.0",
+    icon: "applets" as const,
+    tags: ["cool"],
+};
+
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () => createSettingsFolder({...info, children: {}}),
+});
+
+export default declare({
+    info,
+    settings,
+});
+```
+
+We declared 4 bits of information about the applet:
+
+-   `name`: The title to use to display this applet as from within LaunchMenu
+-   `description`: A single line description of the applet
+-   `version`: The current version number of the applet
+-   `icon`: Either the name of a built-in icon, or a custom react component used as an icon
+-   `tags` (optional): A list of additional terms associated to the applet, used for searching
+
+`as const` on line 7 (tip: line numbers can be toggled with the button at the top right of the code section) is a TypeScript construct that makes sure that `icon`'s type stores the literal icon name. This is required for `declare` not to error, since only some strings are available as icons. This is not required when you provide your own react element as an icon.
+
+At this point the applet should already be 'functional', although it won't do anything yet. You can now start the applet:
+
+```
+npm run dev
+```
+
+When you search for `hello`, your applet should show up with the data you provided.
+
+At this point you can also test the live applet reloading behavior by changing the info data in your source code. Once you save your code, you will notice that data instantly updates in LaunchMenu too. This reloading behavior is very convenient during development, but it's not perfect. We will come back to some limitations later.
+
+## Applet functionality
+
+The primary function of most applets will be to provide search results. This can be done by adding a `search` function to your applet config. The next page will describe how to do this exactly.
+
+Additionally you can provide a `open` function which can be executed when your applet itself is searched explicitly, and can be used to open some interface of your applet. We will come back to this in a later section.
+
+## Advanced
+
+We can do some more advanced things using the config such as obtain the running LaunchMenu instance, obtain the currently running session, or add to the global context menu. This is outside of the scope of this guide, but you can check the in-depth [applet format](/docs/concepts/applet-format) page for more information.
+
+### complete interface
+
+The exact interface is rather hard to read since there are many reference to other types, but it may still help you. We however recommend exploring the types in a proper IDE with intellisense such as VSCode allowing you to simply follow type references by ctrl-clicking.
+
+```ts title=IAppletConfig.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/application/applets/_types/IAppletConfig.ts spoiler
+export type IAppletConfig<
+    S extends IIdentifiedSettingsConfig<
+        IJSON,
+        ISettingsFolderMenuItem
+    > = IIdentifiedSettingsConfig<IJSON, ISettingsFolderMenuItem>
+> = {
+    /** The applet info for listings */
+    info: IAppletInfo;
+    /** Settings of the applet */
+    settings: S;
+    /** A possible category for this applet */
+    coreCategory?: CoreAppletType;
+    /** Development time specific information/tools */
+    development?: {
+        /** Whether to listen for changes in code and auto reload the applet when detected */
+        liveReload?: boolean;
+        /** The directory to watch for changes (defaults to 'build') */
+        watchDirectory?: string;
+    };
+    /** A function to get the execution data of the config given a LM (and potentially session) instance */
+    init?: IAppletLMInitializer<TConfigSettings<S>>;
+    /** A function to get the execution data of the config given a session instance  */
+    withSession?: IAppletSessionInitializer;
+} & Partial<IAppletExecutionConfig>;
+
+type IAppletExecutionConfig = {
+    /** Menu items that should appear in all context menus */
+    globalContextMenuBindings?: ISubscribable<IActionBinding[]>;
+    /** Opens the application */
+    open?: (args: {context: IOContext; onClose: () => void}) => void;
+    /**
+     * Searches for items, by possibly returning an item, and a collection of sub-searches.
+     * May also return a matched pattern to ignore all items that don't match a pattern.
+     * @param query The query to be checked against
+     * @param hook A data hook to listen for changes
+     * @param executer The executer performing the search, for possible advanced optimizations
+     * @returns The search result
+     **/
+    search?: (
+        query: IQuery,
+        hook: IDataHook,
+        executer?: SearchExecuter<IQuery, IPrioritizedMenuItem>
+    ) => Promise<ISearchableResult<IQuery, IPrioritizedMenuItem>>;
+
+    /** Development time specific information/tools */
+    development?: {
+        /** A callback for when the module is reloaded during development, can be used to programmatically navigate to a specific section of your app.
+         * Return function is called when applet is disposed
+         */
+        onReload?: () => (() => void) | void;
+    };
+};
+
+// Supporting types
+type IAppletDisposer = {
+    onDispose?: () => void | Promise<void>;
+};
+
+type IAppletLMInitializer<T extends ISettingsTree> = (data: {
+    /** The settings for this applet */
+    settings: T;
+    /** The running lm instance */
+    LM: LaunchMenu;
+}) =>
+    | IAppletSessionInitializer
+    | ({withSession?: IAppletSessionInitializer} & IAppletExecutionConfig &
+          IAppletDisposer);
+
+type IAppletSessionInitializer = (
+    session: LMSession
+) => IAppletExecutionConfig & {onCloseSession?: () => void | Promise<void>};
+
+enum CoreAppletType {
+    SETTINGS = "settings",
+    APPLETS = "applets",
+    HELP = "help",
+    SESSIONS = "sessions",
+    WINDOW = "window",
+    STYLING = "styling",
+    UNDO = "undo",
+}
+```
+
+<GuideNav
+    prev="guide/2.-environment-setup"
+    next="guide/4.-items-and-searches"
+/>

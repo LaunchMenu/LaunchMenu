@@ -1,0 +1,18 @@
+# Calendar
+
+<StatusNotice />
+
+## Roadmap
+
+The exact features of this applet have yet to be determined, but it will generally just provide a means to interact with a calendar.
+
+We haven't put much thought in what the UI should look like. But it would be nice if you can easily add and alter events.
+In addition it should be able to easily alert you about events and things planned for today, as well as providing weekly and or monthly overviews. Either of these things may be able to be provided as "home content" which can replace the default LaunchMenu homescreen.
+
+### API
+
+It would probably be pretty much a requirement for this agenda to be synchronised with some agenda in the cloud that's accessible through other platforms. Preferably this would be something like google calendar. The main obstacle is that it will probably not be possible to get an API that doesn't require API credentials, so we would need to find a good workaround for this. We may need to resort to creating a paid service, which someone has to host and maintain, keeping the API keys private.
+
+### Extensibility
+
+The calendar should also have an open API such that other applets could extend it. This way other (very specific applets) could be made to automatically schedule events for you, such as very complex recurring events or events based on received emails.

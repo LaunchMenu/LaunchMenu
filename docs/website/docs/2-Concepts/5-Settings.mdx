@@ -1,0 +1,632 @@
+# Settings
+
+Every applet can define a set of settings that users can then adjust. The settings structure is essentially built-up of [folder items](/docs/concepts/ui/menuitems#folder-menu-items) and [field items](/docs/concepts/ui/menuitems#field-menu-items). This allows use to create a logical data hierarchy for accessing the settings, as well as a user interface that can be used to navigate and alter these settings.
+
+Instead of using the normal `createFolderMenuItem` and e.g. `createBooleanMenuItem` we make use of `createSettingsFolder` and `createBooleanSetting`. These functions still create menu items - and are in fact only light wrappers of the other functions - but already configure these items to make use of the `settingPatternMatcher`, add an icon, and configure the field to be resetable.
+
+We then use the `createSettings` function to simply declare our settings together with some additional version management data. From then on these settings can be accessed from various places. Below is an example using a simple string setting.
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/settings video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/settings/recordings/demo.webm
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                username: createStringSetting({name: "Name", init: "Bob"}),
+            },
+        }),
+});
+
+const Content: FC<{text: string}> = ({text}) => {
+    const context = useIOContext();
+    const [hook] = useDataHook();
+    const name = context?.settings.get(settings).username.get(hook);
+    return (
+        <Box color="primary">
+            {text} {name}!
+        </Box>
+    );
+};
+
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        content: <Content text="Hello" />,
+        onExecute: () => alert("Hello!"),
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        content: <Content text="Bye" />,
+        onExecute: () => alert("Bye!"),
+    }),
+];
+```
+
+Now the `Hello world` and `Bye world` items both have content that uses the `username` setting which the user can customize.
+
+## Settings context
+
+The settings context is used to store instances of the setting trees that can be created from the settings declaration. The [`IOContext`](/docs/concepts/base/iocontext) will contain such a settings context. The settings context within the `IOContext` obtained from a [`session`](/docs/concepts/base/session) will contain instances of the settings trees that have been loaded with the settings as saved on disk.
+
+In case you try to access settings from a settings context that doesn't contain these settings, a fresh instance will be returned with the initial setting values. That means that these settings won't be saved on disk, but can still be used as normal.
+
+```ts title=SettingsContext.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/settings/SettingsContext.ts
+export class SettingsContext {
+    /**
+     * Creates a new empty settings context
+     * @param settings The settings to begin with, mapped under their config ids
+     */
+    public constructor(settings?: {[ID: string]: ISettingsFolderMenuItem});
+
+    /**
+     * Augments the current context with the given settings, resulting in a new context
+     * @param config The config for the settings to augment
+     * @param values The values to store for this config
+     * @returns The newly created context
+     */
+    public augment<F extends ISettingsFolderMenuItem>(
+        config: IIdentifiedSettingsConfig<any, F>,
+        values: F
+    ): SettingsContext;
+
+    /**
+     * Retrieves a selection of settings from its config
+     * @param config The settings group to retrieve
+     * @returns The values for these settings within this context
+     */
+    public get<F extends ISettingsFolderMenuItem>(
+        config: IIdentifiedSettingsConfig<any, F>
+    ): TSettingsTree<F["children"]>;
+
+    /**
+     * Retrieves all of the UI for settings in this menu
+     * @returns The UI to represent the settings
+     */
+    public getUI(): ISettingsFolderMenuItem[];
+
+    /**
+     * Retrieves a selection of settings and UI from its config
+     * @param config The settings group to retrieve
+     * @returns The UI to represent the settings
+     */
+    public getUI<F extends ISettingsFolderMenuItem>(
+        config: IIdentifiedSettingsConfig<any, F>
+    ): F;
+}
+```
+
+So when `.getUI` is called with a specific settings config, the context will check if there's already an instance of that config available, and otherwise creates a new instance. In case no config is specified, it will simply return a list of all settings folders that it contains.
+
+When the `.get` method is used, the UI tree is simplified a bit by getting rid of the `children` indirection and hiding irrelevant item related details.
+
+E.g. when you create some settings like this:
+
+```ts title=settingsExample.ts
+const settings = createSettingsFolder({
+    name: "Settings",
+    children: {
+        folder: createSettingsFolder({
+            name: "folder",
+            children: {
+                someString: createStringSetting({
+                    name: "Some string",
+                    init: "orange",
+                }),
+            },
+        }),
+    },
+});
+```
+
+One would access the `someString` setting at the path `settings.children.folder.children.someString` when using `.getUI`. This is a little inconvenient, and thus the `.get` method will reduce this to `settings.folder.someString` for you.
+
+You can create your own instance of a `SettingsContext` and add it to an `IOContext` in order to override settings of a specific applet when used from within your applet, or to override base settings within your applet.
+
+Below is an example showing off how some base settings can be overridden locally:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/settingsOverride video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/settingsOverride/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        // Create custom controls
+        const customMenuControls = {
+            up: createKeyPatternSetting({
+                name: "Up",
+                init: new KeyPattern("ctrl+i"),
+            }),
+            down: createKeyPatternSetting({
+                name: "Down",
+                init: new KeyPattern("ctrl+k"),
+            }),
+        } as const;
+
+        // Make a copy of the regular base settings, with the custom controls replaced
+        const base = context.settings.getUI(baseSettings);
+        const settingsContext = context.settings.augment(
+            baseSettings,
+            createSettingsFolder({
+                name: "Base settings",
+                children: {
+                    ...base.children,
+                    controls: createSettingsFolder({
+                        name: "Controls",
+                        children: {
+                            ...base.children.controls.children,
+                            menu: createSettingsFolder({
+                                name: "Menu",
+                                children: {
+                                    ...base.children.controls.children.menu
+                                        .children,
+                                    ...customMenuControls,
+                                },
+                            }),
+                        },
+                    }),
+                },
+            })
+        );
+
+        // Create a new  context with these settings replaced
+        const customContext = new IOContext({
+            parent: context,
+            settings: settingsContext,
+        });
+
+        // Open the layer (one you possibly don't have control over) in the custom context
+        customContext.open(
+            new UILayer(
+                () => ({menu: new Menu(customContext, items), onClose}),
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+When you open the `example` applet you will notice that you can no longer navigate the menu using the up and down arrow keys, and instead have to use the `ctrl+i` and `ctrl+k` controls. As you can see, recreating the whole settings structure is a little annoying, so we will look into a better solution in the future. This example overrides settings in an entirely immutable fashion however, making sure that your local changes won't interfere with any other applets.
+
+## Version control
+
+You may at some point update your applet, and possibly add or remove options. When doing this, the old values that the user has stored on disk for your settings may no longer be valid. This is why you have to provide a version number in the settings declaration.
+
+LaunchMenu currently doesn't support any functionality for automatic setting updating, but we do allow you to do this manually using an `updater` property. This updater should be a function that converts the stored JSON data with a certain old version number to valid JSON for the current version number.
+
+Below is an example of how your settings may evolve between 3 different versions:
+
+```ts title=settings1.ts
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                username: createStringSetting({name: "User name", init: "Bob"}),
+            },
+        }),
+});
+```
+
+```ts title=settings2.ts highlight=7:8,11:20
+const settings = createSettings({
+    version: "0.0.1",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                nickname: createStringSetting({name: "User name", init: "Bob"}),
+                something: createNumberSetting({name: "Some number", init: 14}),
+            },
+        }),
+    updater: (version: string, data: any) => {
+        switch (version) {
+            case "0.0.0": {
+                data = {
+                    nickname: data.username,
+                };
+            }
+        }
+        return data;
+    },
+});
+```
+
+```ts title=settings3.ts highlight=7:20,30:41
+const settings = createSettings({
+    version: "0.0.2",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                personalia: createSettingsFolder({
+                    name: "Personalia",
+                    children: {
+                        nickname: createStringSetting({
+                            name: "User name",
+                            init: "Bob",
+                        }),
+                        age: createNumberSetting({name: "Age", init: 20}),
+                    },
+                }),
+                doSomething: createBooleanSetting({
+                    name: "Do something",
+                    init: false,
+                }),
+            },
+        }),
+    updater: (version: string, data: any) => {
+        switch (version) {
+            case "0.0.0": {
+                data = {
+                    nickname: data.username,
+                };
+            }
+            case "0.0.1": {
+                data = {
+                    personalia: {
+                        nickname: data.nickname,
+                        // something may not be present (if updating from v0.0.0 to v0.0.2 directly)
+                        // so we shouldn't initialize it to undefined if this is the case
+                        ...(data.something != undefined && {
+                            age: data.something,
+                        }),
+                    },
+                };
+            }
+        }
+        return data;
+    },
+});
+```
+
+This is rather involved, and as you can see keeping things strictly typed is difficult too. We used a (rather nasty) shortcut here by declaring `data` to be of type `any`. This basically tells TypeScript that the value can be of any type, meaning that TS can't provide us with any relevant information, or prevent any mistakes.
+
+So overall we recommend to try and change the structure of your settings as little as possible, and instead just augment it whenever possible (for which no special updater is needed). In case you do have to make some changes however, the above approach could be used.
+
+## SettingsFile
+
+The `SettingsFile` class is used to synchronize the settings with a file on disk. You probably won't have to worry about this, since it's take care of by LaunchMenu, but it might be good to know about for advanced usage. You could for instance create your own settings structure that's not managed by LaunchMenu to manage other data within your application.
+
+The `SettingsFile` class builds on top of several layers of file management classes. These classes can be used for other file management too, and can be viewed on [github](https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/core/src/settings/storage/fileTypes).
+
+```ts title=SettingsFile.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/settings/storage/fileTypes/SettingsFile.ts
+export class SettingsFile<
+        F extends ISettingsFolderMenuItem = ISettingsFolderMenuItem,
+        V extends IJSON = IJSON
+    >
+    extends VersionedFieldsFile<TSettingsTree<F["children"]>, V>
+    implements ISettingConfigurer
+{
+    public settings: F;
+
+    /**
+     * Creates a new settings file object with custom field types
+     * @param data The data to construct the settings file from
+     */
+    public constructor(data: {
+        /** The version of the settings */
+        version: V;
+        /** A function that updates from previous versions of the data to the latest version */
+        updater: (version: V, data: IJSON) => IJSON;
+        /** The path of the file */
+        path: string;
+        /** The settings with possible custom types */
+        settings: (() => F) | F;
+    });
+
+    /**
+     * Configures the settings with the specified data
+     * @param data The data to pass to every setting to configure it with
+     */
+    public configure(data: Record<symbol, any>): void;
+}
+```
+
+The `configure` method is a special method that can be used to configure special setting types. This is for instance used to pass the absolute location to prefix relative paths of the [file settings](#createFileSetting).
+
+## Types
+
+We have several built-in setting types that should cover most of the common needs. The following setting factories are available:
+
+-   [`createBooleanSetting`](#createBooleanSetting)
+-   [`createStringSetting`](#createStringSetting)
+-   [`createNumberSetting`](#createNumberSetting)
+-   [`createOptionSetting`](#createOptionSetting)
+-   [`createKeyPatternSetting`](#createKeyPatternSetting)
+-   [`createGlobalKeyPatternSetting`](#createGlobalKeyPatternSetting)
+-   [`createFileSetting`](#createFileSetting)
+-   [`createColorSetting`](#createColorSetting)
+
+Each of these allows for at least the following configuration properties:
+
+```ts title=IInputTypeMenuItemData source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IInputTypeMenuItemData.ts
+export type IInputTypeMenuItemData = {
+    /** Whether to update the field as you type, defaults to false */
+    liveUpdate?: boolean;
+    /** Whether the change in value should be undoable, defaults to true, can't be used together with liveUpdate */
+    undoable?: boolean;
+    /** The name of the field */
+    name: ISubscribable<string>;
+    /** The description of the menu item */
+    description?: ISubscribable<string>;
+    /** The tags for the menu item */
+    tags?: ISubscribable<string[]>;
+    /** The category to show the input in */
+    category?: ICategory;
+    /** Content to show when this item is selected */
+    content?: IViewStackItemView;
+    /** The icon for the item, defaults to the settings icon */
+    icon?:
+        | IThemeIcon
+        | ReactElement
+        | ((h?: IDataHook) => IThemeIcon | ReactElement | undefined);
+    /** The extra action bindings */
+    actionBindings?: ISubscribableActionBindings;
+    /** Whether the field should be resetable to the initial value, defaults to false */
+    resetable?: boolean;
+    /** Whether the reset should be undoable, defaults to value of undoable */
+    resetUndoable?: boolean;
+    /** A pattern matcher that can be used to capture patterns in a search and highlight them, defaults to the settings matcher */
+    searchPattern?: ISimpleSearchPatternMatcher;
+};
+```
+
+### createBooleanSetting
+
+The [createBooleanSetting](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/settings/inputs/createBooleanSetting.ts) has the following exact config options:
+
+```ts title=IBooleanMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IBooleanMenuItemData.ts
+export type IBooleanMenuItemData = {
+    /** The default value for the field */
+    init: boolean;
+} & IInputTypeMenuItemData;
+```
+
+### createStringSetting
+
+The [createStringSetting](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/settings/inputs/createStringSetting.ts) has the following exact config options:
+
+```ts title=IStringMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IStringMenuItemData.ts
+export type IStringMenuItemData = {
+    /** The default value for the field */
+    init: string;
+    /** Checks whether the given input is valid */
+    checkValidity?: (v: string) => IInputError | undefined;
+} & IInputTypeMenuItemData;
+
+type IInputError = {
+    ranges?: {start: number; end: number}[];
+} & ({message: string} | {view: IViewStackItem});
+```
+
+### createNumberSetting
+
+The [createNumberSetting](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/settings/inputs/createNumberSetting.ts) has the following exact config options:
+
+```ts title=INumberMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/INumberMenuItemData.ts
+export type INumberMenuItemData = {
+    /** The default value for the field */
+    init: number;
+    /** The numeric options to choose from */
+    options?: number[];
+    /** Whether to allow custom input when options are present, defaults to false */
+    allowCustomInput?: boolean;
+} & INumberConstraints &
+    IInputTypeMenuItemData;
+
+type INumberConstraints = {
+    /** The minimum allowed value */
+    min?: number;
+    /** The maximum allowed value */
+    max?: number;
+    /** The allowed increment step */
+    increment?: number;
+    /** The base value to take the increments relative to */
+    baseValue?: number;
+    /** Checks whether the given input is valid */
+    checkValidity?: (text: string) => IInputError | undefined;
+};
+
+type IInputError = {
+    ranges?: {start: number; end: number}[];
+} & ({message: string} | {view: IViewStackItem});
+```
+
+### createOptionSetting
+
+The [createOptionSetting](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/settings/inputs/createOptionSetting.ts) has the following exact config options:
+
+```ts title=IOptionMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IOptionMenuItemData.ts
+export type IOptionMenuItemData<T> = {
+    /** The default value for the field */
+    init: T;
+    /** The options of the field */
+    options: readonly T[];
+    /** Retrieves the element to show as the currently selected item */
+    getValueView?: (option: T) => JSX.Element;
+    /** Creates a menu item for a given option */
+    createOptionView: (option: T) => IMenuItem;
+} & IInputTypeMenuItemData;
+```
+
+### createKeyPatternSetting
+
+The [createKeyPatternSetting](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/settings/inputs/createKeyPatternSetting.ts) has the following exact config options:
+
+```ts title=IKeyPatternMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IKeyPatternMenuItemData.ts
+export type IKeyPatternMenuItemData = {
+    /** The default value for the field */
+    init: KeyPattern;
+} & IInputTypeMenuItemData;
+```
+
+### createGlobalKeyPatternSetting
+
+The [createGlobalKeyPatternSetting](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/settings/inputs/createGlobalKeyPatternSetting.ts) has the following exact config options:
+
+```ts title=IKeyPatternMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IKeyPatternMenuItemData.ts
+export type IKeyPatternMenuItemData = {
+    /** The default value for the field */
+    init: KeyPattern;
+} & IInputTypeMenuItemData;
+```
+
+The created menu item is also a bit special, since it contains the following additional function:
+
+```ts title=ITriggerableKeyPatternMenuItem.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/ITriggerableKeyPatternMenuItem.ts
+export type ITriggerablePatternMenuItem = IFieldMenuItem<KeyPattern> & {
+    /**
+     * Registers a callback to trigger when this key pattern is invoked
+     * @param callback The callback to be invoked
+     * @returns A function that can be invoked to remove the listener
+     */
+    onTrigger(callback: () => void): () => void;
+};
+```
+
+This allows you to easily listen for triggers of such a menu item. Whenever the user holds the key combination as specified by this item, the callback passed to `onTrigger` will be invoked, even if LM is closed. Whenever you want to stop listening to the callback, simply call the function returned from `onTrigger` to remove the callback.
+
+### createFileSetting
+
+The [createFileSetting](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/settings/inputs/createFileSetting.ts) has the following exact config options:
+
+```ts title=IFileMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IFileMenuItemData.ts
+export type IFileMenuItemData = {
+    /** The default value for the field */
+    init: string;
+    /** Whether to select a folder (or a file) */
+    folder?: boolean;
+} & IInputTypeMenuItemData;
+```
+
+When a relative path is specified, this path will be relative to a dedicated folder created for your applet to store data in. So it's safe, and even recommended, to use relative paths.
+
+### createColorSetting
+
+The [createColorSetting](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/settings/inputs/createColorSetting.ts) can be used to create a field that accepts css color string and has the following exact config options:
+
+```ts title=IColorMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IColorMenuItemData.ts
+export type IColorMenuItemData = {
+    /** The default value for the field */
+    init: string;
+} & IInputTypeMenuItemData;
+```
+
+## Custom settings
+
+Since settings are just field menu items, we can easily create our own custom setting types. The values of these settings aren't even limited to JSON, as we are allowed to specify a serialized getter and setter for data storage.
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/settingsCustom video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/settingsCustom/recordings/demo.webm
+type IStringMenuItemData = {
+    /** The default value for the field */
+    init: Date;
+} & IInputTypeMenuItemData;
+
+/**
+ * Creates a new date setting
+ * @param date The configuration data of the setting
+ * @returns The menu item setting
+ */
+function createDateSetting({
+    init,
+    name,
+    liveUpdate,
+    undoable,
+    actionBindings = [],
+    tags = [],
+    resetUndoable = undoable,
+    ...rest
+}: IStringMenuItemData): IFieldMenuItem<Date, string> {
+    const field = new Field(init);
+    const serializableField = {
+        get: (h: IDataHook) => field.get(h),
+        set: (value: Date) => field.set(value),
+        getSerialized: (h: IDataHook) => field.get(h).toDateString(),
+        setSerialized: (value: string) => field.set(new Date(value)),
+    };
+
+    return createFieldMenuItem({
+        field: serializableField,
+        data: field => ({
+            name,
+            valueView: <Loader>{h => field.get(h).toDateString()}</Loader>,
+            tags: adjustSubscribable(tags, (tags, h) => [
+                "field",
+                ...tags,
+                field.get(h).toString(),
+            ]),
+            resetUndoable,
+            actionBindings: adjustSubscribable(actionBindings, bindings => [
+                ...bindings,
+                promptInputExecuteHandler.createBinding({
+                    field: {
+                        get: serializableField.getSerialized,
+                        set: serializableField.setSerialized,
+                    },
+                    liveUpdate,
+                    undoable,
+                    checkValidity: input =>
+                        isNaN(new Date(input).getMilliseconds())
+                            ? {message: "Invalid date"}
+                            : undefined,
+                }),
+            ]),
+
+            // Setting specific properties
+            icon: "settings",
+            searchPattern: settingPatternMatcher,
+            resetable: true,
+
+            // Allow for overrides
+            ...rest,
+        }),
+    });
+}
+
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                dateOfBirth: createDateSetting({
+                    name: "Date of birth",
+                    init: new Date(),
+                }),
+            },
+        }),
+});
+
+const Content: LFC = () => {
+    const context = useIOContext();
+    const [hook] = useDataHook();
+    const date = context?.settings.get(settings).dateOfBirth.get(hook);
+    return <Box color="primary">Date of birth: {date?.toUTCString()}!</Box>;
+};
+
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        content: <Content />,
+        onExecute: () => alert("Hello!"),
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        content: <Content />,
+        onExecute: () => alert("Bye!"),
+    }),
+];
+```
+
+Now when we open the `example` applet, we can search for `hello world` and see that the content contains a date. We can then go into the settings and change `Date of birth` (by for instance searching for `"setting: date"`) and we will see the date in the content update. We could probably create a nicer interface for entering dates, but for this example we kept it rather simplistic.
+
+You can also have a look at the custom [field menu item example](/docs/concepts/ui/menuitems#field-menu-items) on the menu items page. This is essentially a setting, except that you will additionally have to add the following config to the field item:
+
+```ts title=settingsItemProperties.ts showHeader=false
+icon: "settings",
+searchPattern: settingPatternMatcher,
+resetable: true,
+```

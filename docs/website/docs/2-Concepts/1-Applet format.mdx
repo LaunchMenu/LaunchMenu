@@ -1,0 +1,361 @@
+# Applet format
+
+Applets should have one default export at their entry, which is an object adhering to the applet interface. This object can be type checked using the `declare` function.
+
+The following is a basic example of a valid minimal applet declaration:
+
+```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormat video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/appletFormat/recordings/demo.webm
+import {createSettings, createSettingsFolder, declare} from "@launchmenu/core";
+
+const info = {
+    name: "Example",
+    description: "A minimal example applet",
+    version: "0.0.0",
+    icon: "applets" as const,
+};
+
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {},
+        }),
+});
+
+export default declare({
+    info,
+    settings,
+});
+```
+
+## Functionality
+
+There are 3 standard ways of making your applet provide functionality in LaunchMenu:
+
+-   `search`: Retrieves search results for a given query
+-   `open`: A callback that's invoked when your applet is opened using the applet manager
+-   `globalContextMenuBindings`: A set of action bindings that are always used when opening the context menu, independent of selection
+
+### Search
+
+The search function is called with the current `query` and a `dataHook`. This query contains the `search` string, as well as the IOContext `context`.
+This context can for instance be used to extract settings. The `dataHook` is a [model-react](https://github.com/TarVK/model-react) data hook that can be used to make search results update when data changes.
+
+This function can return only a single search result directly, but it can also return children and a pattern matcher. These children aren't straight up results themselves, they are instead `ISearchable`s. This is essentially a function of the same shape as the `search` function we're describing here is. This allows for execution of recursive searches, that can quickly dynamically update.
+
+You can learn more about this on the in-depth [search page](/docs/concepts/interaction/search-system).
+
+### Open
+
+The open function is called with an object including the IOContext `context` and a `onClose` callback. This `onClose` callback should be invoked when you close your UI again. The context can be used to open any UI, extract settings, etc.
+
+You can learn more about this on the in-depth [IOContext page](/docs/concepts/base/iocontext) and the in-depth [UILayer page](/docs/concepts/ui/uilayers).
+
+### GlobalContextMenuBindings
+
+Finally an applet is able to globally augment the context menu. This works by providing a list of action bindings that are used together with the action bindings of the selected items when the context menu is opened. This allows you to add to the context menu in the same way as you would when working with menu items. We do recommend that you store any custom global actions in the appropriately named `global` folder.
+
+Below are two examples of how these bindings can be used:
+
+```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormatGlobalContextBinding video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/appletFormatGlobalContextBinding/recordings/demo.webm
+const myAction = createContextAction({
+    name: "My action",
+    contextItem: {
+        priority: Priority.HIGH,
+    },
+    // Add the item to the global folder
+    folder: globalContextFolderHandler,
+    // Don't show count for this action, since it can be present without items being selected
+    preventCountCategory: true,
+    // We can just specify `void` if the action takes no data
+    core: (data: void[]) => {
+        return {
+            execute: () => alert("Hello"),
+        };
+    },
+});
+
+export default declare({
+    info,
+    settings,
+    globalContextMenuBindings: [myAction.createBinding()],
+});
+```
+
+```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormatGlobalContextBindingDirect video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/appletFormatGlobalContextBindingDirect/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    globalContextMenuBindings: [
+        globalContextFolderHandler.createBinding({
+            item: {
+                // End your priority array with a random number, to help prevent collisions
+                priority: [Priority.HIGH, 34],
+                // Specify any menu item you like
+                item: createStandardMenuItem({
+                    name: "My action",
+                    onExecute: () => alert("Hello"),
+                }),
+            },
+            // Don't show count for this action, since presence isn't related to selected items
+            preventCountCategory: true,
+            // There is no action that this menu item is for
+            action: null,
+        }),
+    ],
+});
+```
+
+Note that in the second example we created a binding for `globalContextFolderHandler`. You can create bindings to other folders in a similar way, or directly for `contextMenuAction`.
+
+To learn more about actions and the context menu, check the in-depth [actions page](/docs/concepts/interaction/actions) and [common actions page](/docs/concepts/interaction/common-actions#context-menu-action).
+
+## Core access
+
+In case you're making a core-applet, you may need to have access to some of LaunchMenu's base structures. There are two ways to get access to some of these facilities:
+
+-   `init`: Init can be a function which will get invoked with the running `LaunchMenu` instance, as well as the settings of your applet
+-   `withSession`: With session can be a function which will get invoked with the session that your applet is used in.
+
+Both of these functions expect you to return a partial applet config, which can include:
+
+-   `search`
+-   `open`
+-   `globalContextFolderHandler`
+-   `development.onReload`, see [the development section](#development)
+
+### Init
+
+`init` is invoked only when your applet is first loaded. The currently running instance of `LaunchMenu` is provided as well as the settings of your applet. If you applet has to interact with the `LaunchMenu` instance, or has to take care of some global setup, it can be performed from within this function. You can specify a `onDispose` callback in the returned value, which will be executed when your applet is unloaded. This can occur when the user disables your applet, but also when a live reload is performed during development.
+
+The below example will initialize a file watcher, and dispose it on reload. The `LaunchMenu` instance isn't used.
+
+```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormatInit video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/appletFormatInit/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    init: ({LM}) => {
+        const path = Path.join(__dirname, "..", "myJsonDataFile.json");
+
+        // Create some way of mapping the file to menu items
+        const items = new Field<IMenuItem[]>([]);
+        const updateItems = () =>
+            FS.readFile(path, "utf8", (err, data) => {
+                if (err) return console.error(err);
+
+                try {
+                    const ar = JSON.parse(data) as string[];
+                    items.set(
+                        ar.map(text =>
+                            createStandardMenuItem({
+                                name: text,
+                                onExecute: () => alert(text),
+                            })
+                        )
+                    );
+                } catch (e) {
+                    console.error(e);
+                }
+            });
+
+        // initialize the menu items, and update them on file changes
+        const watcher = FS.watch(path, updateItems);
+        updateItems();
+
+        return {
+            async search(query, hook) {
+                return {
+                    children: searchAction.get(items.get(hook)),
+                };
+            },
+            open({context, onClose}) {
+                context.open(
+                    new UILayer(
+                        () => ({
+                            menu: new ProxiedMenu(context, hook =>
+                                items.get(hook)
+                            ),
+                            onClose,
+                        }),
+                        {
+                            path: "Example",
+                        }
+                    )
+                );
+            },
+
+            // Close the watcher when the applet is stopped
+            onDispose: () => watcher.close(),
+        };
+    },
+});
+```
+
+To learn more about the `LaunchMenu` instance, see the in-depth [LaunchMenu page](/docs/concepts/base/launchmenu).
+
+### WithSession
+
+`withSession` is invoked on your applet for each session in LaunchMenu. The session that it was invoked for is supplied as an argument. This way an applet can keep track of different data depending on the opened session, or perform some kind of session automation. You can specify a `onCloseSession` callback in the returned value, which will get invoked when a session is closed, or your applet is closed. This can be used to clean up anything you may have initialized for this session.
+
+The below example will be able to change the search field value of the session on execution of the items:
+
+```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormatWithSession video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/appletFormatWithSession/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    withSession: session => {
+        const items = [
+            createStandardMenuItem({
+                name: "Hello world",
+                // Adjust the session search on execution
+                onExecute: () => session.searchField.set("Hi"),
+            }),
+            createStandardMenuItem({
+                name: "Bye world",
+                // Adjust the session search on execution
+                onExecute: () => session.searchField.set("Goodbye"),
+            }),
+        ];
+
+        return {
+            async search(query, hook) {
+                return {
+                    children: searchAction.get(items),
+                };
+            },
+            open({context, onClose}) {
+                context.open(
+                    new UILayer(
+                        () => ({menu: new Menu(context, items), onClose}),
+                        {
+                            path: "Example",
+                        }
+                    )
+                );
+            },
+        };
+    },
+});
+```
+
+To learn more about sessions, see the in-depth [sessions page](/docs/concepts/base/session).
+
+### Init + withSession
+
+We can also combine the the `init` and `withSession` callbacks in two ways (both showing another use case):
+
+```ts title=nestedInitAndWithSessionExample.ts
+export default declare({
+    info,
+    settings,
+    init: () => {
+        // ... global setup
+        return {
+            withSession: session => {
+                // ...  session setup
+                return {
+                    open({context, onClose}) {
+                        //...
+                    },
+                };
+            },
+            async search(query, hook) {
+                //...
+                return {};
+            },
+        };
+    },
+});
+```
+
+```ts title=nestedInitAndWithSessionExample2.ts
+export default declare({
+    info,
+    settings,
+    init: ({LM}) => session => {
+        // ...  session setup
+        return {
+            open({context, onClose}) {
+                //...
+            },
+            async search(query, hook) {
+                //...
+                return {};
+            },
+        };
+    };
+});
+```
+
+### Core type
+
+Applets can also indicate they are intended to be a core applet (applet taking care of core functionality) by specifying a `coreCategory` in the config. The available categories are:
+
+-   `CoreAppletType.SETTINGS`
+-   `CoreAppletType.APPLETS`
+-   `CoreAppletType.HELP`
+-   `CoreAppletType.SESSION`
+-   `CoreAppletType.WINDOW`
+-   `CoreAppletType.STYLING`
+-   `CoreAppletType.UNDO`
+
+```ts title=src/index.tsx
+export default declare({
+    info,
+    settings,
+    coreCategory: CoreAppletType.SESSIONS,
+});
+```
+
+## Development
+
+The configuration also has a `development` property you can specify, which should be an object 3 optional fields:
+
+-   `liveReload`: A boolean that indicates whether live reload should be enabled for your applet, defaults to true
+-   `watchDirectory`: A string that specifies the relative path to directory in which to listen for changes to activate a reload, defaults to `build`
+-   `onReload`: A function that's invoked when your applet reloads. If your function returns a function, this function will be invoked before the next reload (similar to React `useEffect` behavior).
+
+All these properties can be used to improve your live reload experience. You could for instance make it so some menu you're trying to test automatically closes the old version and opens up the updated instance afterwards:
+
+```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormatReloadCallback
+export default declare({
+    info,
+    settings,
+    withSession: session => {
+        function openMenu(context: IOContext, onClose?: () => void) {
+            context.open(
+                new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                    path: "Example",
+                })
+            );
+        }
+
+        // Return the same config as you usually would, with the addition of `development`
+        return {
+            async search(query, hook) {
+                return {
+                    children: searchAction.get(items),
+                };
+            },
+            open({context, onClose}) {
+                openMenu(context, onClose);
+            },
+
+            development: {
+                onReload: () => {
+                    // Open the new version of the menu
+                    session.goHome();
+                    openMenu(session.context);
+
+                    return () => {
+                        // Dispose some stuff before the next reload if required
+                    };
+                },
+            },
+        };
+    },
+});
+```
+
+The session will give you access most the things you might desire for simple automation during testing.

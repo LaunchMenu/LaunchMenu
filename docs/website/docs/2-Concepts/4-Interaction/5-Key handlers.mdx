@@ -1,0 +1,529 @@
+# Key handlers
+
+key handlers (aka key event listeners) are used for most of the interaction with LaunchMenu. They are callback functions that listen for key events and indicate whether the event was caught.
+
+```ts title=IKeyEventListener.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/keyHandler/_types/IKeyEventListener.ts
+export type IKeyEventListener =
+    /**
+     * Handles a key event being fired
+     * @param event The event that was fired
+     * @returns Whether the event was caught
+     */
+    (event: KeyEvent) => boolean | void | Promise<boolean | void>;
+```
+
+Sometimes key handlers require setup and disposal. For these types of listeners the `IDisposableKeyEventListener` interface exists. This is an object that contains both a normal `IKeyEventListener` as well as a function that can be used to dispose it. This disposal should manually be taken care of, which is quite simple when used in a `UILayer`.
+
+```ts title=IDisposableKeyEventListener.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/textFields/interaction/_types/IDisposableKeyEventListener.ts
+export type IDisposableKeyEventListener = {
+    /** The key handler itself */
+    handler: IKeyEventListener;
+    /** A function to dispose any dependencies the handler may have created */
+    destroy: () => void;
+};
+```
+
+Below is an example from the [menus page](/docs/concepts/ui/menu) where we can see disposal of such a handler:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuKeyHandler video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuKeyHandler/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get(items),
+        };
+    },
+    open({context, onClose}) {
+        context.open(
+            new UILayer(
+                (context, close) => {
+                    const menu = new Menu(context, items);
+                    const {handler, destroy} = createKeyHandler(menu, {
+                        onExit: close,
+                    });
+                    return {
+                        menu: menu,
+                        menuHandler: handler,
+                        onClose: () => {
+                            destroy();
+                            onClose();
+                        },
+                    };
+                },
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+## Propagation
+
+Using the [`UILayer`](/docs/concepts/ui/uilayers) and [`IOContext`](/docs/concepts/base/iocontext) components a stack of these listeners will be created. Events are then dispatched from top to bottom. Whenever propagation is stopped by the callback returning `true`, it will prevent the listeners below from receiving the event.
+
+The [`createStandardMenuKeyHandler`](/docs/concepts/ui/menu#controller) will also use the [`keyHandlerAction`](/docs/concepts/interaction/common-actions#key-handler-action) to propagate key events to items in the menu, as well as the [`contextMenuAction`](/docs/concepts/interaction/common-actions#context-menu-action) to propagate events to items in the context menu of the current selection. Bindings of the `keyHandlerAction` are event listeners similar to `IKeyEventListener`, except they can indicate to stop `immediate propagation` as well, and contain some more context data:
+
+```ts title=IItemKeyHandler.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/types/keyHandler/_types/IItemKeyHandler.ts
+export type IItemKeyHandler = {
+    /**
+     * Informs about key events and returns whether it was caught
+     * @param event The event to be executed
+     * @param menu The menu that the item is in that forwarded this event
+     * @param onExecute The item execution listener for the menu
+     * @returns Whether the event was caught
+     */
+    onKey(
+        event: KeyEvent,
+        menu: IMenu,
+        onExecute?: IMenuItemExecuteCallback
+    ): ISyncItemKeyHandlerResponse | Promise<ISyncItemKeyHandlerResponse>;
+};
+
+type ISyncItemKeyHandlerResponse =
+    | void
+    /** The value for stop propagation, stopImmediatePropagation defaults to false */
+    | boolean
+    | {
+          /** Stops propagation to handlers with lower priority (down the handler stack) */
+          stopPropagation?: boolean;
+          /** Stops propagation to handlers with the same priority (other item handlers) */
+          stopImmediatePropagation?: boolean;
+      };
+```
+
+The items are logically on the same level, so when propagation is stopped all items will still receive the events, but layers below won't receive them. If immediate propagation is stopped even items on the same level but later in line won't receive the event anymore.
+
+For usage examples see the [`keyHandlerAction`](/docs/concepts/interaction/common-actions#key-handler-action) on the actions page.
+
+## Key event
+
+All key event listeners will receive events of the type `KeyEvent`. This is a class that contains event information and some helpers to make testing for keys a bit simpler:
+
+```ts title=KeyEvent.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/keyHandler/KeyEvent.ts
+export class KeyEvent {
+    /** The keys that were held down when this event was fired */
+    public held: IKey[] = [];
+
+    /** Whether the ctrl key is down */
+    public ctrl: boolean;
+    /** Whether the shift key is down */
+    public shift: boolean;
+    /** Whether the alt key is down */
+    public alt: boolean;
+    /** Whether the meta key is down */
+    public meta: boolean;
+
+    /** The keyboard event type */
+    public type: IKeyEventType;
+    /** The key that was altered */
+    public key: IKey;
+
+    /** The original event this event was obtained from if any */
+    public original?: KeyboardEvent;
+
+    /**
+     * Creates a new keyboard event
+     * @param event The data for the event to create
+     * @param heldKeys The keys that are also held currently
+     */
+    public constructor(event: IKeyEventInput, heldKeys?: IKey[]);
+
+    /**
+     * Sets the keys that are also held while this event was created
+     * @param keys The keys that are held, overrides the previous keys
+     */
+    public setHeldKeys(keys: IKey[]): void;
+
+    /**
+     * Checks whether this event is equal to the given description
+     * @param keys The keys to check for
+     * @param type The event type to check for, defaults to "down"
+     */
+    public is(
+        keys: IKeyMatcher | IKeyMatcher[],
+        type: IKeyEventType | IKeyEventType[] | null = "down"
+    ): boolean;
+
+    /**
+     * Checks whether this event includes the pressed sequence (more keys may be held)
+     * @param keys The keys to check for
+     * @param type The event type to check for, defaults to "down"
+     */
+    public matches(
+        keys: IKeyMatcher | IKeyMatcher[],
+        type: IKeyEventType | IKeyEventType[] | null = "down"
+    ): boolean;
+
+    /**
+     * Determines whether the held keys include all the specified key(s)
+     * @param keys The key(s) to check
+     * @returns Whether it is included
+     */
+    public includes(keys: IKeyMatcher | IKeyMatcher[]): boolean;
+
+    /**
+     * Checks whether any of the modifier keys were held
+     */
+    public hasModifiers(): boolean;
+}
+
+type IKeyEventType = "down" | "up" | "repeat";
+type IKey = {
+    /** The ID of a key */
+    readonly id: IKeyId;
+    /** The name of a key */
+    readonly name: IKeyName;
+    /** The character of a key if any */
+    readonly char?: string;
+};
+```
+
+The `.is` method can be used to check whether the given event exactly corresponds to the given sequence of keys being pressed right now, and matches the event type: up, down or repeat. `repeat` means that the key was already pressed down, but the operating system (OS) started repeating it since it wasn't released yet.
+
+The `.matches` method is a bit looser and checks whether the given event includes the set of specified keys, and that one of those specified keys was just pressed or released. So when checking for `.matches(["a", "b"], "down")` and `a` and `b` were already down, it won't trigger when `c` was just pressed in addition. It will trigger if `a` and `c` are down and `b` was pressed afterwards.
+
+The `.includes` method is once again looser, not checking for the key event type at all, and just determining whether the given keys are present in the `held` list of the event, or is the event key itself.
+
+The `.hasModifiers` method simply checks whether `alt`, `ctrl`, `meta` or `shift` was held down.
+
+Finally the event contains some simple properties that can be used for manual testing of the event. The `held` property is a list of all keys that are currently held down. This list excludes the key event that was just triggered (unless it was already held down prior to the event, for instance on the repeat type).
+
+Usage of these "raw" events should be limited since it makes it harder for users to customize the controls. You should instead try to use the [`KeyPattern` class](#key-pattern) and an appropriate setting whenever possible.
+
+Below is an example of how these raw events could be used:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/keyHandlerEvents video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/keyHandlerEvents/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        const contentHandler: IKeyEventListener = event => {
+            if (event.matches(["ctrl", "a", "s", "d"], "up")) {
+                alert("ctrl+a+s+d released");
+                return true;
+            }
+        };
+
+        context.open(
+            new UILayer(
+                [
+                    () => ({menu: new Menu(context, items), onClose}),
+                    // Note only the contentHandler can be used without a view, menu and field handler's can't be used without a view
+                    {contentHandler},
+                ],
+                {path: "Example"}
+            )
+        );
+    },
+});
+```
+
+Now whenever the `example` applet is opened, it will add the custom key handler to the stack. This handler will detect when `ctrl+a+s+d` was held and is released. We then simply show an alert, and we return `true` to indicate the event was captured. It won't detect when `ctrl+a+s+d+f` was held and `f` is released, but it will detect when `ctrl+a+s+d+f` was held and `a` was released (resulting in `ctrl+s+d+f` being held). If `.is` was used, neither of these cases would be detected.
+
+## Key pattern
+
+The `KeyPattern` class can be used to specify a pattern that should be matched by an event. It captures the keys that should be held down, the event type to trigger on, and keys that may be present additionally.
+
+```ts title=KeyPattern.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/keyHandler/KeyPattern.ts
+export class KeyPattern {
+    public static keySeparator = "+";
+    public readonly patterns: IKeyArrayPatternData[];
+
+    /**
+     * Creates the key pattern that can be tested against
+     * @param pattern The pattern to be tested, in very simplified form, mostly intended for easy testing
+     */
+    public constructor(pattern: string);
+
+    /**
+     * Creates the key pattern that can be tested against
+     * @param pattern The pattern to be tested
+     */
+    public constructor(patterns: IKeyPatternData[]);
+
+    /**
+     * Checks whether the given event matches the
+     * @param event The event to check
+     * @param ignoreType Whether to ignore the event type
+     * @returns Whether a given event matches this pattern
+     */
+    public matches(event: KeyEvent, ignoreType: boolean = false): boolean;
+
+    /**
+     * Checks whether the event matches this pattern as a modifier key
+     * @param event The event to check
+     */
+    public matchesModifier(event: KeyEvent): boolean;
+
+    /**
+     * Simplifies the pattern to a string (leaving out some data)
+     */
+    public toString(): string;
+
+    // Serialization
+    /**
+     * Serializes the pattern
+     * @returns The serialized pattern
+     */
+    public serialize(): IKeyArrayPatternData[];
+
+    // Helpers
+    /**
+     * Retrieves the purely string representation of a key pattern
+     * @param keys The keys in the pattern
+     * @returns The string form
+     */
+    public static toStringPattern(keys: IKeyMatcher[]): string;
+
+    /**
+     * Retrieves the array representation of a key pattern
+     * @param keys The key pattern
+     * @returns The array form
+     */
+    public static toArrayPattern(keys: string): string[];
+
+    /**
+     * Sorts the given keys
+     * @param keys The keys to sort
+     * @returns The sorted sequence of keys
+     */
+    public static sortKeys(keys: string[]): string[];
+}
+```
+
+This class contains some helper functions, but `.matches` is the primary method that's of importance. It will take in a [`KeyEvent`](#key-event) and checks whether it satisfies this pattern.
+
+The `.toString` method can be used to turn the pattern into a human readable string, but some data like the event type is left out. The `.serialize` method can be used to extract all of the pattern data.
+
+The `.matchesModifier` method can be used to detect this pattern as a modifier. This uses the `.includes` method of `KeyEvent`, meaning that it won't check whether the pattern includes the key that just triggered. E.g. if the pattern is `["a", "b"]`, `a` and `b` are already down and `c` was just pressed, then `.matchesModifier` will return `true` but `.matches` would've return `false`.
+
+Below is an example showing off usage of different key patterns:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/keyHandlerPatterns video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/keyHandlerPatterns/recordings/demo.webm
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                modifier: createKeyPatternSetting({
+                    name: "Modifier",
+                    // Simple key pattern constructor with limited intellisense for pattern validity checking
+                    init: new KeyPattern("ctrl+shift"),
+                }),
+                pattern: createKeyPatternSetting({
+                    name: "Pattern",
+                    // Advanced key pattern constructor with proper intellisense
+                    init: new KeyPattern([
+                        {
+                            pattern: ["ctrl", "f"],
+                            type: "up",
+                            allowExtra: ["alt"],
+                        },
+                    ]),
+                }),
+            },
+        }),
+});
+
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        const patterns = context.settings.get(settings);
+        const contentHandler: IKeyEventListener = event => {
+            if (patterns.pattern.get().matches(event)) {
+                alert(
+                    `Pattern was matched, ${event.alt ? "with" : "without"} alt`
+                );
+                return true;
+            }
+            if (
+                patterns.modifier.get().matchesModifier(event) &&
+                event.key.char
+            ) {
+                alert(`${event.key.char} was pressed with the modifier`);
+                return true;
+            }
+        };
+
+        context.open(
+            new UILayer(
+                [
+                    () => ({menu: new Menu(context, items), onClose}),
+                    // Note only the contentHandler can be used without a view, menu and field handler's can't be used without a view
+                    {contentHandler},
+                ],
+                {path: "Example"}
+            )
+        );
+    },
+});
+```
+
+Now whenever the `example` applet is opened, it will add the custom key handler to the stack. This handler will detect when `ctrl+f` or `ctrl+alt+f` is released. It will also detect whenever a character key is pressed while holding `ctrl+shift`.
+
+## KeyHandler class
+
+The key handler class is something you generally won't have to use, but is responsible for turning the html key events into our custom key events and dispatching them. The LaunchMenu instance will create one of these instances capturing all of the window's key events.
+
+```ts title=KeyHandler.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/keyHandler/KeyHandler.ts spoiler
+export class KeyHandler {
+    /**
+     * Creates a new key handler for the specified target
+     * @param target The target to add the listeners to
+     */
+    public constructor(target: IKeyHandlerTarget);
+
+    /**
+     * Emits a given keyboard event
+     * @param event
+     */
+    public emit(
+        event: KeyEvent,
+        {
+            store = true,
+            insertHeldKeys = true,
+        }: {
+            /** Whether to use the event to alter the held keys */
+            store?: boolean;
+            /** Whether to add the held keys to the event */
+            insertHeldKeys?: boolean;
+        } = {}
+    ): void;
+
+    /**
+     * Removes the handlers from the target
+     */
+    public destroy(): void;
+
+    /**
+     * Releases all currently held keys
+     */
+    public resetKeys(): void;
+
+    /**
+     * Checks wether the key with the specified id is pressed
+     * @param id The id of the key
+     * @returns Whether the key is pressed
+     */
+    public isDown(id: number): boolean;
+
+    /**
+     * Checks wether the key with the specified name is pressed
+     * @param name The name of the key
+     * @returns Whether the key is pressed
+     */
+    public isDown(name: string): boolean;
+
+    // Listener management
+    /**
+     * Adds a listener to the key handler
+     * @param listener The listener to add
+     * @returns This, for method chaining
+     */
+    public listen(listener: IKeyEventListener): this;
+
+    /**
+     * Removes a listener from the key handler
+     * @param listener The listener to remove
+     * @returns Whether the listener was removed
+     */
+    public removeListener(listener: IKeyEventListener): boolean;
+
+    // Static helper methods
+    /**
+     * Retrieves the input data for a 'synthetic' key event
+     * @param event The original event
+     * @returns The input for the event
+     */
+    public static getKeyEvent(event: KeyboardEvent): KeyEvent | null;
+}
+```
+
+The global instance of this class within the instance of LaunchMenu could be used to emit your own fake/virtual key events, adding global listeners, or checking if a key is currently held down. To access this instance, see the [LaunchMenu class page](/docs/concepts/base/launchmenu).
+
+## Global key listeners
+
+LaunchMenu also has some support for capturing global key events, which are events that are dispatched to the OS but not necessarily to LaunchMenu. This can be used to perform tasks on certain key events even if LaunchMenu is hidden. This is also what's used to open LaunchMenu itself when its global key pattern is triggered.
+
+The `globalKeyHandler` instance is essentially a singleton instance of the `GlobalKeyHandler` class and can be used to capture specific key patterns, or listen for all events. Key patterns are supported on every OS, but capturing of all events isn't yet available on Linux.
+
+```ts title=GlobalKeyHandler.ts src=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/keyHandler/globalKeyHandler/globalKeyHandler.ts
+export class GlobalKeyHandler {
+    /**
+     * Adds a global key listeners that listens to all events
+     * @param callback The key press callback
+     * @returns A function that can be invoked to remove the listener
+     */
+    public addListener(callback: (event: IGlobalKeyEvent) => void): () => void;
+
+    /**
+     * Checks whether global key listeners are supported on the current OS/environment
+     * @returns Whether key events listeners are supported
+     */
+    public areListenersSupported(): boolean;
+
+    /**
+     * Adds a global shortcut
+     * @param shortcut The key pattern to listen for
+     * @param callback The callback to trigger when the event is fired
+     * @returns A function that can be invoked to remove the shortcut
+     */
+    public addShortcut(shortcut: KeyPattern, callback: () => void): () => void;
+
+    /**
+     * Checks whether the given key pattern is valid as a global shortcut or not
+     * @param shortcut The key pattern to check
+     * @returns False if the pattern is valid, or the patterns and errors if invalid
+     */
+    public isShortcutInvalid(
+        shortcut: KeyPattern
+    ): {pattern: IKeyArrayPatternData; error: Error}[] | false;
+}
+```
+
+Depending on the OS the user is on, not all key patterns are valid as global shortcuts. The `.isShortcutInvalid` can be used to detect whether a shortcut is invalid. We don't ensure that this will capture all invalid patterns, but it will at least filter out some of the invalid patterns.
+
+The `.areListenersSupported` method can be used to check whether the OS supports adding general keyboard listeners.
+
+If you want to setup global shortcuts, there is no need to use this class however. A more convenient `createGlobalKeyPatternSetting` function exists which can be used for creating a user alterable pattern. This internally makes use of the` GlobalKeyHandlerClass`, and has a built-in function to register callbacks for when the event triggers:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/keyHandlerGlobal
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                globalAlert: createGlobalKeyPatternSetting({
+                    name: "Global alert",
+                    init: new KeyPattern("ctrl+i"),
+                }),
+            },
+        }),
+});
+
+export default declare({
+    info,
+    settings,
+    init: ({settings}) => {
+        const removeKeyHandler = settings.globalAlert.onTrigger(() => {
+            alert("Triggered");
+        });
+
+        return {
+            onDispose() {
+                removeKeyHandler();
+            },
+        };
+    },
+});
+```
+
+Now when you startup the program and press `ctrl+i` an alert window will pop up, even if LM wasn't visible/focused.
+
+Note that if you don't close the alert in this demo while testing, LM will become unresponsive since `alert` is a blocking function call.

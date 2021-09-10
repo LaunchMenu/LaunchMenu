@@ -1,0 +1,381 @@
+# Content
+
+The content section can be used to provide the user with readable content. It's hard to generalize what 'content' is exactly. We think content in LaunchMenu should have the general property that it's non-interactable (at least not through the content section) and that content is interacted with using the menus, but even this is something that doesn't need to hold in all situations. For this reason it's hard to provide a general interface and implementation for content. We've decided to provide an interface for one of the simplest - but common - scenarios: having readable content that may not fit in the content section. The standard content can therefor just be any view, and allows the user to scroll up and down using the `page-up` and `page-down` keys on their keyboard. Content consist of 3 separate components:
+
+-   model: A data model
+-   view: A react component to visualize the data
+-   controller: A key handler to interact with the data
+
+When talking about content we're either talking about the data model, or the entire setup that includes all 3 aspects. There is only a single standard implementation provided for each component, but as can be read on the [UILayers page](/docs/concepts/ui/uilayers) as well as seen on the [text fields page](/docs/concepts/ui/textfield#multiline) and the [controller section](#controller) any custom data can be shown in the content section of LaunchMenu.
+
+The data model of content is quite simple because of this limited behavior, and takes care of the following functionality:
+
+-   Track the content React component to show
+-   Track the visual height of content (tracks only 1 instantiation of the react component)
+-   Track the scrolled amount of content
+
+```tsx title=IContent.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/content/_types/IContent.ts spoiler
+export type IContent = {
+    /**
+     * The content view to show
+     */
+    readonly view: IViewStackItemView;
+
+    /**
+     * Sets the number of pixels that can be scrolled
+     * @param height The available height that can be scrolled (difference between container and child height)
+     */
+    setScrollHeight(height: number): void;
+
+    /**
+     * Retrieves the scroll height
+     * @param hook The hook to subscribe to changes
+     * @returns The scroll height
+     */
+    getScrollHeight(hook?: IDataHook): number;
+
+    /**
+     * Sets the percentage of the area scrolled so far (between 0 and 1)
+     * @param percentage The new scroll percentage
+     */
+    setScrollPercentage(percentage: number): void;
+
+    /**
+     * Retrieves the percentage of the area scrolled so far (between 0 and 1)
+     * @param hook The hook to subscribe to changes
+     * @returns The scroll percentage
+     */
+    getScrollPercentage(hook?: IDataHook): number;
+
+    /**
+     * Retrieves the number of pixels scrolled so far
+     * @param scrollHeight The available height to scroll (defaults to the amount set on this content)
+     * @param hook The hook to subscribe to changes
+     * @returns The total scroll offset
+     */
+    getScrollOffset(scrollHeight?: number, hook?: IDataHook): number;
+};
+```
+
+The view is once again a rather simple, and is a React component wrapping the content, taking care of the following functionality:
+
+-   Measure the content's height
+-   Smoothly scroll to the content's offset
+
+Finally the controller is a simple [key handler](/docs/concepts/interaction/key-handlers) and takes care of these aspects:
+
+-   Set the scroll percentage of the content
+
+For simple usage of the content class, all you have to do is create the data structure and open it using a [UILayer](/docs/concepts/ui/uilayers) class instance, which will take care of creating the `createStandardContentKeyHandler` and `ContentView`:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/content video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/content/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        context.open(
+            new UILayer(
+                () => ({
+                    content: new Content(
+                        <Box background="bgSecondary">{text}</Box>
+                    ),
+                    handleClose: true,
+                    onClose,
+                }),
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+Now whenever the `example` applet is opened, it will show some content in the content section, which can be scrolled using the `page-up` and `page-down` keys.
+
+## View
+
+The content view is rather simple, and just measures the content react element and controls scroll offset. By default it will also add some padding around the content, but this can be disabled using a `plain` flag.
+
+There isn't too much you can to alter the content, apart from adding some elements around it or changing properties like fonts. Below is an example where we just added a sort of watermark:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/contentView video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/contentView/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        const content = new Content(<div>{text}</div>);
+        const view = (
+            <FillBox
+                background="bgSecondary"
+                display="flex"
+                flexDirection="column">
+                <Box font="header" marginBottom="small">
+                    Powered by Emma
+                </Box>
+                <Box flexGrow={1} position="relative">
+                    <ContentView plain content={content} />
+                </Box>
+            </FillBox>
+        );
+
+        context.open(
+            new UILayer(
+                () => ({
+                    content,
+                    contentView: view,
+                    handleClose: true,
+                    onClose,
+                }),
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+Now whenever the `example` applet is opened, it will show some content plus a watermark in the content section, which can be scrolled using the `page-up` and `page-down` keys.
+
+## Controller
+
+The keyboard controller is very simple and will just allow for scrolling the content, as well as optionally performing a callback on a back keypress. It can easily be augmented, but there is little generic behavior that could be added.
+
+Because there isn't too much that can be added to the normal content handler, I took this opportunity to demonstrate how to extend the content data model as well as the key handler. The example below allows you to define sections within your content, and allows the user to scroll to sections using `ctrl + page-up` and `ctrl + page-down`:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/contentController video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/contentController/recordings/demo.webm spoiler
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                nextSection: createKeyPatternSetting({
+                    name: "Next section",
+                    init: new KeyPattern("ctrl+pageDown"),
+                }),
+                prevSection: createKeyPatternSetting({
+                    name: "Previous section",
+                    init: new KeyPattern("ctrl+pageUp"),
+                }),
+            },
+        }),
+});
+
+// Data model
+type ISectionedContent = IContent & {
+    /**
+     * Sets the pixel offsets of the sections
+     * @param offsets The pixel offsets
+     */
+    setSections(offsets: number[]): void;
+
+    /**
+     * Retrieves the sections of this content
+     * @param hook The hook to subscribe to changes
+     * @returns The section offsets in sorted order
+     */
+    getSections(hook?: IDataHook): number[];
+};
+
+class SectionedContent extends Content implements ISectionedContent {
+    protected sections = new Field([] as number[]);
+
+    /** @override */
+    public setSections(sections: number[]): void {
+        this.sections.set(sections.sort());
+    }
+
+    /** @override */
+    public getSections(hook?: IDataHook): number[] {
+        return this.sections.get(hook);
+    }
+}
+
+// Controller
+/**
+ * Handles content section change (ctrl + page down/up)
+ * @param event The event to test
+ * @param content The content to be scrolled
+ * @param patterns The key patterns to detect
+ * @returns Whether the event was caught
+ */
+export function handleContentSectionInput(
+    event: KeyEvent,
+    content: ISectionedContent,
+    patterns: {prevSection: KeyPattern; nextSection: KeyPattern}
+): void | boolean {
+    const matchesPrev = patterns.prevSection.matches(event);
+    const matchesNext = patterns.nextSection.matches(event);
+    if (matchesPrev || matchesNext) {
+        const curOffset = content.getScrollOffset();
+        const sections = content.getSections();
+        const nextIndex = sections.findIndex(val => val > curOffset);
+        const curIndex = (nextIndex == -1 ? sections.length : nextIndex) - 1;
+        const direction = matchesPrev ? (sections[curIndex] == curOffset ? -1 : 0) : 1;
+        const newIndex = Math.max(0, Math.min(curIndex + direction, sections.length - 1));
+        const newOffset = sections[newIndex];
+        const percentage = newOffset / content.getScrollHeight();
+        content.setScrollPercentage(percentage);
+        return true;
+    }
+}
+
+/**
+ * Creates a standard content key handler
+ * @param content The content to be handled
+ * @param context The context that the handler is used in
+ * @param config Additional configuration
+ * @returns The key handler tha can be added to the UILayer
+ */
+export function createSectionedContentKeyHandler(
+    content: ISectionedContent,
+    context: IIOContext,
+    config?: {
+        /** The code to execute when trying to exit the field */
+        onExit?: () => void;
+    }
+): IKeyEventListener {
+    const sectionControlSettings = context.settings.get(settings);
+    // This needs to be a function, since we need to get the latest settings on every key event
+    const getSectionControls = () => ({
+        nextSection: sectionControlSettings.nextSection.get(),
+        prevSection: sectionControlSettings.prevSection.get(),
+    });
+    const standardContentHandler = createStandardContentKeyHandler(
+        content,
+        context
+        config
+    );
+
+    return e => {
+        if (handleContentSectionInput(e, content, getSectionControls())) return true;
+        return standardContentHandler(e);
+    };
+}
+
+// View
+const SectionContext = createContext({
+    setOffset: (id: string, pageOffset: number) => {},
+    destroy: (id: string) => {},
+});
+const SectionContextProvider: FC<{content: ISectionedContent}> = ({
+    content,
+    children,
+}) => {
+    const poses = useRef<Record<string, number>>({});
+    const containerRef = useRef<HTMLDivElement>(null);
+    const functions = useMemo(() => {
+        const updateSections = () => content.setSections(Object.values(poses.current));
+        return {
+            setOffset: (id: string, pageOffset: number) => {
+                const el = containerRef.current;
+                if (el) {
+                    const oldOffset = poses.current[id];
+                    const offset = pageOffset - el.getBoundingClientRect().top;
+                    poses.current[id] = offset;
+                    if (oldOffset != offset) updateSections();
+                }
+            },
+            destroy: (id: string) => {
+                delete poses.current[id];
+                updateSections();
+            },
+        };
+    }, []);
+
+    // Force rerender on size change
+    const {ref: resizeRef} = useResizeDetector();
+
+    return (
+        <Box elRef={[containerRef, resizeRef]}>
+            <SectionContext.Provider value={functions}>
+                {children}
+            </SectionContext.Provider>
+        </Box>
+    );
+};
+const Section: FC = ({children}) => {
+    const elRef = useRef<HTMLDivElement>(null);
+    const {width, height, ref} = useResizeDetector();
+
+    const {destroy, setOffset} = useContext(SectionContext);
+
+    const IDRef = useRef<string | undefined>();
+    if (!IDRef.current) IDRef.current = uuid();
+
+    useEffect(() => {
+        const el = elRef.current;
+        const ID = IDRef.current;
+        if (el && ID) setOffset(ID, el.getBoundingClientRect().top);
+    }, [setOffset, width, height]);
+    useEffect(() => () => destroy(IDRef.current!), []);
+
+    return <Box elRef={[elRef, ref]}>{children}</Box>;
+};
+
+const SectionedContentView: LFC<{content: ISectionedContent}> = ({content, ...rest}) => {
+    const View = content.view as any;
+    const element = isValidElement(View) ? cloneElement(View, rest) : <View {...rest} />;
+    const {height, ref} = useResizeDetector();
+
+    return (
+        <FillBox elRef={ref}>
+            <ContentFrame content={content}>
+                {
+                    <SectionContextProvider content={content}>
+                        {element}
+                        {/* Add a spacer such that we can reach the bottom content no matter how big it is */}
+                        <Box height={height} />
+                    </SectionContextProvider>
+                }
+            </ContentFrame>
+        </FillBox>
+    );
+};
+
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        context.open(
+            new UILayer(
+                context => {
+                    const content = new SectionedContent(
+                        (
+                            <div>
+                                {texts.map((text, i) => (
+                                    <Section key={i}>
+                                        <Box marginBottom="medium">{text}</Box>
+                                    </Section>
+                                ))}
+                            </div>
+                        )
+                    );
+                    const contentHandler = createSectionedContentKeyHandler(
+                        content,
+                        context
+                    );
+                    const contentView = <SectionedContentView content={content} />;
+
+                    return {
+                        content,
+                        contentHandler,
+                        contentView,
+                        handleClose: true,
+                        onClose,
+                    };
+                },
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+Now whenever the `example` applet is opened, it will show some content in the content section. This content can still be scrolled using the `page-up` and `page-down` keys, but can also be scrolled using `ctrl + page-up` and `ctrl + page-down` now. When using the `ctrl` variant, scrolling will move between entire sections at a time.
+
+This code became rather complex for an example, but is fully genericly implemented, allowing it to be used in many scenarios. While writing this example I realized this is actually very useful functionality in a variety of situations, so this is likely to be added to the core LaunchMenu package in a later release.

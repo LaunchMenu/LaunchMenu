@@ -1,0 +1,1136 @@
+# Common actions
+
+This page contains an overview of common menu item actions in LaunchMenu. To learn what `actions` are exactly, you can check the general [actions page](/docs/concepts/interaction/actions).
+
+## Execute action
+
+The `executeAction` is one of the most important actions. It's what menus use to perform the primary functionality of a selected item. Just like all other actions, this action can be performed on a selection of items at a time. It accepts binding data that satisfies the following interface:
+
+```ts title=IExecutable.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/types/execute/_types/IExecutable.ts
+export type IExecutable = {
+    /**
+     * Executes the item action, or retrieves the command to execute
+     * @param data The data that can be used for execution
+     * @returns Optionally a command to be executed
+     */
+    (data: {
+        /** The context that can be used for execution */
+        context: IIOContext;
+        // Data is an object to more easily support future augmentation
+    }): Promise<IExecutableResponse> | IExecutableResponse;
+};
+
+export type IExecutableResponse =
+    | {
+          /**
+           * The resulting command to execute to perform this action
+           */
+          command?: ICommand;
+
+          /**
+           * Whether this is a passive executor (E.g. shouldn't close the context menu when executed).
+           * For instance used when the execution only changes UI (opens a menu, etc) without updating other state.
+           */
+          passive?: boolean;
+      }
+    | ICommand
+    | void;
+```
+
+As shown by the interface, the IO context is passed as an argument, allowing you to do things like reading settings or opening UI.
+
+These executables can optionally return [commands](/docs/concepts/interaction/undo-redo#commands). These commands will automatically be executed and are undoable by the user. If multiple items are selected, and multiple commands are obtained, all these commands are combined. This means that the user can undo and redo them all at once.
+
+The executables can also indicate to be `passive`. This is used by the context menu to decide when the menu should be closed. When a sub-menu is opened, the main context menu should also remain opened. So opening of UI like this indicates it was a passive executable. But for most of the other executables the context menu should automatically close when they are preformed, so those aren't passive. By default executables will be considered as non-passive. The `onExecute` callback that can be passed to a menu will only be invoked when all bindings that are execute at some point are non-passive bindings.
+
+The interface also shows you that the executables may be asynchronous. If multiple items are selected at once, these will all start executing at once. All executables are waited on, and any commands are combined and also executed together at once when ready.
+
+The `onExecute` property of the [`createStandardMenuItem`](/docs/concepts/ui/menuitems#standard-menu-items) creates a direct binding to this action from the passed function. You can however still choose to create your own bindings if you're creating a custom item type, or if you want to add multiple bindings on one item:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsExecute
+const items = [
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: ({context}) =>
+            console.log(`Bye ${context.settings.get(settings).useName.get()}!`),
+        // Pass additional bindings to the menu item (these have higher priority than the standard ones)
+        actionBindings: [
+            executeAction.createBinding(() => console.log(`Why are you here?`)),
+            executeAction.createBinding(({context}) =>
+                console.log(
+                    `I don't like you ${context.settings
+                        .get(settings)
+                        .useName.get()}!`
+                )
+            ),
+        ],
+    }),
+];
+```
+
+### Sequential execute handler
+
+The `sequentialExecuteHandler` is an action handler that will perform all actions in sequence rather than in parallel. In case that your executable shows some UI to the user, for instance when asking for an input, it's recommended to use this handler. This way the next UI will only open up after the current one closes, rather than opening them all on top of each other immediately.
+
+The behavior of `executeAction` and `sequentialExecuteHandler` of course only differs when your execute function is asynchronous. The executables aren't multi-threaded or anything like that, but the execution using `executeAction` could become interwoven when you're awaiting data.
+
+This action handler uses exactly the same interface as the `executeAction` for the binding data that it accepts.
+
+Below is an example that shows off the differences between directly using the `executeAction` and using the `sequentialExecuteHandler`:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsSequentialExecute
+const wait = () => new Promise(res => setTimeout(res, 200));
+const items = [
+    createStandardMenuItem({
+        name: "Parallelized executables",
+        actionBindings: [
+            executeAction.createBinding(async () => {
+                console.log(`Parallel 1 start`);
+                await wait();
+                console.log(`Parallel 1 end`);
+            }),
+            executeAction.createBinding(async () => {
+                console.log(`Parallel 2 start`);
+                await wait();
+                console.log(`Parallel 2 end`);
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Sequential executables",
+        actionBindings: [
+            sequentialExecuteHandler.createBinding(async () => {
+                console.log(`Sequential 1 start`);
+                await wait();
+                console.log(`Sequential 1 end`);
+            }),
+            sequentialExecuteHandler.createBinding(async () => {
+                console.log(`Sequential 2 start`);
+                await wait();
+                console.log(`Sequential 2 end`);
+            }),
+        ],
+    }),
+];
+```
+
+When you execute `Parallelized executables` you will notice that both `1` and `2` start before either of them finish. If you execute `Sequential executables` you will see that `1` fully finishes before `2` starts. In this example we added multiple bindings to an item for testing convenience, but it would behave exactly the same when the bindings come from different items and the user makes a selection over multiple items.
+
+### Custom execute handler
+
+Because all actions in LaunchMenu are extensible, you can easily extend the execute action to make your own execute handler. This allows you to make certain behavior only execute once, but use data of all selected items.
+
+The example below shows a simple example that alerts the data provided by multiple items in a single prompt:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsCustomExecuteHandler  video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsCustomExecuteHandler/recordings/demo.webm
+const alertAllHandler = createAction({
+    name: "Alert all",
+    parents: [executeAction],
+    core: (data: string[]) => {
+        const combined = data.join(", ");
+        return {
+            // Return the child binding that the execute action will use
+            children: [executeAction.createBinding(() => alert(combined))],
+            // We might as well return the computed data as a result,
+            // such that this handler has some use as a stand-alone action
+            result: combined,
+        };
+    },
+});
+const items = [
+    createStandardMenuItem({
+        name: "Hallo!",
+        actionBindings: [alertAllHandler.createBinding("Hallo")],
+    }),
+    createStandardMenuItem({
+        name: "How are you?",
+        actionBindings: [alertAllHandler.createBinding("how are you")],
+    }),
+    createStandardMenuItem({
+        name: "Goodbye!",
+        actionBindings: [alertAllHandler.createBinding("goodbye!")],
+    }),
+];
+```
+
+Now if you select multiple of these items, you will see that their contents will show up together in a single alert prompt. The order in which the data shows up is based on the sequence in which items are selected.
+
+The execute action also has a context-menu item. We are able to override this item for our custom handler however. This is discussed in more detail in the [item overrides section](#item-overrides), but the code below is a quick example:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsCustomExecuteItem video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsCustomExecuteItem/recordings/demo.webm
+const alertAllHandler = createContextAction({
+    name: "Alert all",
+    parents: [executeAction],
+    override: executeAction,
+    contextItem: {
+        priority: executeAction.priority,
+        icon: "play",
+        name: "Alert all!",
+    },
+    core: (data: string[]) => {
+        const combined = data.join(", ");
+        return {
+            // Return the child binding that the execute action will use
+            children: [executeAction.createBinding(() => alert(combined))],
+            // We might as well return the computed data as a result,
+            // such that this handler has some use as a stand-alone action
+            result: combined,
+        };
+    },
+});
+```
+
+Now everything still behaves the same as in the earlier example, but when you open the context menu of these items it will say `Alert all!` instead of `execute` as long as no items with other execute handlers are selected.
+
+### Standard execute handler types
+
+A couple of generic standard execute handlers already exist that could be used for various purposes.
+
+#### Edit execute handler
+
+The `editExecuteHandler` is a very light wrapper of the `sequentialExecuteHandler`. Its behavior is essentially equivalent to that of the `sequentialExecuteHandler`, but it will show the text `Edit` instead of `Execute` in the context-menu.
+
+This handler should be used whenever an item's purpose is to edit some value.
+
+#### Exit LM execute handler
+
+The `exitLMExecuteHandler` is quite a peculiar handler, but can be useful in a couple of scenarios. When it's executed it essentially closes LaunchMenu, performs some callback action, and then possibly open LM up again. This behavior is for instance used by the [`copyExitPasteHandler`](#copy-and-paste) which is used to paste some text within the program you were using before LaunchMenu.
+
+In case that any other execution of the `executeAction` adds to the user interface after `exitLMExecuteHandler` is used, LM will be opened up again automatically. Besides that, the bindings of the `exitLMExecuteHandler` may also indicate to open LM back up regardless or to keep it closed. Below is the interface of binding data accepted by this action:
+
+```ts title=IExitLMExecuteData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/types/execute/types/_types/IExitLMExecuteData.ts
+export type IExitLMExecuteData =
+    | void
+    | ((
+          data: IExecuteArg
+      ) => IExitCallbackResponse | Promise<IExitCallbackResponse>);
+
+/** The response data */
+export type IExitCallbackResponse = void | {
+    /** Whether to force LM to stay closed, even if it wants to be reopened from another callback or stack changes */
+    forceClose?: boolean;
+    /** Whether to always reopen LM (except when something force closes it), even if the stack didn't change */
+    reopen?: boolean;
+    /** Whether to prevent the session from navigating to its home screen on close */
+    preventGoHome?: boolean;
+};
+```
+
+#### Open menu execute handler
+
+The `openMenuExecuteHandler` is used to open a menu. This is what the [`createFolderMenuItem`](/docs/concepts/ui/menuitems#folder-menu-items) use for their primary function. This action allows for opening of multiple menus at once when multiple bindings for this action are present on the selection. When multiple menus are opened, the items of all menus are merged into one list of items, and the menus names are also merged into one comma separated name.
+
+As discussed in the main description of the [`executeAction`](#executeAction) execution callbacks can indicate whether they are passive. Bindings of the `openMenuExecuteHandler` can indicate that the menu should be closed when a non-passive item selection is executed. The executable of `openMenuExecuteHandler` resolves once the opened menu is closed, and whether it's passive depends on whether it was closed by executing such a selection with **only** non-passive items. If the menu was exited in any other way, the `openMenuExecuteHandler` is considered to have been passive, as it didn't close as a result of only non-passive actions. All of this is rather confusing, and fortunately something you generally don't have to worry about, but it's quite critical for intuitive navigation within nested menus in the context-menu.
+
+Below is the exact interface of data that can be passed to bindings of the `openMenuExecuteHandler`:
+
+```ts title=IOpenMenuExecuteData source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/types/execute/types/_types/IOpenMenuExecuteData.ts
+export type IOpenMenuExecuteData =
+    | ISubscribable<IMenuItem[]>
+    | {
+          /** The items to be shown in the menu */
+          items: ISubscribable<IMenuItem[]>;
+          /** Whether to close the menu when an item is executed */
+          closeOnExecute?: boolean;
+          /** The name to show in the path for this menu */
+          pathName?: string;
+          /** The icon to be shown in the search field of this menu */
+          searchIcon?: IThemeIcon | ReactElement;
+          /** Field data to use for the opened layer */
+          field?: IUILayerFieldData;
+          /** Content data to use for the opened layer */
+          content?: IUILayerContentData;
+      };
+```
+
+Note that `ISubscribable` is just a type that specifies that we allow for subscribable properties using [model-react](https://tarvk.github.io/model-react/examples/build/):
+
+```ts title=ISubscribable source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/utils/subscribables/_types/ISubscribable.ts
+export type ISubscribable<T> = T | ((hook?: IDataHook) => T);
+```
+
+Also note that `searchIcon`, `field` and `content` don't allow for smooth merging when multiple menus are opened at once. They can still be used, but you should be aware of these limitations, so maybe try to steer away from using these if you have a decent alternative.
+
+#### Single prompt execute handler
+
+The `singlePromptExecuteHandler` can be used to ask a user for data only once, but use it for several bindings. This is primarily useful for when creating your own custom actions for which you first have to ask the user for an input.
+
+Below is the interface of the data that can be passed to bindings of the `singlePromptExecuteHandler`:
+
+```ts title=ISinglePromptExecuteData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/types/execute/types/_types/ISinglePromptExecuteData.ts
+export type ISinglePromptExecuteData<T> = {
+    // Use either fields or setValues
+    /** The fields for which to update the value. Either fields or setValues should be used as output. */
+    fields?: IField<T>[];
+    /** The callback that sets the value, or retrieves the commands to be used to set them. Either fields or setValues should be used as output.  */
+    setValues?: (value?: T) => Promise<ICommand[] | void> | ICommand[] | void;
+    /* The initial values to use in the prompt. Either fields or init should be set. */
+    init?: T[];
+
+    // The function to perform the value retrieval
+    /** Retrieves the execute action binding to update the field, or the value itself*/
+    valueRetriever: (data: {
+        field: IField<T>;
+        context: IIOContext;
+    }) => IActionBinding | Promise<T>;
+
+    // Additional config
+    /** Tests whether two values are equal to one and another, for determining the initial field value */
+    equals?: (a: T, b: T) => boolean;
+    /** Whether the value update should be undoable, defaults to true */
+    undoable?: boolean;
+    /** The name that the command should display */
+    commandName?: string;
+};
+```
+
+This action can easily be used to make an action that can change multiple fields at once:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsSinglePrompt video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsSinglePrompt/recordings/demo.webm
+type IRotation = 0 | 90 | 180 | 270;
+const setImageRotationAction = createAction({
+    name: "Set image rotation",
+    parents: [singlePromptExecuteHandler],
+    core: (fields: IField<IRotation>[]) => ({
+        children: [
+            singlePromptExecuteHandler.createBinding({
+                fields,
+                valueRetriever: ({field}) =>
+                    promptSelectExecuteHandler.createBinding({
+                        field,
+                        options: [0, 90, 180, 270],
+                        createOptionView: option =>
+                            createStandardMenuItem({name: option + " degrees"}),
+                        serialize: v => v.toString(),
+                        deserialize: v => Number(v),
+                    }),
+                commandName: "Set rotation",
+            }),
+        ],
+    }),
+});
+
+const createImage = (name: string, field: IField<IRotation>) =>
+    createStandardMenuItem({
+        name: `Rotate ${name}`,
+        actionBindings: [setImageRotationAction.createBinding(field)],
+        content: <Loader>{h => field.get(h)}</Loader>,
+    });
+const items = [
+    createImage("Bob", new Field(0)),
+    createImage("Image 1", new Field(90)),
+    createImage("Image 2", new Field(180)),
+    createImage("Elma", new Field(90)),
+];
+```
+
+Now whenever any selection of `Bob`, `Image 1`, `Image 2` and `Elma` is executed, one prompt will appear that updates all values in the selection. The value selection process itself is handled by the `promptSelectExecuteHandler`.
+
+There are several more ways that the `singlePromptExecuteHandler` could be used however. The `valueRetriever` can be a function that takes a field and returns an execute binding like the example above, or a function that obtains and returns a value in another way. And instead of defining the list of fields to update, one can also specify the initial value(s) and a `setValues` callback to process the new values.
+
+#### Prompt execute handlers
+
+There are a bunch of different prompt execute handlers for different kinds of data inputs. These correspond to the different available [setting types](/docs/concepts/settings#types).
+
+Below is the list of available prompt handlers:
+
+-   `promptInputExecuteHandler`
+-   `promptSelectExecuteHandler`
+-   `promptMultiSelectExecuteHandler`
+-   `promptBooleanInputExecuteHandler`
+-   `promptNumberInputExecuteHandler`
+-   `promptNumberInputSelectExecuteHandler`
+-   `promptColorInputExecuteHandler`
+-   `promptKeyInputExecuteHandler`
+-   `promptFileInputExecuteHandler`
+
+## Context menu action
+
+The `contextMenuAction` is responsible for retrieving the items to show in the context-menu. It takes bindings that adhere to the following interface:
+
+```ts title=IContextMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/contextMenuAction/_types/IContextMenuItemData.ts
+export type IContextMenuItemData = {
+    /** The action that this context item is for, if any */
+    action: IAction | null;
+    /**
+     * The root action for which to override the context item, if all its bindings originate from this action.
+     * Will automatically override any ancestor overrides too (overrides specified by our ancestors).
+     */
+    override?: IAction;
+    /** The execute binding which override of this item may use to perform this action */
+    execute?: ISubscribable<IActionBinding[]>;
+    /** The item to show in the context menu */
+    item:
+        | {
+              /**
+               * Retrieves the item to show in the menu for this action
+               * @param executeBinding The bindings that may be specified by ancestor actions (obtained from specified parents)
+               * @returns The menu item to show in the menu
+               */
+              (
+                  executeBindings?: ISubscribable<IActionBinding[]>
+              ): IPrioritizedMenuItem;
+          }
+        | IPrioritizedMenuItem;
+    /** Whether to prevent adding the count category to the item, defaults to false */
+    preventCountCategory?: boolean;
+};
+```
+
+In most cases items won't create bindings for this context-menu action directly, since that would result in separate context-items representing the same actions. It's still possible to do this for 1-off bindings however, as we've seen in the [`GlobalContextMenuBindings` section of the applet format page](/docs/concepts/applet-format#globalcontextmenubindings). In most situations you will however want to make your action be a handler of the context-menu action:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsContextMenu video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsContextMenu/recordings/demo.webm
+const alertAllAction = createAction({
+    name: "Alert all",
+    parents: [contextMenuAction],
+    core: function (data: string[]) {
+        const combined = data.join(", ");
+        return {
+            // Create a binding for the context menu action in order to add an item to the context menu
+            children: [
+                contextMenuAction.createBinding({
+                    action: this,
+                    execute: [
+                        executeAction.createBinding(() => alert(combined)),
+                    ],
+                    item: actionBindings => ({
+                        priority: [Priority.MEDIUM, Priority.HIGH],
+                        item: createStandardMenuItem({
+                            name: "Alert all",
+                            actionBindings,
+                        }),
+                    }),
+                }),
+            ],
+            // We might as well return the computed data as a result,
+            // such that this handler has some use as a stand-alone action
+            result: combined,
+        };
+    },
+});
+const items = [
+    createStandardMenuItem({
+        name: "Hallo!",
+        onExecute: () => alert("Hallo!"),
+        actionBindings: [alertAllAction.createBinding("Hallo")],
+    }),
+    createStandardMenuItem({
+        name: "How are you?",
+        onExecute: () => alert("How are you?"),
+        actionBindings: [alertAllAction.createBinding("how are you")],
+    }),
+    createStandardMenuItem({
+        name: "Goodbye!",
+        onExecute: () => alert("Goodbye!"),
+        actionBindings: [alertAllAction.createBinding("goodbye!")],
+    }),
+    createStandardMenuItem({
+        name: "No alert all",
+        onExecute: () => alert("Sad"),
+    }),
+];
+```
+
+Now any of the items provided by this example can be selected, and will have an `Alert all` action in their context-menu. Since the `Alert all` action combines all data, and only creates a binding for `contextMenuAction` afterwards, it will create a single item that makes use of all the selected data when executed. The execution to perform is itself specified as a `executeAction` binding, which means that even in the context-menu one can select and execute multiple items at once. We could add the execution binding directly on the created item, but we will see in [the item overrides section](#item-overrides) why separating them is preferable. All items added to the context-menu must be prioritized items - i.e. menu items with priorities - in order to properly order this flexible list of context-items.
+
+The context-menu will also add categories to the menu to show how many of the selected items a given action applies to. If the action applies to all of the selected items, no category will show up. This can be seen when you select `"No alert all"` in addition to some other items.
+
+Since context items are quite common, we have a slightly nicer shorthand to the above example by using the `createContextAction` factory:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsContextMenuShorthand video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsContextMenuShorthand/recordings/demo.webm
+const alertAllAction = createContextAction({
+    name: "Alert all",
+    contextItem: {
+        priority: [Priority.MEDIUM, Priority.HIGH],
+    },
+    core: (data: string[]) => {
+        const combined = data.join(", ");
+        return {
+            // Provide the function to perform on execute
+            execute: () => alert(combined),
+            // We might as well return the computed data as a result,
+            // such that this handler has some use as a stand-alone action
+            result: combined,
+        };
+    },
+});
+```
+
+The above code has the same result as our earlier example. We exchanged some flexibility for a shorter declaration. This style doesn't allow us to create 2 context menu items for a single action, which the other manual style does allow, as well as some other things. The name of the item is inherited from the action, but we could still customize the context-item quite a bit. The `contextItem` property is optional and accepts the following `IContextItem` definition:
+
+```ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/contextMenuAction/createContextAction.ts#L48 spoiler
+type IContextItem = IDirectContextItem | IContextItemData;
+
+/**
+ * The configuration for context menu actions items
+ */
+export type IContextItemData = {
+    /** Whether to close the menu when the action is executed, defaults to true */
+    closeOnExecute?: boolean;
+
+    /** The keyboard shortcut for the action */
+    shortcut?: KeyPattern | ((context: IIOContext) => KeyPattern);
+
+    /** The extra action bindings for the item  */
+    actionBindings?: IActionBinding<any>[];
+
+    /** The name of the menu item, defaults to the action name */
+    name?: string;
+
+    /** The icon of the menu item */
+    icon?: IThemeIcon | ReactElement;
+
+    /** The description of the menu item */
+    description?: string;
+
+    /** Any tags that can be used for searching */
+    tags?: string[];
+
+    /** Content to show when this item is selected */
+    content?: IViewStackItemView;
+
+    /** The priority with which this action should appear in the context menu */
+    priority?: IPriority;
+};
+
+type IDirectContextItem =
+    | {
+          /**
+           * Retrieves the item to show in the menu for this action
+           * @param executeBinding The bindings that may be specified by ancestor actions (obtained from specified parents)
+           * @returns The menu item to show in the menu
+           */
+          (
+              executeBindings?: ISubscribable<IActionBinding[]>
+          ): IPrioritizedMenuItem;
+      }
+    | IPrioritizedMenuItem;
+```
+
+And the result of our action will have to return some way of executing the context-item. This can either be a list of bindings, or simply an execute callback like in the example above. The exact interface of `core` now looks like this:
+
+```ts title=IContextActionTransformer.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/contextMenuAction/_types/IContextActionTransformer.ts spoiler
+export type IContextActionTransformer<
+    I,
+    O,
+    AB extends IActionBinding | void
+> = {
+    /**
+     * Applies this action transformer to the given bindings, used internally for the `get` method
+     * @param bindingData The data of bindings to apply the transformer to
+     * @param indices The indices of the passed data, which can be used to compute the indices for child bindings
+     * @param hook A data hook to listen for changes
+     * @param items The input items that actions can use to extract extra data
+     * @returns The action result and any possible child bindings
+     */
+    (
+        bindingData: I[],
+        indices: number[],
+        hook: IDataHook,
+        items: IActionTarget[]
+    ): IActionResult<AB, O> & {
+        /** A default execute function for the context menu item */
+        execute?: IExecutable;
+        /** Action bindings to be used by the context menu item */
+        actionBindings?: ISubscribable<IActionBinding[]>;
+    };
+};
+```
+
+### Item overrides
+
+Since actions can be specialized, it makes sense to allow the context-items that represent these items to be specializeable too. We've already shown a short example of this in the [custom execute handler section](#custom-execute-handler). We perform this kind of 'item specialization' using action overrides.
+
+When a `contextMenuAction` binding is created, you can indicate what action's menu item should be overridden. I.e. an action `B` can indicate to be an context-menu override of action `A`. Then whenever all bindings for action `A` happen to come either directly or indirectly from action `B`, the item of action `B` will be displayed instead of the one from action `A`. The actual `execute` from item `A` will still be used however, usually resulting in only visuals being affected.
+
+The specifics are quite difficult to grasp, so let's consider a couple of examples. In the graphs below, an arrow from `A` to `B` represents that `A` is a handler of `B`. Imagine a action specialization graph as indicated below:
+
+```
+   ┌─>A<─┐
+   │     │
+   B<─┬─>C<─┐
+      │     │
+      D     E
+```
+
+Here `A` is our initial action, which will show up in the context-menu. For this example, all other actions in the graph also create their own context-menu item, but all specify `override: A`. Overall, the menu will always show the most specialized item that applies to all of the provided bindings.
+We will consider a couple of different situations to explore this. In each of these situations the list of letters indicates a collection of bindings for which we open the context menu, followed by the menu item that will be shown in that situation. So for instance when we say `[A, D]: A`, this means that if we have a selection of items of which 1 item contains a binding for `A` and 1 contains a binding for `B`, then we will see the item as defined by `A` in the context-menu. Here are a couple of situations and how they will work out:
+
+```ts showHeader=false
+[A]: A
+[B]: B
+[C]: C
+[D]: D
+[E]: E
+[B, C]: A
+[A, D]: A
+[B, D]: A
+[B, C, D]: A
+[C, E]: C
+```
+
+As we can see, in most situations when an item is a handler for multiple actions, having extra bindings for those actions will result in all specialization item data being lost. `[B, D]` for instance results in an item from `A`, because `D` also creates bindings for `C`, so nothing other than `A` describes all these bindings at once. When we create bindings for `[C, D]` however, `C` properly describes both our options since there is no branching going on. So as long as actions only have 1 parent, the specialization will go quite smoothly.
+
+Now that we've seen how this works out in some complex cases, let's see things in practice using some simple scenario:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsContextMenuOverride video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsContextMenuOverride/recordings/demo.webm
+const alertAllAction = createContextAction({
+    name: "Alert all",
+    contextItem: {
+        priority: [Priority.MEDIUM, Priority.HIGH],
+    },
+    core: (data: string[]) => {
+        const combined = data.join(", ");
+        return {execute: () => alert(combined)};
+    },
+});
+const importantAlertAllHandler = createContextAction({
+    name: "Important alert all",
+    parents: [alertAllAction],
+    override: alertAllAction,
+    contextItem: {
+        priority: [Priority.MEDIUM, Priority.HIGH],
+    },
+    core: (data: string[]) => {
+        const combined = `Important: ${data.join(", ")}!`;
+        return {children: [alertAllAction.createBinding(combined)]};
+    },
+});
+
+const items = [
+    createStandardMenuItem({
+        name: "Hallo!",
+        onExecute: () => alert("Hallo!"),
+        actionBindings: [alertAllAction.createBinding("Hallo")],
+    }),
+    createStandardMenuItem({
+        name: "How are you?",
+        onExecute: () => alert("How are you?"),
+        actionBindings: [importantAlertAllHandler.createBinding("how are you")],
+    }),
+    createStandardMenuItem({
+        name: "Goodbye!",
+        onExecute: () => alert("Goodbye!"),
+        actionBindings: [importantAlertAllHandler.createBinding("goodbye!")],
+    }),
+];
+```
+
+In this example you will be able to see that when the context menu of `Goodbye!` is opened, the menu item says `"Important alert all"` but the execute of `alertAllAction` is executed. When the selection also includes `Hallo!`, the context-menu item will become `"Alert all"` once again, since that's the most specialized action that describes all bindings.
+
+This behavior works the same way when manually creating bindings for the `contextMenuAction`. But as discussed before, for this to work properly you will have to separate the item creation from the execute binding creation.
+
+### Context folder handler
+
+When creating a binding for the `contextMenuAction` any item can be specified. So this includes folder items, meaning that any action can add folders to the context-menu. In some cases this isn't exactly what you want however, since it doesn't allow other actions to collectively create 1 folder. The global folder in the context-menu is a good example of this, since we want different independent applets to be able to add to this folder.
+
+This is why we've created yet another action factory similar to the `createAction` and `createContextAction` factory functions, except more specific: `createContextFolderHandler`. This factory creates an action that can serve as a folder for the context-menu. All bindings to an action like this will make sure that this action adds itself as a folder to the context-menu, and all its bindings as children of this action.
+
+So when you want to create an item that shows in such a context-menu folder rather than the context-menu directly, you can just create a binding to the folder rather than the context-menu. These folder actions accept data with the exact same interface as the `contextMenuAction` does. What's more, the `createContextAction` accepts an optional property that specifies the folder to put the item in.
+
+This `createContextFolderHandler` even allows you to specify the parent action - which defaults to the `contextmenuAction` - such that you can create nested menus.
+The example below shows off how a menu and even a nested menu can easily be created:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsContextMenuFolders video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsContextMenuFolders/recordings/demo.webm
+const folder1 = createContextFolderHandler({
+    name: "Folder 1",
+    priority: [Priority.HIGH, Priority.MEDIUM],
+});
+const folder2 = createContextFolderHandler({
+    name: "Folder 2",
+    parent: folder1,
+    priority: [Priority.HIGH, Priority.MEDIUM],
+});
+
+const actionForContextMenu = createContextAction({
+    name: "Action in root",
+    contextItem: {priority: [Priority.MEDIUM, Priority.HIGH]},
+    core: (data: string[]) => ({
+        execute: () => alert(data.join(", ")),
+    }),
+});
+const actionForFolder1 = createContextAction({
+    name: "Action in folder1",
+    folder: folder1,
+    contextItem: {priority: [Priority.MEDIUM, Priority.HIGH]},
+    core: (data: string[]) => ({
+        execute: () => alert(data.join(", ")),
+    }),
+});
+const actionForFolder2 = createContextAction({
+    name: "Action in folder2",
+    folder: folder2,
+    contextItem: {priority: [Priority.MEDIUM, Priority.HIGH]},
+    core: (data: string[]) => ({
+        execute: () => alert(data.join(", ")),
+    }),
+});
+
+const items = [
+    createStandardMenuItem({
+        name: "Hallo!",
+        onExecute: () => alert("Hallo!"),
+        actionBindings: [actionForContextMenu.createBinding("Hallo")],
+    }),
+    createStandardMenuItem({
+        name: "How are you?",
+        onExecute: () => alert("How are you?"),
+        actionBindings: [actionForFolder1.createBinding("how are you")],
+    }),
+    createStandardMenuItem({
+        name: "Goodbye!",
+        onExecute: () => alert("Goodbye!"),
+        actionBindings: [actionForFolder2.createBinding("goodbye!")],
+    }),
+];
+```
+
+In this example we have 2 folders for within the context menu: `"Folder 1"` and `"Folder 2"`. `"Folder 2"` will even be contained within `"Folder 1"` whenever it shows up. Whether or not it shows up is based on whether there are any bindings for it. `actionForFolder2` creates a binding for `folder2` so the `"Goodbye!"` item will show an action within `"Folder 2"`. These folders even correctly propagate how many of the selected items have bindings for these folders and items within those folders.
+
+### Types
+
+A couple of standard types for the context-menu already exist, primarly to allow applets to use the same context-items for similar behavior. These actions don't have any intrinsic behavior, but can be specialized to add appropriate behavior in your situation:
+
+-   `deleteAction`
+-   `resetAction`
+
+We will most likely augment this list at a later stage, when we know about more commonly used context actions.
+
+## Category action
+
+The `getCategoryAction` is used by menus to obtain the category to put an item under. This is a rather simple action that merely serves as an interface to extract item data with. When an item provides multiple categories, the menu will extract the last category from the list using the `.getCategory` function that the `getCategoryAction` provides.
+
+The extraction of these categories and adding them to the menu is done by the individual [`IMenu` data models](/docs/concepts/ui/menu).
+You can learn more about categories on the [menu page](/docs/concepts/ui/menu#categories).
+
+The [`createStandardMenuItem` factory](/docs/concepts/ui/menuitems#standard-menu-items) has a standard field for specifying categories, but below is an example where we manually specify the binding:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsCategory video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsCategory/recordings/demo.webm
+const category = createStandardCategory({
+    name: "Some category",
+    description: "Some category for demonstration purposes",
+});
+const items = [
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye"),
+        actionBindings: [getCategoryAction.createBinding(category)],
+    }),
+];
+```
+
+## Content action
+
+The `getContentAction` is used by [`UILayers`](/docs/concepts/ui/uilayers) to show the content of the currently selected item. The [`createStandardMenuItem` factory](/docs/concepts/ui/menuitems#standard-menu-items) has a standard field for specifying a content element, which creates a binding to the `scrollableContentHandler`. The `scrollableContentHandler` is a handler for `getContentAction` which generates content that can be scrolled by the user using the keyboard, as described on the [content page](/docs/concepts/ui/content).
+
+Below is an example that demonstrates how you can manually create these content bindings:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsContent video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsContent/recordings/demo.webm
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello"),
+        actionBindings: [
+            scrollableContentHandler.createBinding(<Box>{text}</Box>),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye"),
+        actionBindings: [
+            getContentAction.createBinding({
+                contentView: <Box>{text}</Box>,
+            }),
+        ],
+    }),
+];
+```
+
+## Is selectable action
+
+The `isSelectableAction` is used to determine whether a given item should be selectable in the menu. Both the [`executeAction`](#execute-action) and [`getContentAction`](#content-action) create a binding for this action, such that when an item is executable or contains content it will automatically be selectable.
+
+One can explicitly make the item non-selectable even though it already has a binding to be selectable by adding a binding saying it's not selectable: `isSelectableAction.createBinding(false)`. This works because the result of the `isSelectableAction` is true if and only if:
+
+-   The item has 1 or more bindings for the is selectable action
+-   The item has no bindings with value `false`
+
+## Listeners
+
+Actions can also be used to to provide a way of specifying event listeners on menu items. LaunchMenu makes use of several standard event listener actions that can be used to listen for events.
+
+### Key handler action
+
+The `keyHandlerAction` can be used to listen for keyboard events in the current menu. Items in the context-menu of the currently selected item will usually also receive these events. The [menu controller](/docs/concepts/ui/menu#controller) is responsible for calling these listeners, and the `createStandardMenuKeyHandler` factory takes care of this for you.
+
+Listening for these events is very simple:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsKeyHandler video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsKeyHandler/recordings/demo.webm
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello"),
+        actionBindings: [
+            keyHandlerAction.createBinding({
+                onKey: event => {
+                    if (event.key.char && event.type == "up" && !event.shift) {
+                        alert(event.key.char);
+                        return true;
+                    }
+                    return false;
+                },
+            }),
+        ],
+    }),
+];
+```
+
+This example will display an alert and captures events for every released character whenever this item is visible (and the event wasn't already captured).
+
+The `keyHandlerAction` accepts binding data that adheres to the following interface:
+
+```ts title=IItemKeyHandler.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/types/keyHandler/_types/IItemKeyHandler.ts
+export type IItemKeyHandler = {
+    /**
+     * Informs about key events and returns whether it was caught
+     * @param event The event to be executed
+     * @param menu The menu that the item is in that forwarded this event
+     * @param onExecute The item execution listener for the menu
+     * @returns Whether the event was caught
+     */
+    onKey(
+        event: KeyEvent,
+        menu: IMenu,
+        onExecute?: IMenuItemExecuteCallback
+    ): ISyncItemKeyHandlerResponse | Promise<ISyncItemKeyHandlerResponse>;
+};
+
+export type ISyncItemKeyHandlerResponse =
+    | void
+    /** The value for stop propagation, stopImmediatePropagation defaults to false */
+    | boolean
+    | {
+          /** Stops propagation to handlers with lower priority (down the handler stack) */
+          stopPropagation?: boolean;
+          /** Stops propagation to handlers with the same priority (other item handlers) */
+          stopImmediatePropagation?: boolean;
+      };
+```
+
+We also have a `forwardKeyEventHandler` that can be used to forward key events to other menu items. This is used by the [`createFolderMenuItem`](/docs/concepts/ui/menuitems#folder-menu-items) in order to forward key events to sub-menus.
+
+Finally the `shortcutHandler` can be used to listen for specific shortcuts. It takes in a key pattern (or a function to obtain the key-pattern using the settings context) and an executable or executable action bindings to perform when the shortcut is triggered.
+This allows us to easily add shortcuts for items, including items that are added to context-menus:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsShortcuts video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsShortcuts/recordings/demo.webm
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                byeShortcut: createKeyPatternSetting({
+                    name: "Bye shortcut",
+                    init: new KeyPattern("ctrl+m"),
+                }),
+                byeShortcut2: createKeyPatternSetting({
+                    name: "Bye shortcut2",
+                    init: new KeyPattern("ctrl+d"),
+                }),
+            },
+        }),
+});
+
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello"),
+        shortcut: () => new KeyPattern("ctrl+u"),
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye"),
+        actionBindings: [
+            shortcutHandler.createBinding({
+                shortcut: context =>
+                    context.settings.get(settings).byeShortcut.get(),
+                onExecute: () => alert("Bye"),
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Super bye world",
+        onExecute: () => alert("Super bye"),
+        // Makes sure that `onExecute` of the item is used, even if multiple execute actions are added, or if the item is extended
+        identityActionBindings: id => [
+            shortcutHandler.createBinding({
+                shortcut: context =>
+                    context.settings.get(settings).byeShortcut2.get(),
+                itemID: id,
+            }),
+        ],
+    }),
+];
+```
+
+Now each of these items will perform their action on their shortcut. The preferred way of creating shortcuts is by adding it to properties from the `createStandardMenuItem` factory, since it will make sure that the shortcut is visible on the item and displayed to the user. This function also receives the `IOContext` like the other two, so settings could be used here too. The second item shows off that the execution of the shortcut doesn't have to be the same as the primary execution of the item. In most cases you do want these to be equivalent however, which is why you can link them using the unique `itemID`. You can learn more about this in the [Identity action section](#identity-action).
+
+You can learn more about key handlers on the [key handlers page](/docs/concepts/interaction/key-handlers).
+
+### Select action
+
+The `onSelectAction` is an action that can be used to specify item selection listeners. It accepts binding data adhering to the following interface:
+
+```ts title=ISelectable.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/types/onSelect/_types/ISelectable.ts
+export type ISelectable = {
+    /**
+     * Informs about selection changes regarding this item in a menu
+     * @param selected Whether the item was just selected or deselected
+     * @param menu  The menu in which this item was either selected or deselected
+     */
+    (selected: boolean, menu: IMenu): void;
+};
+```
+
+This action is used by the individual [`IMenu` data models](/docs/concepts/ui/menu) to call the selection listeners of items whenever appropriate.
+When menus aren't properly destroyed, the `onSelectAction` may never be called with the event indicating it's no longer selected.
+
+Below is an example showing off how this listener can be used:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsListenerSelect video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsListenerSelect/recordings/demo.webm
+const createItem = (name: string) => {
+    const selected = new Field(0);
+    return createStandardMenuItem({
+        name: h => (selected.get(h) > 0 ? `(${name})` : name),
+        onExecute: () => alert(name),
+        actionBindings: [
+            onSelectAction.createBinding(sel => {
+                selected.set((sel ? 1 : -1) + selected.get());
+            }),
+        ],
+    });
+};
+```
+
+Now whenever an item is selected, we update its name. Alternatively, we could also have used the `onSelect` callback property that can be specified in the `createStandardMenuItem` data.
+
+Note however that there's currently an issue related to item selection in prioritized and proxied menus. Because most searches technically result in shallowly different items (the items are extended with a 'reveal in parent' action), the item will be unselected whenever the name changes since name changes affect the search. We will try to address this issue in the future.
+
+### Cursor action
+
+The `onCursorAction` is an action that can be used to specify listeners for when an item becomes the cursor. It accepts binding data adhering to the following interface:
+
+```ts title=ICursorSelectable.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/types/onCursor/_types/ICursorSelectable.ts
+export type ICursorSelectable = {
+    /**
+     * Informs about cursor selection changes regarding this item in a menu
+     * @param cursorSelected Whether the item was just selected or deselected
+     * @param menu  The menu in which this item was either selected or deselected
+     */
+    (cursorSelected: boolean, menu: IMenu): void;
+};
+```
+
+This action is used by the individual [`IMenu` data models](/docs/concepts/ui/menu) to call the cursor listeners of items whenever appropriate.
+When menus aren't properly destroyed, the `onCursorAction` may never be called with the event indicating it's no longer a cursor.
+
+Below is an example showing off how this listener can be used:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsListenerCursor video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsListenerCursor/recordings/demo.webm
+const createItem = (name: string) => {
+    const selected = new Field(0);
+    return createStandardMenuItem({
+        name: h => (selected.get(h) > 0 ? `(${name})` : name),
+        onExecute: () => alert(name),
+        actionBindings: [
+            onCursorAction.createBinding(sel => {
+                selected.set((sel ? 1 : -1) + selected.get());
+            }),
+        ],
+    });
+};
+const items = [createItem("Hello world"), createItem("Bye world")];
+```
+
+Now whenever an item is selected as a cursor, we update its name. Alternatively, we could also have used the `onCursor` callback property that can be specified in the `createStandardMenuItem` data.
+
+Note however that there's currently an issue related to item cursor selection in prioritized and proxied menus. Because most searches technically result in shallowly different items (the items are extended with a 'reveal in parent' action), the item will be unselected whenever the name changes since name changes affect the search. We will try to address this issue in the future.
+
+### Menu change action
+
+The `onMenuChangeAction` is an action that can be used to specify listeners that listen to when an item is added to or removed from a menu. It accepts binding data adhering to the following interface:
+
+```ts title=IMenuChangeable.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/types/onMenuChange/_types/IMenuChangeable.ts
+export type IMenuChangeable = {
+    /**
+     * Informs about changes of the menu the item is added to
+     * @param menu The menu the item got added to or removed from
+     * @param added Whether the item just got added or removed
+     */
+    (menu: IMenu, added: boolean): void;
+};
+```
+
+This action is used by the individual [`IMenu` data models](/docs/concepts/ui/menu) to call the menu change listeners of items whenever these are added or removed from the menu.
+When menus aren't properly destroyed, the `onMenuChangeAction` may never be called with the event indicating items are removed from the menu (since they aren't, the menu is just unused).
+
+Below is an example showing off how this listener can be used:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsListenerMenuChange video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsListenerMenuChange/recordings/demo.webm
+const createItem = (name: string) => {
+    const menuCount = new Field(0);
+    return createStandardMenuItem({
+        name: h => `${name}: ${menuCount.get(h)}`,
+        onExecute: () => alert(name),
+        actionBindings: [
+            onMenuChangeAction.createBinding((menu, added) => {
+                menuCount.set((added ? 1 : -1) + menuCount.get());
+            }),
+        ],
+    });
+};
+const items = [createItem("Hello world"), createItem("Bye world")];
+```
+
+Now the items keep track of how many menus they are visible in, and you can see that when a search is started it's added to another menu. Alternatively, we could also have used the `onMenuChange` callback property that can be specified in the `createStandardMenuItem` data.
+
+## Search action
+
+The `searchAction` can be used to provide `ISearchables`. This is used to obtain a collection of items that satisfy a search according to a given menu item. You can learn more about the search system as well as little bit about the search action on the [search system page](/docs/concepts/interaction/search-system).
+
+### Identity action
+
+Action bindings are independent of one and another, and when getting the content of an action it's generally not possible to find what item a binding corresponded to. But in some cases (such as the search action) you do need to have access to the entire item, and not only the binding data.
+
+One could add the entire item reference within the binding in order to fix this, but this will make menu items less flexible. We can currently for instance rather easily augment a menu item by simply copying it and adding an extra binding to the copy. This doesn't interfere with the original item, but does leave us with a specialized item. This would however not work as intended if the search action binding contained a reference to the original item, since then the search action will find copies of the original when searching in our augmented item, rather than our augmented version itself.
+
+The `identityAction` tries to fix this problem by making a dedicated action that labels an item with a randomly generated identification code (UUID). An action search as the search action can then then use that same UUID in its binding, and find the item to return from the search based on this ID and the collection of menu items that the search was executed on. Then when we want to extend this action, we only have to replace this identity binding with a newly updated binding, rather than having to replace any number of arbitrary actions that may rely on the item's identity.
+
+The `menuItemIdentityAction` is a handler for the `identityAction` which specializes the scenario to menu items, rather than just any possible action targets. The `menuItemIdentityAction` is the exact action that the search action handlers use, since we must be sure that the result returns menu items rather than just any action targets. In almost all cases you should make use of `menuItemIdentityAction` when augmenting items.
+
+The example below demonstrates how the `menuItemIdentityAction` can now be used to copy and alter an existing item:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsIdentityAugment video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsIdentityAugment/recordings/demo.webm
+const baseItems = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello"),
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye"),
+    }),
+];
+
+const items = baseItems.map(item =>
+    menuItemIdentityAction.copyItem(item, [
+        scrollableContentHandler.createBinding(<Box>My cool content</Box>),
+    ])
+);
+```
+
+Now when we search in the `example` applet, the search results will have content as well as the behavior as defined by the base items.
+
+Now in case that we need to have access to the menu items that an action was executed on, we can apply this `menuItemIdentityAction` :
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsIdentityUsage video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsIdentityUsage/recordings/demo.webm
+const top3ExecuteHandler = createAction({
+    name: "Top 3",
+    parents: [sequentialExecuteHandler],
+    core: (
+        data: {priority: number; itemID: IUUID}[],
+        indices,
+        hook,
+        items
+    ) => ({
+        children: [
+            sequentialExecuteHandler.createBinding(({context}) => {
+                const ids = menuItemIdentityAction.get(items);
+                const topItems = data
+                    .sort(({priority: a}, {priority: b}) => a - b)
+                    .slice(0, 3)
+                    .map(({itemID}) => ids.get(itemID)?.())
+                    .filter((item): item is IMenuItem => !!item);
+
+                return new Promise(res => {
+                    const layer = new UILayer(
+                        () => ({
+                            menu: new Menu(context, topItems),
+                            onClose: res,
+                        }),
+                        {path: "Top 3"}
+                    );
+                    context.open(layer);
+                });
+            }),
+        ],
+    }),
+});
+const createItem = (name: string, priority: number) => {
+    return createStandardMenuItem({
+        name: h => name,
+        identityActionBindings: itemID => [
+            top3ExecuteHandler.createBinding({priority, itemID}),
+        ],
+    });
+};
+const items = [
+    createItem("Item 2", 2),
+    createItem("Item 4", 4),
+    createItem("Item 1", 1),
+    createItem("Item 5", 5),
+    createItem("Item 3", 3),
+];
+```
+
+Here we make use of the `identityActionBindings` property og `createStandardMenuItem` to create bindings that make use of the identification code of the item. Our `top3ExecuteHandler` is then able to use that ID to obtain the correct menu items from the collection of "action target" `items` that it received. This results in a rather useless action where we can select a bunch of items, and when executed a new menu with just the top 3 of these items is shown.
+
+## Copy and paste
+
+LaunchMenu also contains several different execute action handlers for copying and pasting content. To find all handlers regarding copy and pasting please check the [`copyPaste` directory on github](https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/core/src/actions/types/copyPaste).
+
+Additionally there is a `copyAction` which itself doesn't really have any behavior, but allows you to convert a `copyExecuteHandler` descendent into a context-menu action rather than the primary execution action.
+
+The example below shows off how to either add copying as a primary function, or as a context menu action:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsCopy video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/commonActionsCopy/recordings/demo.webm
+const items = [
+    createStandardMenuItem({
+        name: "Copy in context",
+        onExecute: () => alert("Some other primary action"),
+        actionBindings: [
+            copyAction.createBinding(
+                copyTextHandler.createBinding("This is copied from context")
+            ),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Copy as primary",
+        actionBindings: [
+            copyTextHandler.createBinding("This is copied from primary"),
+        ],
+    }),
+];
+```
+
+This example is rather self-explanatory, the `"Copy in context"` item shows a copy action in the context while the `"Copy as primary"` only performs a copy as its primary function. The `copyAction` simply takes a binding to another executable binding to prevent having to duplicate the definitions for different use cases.
+
+Instead of using the `copyTextHandler` one can also use any other specialization of the `copyExecuteHandler` such as the more general `copyClipboardHandler`.
+
+In case that you want to use some string or other copyable data in the program the user was using before revealing LM, you can make use of the `copyExitPasteHandler` which is also an execute handler. It does exactly what the name implies, it copies data, closes LM and then pastes the data by sending a paste command to the OS.
+Below is a simple example showing off usage of this handler:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/commonActionsCopyExitPaste
+const items = [
+    createStandardMenuItem({
+        name: "Hello world!",
+        actionBindings: [copyExitPasteHandler.createBinding("Hello world!")],
+    }),
+    createStandardMenuItem({
+        name: "Bye world!",
+        actionBindings: [copyExitPasteHandler.createBinding("Bye world!")],
+    }),
+];
+```
+
+Now when either of these items is executed, their content will be pasted in the previously opened program, if a text field is selected.

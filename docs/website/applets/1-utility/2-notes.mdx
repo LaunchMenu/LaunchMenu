@@ -1,0 +1,205 @@
+# Notes
+
+The notes applet allows users to:
+
+-   Add notes containing information
+-   View existing notes
+-   Render notes as either markdown, a html page or syntax highlighted text
+-   Bundle notes in categories
+
+<!-- TODO: record and fill in all screenshots and videos -->
+
+<ScreenShot src="/applets/notes/banner.png" alt="Notes banner" />
+
+## Usage example
+
+<Video src="/applets/notes/usage.webm" volumeControls={false} />
+
+## Features
+
+### Search for notes
+
+Simply enter the name of the note in the search field, and view the content you're after!
+
+<ScreenShot src="/applets/notes/search.png" alt="Notes search" />
+
+Using the default controls, the content can be scrolled through using the <Key>Home</Key> and <Key>End</Key> keys.
+
+In addition, the pattern `note:` followed by your query can be used to only get note results.
+
+<ScreenShot
+    src="/applets/notes/searchPattern.png"
+    alt="Search only notes"
+    section="field"
+/>
+
+Finally, you can also search for only definiotns by opening Dictionary using the applets-manager.
+
+### Quickly create persistent notes
+
+To create a new note, simply open the notes app and select `Add note`.
+
+<ScreenRecording src="/applets/notes/createNote.webm" />
+
+Notes are automatically saved persistently on disk to a configured folder. See the [settings](#set-storage-directory) section to learn how to change this folder.
+
+### Change appearance of notes
+
+All notes have a couple of options that determine how they appear within LaunchMenu. These options are configurable on a per note, [per category](#group-notes-in-categories), or [global](#override-default-appearance) basis.
+
+<ScreenRecording src="/applets/notes/changeAppearance.webm" />
+
+The above video demonstrates how to configure these options on a per note basis.
+
+#### Syntax highlighting
+
+Every note has an associated syntax to it. By default this syntax is simply plain text. A large number of programming and other formatting languages is available however.
+
+This way syntax highlighting while editing and previewing notes can be provided.
+
+<ScreenShot src="/applets/notes/syntaxMode.png" alt="Syntax highlighting" />
+
+#### Font size
+
+In some cases you want notes to just jump out and be very easily readable, rather than contain a whole essay. The font-size can be changed in order to accomplish this.
+
+<ScreenShot src="/applets/notes/fontSize.png" alt="Font size" />
+
+#### Menu item color
+
+You may also want the menu items of some notes to be more attention grabbing. To accomplish this, you can recolor the item to any color you desire.
+
+<ScreenShot src="/applets/notes/color.png" alt="Menu item coloring" />
+
+#### Rich content
+
+In some cases you would want to be able to see images and other contents within your note preview too. To support this, we can simply simply enable `rich content`.
+
+Rich content only has effect if one of the following syntaxes is used:
+
+-   Markdown: <br/>
+    Rich markdown will be available, including pictures and even latex formulas
+    <ScreenShot
+        src="/applets/notes/richContentMarkdown.png"
+        alt="Rich Markdown content"
+        width={500}
+    />
+-   Html: <br/>
+    Any self-contained html page will be able to rendering, including all javascript
+    <ScreenShot
+        src="/applets/notes/richContentHtml.png"
+        alt="Rich Html content"
+        width={500}
+    />
+-   Text: <br/>
+    Applies standard html formatting to the given text, removing extra whitespaces and such.
+    <ScreenShot
+        src="/applets/notes/richContentText.png"
+        alt="Rich Text content"
+        width={500}
+    />
+
+#### Searchable content
+
+In many cases when looking for a note, you also want to check its contents. However searching the contents for big notes may be expensive (take a long time and makes searches slower), so this feature isn't enabled by default. You can manually decide for what notes it's worth enabling the feature, and for which it's not.
+
+<ScreenShot
+    src="/applets/notes/searchableContent.png"
+    alt="Note content searching"
+/>
+
+### Group notes in categories
+
+Note categories can be created to bundle group of notes together. These categories can define default values for their [notes' appearance options](#change-appearance-of-notes) such that these don't need to be configured for all notes individually.
+
+A new note is easily added by executing the primary action of a note category, and any of the category's options can be configured from the context menu.
+
+<ScreenRecording src="/applets/notes/createNoteCategory.webm" />
+
+#### Search patterns
+
+You can also define search patterns for a given category, such that only notes from this category are matched when the pattern is used.
+
+These patterns may be defined using either literal text - in which case the text is used as a prefix - or using regex.
+When regex is used, special named groups can be used to determine what part of the expression is the text to search for, and even to decide with what color to highlight text sections.
+
+Below are some examples:
+
+-   Prefix pattern 'bob ': <br/>
+    Pattern: `bob `<br/>
+    <ScreenShot
+        src="/applets/notes/patterns/bob.png"
+        alt="Prefix pattern bob"
+        width={400}
+    />
+-   Prefix pattern 'bob' but pink: <br/>
+    Pattern: `/^(?<c_FF69B4>bob\s*)/`
+    <ScreenShot
+        src="/applets/notes/patterns/pinkBob.png"
+        alt="Prefix pink pattern bob"
+        width={400}
+    />
+-   Suffix pattern '!': <br/>
+    Pattern: `/!$/`
+    <ScreenShot
+        src="/applets/notes/patterns/suffix.png"
+        alt="Suffix pattern !"
+        width={400}
+    />
+-   Prefix plus suffix pattern '(' ')': <br/>
+    Pattern: `/^\((?<t_0>.*)\)$/`
+    <ScreenShot
+        src="/applets/notes/patterns/prefixSuffix.png"
+        alt="Prefix plus suffix pattern ()"
+        width={400}
+    />
+
+To learn more about regex (and specifically the js format) check resources such as [w3schools](https://www.w3schools.com/jsref/jsref_obj_regexp.asp) and [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions), or mess around on [regex101](https://regex101.com/) (make sure to select javascript).
+
+## Settings
+
+The notes applet contains several settings for customization of the applet.
+
+<ScreenShot src="/applets/notes/settingsOverview.png" alt="Settings overview" />
+
+### Set storage directory
+
+All notes are by default stored in subdirectory of LaunchMenu's installation. This directory can however be changed such that the notes files (written to disk as `.txt`s) can also easily be accessed from outside LaunchMenu. LaunchMenu will automatically synchronize with changes from outside, without requiring a restart.
+
+### Override default appearance
+
+All the default values for the notes options can be configured such that newly created notes inherit these.
+
+<ScreenShot
+    src="/applets/notes/settingsDefaults.png"
+    alt="Default note options"
+/>
+
+Note that these options aren't copied to newly created notes, but referenced by the notes. Therefor whenever the global options change, any notes that use these will also instantly change along.
+
+### Editing
+
+By default the menu items hide when editing a note. This behavior can however be disabled in case you want to retain the notes overview, or whatever other context in which the note appeared.
+
+By default notes only save to disk once you exit the editing mode. This can however be changed to automatically save while you're typing, in case you require changes to instantly save.
+
+<ScreenShot src="/applets/notes/settingsEditing.png" alt="Editing settings" />
+
+### Inline categories
+
+By default note categories are shown as category items in the menu, and all notes within the categories are listed below it.
+
+<ScreenShot src="/applets/notes/banner.png" alt="Default categories overview" />
+
+This can be changed to make categories show inline, below each individual note. Changing this will also introduce an additional menu in which categories can be configured.
+
+<ScreenShot
+    src="/applets/notes/settingsInlineCategories.png"
+    alt="Inline categories overview"
+/>
+
+## Roadmap
+
+Not much is currently planned in terms of improving the notes applet, apart from future integration with the files manager applet. It's supposed to be a rather simple applet, without much advanced functionality.
+
+If any ideas do come up in the future however, the applet may still be augmented.

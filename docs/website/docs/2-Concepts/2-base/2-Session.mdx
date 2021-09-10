@@ -1,0 +1,280 @@
+# Sessions
+
+Sessions in LaunchMenu can be compared to tabs in an internet browser. It allows the user to switch between different independent tasks, without having to run multiple instances of the program.
+
+## Session interface
+
+The session object stores a lot of information:
+
+-   The base UI and their data structures (search field + menu)
+-   The context that's specific to this session, which it uses to render its view
+-   The applets that are available in this session
+-   The [searchables](/docs/concepts/interaction/search-system#searchables) that are available in this session
+
+```ts title=LMSession.tsx source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/application/LMSession/LMSession.tsx
+export class LMSession {
+    /** The view that can be used to render this session */
+    public view: JSX.Element;
+    /** The IO context for this session */
+    public context: IOContext;
+    /** The home UI layer */
+    public homeLayer: UILayer;
+    /** The unique runtime id of this session */
+    public readonly ID = uuid();
+
+    /** The LaunchMenu runtime instance this session is part of */
+    public readonly LM: LaunchMenu;
+
+    /** The main search field of this session */
+    public searchField: TextField;
+    /** The main results menu of this session */
+    public menu: LMSessionMenu;
+
+    /** Additional applets for this session */
+    public extraApplets = new Field([] as IApplet[]);
+    /** Additional searchable sources for this session */
+    public extraSearchables = new Field([] as IMenuSearchable[]);
+
+    /** The search executer responsible for making the searches */
+    public searchExecuter: SearchExecuter<IQuery, IPrioritizedMenuItem>;
+
+    /** The applet that's currently selected */
+    public selectedApplet = new Field(null as IApplet | null);
+
+    /* Observers that track changes */
+    public observers: {
+        settingsContext?: Observer<SettingsContext>;
+        search?: Observer<string>;
+        menuCursor?: Observer<IMenuItem | null>;
+    } = {};
+
+    /**
+     * Creates a new app session
+     * @param lm The LM instance this is a session for
+     */
+    public constructor(lm: LaunchMenu);
+    /**
+     * Disposes of all data attached to this session
+     */
+    public destroy();
+    /**
+     * Emits a key event to the session
+     * @param event The event to dispatch
+     * @returns Whether the event was caught
+     */
+    public emit(event: KeyEvent): Promise<boolean>;
+    // Close listeners
+    /**
+     * Adds a listener that listens for close events
+     * @param listener The listener to be added
+     */
+    public addCloseListener(listener: () => void): void;
+    /**
+     * Removes a listener that listens for close events
+     * @param listener The listener to be removed
+     */
+    public removeCloseListener(listener: () => void): void;
+    /**
+     * Checks whether this session is on the "home screen", I.e. has no menu opens on top
+     * @param hook The hook to subscribe to changes
+     * @returns Whether on the home screen
+     */
+    public isHome(hook?: IDataHook): boolean;
+    /**
+     * Closes all layers and removes the search input
+     * @param close Whether to also exit LM
+     */
+    public async goHome(close?: boolean): Promise<void>;
+    // Applet management
+    /**
+     * Retrieves the applets initialized with this session data
+     * @param hook The hook to subscribe to changes
+     * @returns The initialized applets
+     */
+    public getApplets(hook?: IDataHook): IApplet[];
+    /**
+     * Retrieves the searchables in this session
+     * @param hook The hook to subscribe to changes
+     * @returns The searchables
+     */
+    public getSearchables(hook?: IDataHook): IMenuSearchable[];
+    /**
+     * The applet data obtained from the applet manager
+     */
+    public appletData: DataCacher<
+        {
+            applet: IApplet;
+            initializedApplet: IApplet;
+            version: IUUID;
+            searchable?: IMenuSearchable;
+        }[]
+    >;
+}
+```
+
+All these fields give you a great deal of control over a session, you could:
+
+-   Add searchables to specific sessions
+-   Add entire applets to specific sessions
+-   Change the query
+-   Add item results
+-   Etc.
+
+## Session manager
+
+The [LaunchMenu object](/docs/concepts/base/launchmenu) stores a `SessionManager` instance, which is used to manage all the sessions. It keeps track of all sessions, and decides what session is currently shown.
+
+A [`session-manager` `core-applet`](/docs/concepts/applet-format#core-type) can be used by the user to control this `SessionManager`. Additionally, any other applet can also use this `SessionManager`, for instance to insert special custom sessions, which don't have the standard search UI on the home page.
+
+Below is the interface of the `SessionManager` class:
+
+```ts title=SessionManager.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/application/LMSession/SessionManager.ts
+export class SessionManager {
+    /**
+     * Creates a new session manager for the given LM instance
+     * @param LM The LM instance to create a manager for
+     */
+    public constructor(LM: LaunchMenu);
+    /**
+     * Disposes of all data in this session manager (destroying sessions)
+     */
+    public destroy(): void;
+    // Getters
+    /**
+     * Retrieves the sessions that are currently open
+     * @param hook The hook to subscribe to changes
+     * @returns The sessions that are currently open
+     */
+    public getSessions(hook?: IDataHook): LMSession[];
+    /**
+     * Retrieves the session that is currently selected (the session in the last position)
+     * @param hook The hook to subscribe to changes
+     * @returns The current top session
+     */
+    public getSelectedSession(hook?: IDataHook): LMSession | null;
+    // Management
+    /**
+     * Either adds or creates and adds a session
+     * @param session The session to be added
+     * @returns The created and added session
+     */
+    public addSession(session: LMSession = new LMSession(this.LM)): LMSession;
+    /**
+     * Removes the given session
+     * @param session The session to be removed
+     */
+    public removeSession(session: LMSession): void;
+    /**
+     * Selects the given session to be displayed
+     * @param session The session to be displayed
+     */
+    public selectSession(session: LMSession): void;
+}
+```
+
+Below is an example applet using both the `SessionManager` and `LMSession` in order to create a custom session where the base UI is completely reversed:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/baseSession video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/baseSession/recordings/demo.webm
+const ReverseApplicationLayout: LFC<{
+    context: IIOContext;
+    defaultTransitionDuration?: number;
+}> = ({context, defaultTransitionDuration = 200}) => {
+    const fieldStackGetter = (h?: IDataHook) =>
+        getContextFieldStack(context, h);
+    const menuStackGetter = (h?: IDataHook) => getContextMenuStack(context, h);
+    const contentStackGetter = (h?: IDataHook) =>
+        getContextContentStack(context, h);
+
+    return (
+        <IOContextProvider value={context}>
+            <FillBox
+                className="frame"
+                display="flex"
+                flexDirection="column"
+                overflow="hidden">
+                <Box
+                    position="relative"
+                    overflow="hidden"
+                    flexGrow={1}
+                    display="flex">
+                    <Box
+                        className="contentSection"
+                        position="relative"
+                        flexGrow={1}
+                        flexShrink={1}
+                        background="bgSecondary">
+                        <StackView
+                            ChangeTransitionComp={InstantChangeTransition}
+                            stackGetter={contentStackGetter}
+                        />
+                    </Box>
+                    <Box
+                        className="menuSection"
+                        position="relative"
+                        background="bgTertiary"
+                        flexShrink={0}
+                        width="40%">
+                        <StackView
+                            OpenTransitionComp={SlideLeftOpenTransition}
+                            CloseTransitionComp={SlideRightCloseTransition}
+                            stackGetter={menuStackGetter}
+                        />
+                    </Box>
+                </Box>
+                <Box className="pathSection" background="bgPrimary">
+                    <UIPathView
+                        context={context}
+                        pathTransitionDuration={defaultTransitionDuration}
+                        heightTransitionDuration={defaultTransitionDuration}
+                    />
+                </Box>
+                <Box
+                    className="searchSection"
+                    position="relative"
+                    elevation="medium"
+                    zIndex={100}
+                    height={60}>
+                    <StackView
+                        OpenTransitionComp={SlideDownOpenTransition}
+                        ChangeTransitionComp={SlideUpChangeTransition}
+                        CloseTransitionComp={SlideUpCloseTransition}
+                        stackGetter={fieldStackGetter}
+                    />
+                </Box>
+            </FillBox>
+        </IOContextProvider>
+    );
+};
+
+class CustomLMSession extends LMSession {
+    /** @override  */
+    protected setupView(): void {
+        this.view = (
+            <LMSessionProvider value={this}>
+                <ReverseApplicationLayout
+                    key={this.ID}
+                    context={this.context}
+                />
+            </LMSessionProvider>
+        );
+    }
+}
+
+export default declare({
+    info,
+    settings,
+    init({LM}) {
+        const session = new CustomLMSession(LM);
+        const sessionManager = LM.getSessionManager();
+        sessionManager.addSession(session);
+
+        return {
+            onDispose: () => {
+                sessionManager.removeSession(session);
+            },
+        };
+    },
+});
+```
+
+This `ReverseApplicationLayout` is a little bit of a simplification when compared to the real layout, since it isn't capable of hiding sections when unused. But you can see how a completely custom layout can easily be created for your session.

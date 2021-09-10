@@ -1,0 +1,523 @@
+# Menu items
+
+As the name implies, menu items are the items that show up in menus.
+
+They are objects with a rather simple interface:
+
+```ts title=IMenuItem.tsx source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/_types/IMenuItem.ts
+export type IMenuItem = {
+    /**
+     * The view of the menu item, in order to visualize the item in the menu
+     */
+    readonly view: IMenuItemView;
+    /**
+     * The action bindings
+     */
+    readonly actionBindings: ISubscribable<IActionBinding<IAction>[]>;
+};
+
+export type IMenuItemView = FC<{
+    /** Whether this item is currently selected as the cursor in the menu */
+    isCursor: boolean;
+    /** Whether this item is currently selected in the menu in order to execute actions on */
+    isSelected: boolean;
+    /**  A reference back to the item this component is a view for */
+    item: IMenuItem;
+    /** Highlighting data, things to be highlighted in the item */
+    highlight: IQuery | null;
+    /** The menu this item view is rendered for */
+    menu: IMenu;
+    /** A callback for when this item is executed (by mouse) */
+    onExecute?: IMenuItemExecuteCallback;
+}>;
+```
+
+The `view` specifies the React component to render, and the `actionBindings` specify data that can be used to interact with the item. You can learn more about these action bindings on the in-depth [actions page](/docs/concepts/interaction/actions).
+
+Or check a list with the [most commonly used actions](/docs/concepts/interaction/common-actions).
+
+## Standard menu items
+
+LaunchMenu provides a factory function `createStandardMenuItem` to create a menu item that adheres to the LaunchMenu styling. It also allows you to specify data for the most commonly used actions, as well as pass your own custom action bindingz.
+
+Below is the interface of all the data that can be passed to the factory:
+
+```ts title=IStandardMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/_types/IStandardMenuItemData.ts
+export type IStandardMenuItemData = {
+    /** The name of the menu item */
+    name: string | ((h?: IDataHook) => string);
+
+    /** The icon of the menu item */
+    icon?:
+        | IThemeIcon
+        | ReactElement
+        | ((h?: IDataHook) => IThemeIcon | ReactElement | undefined);
+
+    /** The description of the menu item */
+    description?: string | ((h?: IDataHook) => string | undefined);
+
+    /** Any tags that can be used for searching */
+    tags?: string[] | ((h?: IDataHook) => string[]);
+
+    /** A shortcut that will activate this menu item */
+    shortcut?: IShortcutInput;
+
+    /** Content to show when this item is selected */
+    content?: IViewStackItemView;
+
+    /** The category to put the item under in the menu */
+    category?: ICategory;
+
+    /** Bindings to additional actions */
+    actionBindings?: ISubscribable<IActionBinding[]>;
+
+    /** Bindings to additional actions that  use the item's identity */
+    identityActionBindings?: (
+        identityID: IUUID
+    ) => ISubscribable<IActionBinding[]>;
+
+    /** A pattern matcher that can be used to capture patterns in a search and highlight them */
+    searchPattern?: ISimpleSearchPatternMatcher;
+
+    /** The children that should be included in searches, defaults to undefined */
+    searchChildren?: IRecursiveSearchChildren;
+
+    // Event listeners
+    /** The function to execute when executing the menu item's default action */
+    onExecute?: IExecutable;
+
+    /** A listener to execute side effects when the item is selected or deselected */
+    onSelect?: (selected: boolean, menu: IMenu) => void;
+
+    /** A listener to execute side effects when the item becomes the cursor */
+    onCursor?: (isCursor: boolean, menu: IMenu) => void;
+
+    /** A listener to track what menus an item is added to */
+    onMenuChange?: (menu: IMenu, added: boolean) => void;
+
+    /** Shows a given child in the list of children */
+    onShowChild?: IShowChildInParent;
+};
+```
+
+We can then make use of these factories in order to create simple menu items for our applets:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuItemsStandard video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuItemsStandard/recordings/demo.webm
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        description:
+            "I would like to welcome you to the marvelous world of LaunchMenu applets!",
+        tags: ["This text can be searched, but isn't visible"],
+        onExecute: () => alert("Hello!"),
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        content: <Box padding="small">This content here isn't searchable</Box>,
+        icon: (
+            <img
+                height={30}
+                src={Path.join(__dirname, "..", "images", "icon.png")}
+            />
+        ),
+        onExecute: () => alert("Bye!"),
+    }),
+];
+```
+
+## Custom menu items
+
+In case our standard menu item doesn't fit your needs, you can build one from scratch. You're still able to reuse some of components of the [standard menu item factory](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/createStandardMenuItem.tsx).
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuItemsCustom video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuItemsCustom/recordings/demo.webm
+function createImageMenuItem({
+    name,
+    image,
+    onExecute,
+}: {
+    name: string;
+    image: string;
+    onExecute: () => void;
+}): IMenuItem {
+    const bindings = createStandardActionBindings(
+        {
+            name,
+            onExecute,
+        },
+        () => item
+    );
+
+    const item: IMenuItem = {
+        view: memo(({highlight, ...props}) => {
+            return (
+                <MenuItemFrame {...props}>
+                    <MenuItemLayout
+                        name={
+                            <Box font="header">
+                                <simpleSearchHandler.Highlighter
+                                    query={highlight}>
+                                    {name}
+                                </simpleSearchHandler.Highlighter>
+                            </Box>
+                        }
+                    />
+                    <Box
+                        display="flex"
+                        justifyContent="center"
+                        padding="medium">
+                        <img src={image} height={200} />
+                    </Box>
+                </MenuItemFrame>
+            );
+        }),
+        actionBindings: bindings,
+    };
+    return item;
+}
+
+const items = [
+    createImageMenuItem({
+        name: "Hello world",
+        image: Path.join(__dirname, "..", "images", "icon.png"),
+        onExecute: () => alert("hoi"),
+    }),
+];
+```
+
+In the example above, you will see that the created item follows most of the normal LM conventions, but also has a big image below the name of the item.
+
+Custom items like these can easily be created by referencing the [standard menu item factory](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/createStandardMenuItem.tsx), removing everything you don't need, and adding the additional elements you want.
+
+## Folder menu items
+
+We also have a so called [`createFolderMenuItem` factory function](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/types/createFolderMenuItem.tsx). This creates menu items that are for the most part the same as the standard menu item, but have a slight alteration to their UI. This alteration comes in the form of an arrow pointing to the right at the right edge, indicating that this item can be stepped into.
+
+In addition to the visual changes, it also has some functional additions. It creates a binding for the [`openMenuExecuteHandler`](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/types/execute/types/openMenuExecuteHandler.ts) in order to open a menu of children when it's executed. The item will also expose its children as part of the item structure, for easy access.
+
+Children of menu items can be expressed in 3 ways:
+
+-   An object of children, in order to later easily access children
+-   A list of children, if it's not important to later invidual access children
+-   A [data retriever/virtual data source](https://tarvk.github.io/model-react/examples/build/#Virtual_data_sources) list of children, if your data changes dynamically
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuItemsFolder video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuItemsFolder/recordings/demo.webm
+// Object children
+const people = createFolderMenuItem({
+    name: "People",
+    children: {
+        Bob: createStandardMenuItem({
+            name: "Bob",
+            onExecute: () => alert("I'm Bob!"),
+        }),
+        Emma: createStandardMenuItem({
+            name: "Emma",
+            onExecute: () => alert("I'm Emma!"),
+        }),
+    },
+});
+
+// Dynamic children
+const createDog = (name: string) => {
+    const item = createStandardMenuItem({
+        name,
+        // Delete the dog on execution
+        onExecute: () =>
+            dogsList.set(dogsList.get().filter(dog => dog != item)),
+    });
+    return item;
+};
+const dogsList = new Field([createDog("Max"), createDog("Jit")]);
+const dogs = createFolderMenuItem({
+    name: "Dogs",
+    children: h => dogsList.get(h),
+});
+
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get([people, dogs]),
+        };
+    },
+    open({context, onClose}) {
+        // Only show "Bob" in the menu
+        const items = [people.children.Bob];
+        context.open(
+            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                path: "Example",
+            })
+        );
+    },
+});
+```
+
+In this example we show the two most interesting ways of defining children:
+
+-   Using object of children and later reference those individual children (when opening the example applet)
+-   Using a data retriever to obtain a list of children, which automatically updates when we remove items from the list by executing them
+
+## Field menu items
+
+Lastly we have a menu item type that can be used to store data at the same time as providing a UI to alter this data. So field menu items are essentially exactly what the name imples: A field as well as a menu item. These fields are [model-react fields](https://tarvk.github.io/model-react/examples/build/#Field), which means that it's simple to listen for the user altering its value.
+
+These field menu items allow us to easily create a menu of properties that the user can update. LaunchMenu comes with several built-in types of field items, but also has a [`createFieldMenuItem` factory function](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/createFieldMenuItem.tsx) to create your own.
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuItemsCustomField video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuItemsCustomField/recordings/demo.webm
+function createCheckboxMenuItem({
+    init,
+    tags = [],
+    actionBindings = [],
+    ...rest
+}: {init: boolean} & IInputTypeMenuItemData) {
+    return createFieldMenuItem({
+        init,
+        data: field => ({
+            valueView: (
+                <Loader>
+                    {h => (
+                        <input
+                            type="checkbox"
+                            checked={field.get(h)}
+                            readOnly
+                        />
+                    )}
+                </Loader>
+            ),
+            tags: adjustSubscribable(tags, (tags, h) => [
+                "field",
+                ...tags,
+                field.get(h).toString(),
+            ]),
+            actionBindings: adjustBindings(actionBindings, [
+                editExecuteHandler.createBinding(() => {
+                    field.set(!field.get());
+                }),
+            ]),
+            ...rest,
+        }),
+    });
+}
+
+const goal = createCheckboxMenuItem({
+    init: true,
+    resetable: true,
+    name: "Take over the world",
+});
+const openable = createCheckboxMenuItem({
+    init: false,
+    name: "Openable",
+});
+const items = [goal, openable];
+
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get(items),
+        };
+    },
+    open({context, onClose}) {
+        if (!openable.get()) {
+            alert("Example can't be opened without toggling openable");
+            return;
+        }
+
+        context.open(
+            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                path: "Example",
+            })
+        );
+    },
+});
+```
+
+This example shows how a custom "checkbox" field item is created, and can then be used as both a menu item and a field.
+
+### Field menu item types
+
+Several factories for field menu items already exist and can be used directly.
+The following functions are available:
+
+-   [`createBooleanMenuItem`](#createBooleanMenuItem)
+-   [`createStringMenuItem`](#createStringMenuItem)
+-   [`createNumberMenuItem`](#createNumberMenuItem)
+-   [`createOptionMenuItem`](#createOptionMenuItem)
+-   [`createKeyPatternMenuItem`](#createKeyPatternMenuItem)
+-   [`createGlobalKeyPatternMenuItem`](#createGlobalKeyPatternMenuItem)
+-   [`createFileMenuItem`](#createFileMenuItem)
+-   [`createColorMenuItem`](#createColorMenuItem)
+
+Each of these allows for at least the following properties:
+
+```ts title=IInputTypeMenuItemData source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IInputTypeMenuItemData.ts
+export type IInputTypeMenuItemData = {
+    /** Whether to update the field as you type, defaults to false */
+    liveUpdate?: boolean;
+    /** Whether the change in value should be undoable, defaults to false, can't be used together with liveUpdate */
+    undoable?: boolean;
+    /** The name of the field */
+    name: ISubscribable<string>;
+    /** The description of the menu item */
+    description?: ISubscribable<string>;
+    /** The tags for the menu item */
+    tags?: ISubscribable<string[]>;
+    /** The category to show the input in */
+    category?: ICategory;
+    /** Content to show when this item is selected */
+    content?: IViewStackItemView;
+    /** The icon for the item */
+    icon?:
+        | IThemeIcon
+        | ReactElement
+        | ((h?: IDataHook) => IThemeIcon | ReactElement | undefined);
+    /** The extra action bindings */
+    actionBindings?: ISubscribableActionBindings;
+    /** Whether the field should be resetable to the initial value, defaults to false */
+    resetable?: boolean;
+    /** Whether the reset should be undoable, defaults to value of undoable */
+    resetUndoable?: boolean;
+    /** A pattern matcher that can be used to capture patterns in a search and highlight them */
+    searchPattern?: ISimpleSearchPatternMatcher;
+};
+```
+
+#### createBooleanMenuItem
+
+The [createBooleanMenuItem](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/createBooleanMenuItem.tsx) has the following exact config options:
+
+```ts title=IBooleanMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IBooleanMenuItemData.ts
+export type IBooleanMenuItemData = {
+    /** The default value for the field */
+    init: boolean;
+} & IInputTypeMenuItemData;
+```
+
+#### createStringMenuItem
+
+The [createStringMenuItem](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/createStringMenuItem.tsx) has the following exact config options:
+
+```ts title=IStringMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IStringMenuItemData.ts
+export type IStringMenuItemData = {
+    /** The default value for the field */
+    init: string;
+    /** Checks whether the given input is valid */
+    checkValidity?: (v: string) => IInputError | undefined;
+} & IInputTypeMenuItemData;
+
+type IInputError = {
+    ranges?: {start: number; end: number}[];
+} & ({message: string} | {view: IViewStackItem});
+```
+
+#### createNumberMenuItem
+
+The [createNumberMenuItem](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/createNumberMenuItem.tsx) has the following exact config options:
+
+```ts title=INumberMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/INumberMenuItemData.ts
+export type INumberMenuItemData = {
+    /** The default value for the field */
+    init: number;
+    /** The numeric options to choose from */
+    options?: number[];
+    /** Whether to allow custom input when options are present, defaults to false */
+    allowCustomInput?: boolean;
+} & INumberConstraints &
+    IInputTypeMenuItemData;
+
+type INumberConstraints = {
+    /** The minimum allowed value */
+    min?: number;
+    /** The maximum allowed value */
+    max?: number;
+    /** The allowed increment step */
+    increment?: number;
+    /** The base value to take the increments relative to */
+    baseValue?: number;
+    /** Checks whether the given input is valid */
+    checkValidity?: (text: string) => IInputError | undefined;
+};
+
+type IInputError = {
+    ranges?: {start: number; end: number}[];
+} & ({message: string} | {view: IViewStackItem});
+```
+
+#### createOptionMenuItem
+
+The [createOptionMenuItem](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/createOptionMenuItem.tsx) has the following exact config options:
+
+```ts title=IOptionMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IOptionMenuItemData.ts
+export type IOptionMenuItemData<T> = {
+    /** The default value for the field */
+    init: T;
+    /** The options of the field */
+    options: readonly T[];
+    /** Retrieves the element to show as the currently selected item */
+    getValueView?: (option: T) => JSX.Element;
+    /** Creates a menu item for a given option */
+    createOptionView: (option: T) => IMenuItem;
+} & IInputTypeMenuItemData;
+```
+
+#### createKeyPatternMenuItem
+
+The [createKeyPatternMenuItem](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/createKeyPatternMenuItem.tsx) has the following exact config options:
+
+```ts title=IKeyPatternMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IKeyPatternMenuItemData.ts
+export type IKeyPatternMenuItemData = {
+    /** The default value for the field */
+    init: KeyPattern;
+} & IInputTypeMenuItemData;
+```
+
+#### createGlobalKeyPatternMenuItem
+
+The [createGlobalKeyPatternMenuItem](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/createGlobalKeyPatternMenuItem.tsx) has the following exact config options:
+
+```ts title=IKeyPatternMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IKeyPatternMenuItemData.ts
+export type IKeyPatternMenuItemData = {
+    /** The default value for the field */
+    init: KeyPattern;
+} & IInputTypeMenuItemData;
+```
+
+The created menu item is also a bit special, since it contains the following additional function:
+
+```ts title=ITriggerableKeyPatternMenuItem.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/ITriggerableKeyPatternMenuItem.ts
+export type ITriggerablePatternMenuItem = IFieldMenuItem<KeyPattern> & {
+    /**
+     * Registers a callback to trigger when this key pattern is invoked
+     * @param callback The callback to be invoked
+     * @returns A function that can be invoked to remove the listener
+     */
+    onTrigger(callback: () => void): () => void;
+};
+```
+
+This allows you to easily listen for triggers of such a menu item. Whenever the user holds the key combination as specified by this item, the callback passed to `onTrigger` will be invoked, even if LM is closed. Whenever you want to stop listening to the callback, simply call the function returned from `onTrigger` to remove the callback.
+
+#### createFileMenuItem
+
+The [createFileMenuItem](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/createFileMenuItem.tsx) has the following exact config options:
+
+```ts title=IFileMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IFileMenuItemData.ts
+export type IFileMenuItemData = {
+    /** The default value for the field */
+    init: string;
+    /** Whether to select a folder (or a file) */
+    folder?: boolean;
+} & IInputTypeMenuItemData;
+```
+
+#### createColorMenuItem
+
+The [createColorMenuItem](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/createColorMenuItem.tsx) can be used to create a field that accepts css color string and has the following exact config options:
+
+```ts title=IColorMenuItemData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/types/_types/IColorMenuItemData.ts
+export type IColorMenuItemData = {
+    /** The default value for the field */
+    init: string;
+} & IInputTypeMenuItemData;
+```

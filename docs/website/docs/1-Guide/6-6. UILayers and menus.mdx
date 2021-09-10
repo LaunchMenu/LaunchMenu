@@ -1,0 +1,361 @@
+# UILayers and menus
+
+When your applet is opened or a search result of your applet is executed, it can decide to show whatever it wants on the screen.
+
+By default LaunchMenu is divided into 3 standard sections, and 1 special section:
+
+-   `field`: The section in which the search field is generally shown
+-   `menu`: The section in which menus are generally shown
+-   `content`: The section in which readable content is generally shown
+-   `path`: A special section in which the current location of LaunchMenu is shown
+
+These first 3 standard sections each contain a stack of `views` which are visually layered on top of each other. By default the content below the top view will be hidden to reduce the DOM size, you can however specify your view is transparent, making sure that the item below remains visible. These sections can also specify `open`, `change`, and `close` transition components which are used to reveal/hide the view in a nice way.
+
+The `path` section is a bit special and doesn't contain a stack of views. Instead paths are strings that can be updated, resulting in this section smoothly transitioning between them (without swapping out the entire path).
+
+Finally, all 4 of the sections can be hidden at any time. This can for instance be used if a section is currently of no relevance, or even to make an entirely custom user interface (UI). You can simply hide everything but the `content` section, and show whatever React element you want in this section thereby replacing the entire UI.
+
+## UILayers
+
+These different sections are managed using `UILayers`. Each session in LaunchMenu has its own `IOContext` which is - amongst other things - used to store a stack of `UILayers`.
+
+We can obtain the `IOContext` in a number of ways which you can read about on the in-depth [IOContext page](/docs/concepts/base/iocontext), but for now we will obtain it through the `open` callback function:
+
+```tsx title=index.tsx
+...
+
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get(items),
+        };
+    },
+    open({context}) {
+        console.log(context);
+    },
+});
+```
+
+Any opened UI layer must adhere to the `IUILayer` interface:
+
+```ts title=IUILayer.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/_types/IUILayer.ts spoiler
+export type IUILayer = {
+    /**
+     * A override for the view to use to represent this layer's path
+     */
+    pathView?: JSX.Element;
+    /**
+     * Retrieves the path to show to the user representing this layer
+     * @param hook The data hook to subscribe to changes
+     * @returns The path
+     */
+    getPath(hook?: IDataHook): IUILayerPathNode[];
+    /**
+     * Retrieves the menu data
+     * @param hook The data hook to subscribe to changes
+     * @returns The menu data of this layer
+     */
+    getMenuData(hook?: IDataHook): IUILayerMenuData[];
+    /**
+     * Retrieves the field data
+     * @param hook The data hook to subscribe to changes
+     * @returns The field data of this layer
+     */
+    getFieldData(hook?: IDataHook): IUILayerFieldData[];
+    /**
+     * Retrieves the content data
+     * @param hook The data hook to subscribe to changes
+     * @returns The content data of this layer
+     */
+    getContentData(hook?: IDataHook): IUILayerContentData[];
+    /**
+     * Retrieves the key listener data
+     * @param hook The data hook to subscribe to changes
+     * @returns The key listener data of this layer
+     */
+    getKeyHandlers(hook?: IDataHook): IKeyEventListener[];
+    /**
+     * A callback for when the UI layer is opened
+     * @param context The context that this layer was opened in
+     * @param close A method to close this layer from the given context
+     * @returns A callback for when this layer is closed (both when invoked by our close call, or closed external)
+     */
+    onOpen(
+        context: IIOContext,
+        close: () => void
+    ):
+        | void
+        | (() => void | Promise<void>)
+        | Promise<void | (() => void | Promise<void>)>;
+};
+```
+
+This allows the IO context to properly send key events to the layer (which bubble to layers below when not captured), and render the correct UI.
+
+There are several built-in UI layer implementations, but the most general of them is the standard `UILayer` class. This class allows you to provide the relevant data structures, views and key handlers for each of the 3 available sections in one object. It will by default take care of making menus searchable, and displaying the content of selected menu items. It will even put transparent overlays over unused sections, letting the user know that the view in that section doesn't belong to the layer.
+
+### Advanced
+
+There are several built-in UI layer types, and you can easily make your own layers too. These layers themselves are also reusable. The standard `UILayer` makes use of the `MenuSearch` layer to provide search functionality. You can learn more about these layers on the in-depth [UILayer page](/docs/concepts/ui/uilayers).
+
+## Menus
+
+Menus are used for - as you may have guessed - storing menu items. There are several types of standard menus, each implementing the `IMenu` interface:
+
+```ts title=IMenu.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/menu/_types/IMenu.ts spoiler
+export type IMenu = {
+    /**
+     * Retrieves the context associated to the menu
+     * @returns The context
+     */
+    getContext(): IIOContext;
+    /**
+     * Selects or deselects the given item
+     * @param item The item to select or deselect
+     * @param selected Whether to select or deselect
+     */
+    setSelected(item: IMenuItem, selected?: boolean): void;
+    /**
+     * Selects an item to be the cursor
+     * @param item The new cursor
+     */
+    setCursor(item: IMenuItem): void;
+    /**
+     * Retrieves all items in the menu
+     * @param hook The hook to subscribe to changes
+     * @returns All items including category items in the correct sequence
+     */
+    getItems(hook?: IDataHook): IMenuItem[];
+    /**
+     * Retrieves all categories of the menu
+     * @param hook The hook to subscribe to changes
+     * @returns All categories and the items that belong to those categories, in the correct sequence
+     */
+    getCategories(hook?: IDataHook): IMenuCategoryData[];
+    /**
+     * Retrieves the currently selected items of the menu
+     * @param hook The hook to subscribe to changes
+     * @returns The selected menu items
+     */
+    getSelected(hook?: IDataHook): IMenuItem[];
+    /**
+     * Retrieves the item that's currently at the cursor of the menu
+     * @param hook The hook to subscribe to changes
+     * @returns The cursor item
+     */
+    getCursor(hook?: IDataHook): IMenuItem | null;
+    /**
+     * Retrieves all the selected items including the cursor
+     * @param hook The hook to subscribe to changes
+     * @returns The selected items including the cursor
+     */
+    getAllSelected(hook?: IDataHook): IMenuItem[];
+    /**
+     * Retrieves data that can be used to highlight parts of items
+     * @param hook The hook to subscribe to changes
+     * @returns The highlight data
+     */
+    getHighlight?: (hook?: IDataHook) => IQuery | null;
+    /**
+     * Properly destroys the menu
+     * @returns Whether destroyed properly (returns false if it was already destroyed)
+     */
+    destroy(): boolean | Promise<boolean>;
+    /**
+     * Checks whether the menu has been destroyed
+     * @param hook The hook to subscribe to changes
+     * @returns Whether or not destroyed
+     */
+    isDestroyed(hook?: IDataHook): boolean;
+};
+```
+
+These menus track the list of available items, the cursor and selected items, and what text should be highlighted in the items (used to highlight matches in items results). The menus themselves do nothing else than tracking the information. Additional key handlers can be used to alter the data of the menu through keyboard controls, and a react view can be used to visualize the menu.
+
+For both the key handler and view there exist standard implementations: `createMenuKeyHandler` and `MenuView`. Multiple standard `IMenu` implementations exist, of which `Menu` is the simplest.
+
+```tsx title=index.tsx highlight=4:4,10:11,13:13,62:84
+import React, {FC} from "react";
+import {
+    Box,
+    createMenuKeyHandler,
+    createSettings,
+    createSettingsFolder,
+    createStandardMenuItem,
+    createStandardSearchPatternMatcher,
+    declare,
+    Menu,
+    MenuView,
+    searchAction,
+    UILayer,
+} from "@launchmenu/core";
+
+const info = {
+    name: "HelloWorld",
+    description: "A minimal example applet",
+    version: "0.0.0",
+    icon: "applets" as const,
+    tags: ["cool"],
+};
+
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () => createSettingsFolder({...info, children: {}}),
+});
+
+const helloWorldPattern = createStandardSearchPatternMatcher({
+    name: "Hello world",
+    matcher: /^world: /,
+});
+
+const Content: FC<{text: string}> = ({text}) => {
+    return <Box color="primary">{text} people!</Box>;
+};
+
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello!"),
+        content: <Content text="Hello" />,
+        searchPattern: helloWorldPattern,
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye!"),
+        content: <Content text="Bye" />,
+        searchPattern: helloWorldPattern,
+    }),
+];
+
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get(items),
+        };
+    },
+    open({context, onClose}) {
+        const layer = new UILayer(
+            (context, close) => {
+                const menu = new Menu(context, items);
+                const view = <MenuView menu={menu} />;
+                const keyHandler = createMenuKeyHandler(
+                    new Menu(context, items),
+                    {
+                        /** When the exit shortcut is pressed, close this layer */
+                        onExit: () => {
+                            close();
+                            onClose();
+                        },
+                    }
+                );
+                return {
+                    menu,
+                    menuView: view,
+                    menuKeyHandler: keyHandler,
+                };
+            },
+            {path: "Hello world"}
+        );
+        context.open(layer);
+    },
+});
+```
+
+Since we're using the standard menu view and key handler here, we could leave out this information all together. The `UILayer` class will automatically use the default views and key handlers when not specified. It even automatically adds a search field to the layer, unless we specify `searchable: false`.
+
+When leaving out all this information, this layer opening can be reduced to only a couple of lines:
+
+```tsx title=index.tsx highlight=60:64
+import React, {FC} from "react";
+import {
+    Box,
+    createSettings,
+    createSettingsFolder,
+    createStandardMenuItem,
+    createStandardSearchPatternMatcher,
+    declare,
+    Menu,
+    searchAction,
+    UILayer,
+} from "@launchmenu/core";
+
+const info = {
+    name: "HelloWorld",
+    description: "A minimal example applet",
+    version: "0.0.0",
+    icon: "applets" as const,
+    tags: ["cool"],
+};
+
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () => createSettingsFolder({...info, children: {}}),
+});
+
+const helloWorldPattern = createStandardSearchPatternMatcher({
+    name: "Hello world",
+    matcher: /^world: /,
+});
+
+const Content: FC<{text: string}> = ({text}) => {
+    return <Box color="primary">{text} people!</Box>;
+};
+
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello!"),
+        content: <Content text="Hello" />,
+        searchPattern: helloWorldPattern,
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye!"),
+        content: <Content text="Bye" />,
+        searchPattern: helloWorldPattern,
+    }),
+];
+
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get(items),
+        };
+    },
+    open({context, onClose}) {
+        context.open(
+            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                path: "Hello world",
+            })
+        );
+    },
+});
+```
+
+You should now be able to search for your applet name, and open it using the applet manager.
+
+Note that this is a section where the automatic where automatic applet reloading falls a little short. If you change the menu code, the menu won't live update. You will have to close the current menu, and open it backup to load the new version.
+
+If you want to know exactly what arguments the UILayer takes, you can use intellisense or check the [main interface](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/standardUILayer/_types/IStandardUILayerData.ts) and the [base config interface](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/_types/IUILayerBaseConfig.ts).
+
+### Advanced
+
+Fields and content follow the same structure as menus in the sense that they are all divided into 3 parts:
+
+-   The logical data model
+-   The keyboard interaction handler
+-   The react component view
+
+You can learn about each section by checking their in-depth page:
+
+-   [Menu page](/docs/concepts/ui/menu)
+-   [Field page](/docs/concepts/ui/textfield)
+-   [Content page](/docs/concepts/ui/content)
+
+<GuideNav prev="guide/5.-content-and-theming" next="guide/7.-settings" />

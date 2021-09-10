@@ -1,0 +1,721 @@
+# Overview
+
+Below is an overview of the most interesting available modules/functions in LM together with links to the code and guides if available.
+The code contains TypeScript signatures + TSDoc, and can therefore be used as a makeshift API reference until a proper reference is made.
+
+Not all components are listed here in order to keep things somewhat manageable. We listed the components that can easily be directly applied when making an applet instead. In order to find useful intermediate building blocks it's recommended to search for something that does almost what you're after and look through the source code for things can be reused. All intermediate building blocks are exported from LaunchMenu, despite possibly not being listed in this overview.
+
+## UILayers
+
+UI components are managed and stacked using UILayers. These layers are managed on a stack, and can add content to 3 sections each:
+
+-   A textfield
+-   A menu
+-   Content
+
+Additionally there is also the special `path` section that the layer can add to which shows where the user is within LM.
+
+<ul>
+    <ComponentReference
+        name="UILayer"
+        link="core/src/uiLayers/standardUILayer/UILayer.tsx"
+        docs="/docs/concepts/ui/uilayers"
+        description="The standard UILayer class that can be used to add menus and takes care of common tasks such as making menus searchable">
+        <ComponentReference
+            name="ContextMenuLayer"
+            link="core/src/uiLayers/types/context/ContextMenuUILayer.tsx"
+            docs="/docs/concepts/ui/uilayers#contextmenulayer"
+            description="The UILayer that shows the context menu when opened"
+        />
+        <ComponentReference
+            name="MenuSearch"
+            link="core/src/uiLayers/types/menuSearch/MenuSearch.tsx"
+            docs="/docs/concepts/ui/uilayers#menusearchlayer"
+            description="The UILayer that contains a search field and shows the search result menu when a query is entered"
+        />
+        <ComponentReference
+            name="InputLayer"
+            link="core/src/uiLayers/types/input/InputLayer.tsx"
+            docs="/docs/concepts/ui/uilayers#inputlayer"
+            description="The UILayer that asks a user for a textual input"
+        />
+        <ComponentReference
+            name="SelectLayer"
+            link="core/src/uiLayers/types/select/SelectLayer.tsx"
+            docs="/docs/concepts/ui/uilayers#selectlayer"
+            description="The UILayer that asks a user to select one of the presented options"
+        />
+        <ComponentReference
+            name="MultiSelectLayer"
+            link="core/src/uiLayers/types/multiSelect/MultiSelectLayer.tsx"
+            docs="/docs/concepts/ui/uilayers#multiselectlayer"
+            description="The UILayer that asks a user to choose 0 or more of the given options"
+        />
+    </ComponentReference>
+</ul>
+
+## Menus
+
+Menus are used to display and select different items within LaunchMenu. There are several built-in menu and item types that can be used.
+
+<ul>
+    <ComponentReference
+        name="Menu"
+        link="core/src/menus/menu/Menu.ts"
+        docs="/docs/concepts/ui/menu"
+        description="The simplest menu type to which menu items can be added directly">
+        <ComponentReference
+            name="ProxiedMenu"
+            link="core/src/menus/menu/ProxiedMenu.ts"
+            docs="/docs/concepts/ui/menu#proxiedmenu"
+            description="A menu that takes in a list of items that may change over time and synchronizes with it (Rather inefficient for bigger collections)"
+        />
+        <ComponentReference
+            name="PrioritizedMenu"
+            link="core/src/menus/menu/PrioritizedMenu.ts"
+            docs="/docs/concepts/ui/menu#prioritizedmenu"
+            description="A menu to which prioritized items (items + priorities) can be added such that items are sorted according to their priorities">
+            <ComponentReference
+                name="ProxiedPrioritizedMenu"
+                link="core/src/menus/menu/ProxiedPrioritizedMenu.ts"
+                docs="/docs/concepts/ui/menu#proxiedprioritizedmenu"
+                description="A proxied menu that takes in a list of prioritized items (items + priorities) and synchronizes with and sorts according to their priorities (Rather inefficient for bigger collections)"
+            />
+        </ComponentReference>
+        <ComponentReference
+            name="SearchMenu"
+            link="core/src/menus/menu/SearchMenu.ts"
+            docs="/docs/concepts/ui/menu#searchmenu"
+            description="A menu that updates its items according to a given query"
+        />
+        <ComponentReference
+            name="createStandardMenuKeyHandler"
+            link="core/src/menus/menu/interaction/keyHandler.ts"
+            docs="/docs/concepts/ui/menu#controller"
+            description="A key event listener that controls a given menu, composed of multiple smaller interaction handlers"
+        />
+        <ComponentReference
+            name="MenuView"
+            link="core/src/components/menu/MenuView.tsx"
+            docs="/docs/concepts/ui/menu#view"
+            description="A react component that can visualize a given menu"
+        />
+    </ComponentReference>
+    <ComponentReference
+        name="createStandardMenuItem"
+        link="core/src/menus/items/createStandardMenuItem.tsx"
+        docs="/docs/concepts/ui/menuitems#standard-menu-items"
+        description="Creates a standard menu item to be added to menus">
+        <ComponentReference
+            name="adjustBindings"
+            link="core/src/menus/items/adjustBindings.ts"
+            description="A function that can be used to adjust a given list of action bindings by adding, removing or altering entries but still allow them to be subscribable"
+        />
+        <ComponentReference
+            name="createFolderMenuItem"
+            link="core/src/menus/items/types/creatFolderMenuItem.tsx"
+            docs="/docs/concepts/ui/menuitems#folder-menu-items"
+            description="Creates a menu item that acts as a folder which sub-items can be added to">
+            <ComponentReference
+                name="createContextFolderMenuItem"
+                link="core/src/menus/items/types/createContextfolderMenuItem.tsx"
+                description="Creates a menu item that acts as a folder for the context menu which sub items can be added to, and which forwards key events and closes if a sub-item is executed"
+            />
+        </ComponentReference>
+        <ComponentReference
+            name="createFinishMenuItem"
+            link="core/src/menus/items/types/createFinishMenuItem.tsx"
+            description="Creates a menu item that can be used to submit changes, E.g. used by the multiSelect menu"
+        />
+        <ComponentReference
+            name="createFieldMenuItem"
+            link="core/src/menus/items/inputs/createFieldMenuItem.tsx"
+            docs="/docs/concepts/ui/menuitems#field-menu-items"
+            description="Creates a menu item that contains a data field whose value can be displayed in the item">
+            <ComponentReference
+                name="createStringMenuItem"
+                link="core/src/menus/items/inputs/types/createStringMenuItem.tsx"
+                docs="/docs/concepts/ui/menuitems#createstringmenuitem"
+                description="Creates a menu item that holds a string value which can easily be read/written programmatically and which can be altered by the user with the primary execute action"
+            />
+            <ComponentReference
+                name="createNumberMenuItem"
+                link="core/src/menus/items/inputs/types/createNumberMenuItem.tsx"
+                docs="/docs/concepts/ui/menuitems#createnumbermenuitem"
+                description="Creates a menu item that holds a numeric value which can easily be read/written programmatically and which can be altered by the user with the primary execute action"
+            />
+            <ComponentReference
+                name="createBooleanMenuItem"
+                link="core/src/menus/items/inputs/types/createBooleanMenuItem.tsx"
+                docs="/docs/concepts/ui/menuitems#createbooleanmenuitem"
+                description="Creates a menu item that holds a boolean value which can easily be read/written programmatically and which can be altered by the user with the primary execute action"
+            />
+            <ComponentReference
+                name="createColorMenuItem"
+                link="core/src/menus/items/inputs/types/createColorMenuItem.tsx"
+                docs="/docs/concepts/ui/menuitems#createcolormenuitem"
+                description="Creates a menu item that holds a css color string value which can easily be read/written programmatically and which can be altered by the user with the primary execute action"
+            />
+            <ComponentReference
+                name="createKeyPatternMenuItem"
+                link="core/src/menus/items/inputs/types/createKeyPatternMenuItem.tsx"
+                docs="/docs/concepts/ui/menuitems#createkeypatternmenuitem"
+                description="Creates a menu item that holds a 'KeyPattern' value which can easily be read/written programmatically and which can be altered by the user with the primary execute action"
+            />
+            <ComponentReference
+                name="createGlobalKeyPatternMenuItem"
+                link="core/src/menus/items/inputs/types/createGlobalKeyPatternMenuItem.tsx"
+                docs="/docs/concepts/ui/menuitems#createglobalkeypatternmenuitem"
+                description="Creates a menu item that holds a 'KeyPattern' value value which can easily be read/written programmatically and which can be altered by the user with the primary execute action, only allowing for changes that keep it valid as a global shortcut"
+            />
+            <ComponentReference
+                name="createFileMenuItem"
+                link="core/src/menus/items/inputs/types/createFileMenuItem.tsx"
+                docs="/docs/concepts/ui/menuitems#createfilemenuitem"
+                description="Creates a menu item that holds a file path string value which can easily be read/written programmatically and which can be altered by the user with the primary execute action"
+            />
+            <ComponentReference
+                name="createOptionMenuItem"
+                link="core/src/menus/items/inputs/types/createOptionMenuItem.tsx"
+                docs="/docs/concepts/ui/menuitems#createoptionmenuitem"
+                description="Creates a menu item that holds a value which is one of a given selection of options which can easily be read/written programmatically and which can be altered by the user with the primary execute action"
+            />
+        </ComponentReference>
+    </ComponentReference>
+    <ComponentReference
+        name="createStandardCategory"
+        link="core/src/menus/categories/createStandardCategory.tsx"
+        docs="/docs/concepts/ui/menu#categories"
+        description="Creates a simple - non interactive - standard menu category that can be used in menus">
+        <ComponentReference
+            name="createAdvancedCategory"
+            link="core/src/menus/categories/types/advanced/createAdvancedCategory.tsx"
+            docs="/docs/concepts/ui/menu#advanced-categories"
+            description="Creates an advanced menu item that users can interact with">
+            <ComponentReference
+                name="createCategoryDummyItem"
+                link="core/src/menus/categories/createCategoryDummyItem.tsx"
+                description="Creates a menu item that can't be selected and won't be rendered, but can be added to a menu to make sure that an interactive category shows up even if it has no real items yet"
+            />
+        </ComponentReference>
+        <ComponentReference
+            name="getControlsCategory"
+            link="core/src/menus/categories/types/getControlsCategory.ts"
+            description="Retrieves the menu category that can be used to put item controls in"
+        />
+    </ComponentReference>
+</ul>
+
+## Actions
+
+The action system is used to add functionality to menu items in a way way that's flexible and provides good intellisense.
+
+<ul>
+    <ComponentReference
+        name="createAction"
+        link="core/src/actions/createAction.ts"
+        docs="/docs/concepts/interaction/actions"
+        description="Used to create new actions that menu items can use to attach additional data/behavior to themselves">
+        <ComponentReference
+            name="executeAction"
+            link="core/src/actions/types/execute/executeAction.ts"
+            docs="/docs/concepts/interaction/common-actions#execute-action"
+            description="Executes the primary action of the menu item">
+            <ComponentReference
+                name="sequentialExecuteHandler"
+                link="core/src/actions/types/execute/sequentialExecuteHandler.ts"
+                docs="/docs/concepts/interaction/common-actions#sequential-execute-handler"
+                description="Executes all its bindings sequentially, instead of in parallel"
+            />
+            <ComponentReference
+                name="exitLMExecuteHandler"
+                link="core/src/actions/types/execute/types/exitLMExecuteHandler.ts"
+                docs="/docs/concepts/interaction/common-actions#exit-lm-execute-handler"
+                description="Exits LM before performing the action, for instance used to paste a result"
+            />
+            <ComponentReference
+                name="openMenuExecuteHandler"
+                link="core/src/actions/types/execute/types/openMenuExecuteHandler.ts"
+                docs="/docs/concepts/interaction/common-actions#open-menu-execute-handler"
+                description="Opens a menu on top of the current UI"
+            />
+            <ComponentReference
+                name="singlePromptExecuteHandler"
+                link="core/src/actions/types/execute/types/singlePromptExecuteHandler.ts"
+                docs="/docs/concepts/interaction/common-actions#single-prompt-execute-handler"
+                description="Executes a given field alteration action once, and spreads the results to a number of bindings"
+            />
+            <ComponentReference
+                name="editExecuteHandler"
+                link="core/src/actions/types/execute/types/editExecuteHandler.ts"
+                docs="/docs/concepts/interaction/common-actions#edit-execute-handler"
+                description="A sequential execute handler, that shows 'edit' instead of 'execute' in the context menu">
+                <ComponentReference
+                    name="promptInputExecuteHandler"
+                    link="core/src/uiLayers/types/input/promptInputExecuteHandler.ts"
+                    description="An execute handler that prompts the user for a textual input">
+                    <ComponentReference
+                        name="promptNumberInputExecuteHandler"
+                        link="core/src/menus/items/inputs/handlers/number/promptNumberInputExecuteHandler.ts"
+                        description="An execute handler that prompts the user to input a number"
+                    />
+                    <ComponentReference
+                        name="promptColorInputExecuteHandler"
+                        link="core/src/menus/items/inputs/handlers/color/promptColorInputExecuteHandler.ts"
+                        description="An execute handler that prompts the user to input a css color"
+                    />
+                </ComponentReference>
+                <ComponentReference
+                    name="promptSelectExecuteHandler"
+                    link="core/src/uiLayers/types/select/promptSelectExecuteHandler.ts"
+                    docs="/docs/concepts/interaction/common-actions#single-prompt-execute-handler"
+                    description="An execute handler that prompts the user to choose one of the presented options">
+                    <ComponentReference
+                        name="promptBooleanInputExecuteHandler"
+                        link="core/src/menus/items/inputs/handlers/boolean/promptBooleanInputExecuteHandler.ts"
+                        description="An execute handler that prompts the user to select a boolean value"
+                    />
+                    <ComponentReference
+                        name="promptNumberInputSelectExecuteHandler"
+                        link="core/src/menus/items/inputs/handlers/number/promptNumberInputSelectExecuteHandler.ts"
+                        description="An execute handler that prompts the user to select a number"
+                    />
+                </ComponentReference>
+                <ComponentReference
+                    name="promptMultiSelectExecuteHandler"
+                    link="core/src/uiLayers/types/multiSelect/promptMultiSelectExecuteHandler.ts"
+                    description="An execute handler that prompts the user to make a selection of the presented options"
+                />
+                <ComponentReference
+                    name="promptFileInputExecuteHandler"
+                    link="core/src/menus/items/inputs/handlers/file/promptFileInputExecuteHandler.ts"
+                    description="An execute handler that allows the user to select a file"
+                />
+                <ComponentReference
+                    name="promptKeyInputExecuteHandler"
+                    link="core/src/menus/items/inputs/handlers/keyPattern/promptKeyInputExecuteHandler.ts"
+                    description="An execute handler that prompts the user to select a key pattern"
+                />
+            </ComponentReference>
+        </ComponentReference>
+        <ComponentReference
+            name="keyHandlerAction"
+            link="core/src/actions/types/keyHandler/keyHandlerAction.ts"
+            docs="/docs/concepts/interaction/common-actions#key-handler-action"
+            description="An action to handle and capture keyboard events">
+            <ComponentReference
+                name="forwardKeyEventHandler"
+                link="core/src/actions/types/keyHandler/forwardKeyEventHandler.ts"
+                docs="/docs/concepts/interaction/common-actions#key-handler-action"
+                description="A key handler to forward key events to other menu items"
+            />
+            <ComponentReference
+                name="shortcutHandler"
+                link="core/src/actions/types/keyHandler/shortcutHandler.ts"
+                docs="/docs/concepts/interaction/common-actions#key-handler-action"
+                description="A key handler to trigger an item's execute action when a pattern is matched"
+            />
+        </ComponentReference>
+        <ComponentReference
+            name="searchAction"
+            link="core/src/actions/types/search/searchAction.ts"
+            docs="/docs/concepts/interaction/common-actions#search-action"
+            description="An action to handle retrieving searchables from menu items">
+            <ComponentReference
+                name="createStandardSearchPatternMatcher"
+                link="core/src/actions/types/search/createStandardSearchPatternMatcher.ts"
+                docs="/docs/concepts/interaction/search-system#search-patterns"
+                description="Creates a standard search pattern to be highlighted"
+            />
+            <ComponentReference
+                name="tracedRecursiveSearchHandler"
+                link="core/src/actions/types/search/tracedRecursiveSearch/tracedRecursiveSearchHandler.ts"
+                docs="/docs/concepts/interaction/search-system#simple-search-handler"
+                description="A search handler that takes care of recursively searching through items, and of adding context actions to the results to show them in their original location">
+                <ComponentReference
+                    name="simpleSearchHandler"
+                    link="core/src/actions/types/search/tracedRecursiveSearch/simpleSearch/simpleSearchHandler.tsx"
+                    docs="/docs/concepts/interaction/search-system#simple-search-handler"
+                    description="The standard search handler that can be user customized and defaults to a fuzzy search"
+                />
+                <ComponentReference
+                    name="locationContextFolder"
+                    link="core/src/actions/types/search/tracedRecursiveSearch/locationContextFolder.ts"
+                    docs="/docs/concepts/interaction/search-system#simple-search-handler"
+                    description="The context folder to put the original location actions in">
+                    <ComponentReference
+                        name="openInParentAction"
+                        link="core/src/actions/types/search/tracedRecursiveSearch/openInParentAction.ts"
+                        docs="/docs/concepts/interaction/search-system#simple-search-handler"
+                        description="A context action to open a found menu item in its parent menu (showing all the item's siblings)"
+                    />
+                    <ComponentReference
+                        name="openAtTraceAction"
+                        link="core/src/actions/types/search/tracedRecursiveSearch/openAtTraceAction.ts"
+                        docs="/docs/concepts/interaction/search-system#simple-search-handler"
+                        description="A context action to open a found menu item at the location it was originally stored, opening all its ancestor menus"
+                    />
+                </ComponentReference>
+            </ComponentReference>
+        </ComponentReference>
+        <ComponentReference
+            name="getContentAction"
+            link="core/src/actions/types/content/getContentAction.ts"
+            docs="/docs/concepts/interaction/common-actions#content-action"
+            description="An action to retrieve the content to show when the item is selected">
+            <ComponentReference
+                name="hideContentHandler"
+                link="core/src/actions/types/content/hideContentHandler.ts"
+                description="An getContent handler that will hide the content section when an item with this binding is selected"
+            />
+            <ComponentReference
+                name="scrollableContentHandler"
+                link="core/src/actions/types/content/scrollableContentHandler.tsx"
+                docs="/docs/concepts/interaction/common-actions#content-action"
+                description="An getContent handler that will wrap the provided content in a component that can be scrolled up and down using keyboard shortcuts"
+            />
+        </ComponentReference>
+        <ComponentReference
+            name="getCategoryAction"
+            link="core/src/actions/types/category/getCategoryAction.ts"
+            docs="/docs/concepts/interaction/common-actions#category-action"
+            description="An action that retrieves the menu category that an item should be in"
+        />
+        <ComponentReference
+            name="getConnectionGroupAction"
+            link="core/src/actions/types/connectionGroup/getConnectionGroupAction.ts"
+            description="An action that retrieves the connection group of a menu item, used to decide whether it should visually connect to other items in the menu"
+        />
+        <ComponentReference
+            name="resetAction"
+            link="core/src/actions/types/reset/resetAction.ts"
+            docs="/docs/concepts/interaction/common-actions#types"
+            description="A context action representing that an item will be reset"
+        />
+        <ComponentReference
+            name="deleteAction"
+            link="core/src/actions/types/delete/deleteAction.ts"
+            docs="/docs/concepts/interaction/common-actions#types"
+            description="A context action representing that the selected item wil be removed"
+        />
+        <ComponentReference
+            name="onCursorAction"
+            link="core/src/actions/types/onCursor/onCursorAction.ts"
+            docs="/docs/concepts/interaction/common-actions#cursor-action"
+            description="An event handler action to react to the item being the new cursor"
+        />
+        <ComponentReference
+            name="onSelect"
+            link="core/src/actions/types/onSelect/onSelectAction.ts"
+            docs="/docs/concepts/interaction/common-actions#select-action"
+            description="An event handler action to react to the item being added to or remove from a selection"
+        />
+        <ComponentReference
+            name="onMenuChange"
+            link="core/src/actions/types/onMenuChange/onMenuChangeAction.ts"
+            docs="/docs/concepts/interaction/common-actions#menu-change-action"
+            description="An event handler action to react to the item being added to or removed from a menu"
+        />
+        <ComponentReference
+            name="identityAction"
+            link="core/src/actions/types/identity/identityAction.ts"
+            docs="/docs/concepts/interaction/common-actions#identity-action"
+            description="An action that can be used to store a reference to the 'actionTarget' in a way that it can be used by other actions">
+            <ComponentReference
+                name="menuItemIdentityAction"
+                link="core/src/actions/types/identity/menuItemIdentityAction.ts"
+                docs="/docs/concepts/interaction/common-actions#identity-action"
+                description="An action that can be used to store a reference to the menu item in a way that it can be used by other actions, for instance used by the search action"
+            />
+        </ComponentReference>
+        <ComponentReference
+            name="copyExitPasteHandler"
+            link="core/src/actions/types/copyPaste/copyExitPasteHandler.ts"
+            docs="/docs/concepts/interaction/common-actions#copy-and-paste"
+            description="An execute handler that can be used to copy some input, exit LM and then paste this input in the previously selected program">
+            <ComponentReference
+                name="copyAction"
+                link="core/src/actions/types/copyPaste/copy/copyAction.ts"
+                docs="/docs/concepts/interaction/common-actions#copy-and-paste"
+                description="A context action that can take a copy execute handler and show it in the context menu">
+                <ComponentReference
+                    name="copyExecuteHandler"
+                    link="core/src/actions/types/copyPaste/copy/copyExecuteHandler.ts"
+                    description="An execute handler representing that something will be copied">
+                    <ComponentReference
+                        name="copyClipboardHandler"
+                        link="core/src/actions/types/copyPaste/copy/handler/copyClipboardHandler.ts"
+                        description="A copy execute handler that copies the given content (text/image/html/etc.) to the clipboard">
+                        <ComponentReference
+                            name="copyTextHandler"
+                            link="core/src/actions/types/copyPaste/copy/handler/copyTextHandler.ts"
+                            docs="/docs/concepts/interaction/common-actions#copy-and-paste"
+                            description="A copy execute handler that copies the given text to the clipboard"
+                        />
+                    </ComponentReference>
+                </ComponentReference>
+            </ComponentReference>
+            <ComponentReference
+                name="pasteExecuteHandler"
+                link="core/src/actions/types/copyPaste/paste/pasteExecuteHandler.ts"
+                description="An execute handler representing that something will be pasted">
+                <ComponentReference
+                    name="OSPasteHandler"
+                    link="core/src/actions/types/copyPaste/paste/handlers/OSPasteHandler/OSPasteHandler.ts"
+                    description="A paste execute handler that will send a paste command to the OS">
+                    <ComponentReference
+                        name="exitPasteHandler"
+                        link="core/src/actions/types/copyPaste/paste/handlers/OSPasteHandler/exitPasteHandler.ts"
+                        description="A paste execute handler that will close LM and then send a paste command to the OS"
+                    />
+                </ComponentReference>
+            </ComponentReference>
+        </ComponentReference>
+    </ComponentReference>
+    <ComponentReference
+        name="createContextAction"
+        link="core/src/actions/contextMenuAction/createContextAction.ts"
+        docs="/docs/concepts/interaction/common-actions#context-menu-action"
+        description="Creates an action that will show up in the context menu">
+        <ComponentReference
+            name="createContextFolderHandler"
+            link="core/src/actions/contextMenuAction/createContextFoldHandler.ts"
+            docs="/docs/concepts/interaction/common-actions#context-folder-handler"
+            description="Creates a context folder action which can be passed to 'createContextAction' to make actions show up in this subdirectory in the context menu"
+        />
+        <ComponentReference
+            name="contextMenuAction"
+            link="core/src/actions/contextMenuAction/contextMenuAction.ts"
+            docs="/docs/concepts/interaction/common-actions#context-menu-action"
+            description="The context menu action itself, which can be used to collect all items to be shown in a context menu for a given set of items"
+        />
+    </ComponentReference>
+</ul>
+
+## TextFields
+
+Text fields allow the user to enter text. This is widely used to allow for searching in menus, including pattern highlighting, but is also used to enter text values for other inputs. These text fields also allow for powerful syntax highlighting.
+
+<ul>
+    <ComponentReference
+        name="TextField"
+        link="core/src/textFields/TextField.ts"
+        docs="/docs/concepts/ui/textfield"
+        description="A simple data structure that holds all information relevant for a text field: current value + current text selection">
+        <ComponentReference
+            name="creatStandardTextFieldKeyHandler"
+            link="core/src/textFields/interaction/keyHandler/createStandardTextFieldKeyHandler.ts"
+            docs="/docs/concepts/ui/textfield#controller"
+            description="A key event listener that controls a given text field, composed of multiple smaller interaction handlers">
+            <ComponentReference
+                name="creatAdvancedTextFieldKeyHandler"
+                link="core/src/textFields/interaction/advanced/keyHandler/createStandardTextFieldKeyHandler.ts"
+                docs="/docs/concepts/ui/textfield#multiline"
+                description="A key event listener that controls a given text field, allowing for multi line editing and undo-/redoing, composed of multiple smaller interaction handlers"
+            />
+        </ComponentReference>
+        <ComponentReference
+            name="TextFieldView"
+            link="core/src/components/fields/TextFieldView.tsx"
+            docs="/docs/concepts/ui/textfield#view"
+            description="A react component that can be used to visualize a text field with a single line and custom syntax highlighting">
+            <ComponentReference
+                name="EditorField"
+                link="core/src/components/fields/editorField/EditorField.tsx"
+                docs="/docs/concepts/ui/textfield#multiline"
+                description="A react component that can be used to visualize a multiline text field with only common language syntax highlighting, usable in the content section"
+            />
+        </ComponentReference>
+        <ComponentReference
+            name="HighlightParser"
+            link="core/src/textFields/syntax/utils/HighlightParser.ts"
+            docs="/docs/concepts/ui/textfield#grammar"
+            description="A class that can be used to build a string parser using Chevrotain, with additional syntax highlighting support for text fields">
+            <ComponentReference
+                name="HighlightLexer"
+                link="core/src/textFields/syntax/utils/HighlightLexer.ts"
+                docs="/docs/concepts/ui/textfield#lexer"
+                description="A class that can be used to build a string lexer using Chevrotain, with additional syntax highlighting support for text fields"
+            />
+        </ComponentReference>
+    </ComponentReference>
+</ul>
+
+## Settings
+
+LaunchMenu has a built-in settings system that applets can use, with various build-in setting types and tools to make custom types.
+
+<ul>
+    <ComponentReference
+        name="createSettings"
+        link="core/src/settings/createSettings.ts"
+        docs="/docs/concepts/settings"
+        description="Used to declare settings for an applet">
+        <ComponentReference
+            name="createBooleanSetting"
+            link="core/src/settings/inputs/createBooleanSetting.ts"
+            docs="/docs/concepts/settings#createbooleansetting"
+            description="Creates a boolean field menu item that allows for programmatic access and manipulation of the value, as well as a menu item that can be used to alter it"
+        />
+        <ComponentReference
+            name="createStringSetting"
+            link="core/src/settings/inputs/createStringSetting.ts"
+            docs="/docs/concepts/settings#createstringsetting"
+            description="Creates a string field menu item that allows for programmatic access and manipulation of the value, as well as a menu item that can be used to alter it"
+        />
+        <ComponentReference
+            name="createNumberSetting"
+            link="core/src/settings/inputs/createNumberSetting.ts"
+            docs="/docs/concepts/settings#createnumbersetting"
+            description="Creates a number field menu item that allows for programmatic access and manipulation of the value, as well as a menu item that can be used to alter it"
+        />
+        <ComponentReference
+            name="createColorSetting"
+            link="core/src/settings/inputs/createColorSetting.ts"
+            docs="/docs/concepts/settings#createcolorsetting"
+            description="Creates a color field menu item that allows for programmatic access and manipulation of the value, as well as a menu item that can be used to alter it"
+        />
+        <ComponentReference
+            name="createKeyPatternSetting"
+            link="core/src/settings/inputs/createKeyPatternSetting.ts"
+            docs="/docs/concepts/settings#createkeypatternsetting"
+            description="Creates a 'KeyPattern' field menu item that allows for programmatic access and manipulation of the value, as well as a menu item that can be used to alter it"
+        />
+        <ComponentReference
+            name="createGlobalKeyPatternSetting"
+            link="core/src/settings/inputs/createGlobalKeyPatternSetting.ts"
+            docs="/docs/concepts/settings#createglobalkeypatternsetting"
+            description="Creates a global 'KeyPattern' field menu item that allows for programmatic access and manipulation of the value and allows for registering of listeners that trigger when the shortcut is activated, and a menu item that can be used to alter it"
+        />
+        <ComponentReference
+            name="createFileSetting"
+            link="core/src/settings/inputs/createFileSetting.ts"
+            docs="/docs/concepts/settings#createfilesetting"
+            description="Creates a file string field menu item that allows for programmatic access and manipulation of the value, as well as a menu item that can be used to alter it"
+        />
+        <ComponentReference
+            name="createOptionSetting"
+            link="core/src/settings/inputs/createOptionSetting.ts"
+            docs="/docs/concepts/settings#createoptionsetting"
+            description="Creates a field menu item that allows for programmatic access and manipulation of the value, as well as a menu item that can be used to select one of the given options"
+        />
+        <ComponentReference
+            name="createSettingsFolder"
+            link="core/src/settings/inputs/createFileSetting.ts"
+            description="Creates a folder menu item that contains sub-items that the menu opened by this item will contain"
+        />
+        <ComponentReference
+            name="settingPatternMatcher"
+            link="core/src/settings/inputs/settingPatternMatcher.ts"
+            docs="/docs/concepts/settings#custom-settings"
+            description="The search pattern matcher that can be used to indicate that a given item is a setting"
+        />
+    </ComponentReference>
+    <ComponentReference
+        name="File"
+        link="core/src/settings/storage/fileTypes/File.ts"
+        description="A simple file type that can be used to manage data storage">
+        <ComponentReference
+            name="JSONFile"
+            link="core/src/settings/storage/fileTypes/JSONFile.ts"
+            description="A file type that can be used to manage json data storage"
+        />
+        <ComponentReference
+            name="FieldsFile"
+            link="core/src/settings/storage/fileTypes/FieldsFile/FieldsFile.ts"
+            description="A file type that can be used to manage json data which is split up into distinct fields">
+            <ComponentReference
+                name="VersionedFieldsFile"
+                link="core/src/settings/storage/fileTypes/VersionedFieldsFile/VersionFieldsFile.ts"
+                description="A file type that can be used to manage json data which is split up into distinct fields together with a format version number, allowing for updating data from older formats">
+                <ComponentReference
+                    name="SettingsFile"
+                    link="core/src/settings/storage/fileTypes/settingsFile.ts"
+                    docs="/docs/concepts/settings#settingsfile"
+                    description="A file type that can be used to manage json data which is split up into distinct fields with UI interfaces together with a format version number, allowing for updating data from older formats (Used internally to manage the settings of applets)"
+                />
+            </ComponentReference>
+        </ComponentReference>
+        <ComponentReference
+            name="FileAutoReloader"
+            link="core/src/settings/storage/fileTypes/utils/FileAutoReloader.ts"
+            description="A class that can be used to listen to disk file changes and automatically reload the local representation of a file"
+        />
+        <ComponentReference
+            name="FileAutoSaver"
+            link="core/src/settings/storage/fileTypes/utils/FileAutoSaver.ts"
+            description="A class that can be used to listen to local file changes and automatically save the local representation to the disk"
+        />
+    </ComponentReference>
+</ul>
+
+## Misc
+
+LaunchMenu has numerous additional features, but most of these contain of few components often used by applets and are therefor bundled here.
+
+<ul>
+    <ComponentReference
+        name="Box"
+        link="core/src/styling/box/Box.tsx"
+        docs="/docs/guide/5.-content-and-theming#theming"
+        description="A react component which can easily be stylized with css, and can easily use properties from the theme">
+        <ComponentReference
+            name="useTheme"
+            link="core/src/styling/theming/ThemeContext.tsx"
+            docs="/docs/guide/5.-content-and-theming#usetheme"
+            description="A react hook that can be used to obtain the theming properties from within react components"
+        />
+    </ComponentReference>
+    <ComponentReference
+        name="IOContext"
+        link="core/src/context/IOContext.ts"
+        docs="/docs/concepts/base/iocontext"
+        description="The context that's passed around for a given session in order to E.g. open new UI">
+        <ComponentReference
+            name="useIOContext"
+            link="core/src/context/react/useIOContext.ts"
+            description="A react hook that can be used to obtain the IOContext from within a react component"
+        />
+    </ComponentReference>
+    <ComponentReference
+        name="LaunchMenu"
+        link="core/src/application/LaunchMenu.ts"
+        docs="/docs/concepts/base/launchmenu"
+        description="The class used to manage all of LM within the renderer process">
+        <ComponentReference
+            name="LMSession"
+            link="core/src/application/LMSession/LMSession.ts"
+            docs="/docs/concepts/base/session"
+            description="The class used to manage all of LM within one session"
+        />
+    </ComponentReference>
+    <ComponentReference
+        name="UndoRedoFacility"
+        link="core/src/undoRedo/UndoRedoFacility.ts"
+        docs="/docs/concepts/interaction/undo-redo"
+        description="A class to manage the history stack, able to dispatch commands">
+        <ComponentReference
+            name="Command"
+            link="core/src/undoRedo/Command.ts"
+            docs="/docs/concepts/interaction/undo-redo#commands"
+            description="An abstract command base class to create undoable commands">
+            <ComponentReference
+                name="CompoundCommand"
+                link="core/src/undoRedo/commands/CompoundCommand.ts"
+                docs="/docs/concepts/interaction/undo-redo#compound-commands"
+                description="A compound command class that can bundle commands to be executed together"
+            />
+            <ComponentReference
+                name="SetFieldCommand"
+                link="core/src/undoRedo/commands/SetFieldCommand.ts"
+                description="A command class that is able to update the value of a field"
+            />
+        </ComponentReference>
+        <ComponentReference
+            name="Resource"
+            link="core/src/undoRedo/dependencies/Resource.ts"
+            docs="/docs/concepts/interaction/undo-redo#resources"
+            description="A command indicates to be dependent on certain resources, such that only 1 command dependent on that resource can be executed at a time. By default commands are dependant on the 'applicationResource' which ensures that commands are executed sequentially"
+        />
+    </ComponentReference>
+</ul>

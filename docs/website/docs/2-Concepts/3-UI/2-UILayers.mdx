@@ -1,0 +1,1262 @@
+# UI layers
+
+LaunchMenu manages its UI by keeping track of a stack of "UI layers". The [`IOContext`](/docs/concepts/base/iocontext) is responsible for managing this stack of independent layers. Each layer can provide a subset of 5 different types of data:
+
+-   The path/program location (can be a custom component)
+-   The Menu data
+-   The field data
+-   The content data
+-   The key handler data
+
+The last four of these can be stacks (as lists) of data themselves. This allows you to reuse other layers within your layer, and essentially nest them logically. Visually they will behave the same as if they were separately opened.
+
+Below is the exact interface required for UI Layers:
+
+```ts title=IUILayer.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/_types/IUILayer.ts
+export type IUILayer = {
+    /**
+     * A override for the view to use to represent this layer's path
+     */
+    pathView?: JSX.Element;
+    /**
+     * Retrieves the path to show to the user representing this layer
+     * @param hook The data hook to subscribe to changes
+     * @returns The path
+     */
+    getPath(hook?: IDataHook): IUILayerPathNode[];
+    /**
+     * Retrieves the menu data
+     * @param hook The data hook to subscribe to changes
+     * @returns The menu data of this layer
+     */
+    getMenuData(hook?: IDataHook): IUILayerMenuData[];
+    /**
+     * Retrieves the field data
+     * @param hook The data hook to subscribe to changes
+     * @returns The field data of this layer
+     */
+    getFieldData(hook?: IDataHook): IUILayerFieldData[];
+    /**
+     * Retrieves the content data
+     * @param hook The data hook to subscribe to changes
+     * @returns The content data of this layer
+     */
+    getContentData(hook?: IDataHook): IUILayerContentData[];
+    /**
+     * Retrieves the key listener data
+     * @param hook The data hook to subscribe to changes
+     * @returns The key listener data of this layer
+     */
+    getKeyHandlers(hook?: IDataHook): IKeyEventListener[];
+    /**
+     * A callback for when the UI layer is opened
+     * @param context The context that this layer was opened in
+     * @param close A method to close this layer from the given context
+     * @returns A callback for when this layer is closed (both when invoked by our close call, or closed external)
+     */
+    onOpen(
+        context: IIOContext,
+        close: () => void
+    ):
+        | void
+        | (() => void | Promise<void>)
+        | Promise<void | (() => void | Promise<void>)>;
+};
+```
+
+The `onOpen` function can be used to prime the layer, and is invoked by the context it's added to.
+
+## UI sections
+
+The LaunchMenu has 3 base UI sections, as well as a path section. Each of these base sections can provide additional data that indicate their intentions, but internally only their `view` and `keyHandler` is used. You can learn more about the key handlers on the [key events page]().
+
+All views have the following interface:
+
+```ts title=IViewStackItem.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/_types/IViewStackItem.ts
+export type IViewStackItem =
+    | {close: true; closeTransitionDuration?: number}
+    | IVisibleViewStackItem;
+
+/**  An item that can be added to view stacks */
+type IVisibleViewStackItem =
+    | {
+          view: IViewStackItemView;
+          transparent?: boolean;
+          transitions?: IViewTransitions;
+      }
+    | IViewStackItemView;
+
+/** The view of a view stack item */
+type IViewStackItemView = LFC<IViewStackItemProps> | JSX.Element;
+```
+
+With the supporting transitions type:
+
+```ts title=IViewTransitions.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/_types/IViewTransitions.ts spoiler
+/**
+ * The transition components to use to change the views
+ */
+export type IViewTransitions = {
+    /** The opening transition type */
+    Open?: FC<IOpenTransitionProps>;
+    /** The changing transition type */
+    Change?: FC<IChangeTransitionProps>;
+    /** The closing transition type */
+    Close?: FC<ICloseTransitionProps>;
+};
+
+type IOpenTransitionProps = {
+    /** The callback when the transition finishes */
+    onComplete?: () => void;
+    /** The child to open */
+    children: ReactNode;
+    /** Whether to activate the transition, defaults to true */
+    activate?: boolean;
+};
+
+type IChangeTransitionProps = {
+    /** The callback when the transition finishes */
+    onComplete?: () => void;
+    /** The children to transition through to the last child */
+    children: ReactNode[];
+    /** Whether to activate the transition, defaults to true */
+    activate?: boolean;
+};
+
+type ICloseTransitionProps = {
+    /** The callback when the transition finishes */
+    onComplete?: () => void;
+    /** The child to close */
+    children: ReactNode;
+    /** Whether to activate the transition, defaults to true */
+    activate?: boolean;
+};
+```
+
+We can infer 3 main types of views from this interface:
+
+-   A view that simply closes the whole section by specifying `{close: true}`
+-   A simple React component or element view by providing a component or element
+-   An advanced React component or element view by providing an object with `{view: myView}`
+
+When the last type of view is provided, we can indicate that the view may be transparent by specifying property `transparent` to be true. This makes sure that the element below isn't hidden. We can also supply custom transitions for when the view is opened, closed, or swapped out for another view.
+
+LaunchMenu already contains 3 different types of built-in transition components:
+
+-   `InstantOpenTransition`: Essentially don't apply a transition at all, instantly update the view
+-   `FadeOpenTransition`: Increase the opacity from 0 to 1 for a smooth fade
+-   `SlideOpenTransition`: Slide the element from outside the section into the section. This comes in 4 pre-configured flavors:
+    -   `SlideRightOpenTransition`
+    -   `SlideLeftOpenTransition`
+    -   `SlideUpOpenTransition`
+    -   `SlideDownOpenTransition`
+
+In all of these types `Open` can be swapped out for `Close` and `Change` for their corresponding transitions.
+
+And advanced view may look as follows:
+
+```tsx title=viewExample.tsx
+const myView: IVisibleViewStackItem = {
+    view: <div>I like trains</div>,
+    transparent: true,
+    transitions: {
+        Open: FadeOpenTransition,
+        Close: FadeCloseTransition,
+    },
+};
+```
+
+### Data storage
+
+Note that `useState` and other component based state management should be avoided because of how views are managed. Views may be removed from both the virtual and real dom at any point, if they are covered by other layers on top. This means that when you return to this view, it will be instantiated from scratch and thus not maintain its state.
+
+Data storage should therefor be done in react life-cycle independent facilities, such as using [model-react fields](https://tarvk.github.io/model-react/examples/build/#Field).
+
+The choice of arbitrarily demounting elements (and thus breaking react life-cycle dependent state management) may be worth reconsidering, but so far it hasn't been problematic in my experience.
+
+## Paths
+
+UI layers can specify a path to give the user a rough idea of where in the application they are. This helps to visualize how many UI layers are opened below the current layer. The path specified by an `IUILayer` may be any path at all, and is a simple string. When you make a UI layer that extends `AbstractUILayer` you're however supposed to specify relative paths. These paths are automatically merged with the path of the layer below to obtain the absolute path. In these relative paths, you can use `..` to remove the last item of the parent path, and `.` to add yourself to to the same path as the parent.
+
+Below is an example showing some paths specified to a `UILayer` instance, which extends `AbstractUILayer`:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerPath video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerPath/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    async open({context, onClose}) {
+        // Add `Example` and `oranges` to the previous path (which was empty)
+        await context.open(
+            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                path: "Example/oranges",
+            })
+        );
+
+        // Remove the last item from the previous path, add `something`
+        await context.open(
+            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                path: "../something",
+            })
+        );
+
+        // Don't change the path, but indicate that this layer belongs to the same path now
+        await context.open(
+            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                path: ".",
+            })
+        );
+    },
+});
+```
+
+When this example is opened, 3 layers are added to the context. You will see that when you exit out of the top layer, the path doesn't actually change. This is because the third item didn't add anything to the path. When we exit out of the second layer, you will see that `"something"` is replaced with `"oranges"`. This is because the top layer has the path `"example/oranges"` but the second layer removed the top `"oranges"` and added `"something"` to it.
+
+## UILayer class
+
+A standard UILayer class is provided that can be used to easily construct a UILayer from a collection of separate components. This class will also supplement your data to the best of its abilities using default implementations and features:
+
+-   Model completion: If you provide an [`IMenu`](/docs/concepts/ui/menu) -, [`ITextField`](/docs/concepts/ui/textfield) -, or [`IContent`](/docs/concepts/ui/content) data model, standard key handlers and views are automatically added if absent to make your data interactive and visualize it
+-   Searchable menu: If you provide an [`IMenu`](/docs/concepts/ui/menu) data model, it will automatically add a searchfield to search in that menu unless `searchable` is explicitly set to false
+-   Menu content: If you provide an [`IMenu`](/docs/concepts/ui/menu) data model, it will automatically show the content of the selected menu item, unless `hideItemContent` is explicitly set to true
+-   Overlays: Transparent overlays are automatically added for sections that no content was provided for, to indicate that data doesn't belong to this layer
+-   Key barrier: The opened UILayer automatically prevents layers below from receiving key events
+
+### Interface
+
+Below is the exact interface of the data that can be passed to the UILayer constructor:
+
+```ts title=UILayer.ts source source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/standardUILayer/UILayer.tsx
+export class UILayer extends UnifiedAbstractUILayer {
+     /**
+     * Creates a new standard UILayer
+     * @param data The data to create the layer from
+     * @param config Base ui layer configuration
+     */
+    public constructor(
+        data: IStandardUILayerData[] | IStandardUILayerData,
+        config?: IUILayerBaseConfig
+    ) { }
+
+    ...
+}
+```
+
+```ts title=IStandardUILayerData.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/standardUILayer/_types/IStandardUILayerData.ts spoiler
+export type IStandardUILayerData =
+    | IStandardUILayerDataObject
+    | ((
+          context: IIOContext,
+          close: () => void
+      ) => IStandardUILayerDataObject & {onClose?: () => void | Promise<void>})
+    | IUILayer;
+
+/** The format for one of the layer's objects */
+export type IStandardUILayerDataObject = {
+    // Menu
+    /** The menu's view */
+    menuView: IViewStackItem;
+    /** The menu data structure */
+    menu?: IMenu;
+    /** The menu's key handler */
+    menuHandler?: IKeyEventListener;
+    /** The callback to perform when an item in the menu is executed */
+    onExecute?: IMenuItemExecuteCallback;
+    /** Whether a search field should be generated for the passed menu (defaults to true) */
+    searchable?: boolean;
+    /** Whether the content of this menu should be displayed */
+    hideItemContent?: boolean;
+    /** Whether to destroy the menu when closing this layer (defaults to true) */
+    destroyOnClose?: boolean;
+
+    // Field
+    /** The field's view */
+    fieldView: IViewStackItem;
+    /** The field data structure */
+    field?: ITextField;
+    /** The field's key handler */
+    fieldHandler?: IKeyEventListener;
+    /** The highlighter to use for the field if any */
+    highlighter?: IHighlighter;
+    /** The icon to show at the start of the field */
+    icon?: IThemeIcon | ReactElement;
+
+    // Content
+    /** The content's view */
+    contentView?: IViewStackItem | undefined;
+    /** The content data structure */
+    content?: IContent;
+    /** The content's key handler */
+    contentHandler?: IKeyEventListener;
+
+    // Shared
+    /** The overlay group to use, making sure that only the bottom view with the same group in a continuous sequence is shown */
+    overlayGroup?: Symbol;
+    /** Whether to prevent the layer from closing when the user uses their back key, defaults to whether a menu is present */
+    handleClose?: boolean;
+};
+```
+
+```ts title=IUILayerBaseConfig source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/_types/IUILayerBaseConfig.ts spoiler
+export type IUILayerBaseConfig = {
+    /** The relative input path, defaults to "." */
+    path?: string;
+    /** Whether to show a semi transparent overlay for sections without content, defaults to true */
+    showNodataOverlay?: boolean;
+    /** Whether to catch all key events and prevent lower layers from catching them, defaults to true */
+    catchAllKeys?: boolean;
+};
+```
+
+### Model completion
+
+Whenever a `IMenu` -, `ITextField` -, or `IContent` instance is passed to the UILayer, the layer will automatically generate the corresponding standard views and key handlers. You can also provide these manually, by specifying `menuView` and `menuHandler` or the equivalent properties for the other types.
+
+The generated key handlers can take care of automatically closing the layer and calling `onClose` too, if `handleClose` is set to true. `handleClose` defaults to false for provided field and content instances, but defaults to true if a menu is present.
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerModelCompletion video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerModelCompletion/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        const field = new TextField("Bob", {start: 3, end: 3});
+        const content = new Content(<Loader>{h => field.get(h)}</Loader>);
+
+        context.open(
+            new UILayer(() => ({field, content, handleClose: true, onClose}), {
+                path: "Example",
+            })
+        );
+    },
+});
+```
+
+This example simply opens up a text field and content with the same text as the field whenever the example applet is opened.
+
+To learn more about the used views and handlers, check the the corresponding section for each of the UI types:
+
+-   [Menu](/docs/concepts/ui/menu)
+-   [TextField](/docs/concepts/ui/textfield)
+-   [Content](/docs/concepts/ui/content)
+
+### Searchable menu
+
+By default a menu opened by a `UILayer` is searchable. This is achieved by using the [`MenuSearchLayer`](#MenuSearchLayer). This may be unnecessary if you handle your own search, or use the text field for something else. We however recommend to allow the user to search at all time, to improve usage efficiency.
+
+We can easily stop a menu from being searched, by specifying `searchable: false`:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerSearching video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerSearching/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    async open({context, onClose}) {
+        const menu = new Menu(context, items);
+        await context.open(
+            new UILayer(() => ({menu, onClose}), {
+                path: "Example searchable",
+            })
+        );
+
+        await context.open(
+            new UILayer(
+                {menu, searchable: false, destroyOnClose: false},
+                {
+                    path: "Example not searchable",
+                }
+            )
+        );
+    },
+});
+```
+
+In this example, whenever you open the `example` applet, it will add 2 UILayers. The first UILayer won't be searchable. But when that's exited using the back key (`esc` by default), we will enter the same menu but now in searchable form.
+
+`destroyOnClose: false` is specified on the second layer, because we don't want to destroy the menu when we exit the layer, since it's also used by the layer below.
+
+### Menu content
+
+Any menu opened by a `UILayer` will automatically show the selected item's content in the content area. This content will override the content that was provided separately, unless `hideItemContent: true` is supplied.
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerMenuContent video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerMenuContent/recordings/demo.webm
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        content: <div>hoi</div>,
+        onExecute: () => alert("Hello!"),
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye!"),
+    }),
+];
+
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        context.open(
+            new UILayer(
+                () => ({
+                    menu: new Menu(context, items),
+                    content: new Content(
+                        <Box background="secondary">Super cool example</Box>
+                    ),
+                    onClose,
+                }),
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+Here when we open the `example` applet, we can see how the item's content animates in and out of view as we select and deselect the item.
+
+### Overlays
+
+A somewhat advanced concept is the concept of overlays. The premise is quite simple, and sounds like it shouldn't require special behavior. Whenever we open a UILayer and some section such as `content` is missing, we still want to show the content of the layer below, but we want to indicate it doesn't belong to this layer. This can easily be achieved by adding a transparent component on top of this content, allowing the user to still see the content below while visually separating it from this layer.
+
+This simple idea however leaves us with 1 problem: when we open multiple layers that all have an overlay for the content, the content below becomes increasingly less visible. This isn't a huge problem, but still not favorable in our opinion. This is why we added the concept of `overlayGroups`. These groups are simply JavaScript symbols, specifying some group identifier. Then when we have multiple views of the same group stacked on top of each other, only the bottom view belonging to this group will be rendered.
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerOverlays video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerOverlays/recordings/demo.webm spoiler
+export default declare({
+    info,
+    settings,
+    async open({context, onClose}) {
+        const menu = new Menu(context, items);
+        // Don't use overlays
+        await context.open(
+            new UILayer(() => ({menu, searchable: false, onClose}), {
+                path: "Layer 1",
+                showNodataOverlay: false,
+            })
+        );
+
+        // Use default overlays
+        await context.open(
+            new UILayer(
+                {menu, searchable: false, destroyOnClose: false},
+                {
+                    path: "Layer 2",
+                }
+            )
+        );
+
+        // Add a field view, but use the overlay group
+        await context.open(
+            new UILayer(
+                [
+                    {
+                        overlayGroup: standardOverlayGroup,
+                        fieldView: (
+                            <FillBox background="primary" opacity={0.5} />
+                        ),
+                    },
+                    {menu, searchable: false, destroyOnClose: false},
+                ],
+                {
+                    path: "Layer 3",
+                    showNodataOverlay: false, // don't use default overlays
+                }
+            )
+        );
+
+        // Add a field overlay but add custom overlay group
+        const group = Symbol("new group");
+        await context.open(
+            new UILayer(
+                [
+                    {
+                        overlayGroup: group,
+                        fieldView: {
+                            view: (
+                                <FillBox background="primary" opacity={0.5} />
+                            ),
+                            transparent: true,
+                        },
+                    },
+                    {menu, searchable: false, destroyOnClose: false},
+                ],
+                {
+                    path: "Layer 4",
+                    showNodataOverlay: false, // don't use default overlays
+                }
+            )
+        );
+
+        // Add another field overlay but use same custom overlay group
+        await context.open(
+            new UILayer(
+                [
+                    {
+                        overlayGroup: group,
+                        fieldView: {
+                            view: (
+                                <FillBox background="secondary" opacity={0.5} />
+                            ),
+                            transparent: true,
+                        },
+                    },
+                    {menu, searchable: false, destroyOnClose: false},
+                ],
+                {
+                    path: "Layer 5",
+                    showNodataOverlay: false, // don't use default overlays
+                }
+            )
+        );
+    },
+});
+```
+
+In this example, whenever the `example` applet is opened, it will add 5 layers to the context. The menu content it adds can be ignored, it's mostly about the overlays that are visible in the field section.
+
+-   When you exit layer 5, you will see that it doesn't visually add an overlay, despite specifying a view for the field. This is because layer 4 and 5 specify an overlay using the same overlayGroup, so only the bottom consecutive one (layer 4) will show the overlay.
+-   When you exit layer 4, you will see that the custom field overlay it added disappears.
+-   When you exit layer 3, you will see that it doesn't visually add an overlay, despite specifying a view for the field. This is because layer 3 uses the default overlay group, which is also used by layer 2.
+-   When you exit layer 2, you will see that the overlay it added by default also disappears.
+-   When you exit layer 1, you will see that no overlay disappears, since we disabled the default overlay for layer 1.
+
+These visual overlays are independent of keyboard interaction, which is addressed in the section below.
+
+### Key barrier
+
+By default any UILayer will catch all events that are emitted. This is to prevent things in other layers from accidentally triggering. There are however several situations in which you do want things in layers below to trigger, which is why you can explicitly disable this by specifying `catchAllKeys: false`.
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerKeyBarrier video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerKeyBarrier/recordings/demo.webm spoiler
+export default declare({
+    info,
+    settings,
+    async open({context, onClose}) {
+        const back = context.settings.get(baseSettings).controls.common.back;
+        const handleClose = (event: KeyEvent, close: () => void) => {
+            if (back.get().matches(event)) {
+                close();
+                return true;
+            }
+        };
+
+        await context.open(
+            new UILayer(
+                (context, close) => ({
+                    onClose,
+                    contentView: <div>Layer 1</div>,
+                    contentHandler: event => {
+                        if (handleClose(event, close)) return true;
+                        if (event.matches("1")) {
+                            alert("Detected 1");
+                            return true;
+                        }
+                    },
+                }),
+                {path: "Layer 1"}
+            )
+        );
+
+        // Open up a layer above that doesn't capture all events
+        await context.open(
+            new UILayer(
+                (context, close) => ({
+                    contentView: <div>Layer 2</div>,
+                    contentHandler: event => {
+                        if (handleClose(event, close)) return true;
+                        if (event.matches("2")) {
+                            alert("Detected 2");
+                            return true;
+                        }
+                    },
+                }),
+                {
+                    path: "Layer 2",
+                    catchAllKeys: false,
+                }
+            )
+        );
+
+        // Open up a layer that does capture all events (defaults to capturing all)
+        await context.open(
+            new UILayer(
+                (context, close) => ({
+                    contentView: <div>Layer 3</div>,
+                    contentHandler: event => {
+                        if (handleClose(event, close)) return true;
+                        if (event.matches("3")) {
+                            alert("Detected 3");
+                            return true;
+                        }
+                    },
+                }),
+                {path: "Layer 3"}
+            )
+        );
+    },
+});
+```
+
+In this example, whenever the `example` applet is opened, it will add 3 layers to the context. You will notice that both pressing `3` will open an alert box, but pressing `1` and `2` won't do this. This is because layer 3 doesn't specify `catchAllKeys: false` and thus catches all keys by default. When we exit layer 3, you will notice that both `1` and `2` will open alert boxes. This is because layer 2 allows events to sink down, since we specified `catchAllKeys: false`.
+
+Note that in this example we have to manually handle closing in our keyhandler, since we didn't generate any standard key handlers that could take care of this for us.
+
+## Custom UILayer
+
+You can make a `IUILayer` totally from scratch if you like, and implement the entire interface from scratch. We however also have a `AbstractUILayer` class which takes care of a couple of common things:
+
+-   Making supplied paths relative to the layer on top
+-   Adding overlays to missing sections
+-   Showing the content of the selected menu item if present
+-   Simplify layer initialization
+
+In the example below, we created a custom `GambleLayer` which can take care of providing a view and key handlers for a given menu. The UI provided for the menu is quite custom and rather special however, since you can no longer navigate with the up and down keys, and have to use a 'launcher' instead using the space bar.
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerCustomLayer video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerCustomLayer/recordings/demo.webm spoiler
+const items = new Array(30).fill(0).map((_, i) =>
+    createStandardMenuItem({
+        name: `Item ${i}`,
+        onExecute: () => alert(`Activated ${i}`),
+    })
+);
+
+class GambleLayer extends AbstractUILayer {
+    protected menu: IMenu;
+    protected data = new Field([] as IUILayerMenuData[]);
+    protected charge = {
+        chargeSpeed: 0.05,
+        minCharge: 0.3,
+        decay: 0.03,
+        speed: 1,
+    };
+
+    /**
+     * Creates a new menu gambling layer
+     * @param menu The menu that the layer is for
+     * @param config The base layer config
+     */
+    public constructor(menu: IMenu, config: IUILayerBaseConfig) {
+        super(config);
+        this.menu = menu;
+    }
+
+    /** @override */
+    protected initialize(context: IIOContext, close: () => void): () => void {
+        const handler = this.getMenuHandler(this.menu, close);
+        const view = this.getMenuUI(this.menu, handler.getCharge);
+        this.data.set([
+            {
+                ID: uuid(),
+                menu: this.menu,
+                menuView: view,
+                menuHandler: handler.handler,
+            },
+        ]);
+
+        return () => handler.destroy();
+    }
+
+    /**
+     * Creates the UI for the given menu
+     * @param menu The menu to visualize
+     * @param getCharge The function to retrieve the current charge
+     * @returns The view element
+     */
+    protected getMenuUI(
+        menu: IMenu,
+        getCharge: IDataRetriever<number>
+    ): JSX.Element {
+        return (
+            <Box display="flex" flexDirection="column" height="100%">
+                <Loader>
+                    {h => (
+                        <Box
+                            height={10}
+                            width={`${Math.round(10 + getCharge(h) * 90)}%`}
+                            css={{backgroundColor: "red"}}
+                        />
+                    )}
+                </Loader>
+                <Box flexGrow={1} position="relative">
+                    <MenuView menu={menu} />
+                </Box>
+            </Box>
+        );
+    }
+
+    /**
+     * Retrieves the key handler for a menu
+     * @param menu The menu to create the handler for
+     * @param onExit The function to execute when receiving an exit command
+     * @returns The key listener
+     */
+    protected getMenuHandler(
+        menu: IMenu,
+        onExit: () => void
+    ): {getCharge: IDataRetriever<number>} & IDisposableKeyEventListener {
+        const context = menu.getContext();
+        const controls = context.settings.get(baseSettings).controls;
+        const launchKey = context.settings.get(settings).launch;
+        const fieldSettings = controls.menu;
+        const launcher = this.setupLauncher(() => {
+            const items = menu.getItems();
+            const cursor = menu.getCursor();
+            const index = cursor
+                ? (items.indexOf(cursor) + 1) % items.length
+                : 0;
+            if (items.length > 0) menu.setCursor(items[index]);
+        });
+
+        // Setup handlers
+        let {
+            handler: handleItemKeyListeners,
+            destroy: destroyItemListenersHandler,
+        } = setupItemKeyListenerHandler(menu);
+        const {handler: handleContextMenu, destroy: destroyContextMenuHandler} =
+            setupContextMenuHandler(menu, {
+                useContextItemKeyHandlers: true,
+                pattern: () => fieldSettings.openContextMenu.get(),
+            });
+
+        // Return the listener
+        return {
+            handler: async (e: KeyEvent) => {
+                if (await handleItemKeyListeners?.(e)) return true;
+                if (await handleContextMenu(e)) return true;
+                if (
+                    handleExecuteInput(
+                        e,
+                        menu,
+                        undefined,
+                        fieldSettings.execute.get()
+                    )
+                )
+                    return true;
+                if (launchKey.get().matches(e)) {
+                    launcher.fire();
+                    return true;
+                }
+
+                const back = controls.common.back.get();
+                if (handleDeselectInput(e, menu, back)) return true;
+                if (onExit && back.matches(e)) {
+                    onExit();
+                    return true;
+                }
+            },
+            destroy: () => {
+                destroyItemListenersHandler?.();
+                destroyContextMenuHandler();
+                launcher.destroy();
+            },
+            getCharge: launcher.getCharge,
+        };
+    }
+
+    /**
+     * Creates the launcher function
+     * @param selectNext The function to call to select the next item in the menu
+     * @returns The data to manage the launcher
+     */
+    protected setupLauncher(selectNext: () => void): {
+        getCharge: IDataRetriever<number>;
+        destroy: () => void;
+        fire: () => void;
+    } {
+        const charge = new Field(0);
+
+        let up = true;
+        const chargeIntervalID = setInterval(() => {
+            let value = Math.max(
+                0,
+                Math.min(
+                    charge.get() + (up ? 1 : -1) * this.charge.chargeSpeed,
+                    1
+                )
+            );
+            charge.set(value);
+            if (value == 0 || value == 1) up = !up;
+        }, 50);
+
+        return {
+            getCharge: h => charge.get(h),
+            destroy: () => {
+                clearInterval(chargeIntervalID);
+            },
+            fire: () => {
+                let speed = charge.get() + this.charge.minCharge;
+                let pos = 0;
+                const intervalID = setInterval(() => {
+                    speed = Math.max(0, speed - this.charge.decay);
+                    pos += this.charge.speed * speed;
+                    while (pos > 1) {
+                        pos--;
+                        selectNext();
+                    }
+                    if (speed == 0) clearInterval(intervalID);
+                }, 50);
+            },
+        };
+    }
+
+    /** @override */
+    public getMenuData(
+        hook?: IDataHook,
+        extendData: IUILayerMenuData[] = []
+    ): IUILayerMenuData[] {
+        return super.getMenuData(hook, [...this.data.get(hook), ...extendData]);
+    }
+}
+
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        context.open(
+            new GambleLayer(new Menu(context, items), {
+                path: "Example",
+            }),
+            {onClose}
+        );
+    },
+});
+```
+
+In this example, whenever the `example` applet is opened, it will open our `GambleLayer`. You will see a charge bar cycling up and down, and whenever space is pressed the cursor will be launched down. The launch speed depends on the charge amount when the cursor was launched.
+
+We're considering replacing all menus in LaunchMenu with this system in the future, but for now you can reproduce it yourself.
+
+### Reusing UILayers
+
+You can easily reuse existing layers within your custom layer. If you want to use a layer class `X`, all you have to do is:
+
+-   Create an instance `x` of `X`
+-   Call `onOpen` on `x` whenever your layer is opened, and store the close callback `onClose`
+-   Call `onClose` whenever your close callback is executed
+-   Forward the sections and key handlers from `x` in your own output
+
+Since this is still a fair bit of effort, the `UnifiedAbstractUILayer` can be used to take care of this. This layer takes in a single list of section data or sub-layers, and forwards them to the correct sections. This will also automatically take care of sub-layer initialization and disposal.
+
+The only drawback of this system is that all sections are combined in one list, so whenever your layer adds something to one of the sections, all sections will received an update.
+
+Below is an example of a custom layer that represents an applet, and makes use of the `MenuSearch` layer to allow for searching:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerReuseLayer video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerReuseLayer/recordings/demo.webm
+class MyApplication extends UnifiedAbstractUILayer {
+    protected data = new Field([] as IUILayerData[]);
+
+    /** Creates a new cool application thing */
+    public constructor() {
+        super({path: "My cool example"});
+    }
+
+    /** @override */
+    public getAll(hook?: IDataHook): IUILayerData[] {
+        return this.data.get(hook);
+    }
+
+    /** @override */
+    protected initialize(context: IIOContext, close: () => void): () => void {
+        // Setup menu
+        const items = [
+            createStandardMenuItem({
+                name: "Hello world",
+                onExecute: () => alert("Hello!"),
+            }),
+            createStandardMenuItem({
+                name: "Bye world",
+                onExecute: () => alert("Bye!"),
+            }),
+        ];
+
+        const menu = new Menu(context, items);
+        const {handler: menuHandler, destroy: destroyMenuHandler} =
+            createStandardMenuKeyHandler(menu, {onExit: close});
+        const menuData = {
+            ID: uuid(),
+            menu,
+            menuView: <MenuView menu={menu} />,
+            menuHandler: menuHandler,
+        };
+
+        // Setup a search field + menu by reusing the menu search layer
+        const menuSearch = new MenuSearch({
+            menu,
+        });
+
+        // Setup some content
+        const content = new Content(
+            <Box>This is a great applet, very useful.</Box>
+        );
+        const contentHandler = createStandardContentKeyHandler(
+            content,
+            context
+        );
+        const contentData = {
+            ID: uuid(),
+            content,
+            contentView: <ContentView content={content} />,
+            contentHandler,
+        };
+
+        // Set all the data (in the appropriate order, search on top)
+        this.data.set([menuData, contentData, menuSearch]);
+
+        // Return a function that can be invoked to dispose all data
+        return () => destroyMenuHandler();
+    }
+}
+
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        context.open(new MyApplication(), {onClose});
+    },
+});
+```
+
+In this example, whenever the `example` applet is opened, it will open our `MyApplication` layer. This layer will simply show a searchable menu, and some content.
+
+Note that the above example is meant to show off layer reusing. However because the situation above is rather simple and didn't do anything custom for views or handlers, a similar effect could've been achieved using the `UILayer` class:
+
+```tsx title=UILayerExtendingExample.tsx
+class MyApplication extends UILayer {
+    /** Creates a new cool application thing */
+    public constructor() {
+        super(
+            context => ({
+                menu: new Menu(context, [
+                    createStandardMenuItem({
+                        name: "Hello world",
+                        onExecute: () => alert("Hello!"),
+                    }),
+                    createStandardMenuItem({
+                        name: "Bye world",
+                        onExecute: () => alert("Bye!"),
+                    }),
+                ]),
+                content: new Content(
+                    <Box>This is a great applet, very useful.</Box>
+                ),
+            }),
+            {path: "My cool example"}
+        );
+    }
+}
+```
+
+## Types
+
+LaunchMenu has several built-in layers that are used throughout the application, and may also be useable as sub-layers:
+
+-   [`InputLayer`](#inputlayer): A layer to handle string input prompts
+-   [`SelectLayer`](#selectlayer): A layer to handle 1 item selection input prompts
+-   [`MultiSelectLayer`](#multiselectlayer): A layer to handle multiple item selection input prompts
+-   [`ContextMenuLayer`](#contextmenulayer): A layer that specifies to use the `contextMenu` icon, `"Context"` path and a slide from the left menu transition
+-   [`MenuSearchLayer`](#menusearchlayer): A layer to handle searching within menus
+
+### InputLayer
+
+The [`InputLayer`](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/types/input/InputLayer.tsx) class takes in a [model-react field](https://tarvk.github.io/model-react/examples/build/#Field) and a config. When opened, it allows the user to update this field's value using a text field.
+
+Below is the interface of the class:
+
+```ts title=InputLayer.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/types/input/InputLayer.tsx spoiler
+export class InputLayer<T> extends AbstractUILayer {
+    /**
+     * Creates a new input field
+     * @param field The field to target
+     */
+    public constructor(field: T extends string ? IField<T> : never);
+
+    /**
+     * Creates a new input field
+     * @param field The field to target
+     * @param config The configuration for the field
+     */
+    public constructor(field: IField<T>, config: IInputConfig<T>);
+    public constructor(field: IField<T>, config?: IInputConfig<T>);
+    // Value helpers
+    /**
+     * Retrieves the resulting value if valid, or an error otherwise
+     * @param hook The data hook to subscribe to changes
+     * @returns The resulting value, or error
+     */
+    public getValue(hook?: IDataHook): T | IInputError;
+    /**
+     * Commits the current text value to the target field, if the input value is valid
+     * @returns Whether the input was valid
+     */
+    public updateField(): boolean;
+    // Error handling
+    /**
+     * Retrieves the input error if any
+     * @param hook The hook to subscribe to changes
+     * @returns The error with the current input if any
+     */
+    public getError(hook?: IDataHook): IInputError | null;
+}
+
+type IInputConfig<T> = {
+    /** Checks whether the given input is valid */
+    checkValidity?: (v: string) => IInputError | undefined;
+    /** The function to transform the field value into a string */
+    serialize?: (v: T) => string;
+    /** The function to transform the input string to a valid field value (if the input is valid) */
+    deserialize?: (v: string) => T;
+    /** Whether to only update on any valid input, or only when the input field (defaults to true)*/
+    liveUpdate?: boolean;
+    /** Whether to dispatch a command on submit (defaults to false, can't be combined with liveUpdate or onSubmit) */
+    undoable?: boolean;
+    /** The icon to be shown for the input */
+    icon?: IThemeIcon | ReactElement;
+    /** The highlighter to use for the input */
+    highlighter?: IHighlighter;
+    /** Whether to allow usage of submit to exit the input, even if the input isn't valid (defaults to true) */
+    allowSubmitExitOnError?: boolean;
+    /** A callback for when the value was submitted, and UI was closed (note that invalid inputs aren't submitted, defaults to a function that updates the input field)*/
+    onSubmit?: (value: T) => void;
+};
+
+type IInputError = {
+    ranges?: {start: number; end: number}[];
+} & ({message: string} | {view: IViewStackItem});
+```
+
+There is also a corresponding `promptInputExecuteHandler` to open this layer with a specified config from a menu item when it's executed.
+
+### SelectLayer
+
+The [`SelectLayer`](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/types/select/SelectLayer.tsx) class takes in a [model-react field](https://tarvk.github.io/model-react/examples/build/#Field) and a config. When opened, it allows the user to update this field's value by selecting one of the options. Depending on the configuration it also allows for entering a custom option.
+
+Below is the interface of the class:
+
+```ts title=SelectLayer.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/types/select/SelectLayer.tsx spoiler
+export class SelectLayer<T> extends InputLayer<T> {
+    /**
+     * Creates a new select UI
+     * @param field The data field to target
+     * @param config The configuration for the UI
+     */
+    public constructor(field: IField<T>, config: ISelectConfig<T>);
+    // Value helpers
+    /**
+     * Retrieves the resulting value if valid, or an error otherwise
+     * @param hook The data hook to subscribe to changes
+     * @returns The resulting value, or error
+     */
+    public getValue(hook?: IDataHook): T | IInputError;
+    /**
+     * Commits the current text value to the target field, if the input value is valid
+     * @returns Whether the input was valid
+     */
+    public updateField(): boolean;
+    // Error handling
+    /**
+     * Retrieves the input error if any
+     * @param hook The hook to subscribe to changes
+     * @returns The error with the current input if any
+     */
+    public getError(hook?: IDataHook): IInputError | null;
+    // Custom value menu item handling
+    /**
+     * Retrieves whether custom is currently selected
+     * @param hook The hook to subscribe to changes
+     * @returns Whether custom input is selected
+     */
+    public isCustomSelected(hook?: IDataHook): boolean;
+}
+
+type ISelectConfig<T> = {
+    /** The options for the dropdown */
+    options: readonly ISelectOption<T>[];
+    /** A method to retrieve the UI for an option */
+    createOptionView: (value: T, isDisabled: boolean) => IMenuItem;
+    /** A check whether two values are equal, used to highlight the currently selected option */
+    equals?: (a: T, b: T) => boolean;
+    /** Menu category configuration for the search results */
+    categoryConfig?: IPrioritizedMenuConfig;
+    /** The item to use for custom input */
+    customView?: IMenuItem;
+    /** Checks whether the given input is valid */
+    checkValidity?: (v: string) => IInputError | undefined;
+    /** The function to transform the field value into a string */
+    serialize?: (v: T) => string;
+    /** The function to transform the input string to a valid field value (if the input is valid) */
+    deserialize?: (v: string) => T;
+    /** Whether to only update on any valid input, or only when the input field (defaults to true)*/
+    liveUpdate?: boolean;
+    /** Whether to dispatch a command on submit (defaults to false, can't be combined with liveUpdate or onSubmit) */
+    undoable?: boolean;
+    /** The icon to be shown for the input */
+    icon?: IThemeIcon | ReactElement;
+    /** The highlighter to use for the input */
+    highlighter?: IHighlighter;
+    /** Whether to allow usage of submit to exit the input, even if the input isn't valid (defaults to false) */
+    allowSubmitExitOnError?: boolean;
+    /** A callback for when the value was submitted, and UI was closed (note that invalid inputs aren't submitted, defaults to a function that updates the input field)*/
+    onSubmit?: (value: T) => void;
+    /** Whether to allow custom user inputs (certain config fields are ignored if disabled, defaults to false) */
+    allowCustomInput?: boolean;
+};
+
+type ISelectOption<T> =
+    | {
+          /** The value for the option */
+          value: T;
+          /** Whether this option should not be selectable */
+          disabled?: boolean;
+      }
+    | T;
+
+type IInputError = {
+    ranges?: {start: number; end: number}[];
+} & ({message: string} | {view: IViewStackItem});
+```
+
+There is also a corresponding `promptSelectExecuteHandler` to open this layer with a specified config from a menu item when it's executed.
+
+### MultiSelectLayer
+
+The [`MultiSelectLayer`](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/types/multiSelect/MultiSelectLayer.tsx) class takes in a [model-react field](https://tarvk.github.io/model-react/examples/build/#Field) and a config. When opened, it allows the user to update this field's value by selecting one or more options. Depending on the configuration it also allows for entering a custom option.
+
+Below is the interface of the class:
+
+```ts title=MultiSelectLayer.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/types/multiSelect/MultiSelectLayer.tsx spoiler
+export class MultiSelectLayer<T> extends AbstractUILayer {
+    /**
+     * Creates a new select UI
+     * @param field The data field to target
+     * @param config The configuration for the UI
+     */
+    public constructor(field: IField<T[]>, config: IMultiSelectConfig<T>);
+    // Error handling
+    /**
+     * Retrieves the input error if any
+     * @param hook The hook to subscribe to changes
+     * @returns The error with the current input if any
+     */
+    public getError(hook?: IDataHook): IInputError | null;
+    // Value selection handling
+    /**
+     * Retrieves the current value
+     * @param hook The hook to subscribe to changes
+     * @returns The current selection
+     */
+    public getValue(hook?: IDataHook): T[];
+    /**
+     * Commits the current text value to the target field
+     */
+    public updateField();
+    // Custom value menu item handling
+    /**
+     * Retrieves whether custom is currently selected
+     * @param hook The hook to subscribe to changes
+     * @returns Whether custom input is selected
+     */
+    public isCustomSelected(hook?: IDataHook): boolean;
+}
+
+type IMultiSelectConfig<T> = {
+    /** The options for the dropdown */
+    options: IMultiSelectOption<T>[];
+    /** A method to retrieve the UI for an option */
+    createOptionView: (
+        value: T,
+        isSelected: (hook?: IDataHook) => boolean,
+        isDisabled: boolean
+    ) => IMenuItem;
+    /** A check whether two values are equal, used to highlight the currently selected option */
+    equals?: (a: T, b: T) => boolean;
+    /** Menu category configuration for the search results */
+    categoryConfig?: IPrioritizedMenuConfig;
+    /** The item to use for custom input */
+    createCustomView?: (
+        getText: (hook?: IDataHook) => string | null
+    ) => IMenuItem;
+    /** Checks whether the given input is valid */
+    checkValidity?: (v: string) => IInputError | undefined;
+    /** The function to transform the field value into a string */
+    serialize?: (v: T) => string;
+    /** The function to transform the input string to a valid field value (if the input is valid) */
+    deserialize?: (v: string) => T;
+    /** Whether to only update on any valid input, or only when the input field (defaults to true)*/
+    liveUpdate?: boolean;
+    /** Whether to dispatch a command on submit (defaults to false, can't be combined with liveUpdate or onSubmit) */
+    undoable?: boolean;
+    /** The icon to be shown for the input */
+    icon?: IThemeIcon | ReactElement;
+    /** The highlighter to use for the input */
+    highlighter?: IHighlighter;
+    /** Whether to allow usage of submit to exit the input, even if the input isn't valid (defaults to true) */
+    allowSubmitExitOnError?: boolean;
+    /** A callback for when the value was submitted, and UI was closed (note that invalid inputs aren't submitted, defaults to a function that updates the input field)*/
+    onSubmit?: (value: T[]) => void;
+    /** Whether to allow custom user inputs (certain config fields are ignored if disabled, defaults to false) */
+    allowCustomInput?: boolean;
+};
+
+type IMultiSelectOption<T> =
+    | {
+          /** The value for the option */
+          value: T;
+          /** Whether this option should not be selectable */
+          disabled?: boolean;
+      }
+    | T;
+
+type IInputError = {
+    ranges?: {start: number; end: number}[];
+} & ({message: string} | {view: IViewStackItem});
+```
+
+There is also a corresponding `promptMultiSelectExecuteHandler` to open this layer with a specified config from a menu item when it's executed.
+
+### ContextMenuLayer
+
+The [ContextMenuLayer](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/types/context/ContextMenuLayer.tsx) is a rather specific layer, just for correctly showing a context menu. It probably won't see much reuse within LaunchMenu for other purpose than showing the context menu, but it could serve as a simple example.
+
+### MenuSearchLayer
+
+The [MenuSearch](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/types/menuSearch/MenuSearch.tsx) layer is a layer that takes care of all searching needs. It will show a search field, and open up a dedicated search menu when a query is entered. The constructor takes a simple configuration:
+
+```ts title=MenuSearch.tsx source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/types/menuSearch/MenuSearch.tsx spoiler
+export class MenuSearch extends AbstractUILayer {
+    /**
+     * Creates a new SearchField which can be used to search within a menu
+     * @param data The menu, context and config data
+     */
+    public constructor(data: IMenuSearchConfig);
+    /**
+     * Retrieves whether the search menu is opened
+     * @param hook The hook to subscribe to changes
+     * @returns Whether the search menu is opened
+     */
+    public hasSearch(hook: IDataHook): boolean;
+}
+
+type IMenuSearchConfig = {
+    /** The highlighter to be used for the search (defaults to plain text) */
+    highlighter?: IHighlighter;
+    /** Whether to highlight found patterns (defaults to true) */
+    usePatternHighlighter?: boolean;
+    /** Initial search text */
+    text?: string;
+    /** Initial text selection */
+    selection?: ITextSelection;
+    /** The menu this field should search in */
+    menu: IMenu;
+    /** The menu to be shown when no search term is provided */
+    defaultMenu?: IUILayerMenuData | ((hook: IDataHook) => IUILayerMenuData);
+    /** Category configuration for the search results */
+    categoryConfig?: IPrioritizedMenuConfig;
+    /** The callback to make when an item is executed */
+    onExecute?: IMenuItemExecuteCallback;
+    /** Whether to use key handler of items in the menu search menu */
+    useItemKeyHandlers?: boolean;
+    /** Whether to use key handlers of items in the context menu of the selected item(s) of the search menu */
+    useContextItemKeyHandlers?: boolean;
+    /** The icon to use for the search field, defaults to the search icon */
+    icon?: IThemeIcon | ReactElement;
+};
+```
+
+Usage of this layer can be seen in the [Reusing UILayers](#reusing-uilayers) section of this page.

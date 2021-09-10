@@ -1,0 +1,44 @@
+# Applet manager
+
+The applet-manager applet allows users to open open applets.
+
+<ScreenShot
+    src="/applets/applet-manager/banner.png"
+    alt="Applet-manager banner"
+/>
+
+## Features
+
+Currently the applet manager only allows you to open applets.
+Simply search for the applet you're interested in, and execute the primary action on an applet to open. Note that not all applets can be opened, some only provide functionality by other means.
+
+<ScreenShot src="/applets/applet-manager/banner.png" alt="Execute applet" />
+
+In addition, the pattern `applet:` followed by your query can be used to only get applet results.
+
+<ScreenShot
+    src="/applets/applet-manager/searchPattern.png"
+    alt="Search only applets"
+    section="field"
+/>
+
+## Roadmap
+
+We do have some important additions planned for the near future, making tthe applet-manager much more important.
+
+### Installation
+
+The applet-manager should be able to install and uninstall applets in LaunchMenu. The ability to customize and extend LaunchMenu is very important to us, and all of the infrastructure of loading applets from dedicated packages is already present.
+We make use [NPM](https://www.npmjs.com/) directly to manage our applets.
+
+In order to get this feature operational, a few tasks are still left:
+
+-   Use either npm's CLI package (as done in the LM installer) or yarn's package in order to install and uninstall packages (modules)
+-   Create some way of tagging npm packages with data to indicate they are valid LM applets for a certain version
+-   Setup some kind of version testing, such that we can check whether a given package is compatible with the LM version you're trying to install it in
+-   Create a way of searching for LM applets on NPM
+-   Create the LM UI to manage this entire process
+
+### Enabling/disabling
+
+It will probably be quite useful to be able to enable and disable applets temporarily. This can already be done by directly updating the `settings/applets.json` file, but it would be nice to add some way of doing this through some UI.

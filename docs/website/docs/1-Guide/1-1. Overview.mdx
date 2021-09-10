@@ -1,0 +1,145 @@
+# Guide overview
+
+In this guide you will learn how to make an applet for LaunchMenu.
+
+It will introduce you to all major aspects of creating applets:
+
+-   <a href="Guide/2.-Environment-setup">Environment setup</a>
+-   <a href="Guide/3.-Applet-interface">Applet interface</a>
+-   <a href="Guide/4.-Items-and-searches">Menu items and searches</a>
+-   <a href="Guide/5.-Content-and-theming">Content and theming</a>
+-   <a href="Guide/6.-UILayers-and-menus">UILayers and menus</a>
+-   <a href="Guide/7.-Settings">Settings</a>
+-   <a href="Guide/8.-Actions">Actions</a>
+-   <a href="Guide/9.-Publishing-and-usage">Publishing / usage</a>
+
+At the end of this guide you will be left with your own simple `Hello world` applet, and the knowledge to create your own more advanced applets.
+
+## Demo
+
+Below is a video demonstrating all the behavior of the applet you will be making.
+
+<ScreenRecording src="https://raw.github.com/LaunchMenu/LM-applet-quickstart/main/recordings/demo.webm" />
+
+## TLDR
+
+We highly recommend reading through and or following along with this guide, but you can find the final code [on github](https://github.com/LaunchMenu/LM-applet-quickstart) if you just want a quick example nonetheless.
+
+Or check the final example code below.
+
+```tsx spoiler=true title=HelloWorld.tsx source=https://github.com/LaunchMenu/LM-applet-quickstart/blob/main/src/index.tsx video=https://raw.github.com/LaunchMenu/LM-applet-quickstart/main/recordings/demo.webm
+import React, {FC} from "react";
+import {useDataHook} from "model-react";
+import {
+    Box,
+    createContextAction,
+    createKeyPatternSetting,
+    createSettings,
+    createSettingsFolder,
+    createStandardMenuItem,
+    createStandardSearchPatternMatcher,
+    createStringSetting,
+    declare,
+    KeyPattern,
+    Menu,
+    Priority,
+    searchAction,
+    UILayer,
+    useIOContext,
+} from "@launchmenu/core";
+
+const info = {
+    name: "HelloWorld",
+    description: "A minimal example applet",
+    version: "0.0.0",
+    icon: "applets" as const,
+    tags: ["cool"],
+};
+
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                username: createStringSetting({name: "User name", init: "Bob"}),
+                alert: createKeyPatternSetting({
+                    name: "Alert shortcut",
+                    init: new KeyPattern("ctrl+g"),
+                }),
+            },
+        }),
+});
+
+const helloWorldPattern = createStandardSearchPatternMatcher({
+    name: "Hello world",
+    matcher: /^world: /,
+});
+
+const alertCombined = createContextAction({
+    name: "Alert",
+    contextItem: {
+        icon: "send",
+        priority: [Priority.HIGH],
+        shortcut: context => context.settings.get(settings).alert.get(),
+    },
+    core: (texts: string[]) => ({
+        execute: ({context}) => {
+            const name = context?.settings.get(settings).username.get();
+            const prefix = texts.reduce((total, text, i) => {
+                const dist = texts.length - i - 1;
+                const spacer = dist == 0 ? "" : dist == 1 ? " and " : ", ";
+                return total + (i > 0 ? text.toLowerCase() : text) + spacer;
+            }, "");
+            alert(`${prefix} ${name}`);
+        },
+    }),
+});
+
+const Content: FC<{text: string}> = ({text}) => {
+    const context = useIOContext();
+    const [hook] = useDataHook();
+    const name = context?.settings.get(settings).username.get(hook);
+    return (
+        <Box color="primary">
+            {text} {name}!
+        </Box>
+    );
+};
+
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello!"),
+        content: <Content text="Hello" />,
+        searchPattern: helloWorldPattern,
+        actionBindings: [alertCombined.createBinding("Hello")],
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye!"),
+        content: <Content text="Bye" />,
+        searchPattern: helloWorldPattern,
+        actionBindings: [alertCombined.createBinding("Bye")],
+    }),
+];
+
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get(items),
+        };
+    },
+    open({context, onClose}) {
+        context.open(
+            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                path: "Hello world",
+            })
+        );
+    },
+});
+```
+
+<GuideNav next="guide/2.-environment-setup" />
