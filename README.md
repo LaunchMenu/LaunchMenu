@@ -1,4 +1,4 @@
-![Logo](https://github.com/LaunchMenu/LaunchMenu/raw/master/docs/images/LaunchMenu-Logo.png)
+![Logo](https://github.com/LaunchMenu/LaunchMenu/raw/master/docs/legacy/images/LaunchMenu-Logo.png)
 
 ### Goal
 
@@ -108,7 +108,7 @@ This repo 2 permanent branches, and 4 more branch types:
 
 All of the feature and bug names follow the camelCase convention. Additionally, we try to keep branch names as explicit as possible, without adding irrelevant information. E.g.:
 `fix/caretAlwaysFlashing`.
-New branches should be created from the development branch, and merged back into development once finished. 
+New branches should be created from the development branch, and merged back into development once finished.
 
 ##### Changelog
 
