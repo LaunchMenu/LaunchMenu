@@ -1,3 +1,4 @@
+import {IErrorComp} from "../../../components/error/_types/IErrorComp";
 import {IIOContext} from "../../../context/_types/IIOContext";
 
 /**
@@ -12,4 +13,6 @@ export type IApplicationLayoutProps = {
     menuWidthFraction?: number;
     /** The height of the field */
     fieldHeight?: number;
+    /** Additional content to show if an error occurs */
+    ErrorAdditionComp?: IErrorComp;
 };

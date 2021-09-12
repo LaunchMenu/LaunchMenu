@@ -2,15 +2,14 @@ import React, {memo} from "react";
 import {IMenuItem} from "./_types/IMenuItem";
 import {IStandardMenuItemData} from "./_types/IStandardMenuItemData";
 import {MenuItemFrame} from "../../components/items/MenuItemFrame";
-import {Truncated} from "../../components/Truncated";
 import {MenuItemLayout} from "../../components/items/MenuItemLayout";
 import {MenuItemIcon} from "../../components/items/MenuItemIcon";
 import {getHooked} from "../../utils/subscribables/getHooked";
-import {Box} from "../../styling/box/Box";
 import {createStandardActionBindings} from "./createStandardActionBindings";
 import {ShortcutLabel} from "../../components/items/ShortcutLabel";
-import {simpleSearchHandler} from "../../actions/types/search/tracedRecursiveSearch/simpleSearch/simpleSearchHandler";
 import {useDataHook} from "model-react";
+import {MenuItemDescription} from "../../components/items/MenuItemDescription";
+import {MenuItemName} from "../../components/items/MenuItemName";
 
 /**
  * Creates a new standard menu item
@@ -19,6 +18,7 @@ import {useDataHook} from "model-react";
  */
 export function createStandardMenuItem({
     icon,
+    TextHighlighter,
     ...bindingData
 }: IStandardMenuItemData): IMenuItem {
     const {name, description, shortcut} = bindingData;
@@ -29,30 +29,27 @@ export function createStandardMenuItem({
             const [h] = useDataHook();
             const iconV = getHooked(icon, h);
             const descriptionV = getHooked(description, h);
-            const nameV = getHooked(name, h);
             return (
                 <MenuItemFrame {...props}>
                     <MenuItemLayout
                         icon={iconV && <MenuItemIcon icon={iconV} />}
                         name={
-                            <Box font="header">
-                                <simpleSearchHandler.Highlighter
-                                    query={highlight}
-                                    pattern={bindingData.searchPattern}>
-                                    {nameV}
-                                </simpleSearchHandler.Highlighter>
-                            </Box>
+                            <MenuItemName
+                                name={name}
+                                searchPattern={bindingData.searchPattern}
+                                query={highlight}
+                                TextHighlighter={TextHighlighter}
+                            />
                         }
                         shortcut={shortcut && <ShortcutLabel shortcut={shortcut} />}
                         description={
                             descriptionV && (
-                                <Truncated title={descriptionV}>
-                                    <simpleSearchHandler.Highlighter
-                                        query={highlight}
-                                        pattern={bindingData.searchPattern}>
-                                        {descriptionV}
-                                    </simpleSearchHandler.Highlighter>
-                                </Truncated>
+                                <MenuItemDescription
+                                    description={descriptionV}
+                                    searchPattern={bindingData.searchPattern}
+                                    query={highlight}
+                                    TextHighlighter={TextHighlighter}
+                                />
                             )
                         }
                     />

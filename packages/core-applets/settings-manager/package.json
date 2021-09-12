@@ -33,7 +33,7 @@
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/core-applets/settings-manager#readme",
     "peerDependencies": {
-        "model-react": "^4.0.1",
+        "model-react": "^4.0.2",
         "react": "^17.0.0",
         "uuid": "^8.2.0"
     },
@@ -43,7 +43,7 @@
         "@types/jest": "^26.0.0",
         "@types/react": "^17.0.0",
         "jest": "^26.0.1",
-        "model-react": "^4.0.1",
+        "model-react": "^4.0.2",
         "react": "^17.0.0",
         "ts-jest": "^26.1.0"
     },

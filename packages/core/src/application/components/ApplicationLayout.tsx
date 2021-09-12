@@ -13,13 +13,13 @@ import {
     SlideLeftOpenTransition,
     SlideDownOpenTransition,
 } from "../../components/context/stacks/transitions/open/slideOpen/slideOpenDirectionts";
+import {ErrorBoundary} from "../../components/error/ErrorBoundary";
 import {FillBox} from "../../components/FillBox";
 import {IOContextProvider} from "../../context/react/IOContextContext";
 import {getContextContentStack} from "../../context/uiExtracters/getContextContentStack";
 import {getContextFieldStack} from "../../context/uiExtracters/getContextFieldStack";
 import {getContextMenuStack} from "../../context/uiExtracters/getContextMenuStack";
 import {Box} from "../../styling/box/Box";
-import {useWindowSize} from "../../utils/hooks/useWindowSize";
 import {LFC} from "../../_types/LFC";
 import {usePaneIsVisible} from "../hooks/usePaneIsVisible";
 import {IApplicationLayoutProps} from "./_types/IApplicationLayoutProps";
@@ -32,6 +32,7 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
     menuWidthFraction = 0.4,
     fieldHeight = 60,
     defaultTransitionDuration = 200,
+    ErrorAdditionComp,
 }) => {
     const fieldStackGetter = (h?: IDataHook) => getContextFieldStack(context, h);
     const fieldState = usePaneIsVisible(fieldStackGetter, defaultTransitionDuration);
@@ -120,19 +121,23 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                     zIndex={1}
                     height={fieldState.open ? fieldHeight : 0}
                     transition={`${fieldState.duration}ms height`}>
-                    <StackView
-                        OpenTransitionComp={SlideDownOpenTransition}
-                        ChangeTransitionComp={SlideUpChangeTransition}
-                        CloseTransitionComp={SlideUpCloseTransition}
-                        stackGetter={fieldStackGetter}
-                    />
+                    <ErrorBoundary ErrorAdditionComp={ErrorAdditionComp}>
+                        <StackView
+                            OpenTransitionComp={SlideDownOpenTransition}
+                            ChangeTransitionComp={SlideUpChangeTransition}
+                            CloseTransitionComp={SlideUpCloseTransition}
+                            stackGetter={fieldStackGetter}
+                        />
+                    </ErrorBoundary>
                 </Box>
                 <Box className="pathSection" background="bgPrimary">
-                    <UIPathView
-                        context={context}
-                        pathTransitionDuration={defaultTransitionDuration}
-                        heightTransitionDuration={defaultTransitionDuration}
-                    />
+                    <ErrorBoundary ErrorAdditionComp={ErrorAdditionComp}>
+                        <UIPathView
+                            context={context}
+                            pathTransitionDuration={defaultTransitionDuration}
+                            heightTransitionDuration={defaultTransitionDuration}
+                        />
+                    </ErrorBoundary>
                 </Box>
                 <Box
                     position="relative"
@@ -169,11 +174,13 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                                 height="100%"
                                 right="none"
                                 position="absolute">
-                                <StackView
-                                    OpenTransitionComp={SlideLeftOpenTransition}
-                                    CloseTransitionComp={SlideRightCloseTransition}
-                                    stackGetter={menuStackGetter}
-                                />
+                                <ErrorBoundary ErrorAdditionComp={ErrorAdditionComp}>
+                                    <StackView
+                                        OpenTransitionComp={SlideLeftOpenTransition}
+                                        CloseTransitionComp={SlideRightCloseTransition}
+                                        stackGetter={menuStackGetter}
+                                    />
+                                </ErrorBoundary>
                             </Box>
                         </Box>
                         <Box
@@ -182,10 +189,12 @@ export const ApplicationLayout: LFC<IApplicationLayoutProps> = ({
                             flexShrink={1}
                             background="bgSecondary">
                             <Box className="contentSection" width="100%" height="100%">
-                                <StackView
-                                    ChangeTransitionComp={InstantChangeTransition}
-                                    stackGetter={contentStackGetter}
-                                />
+                                <ErrorBoundary ErrorAdditionComp={ErrorAdditionComp}>
+                                    <StackView
+                                        ChangeTransitionComp={InstantChangeTransition}
+                                        stackGetter={contentStackGetter}
+                                    />
+                                </ErrorBoundary>
                             </Box>
                         </Box>
                     </Box>

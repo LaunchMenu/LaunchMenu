@@ -147,7 +147,7 @@ export function createFieldControlsSettingsFolder() {
                     },
                 ]),
                 category: getFieldControlsFolderCategories().insertDelete,
-                tags: ["text", "input"],
+                tags: ["text", "input", "delete"],
             }),
             delete: createKeyPatternSetting({
                 name: "Remove character after caret",
@@ -155,7 +155,7 @@ export function createFieldControlsSettingsFolder() {
                     {pattern: ["delete"], type: "down or repeat", allowExtra: ["shift"]},
                 ]),
                 category: getFieldControlsFolderCategories().insertDelete,
-                tags: ["text", "input"],
+                tags: ["text", "input", "delete"],
             }),
             insertLine: createKeyPatternSetting({
                 name: "Insert a new line",
@@ -181,6 +181,30 @@ export function createFieldControlsSettingsFolder() {
                 ]),
                 category: getFieldControlsFolderCategories().insertDelete,
                 tags: ["text", "input"],
+            }),
+            backwardsDeleteWord: createKeyPatternSetting({
+                name: "Deletes a word backwards",
+                init: new KeyPattern([
+                    {
+                        pattern: `${wordJumpModifier}+backspace`,
+                        type: "down or repeat",
+                        allowExtra: ["shift"],
+                    },
+                ]),
+                category: getFieldControlsFolderCategories().insertDelete,
+                tags: ["text", "input", "delete"],
+            }),
+            forwardsDeleteWord: createKeyPatternSetting({
+                name: "Deletes a word forwards",
+                init: new KeyPattern([
+                    {
+                        pattern: `${wordJumpModifier}+delete`,
+                        type: "down or repeat",
+                        allowExtra: ["shift"],
+                    },
+                ]),
+                category: getFieldControlsFolderCategories().insertDelete,
+                tags: ["text", "input", "delete"],
             }),
 
             // Meta controls
