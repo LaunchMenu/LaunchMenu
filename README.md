@@ -97,13 +97,14 @@ Then in the case of working on an applet, simply run `yarn dev` again, but now w
 
 #### Branches/merging
 
-This repo 2 permanent branches, and 4 more branch types:
+This repo 2 permanent branches, and 5 more branch types:
 
 -   master: This branch is up to date with the latest release.
 -   development: This branch contains all finished features for the next release.
 -   feature/\[featureName]: Branches matching this pattern contain a unfinished new feature
 -   fix/\[bugName]: Branches matching this pattern contain a unfinished fix for a bug
--   other/\[change]: Branches matching this pattern contain changes not fitting under `feature` or `fix`, such as code refactors
+-   docs/\[change]: Branches matching this pattern contain documentation improvements
+-   other/\[change]: Branches matching this pattern contain changes not fitting under `feature`, `fix` or `docs`, such as code refactors
 -   release/\[versionNumber]: Branches matching this pattern contain commits for alpha, beta and final releases before merging them to master
 
 All of the feature and bug names follow the camelCase convention. Additionally, we try to keep branch names as explicit as possible, without adding irrelevant information. E.g.:
