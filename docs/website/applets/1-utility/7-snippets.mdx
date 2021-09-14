@@ -1,0 +1,16 @@
+# Snippets
+
+<StatusNotice />
+
+## Roadmap
+
+The exact features of this applet have yet to be determined, but it will generally just provide automatic snippet insertion.
+
+The user would be able to configure that a given piece of text is mapped to some other given piece of text.
+`:D` could for instance be mapped to `😄`. Then when the applet is enabled, when `:D` is typed in any program, it will automatically be replaced with the unicode `😄` text.
+
+### Technical details
+
+This applet would require to actively listen to all keypresses of the user when the applet is enabled. We will have to look into how feasible this is (in a stable way without interfering with normal OS keyboard usage) for all of the supported OSes. This technology would also be useful for other applets such as dictionaries or spellcheckers.
+
+Will need to detect clicks, and erase the cached text, in order to prevent incorrect matches.

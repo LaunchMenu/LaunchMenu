@@ -1,0 +1,658 @@
+# Environment setup
+
+Before you're able to create your applet, you will have to setup an environment.
+
+Right now you have two options to accomplish this:
+
+-   Copy the contents of our [quickstart repo](https://github.com/LaunchMenu/LM-applet-quickstart), which also contains the code we will be going over in this guide
+-   Follow the steps below to setup the environment yourself, and learn about the tools used at the same time
+
+Covered environment topics:
+
+-   [NPM](#npm)
+-   [Typescript and lm-build-tools](#typescript-and-lm-build-tools)
+-   [React](#react)
+-   [Applet selection](#applet-selection)
+-   [Prettier](#prettier)
+-   [Jest](#jest)
+
+In case you're already familiar with these technologies, you can find an overview of our [recommended configs here](#summary)
+
+## NPM
+
+In order to run your code, you will have to install [Node.js](https://nodejs.dev/) first.
+
+Once installed, javascript can be run locally and the node package manager ([NPM](https://www.npmjs.com/)) can be used to manage JavaScript/TypeScript dependencies.
+
+To create your own applet [node module](https://docs.npmjs.com/about-packages-and-modules), create a directory for your applet anywhere on your computer and add a `package.json` file to it. Below is a template that you can customize with relevant info for your applet:
+
+```json title=package.json
+{
+    "name": "applet-hello-world",
+    "private": true,
+    "version": "0.0.0",
+    "description": "A hello-world application for LM",
+    "keywords": ["launchmenu-applet", "hello world"],
+    "author": "Bob bobby",
+    "license": "MIT"
+}
+```
+
+This file stores important metadata of your applet. We can also list other node modules in here as dependencies, which can then easily be installed by others using - or working on - your applet later.
+
+There are three types of dependencies:
+
+-   peer-dependencies: Dependencies that your applet shares with all other applets
+-   dev-dependencies: Dependencies that are only required at compile time but not at runtime
+-   regular dependencies: All other dependencies
+
+<!-- TODO: update the version numbers once LM is published, also add the LM-recorder applet -->
+
+Below is a config example with LaunchMenu dependencies added:
+
+```json title=package.json highlight=9:22
+{
+    "name": "applet-hello-world",
+    "private": true,
+    "version": "0.0.0",
+    "description": "A hello-world application for LM",
+    "keywords": ["launchmenu-applet", "hello world"],
+    "author": "Bob bobby",
+    "license": "MIT",
+    "dependencies": {},
+    "peerDependencies": {
+        "@launchmenu/core": "^0.1.4"
+    },
+    "devDependencies": {
+        "@launchmenu/core": "^0.1.4",
+        "electron": "^9.3.1",
+        "@launchmenu/applet-help": "^0.1.4",
+        "@launchmenu/applet-applet-manager": "^0.1.4",
+        "@launchmenu/applet-session-manager": "^0.1.4",
+        "@launchmenu/applet-settings-manager": "^0.1.4",
+        "@launchmenu/applet-window-manager": "^0.1.4",
+        "@launchmenu/applet-lm-recorder": "^0.1.4"
+    }
+}
+```
+
+Unfortunately we currently have to list some core-applets in the dev-dependencies in order to properly test our applet. This will likely be improved with a dedicated applet-testing module in the future.
+
+See [adding dependencies](https://docs.npmjs.com/specifying-dependencies-and-devdependencies-in-a-package-json-file) to learn how to add your own extra dependencies.
+
+## TypeScript and lm-build-tools
+
+LaunchMenu applets are written in [TypeScript](https://www.typescriptlang.org/) (TS). It's also possible to make your applets in JavaScript (JS), but we don't have any examples for JS environment setup and we highly encourage the usage of TS.
+
+In order to use TS, we will have to translate our TS source code to JS before we're able to execute it. For this we can use the TS compiler. In order to simplify the setup, we provide our own [lm-build-tools](https://www.npmjs.com/package/@launchmenu/build-tools) module that can be used for this.
+
+To install and use the build tools, we should add the following lines to our `package.json`:
+
+```json title=package.json highlight=9:16,23:23
+{
+    "name": "applet-hello-world",
+    "private": true,
+    "version": "0.0.0",
+    "description": "A hello-world application for LM",
+    "keywords": ["launchmenu-applet", "hello world"],
+    "author": "Bob bobby",
+    "license": "MIT",
+    "scripts": {
+        "build": "lm-build-tools --build --production",
+        "dev": "lm-build-tools --watch --launch --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "start": "lm-build-tools --launch --production --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "start:dev": "lm-build-tools --launch --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "clean": "lm-build-tools --cleanup",
+        "prepare": "npm run build"
+    },
+    "dependencies": {},
+    "peerDependencies": {
+        "@launchmenu/core": "^0.1.4"
+    },
+    "devDependencies": {
+        "@launchmenu/core": "^0.1.4",
+        "@launchmenu/build-tools": "^0.1.0",
+        "electron": "^9.3.1",
+        "@launchmenu/applet-help": "^0.1.4",
+        "@launchmenu/applet-applet-manager": "^0.1.4",
+        "@launchmenu/applet-session-manager": "^0.1.4",
+        "@launchmenu/applet-settings-manager": "^0.1.4",
+        "@launchmenu/applet-window-manager": "^0.1.4",
+        "@launchmenu/applet-lm-recorder": "^0.1.4"
+    }
+}
+```
+
+The specified `entry` path for the `start` and `dev` scripts are a little awkward, but this is once again something that a dedicated applet-testing module will improve in the future.
+
+We added a bunch of scripts that can be invoked to manage your applet:
+
+-   `build` will be able to transpile all the TypeScript code to JavaScript.
+-   `start` and `start:dev` will be able to start LM with your custom applet in production and dev mode respectively.
+-   `dev` is a combination of these two and will actively compile your applet, listen for file changes as long as the process is active, and also start LM in dev mode with automatic applet reloading.
+-   `clean` can be used to remove the previously compiled code, to get rid of any potential remains of old code
+
+Finally we will have to configure our TypeScript language settings by including a [`tsconfig.json`](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html) file in the root of the directory.
+Below is our recommended config, but you can change options to your liking:
+
+```json title=tsconfig.json
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "outDir": "./build/",
+        "rootDir": "./src/",
+        "inlineSourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
+        "module": "commonjs",
+        "target": "ES2019",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "preserveSymlinks": true,
+        "strictNullChecks": true,
+        "skipLibCheck": true,
+        "noImplicitAny": true
+    },
+    "types": ["node"]
+}
+```
+
+This config specifies that all your source code is in the `src` directory, and the output is in `build`. If you want to change these directories, you should pass the same arguments to the [lm-build-tools](https://www.npmjs.com/package/@launchmenu/build-tools) too.
+
+To test whether the npm and TS setup works properly, you can create a file at `src/index.tsx` and add some code like:
+
+```ts title=src/index.tsx
+console.log("Detect");
+```
+
+and open a terminal in this directory and run:
+
+```
+npm install
+```
+
+Finally, we won't be running this code yet, but we will try and transpile it:
+
+```
+npm run build
+```
+
+If everything went well, you should now have a file called `build/index.js` in your root directory too.
+
+You may want to get a little familiar with [TypeScript syntax](https://www.typescriptlang.org/docs/), but in case you already know JavaScript it's not essential. Throughout the guide we will will highlight some TypeScript specific things, and you can always read up on typescript some more afterwards.
+
+## React
+
+To start using [react](https://reactjs.org/) for our UIs, we will have to add it to our dependencies:
+
+```json title=package.json highlight=20:21,26:28
+{
+    "name": "applet-hello-world",
+    "private": true,
+    "version": "0.0.0",
+    "description": "A hello-world application for LM",
+    "keywords": ["launchmenu-applet", "hello world"],
+    "author": "Bob bobby",
+    "license": "MIT",
+    "scripts": {
+        "build": "lm-build-tools --build --production",
+        "dev": "lm-build-tools --watch --launch --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "start": "lm-build-tools --launch --production --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "start:dev": "lm-build-tools --launch --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "clean": "lm-build-tools --cleanup",
+        "prepare": "npm run build"
+    },
+    "dependencies": {},
+    "peerDependencies": {
+        "@launchmenu/core": "^0.1.4",
+        "model-react": "^4.0.1",
+        "react": "^17.0.0"
+    },
+    "devDependencies": {
+        "@launchmenu/core": "^0.1.4",
+        "@launchmenu/build-tools": "^0.1.0",
+        "@types/react": "^17.0.0",
+        "model-react": "^4.0.1",
+        "react": "^17.0.0",
+        "electron": "^9.3.1",
+        "@launchmenu/applet-help": "^0.1.4",
+        "@launchmenu/applet-applet-manager": "^0.1.4",
+        "@launchmenu/applet-session-manager": "^0.1.4",
+        "@launchmenu/applet-settings-manager": "^0.1.4",
+        "@launchmenu/applet-window-manager": "^0.1.4",
+        "@launchmenu/applet-lm-recorder": "^0.1.4"
+    }
+}
+```
+
+The `@types/react` dev dependency is required for TypeScript to understand how to interface with React and `model-react` is a library that we use for state management of our components.
+
+We also want to add a line to our `tsconfig.json` in order to allow for usage of `jsx`:
+
+```json title=tsconfig.json highlight=11:11
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "outDir": "./build/",
+        "rootDir": "./src/",
+        "inlineSourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
+        "module": "commonjs",
+        "target": "ES2019",
+        "jsx": "react",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "preserveSymlinks": true,
+        "strictNullChecks": true,
+        "skipLibCheck": true,
+        "noImplicitAny": true
+    },
+    "types": ["node"]
+}
+```
+
+That's all we have to do to work with react in our applet, however if you're not familiar with react it may be helpful if we quickly address the interesting looking syntax too.
+React allows us to add html-like structure right within our TypeScript code called `jsx`. These structures are actually translated to pure javascript during compile time, simply storing the same logical structure in a json object. React is then able to take care of synchronizing our UI representation (known as the [virtual DOM](<https://reactjs.org/docs/faq-internals.html#:~:text=The%20virtual%20DOM%20(VDOM)%20is,This%20process%20is%20called%20reconciliation.>)) in the code with the actual html structure.
+
+Below is a little snippet of the type of code you can expect (for now in JavaScript for simplification):
+
+```tsx
+const Name = ({color, children}) => (
+    <div style={{color: color}}>{children}</div>
+);
+const Person = () => {
+    const [isBlue, setBlue] = useState(false);
+    return (
+        <div onClick={() => setBlue(!isBlue)}>
+            <Name color={isBlue ? "blue" : "purple"}>Bob</Name>
+        </div>
+    );
+};
+```
+
+If you're not at all familiar with React, we recommend learning the basic concepts first. The rest of the guide assumes you have basic knowledge about react already, including react hooks. We recommend [this article](https://scotch.io/starters/react/getting-started-with-react-2019-edition) to learn the basics.
+
+An important difference between JavaScript and TypeScript when it comes to jsx is that TypeScript doesn't directly allow for jsx in all its files. If you want to use jsx in your TypeScript file, you have to change the file extension from `.ts` to `.tsx`.
+
+## Applet selection
+
+In order to actually open your applet with LaunchMenu while testing, you will have to tell the locally installed version what applets to load in. It looks for a `data/settings/applet.json` file relative to the directory it was launched in. This file should contain a json object with the names and file paths of the applets to load.
+
+So in the same directory as the package.json file, one should create the file below:
+
+```json title=data/settings/applets.json
+{
+    "applet-applet-manager": "node_modules/@launchmenu/applet-applet-manager",
+    "applet-session-manager": "node_modules/@launchmenu/applet-session-manager",
+    "applet-settings-manager": "node_modules/@launchmenu/applet-settings-manager",
+    "applet-window-manager": "node_modules/@launchmenu/applet-window-manager",
+    "applet-lm-recorder": "node_modules/@launchmenu/applet-lm-recorder",
+    "applet-help": "node_modules/@launchmenu/applet-help",
+    "hello-world": "./"
+}
+```
+
+This specifies all core-applets used for normal functioning of LaunchMenu, as well as your own applet that you will be testing. The names used for these applets don't really matter, as long as they are unique.
+
+## Prettier
+
+[Prettier](https://prettier.io/) is not at all required in your project, but we highly recommend using some code formatter if you will make your applet Open-source. Within [VSCode](https://code.visualstudio.com/) - and probably many other IDEs too - you can configure your code to be formatted on save. This way you don't have to worry about any of the formatting, and your code remains consistently readable what syntax is concerned.
+
+In VSCode the [Prettier plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) can be used for your formatting needs. We personally recommend adding the following config in your project directory, but you're of course free to modify it in any way:
+
+```json title=.prettierrc.json
+{
+    "tabWidth": 4,
+    "arrowParens": "avoid",
+    "bracketSpacing": false,
+    "singleQuote": false,
+    "trailingComma": "es5",
+    "jsxBracketSameLine": true
+}
+```
+
+Alternatively [ESLint](https://eslint.org/) is quite popular. This can take care of syntax formatting needs, as well as warning about certain dangerous or old-school practices that you probably shouldn't use. There also exists a [ESLint plugin](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) for VSCode.
+
+## Jest
+
+Depending on how complex your applet gets, you may also want to consider adding a unit testing setup. This step can most likely be skipped when messing around and making your first applet, but it may be worth getting back to once your applet starts becoming complex.
+
+No specific testing framework is required, but LaunchMenu itself uses [jest](https://jestjs.io/) for testing some of its components. Right now no LaunchMenu specific testing tools exist yet, but if they are added they will be made to work with Jest.
+
+To start adding Jest tests to your applet, you need to add a jest configuration file to the root of your project:
+
+```js title=jest.config.js
+module.exports = {
+    roots: ["<rootDir>/src"],
+    transform: {
+        "^.+\\.tsx?$": "ts-jest",
+    },
+    testRegex: ["./_tests/.*(?<!\\.helper|\\.setup)\\.tsx?"], // Any ts or tsx file in a _tests folder that doesn't end with .helper.ts
+    verbose: false,
+    globals: {
+        "ts-jest": {
+            tsConfig: "tsconfig.json",
+            diagnostics: false,
+        },
+    },
+    coverageReporters: ["json", "html-spa", "text"],
+    coveragePathIgnorePatterns: [".helper."],
+    coverageDirectory: ".coverage",
+    automock: false,
+    moduleFileExtensions: ["ts", "tsx", "js"],
+    transformIgnorePatterns: [],
+    testEnvironment: "node",
+    moduleNameMapper: {
+        "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$":
+            "<rootDir>/src/_tests/fakeStaticFile.helper.ts",
+    },
+};
+```
+
+This config can be changed to your likings, but this is the default that we use.
+
+Next you want to add Jest dev dependencies to your `package.json`, as well as scripts to execute the tests:
+
+```json title=package.json highlight=15:17,32:36
+{
+    "name": "applet-hello-world",
+    "private": true,
+    "version": "0.0.0",
+    "description": "A hello-world application for LM",
+    "keywords": ["launchmenu-applet", "hello world"],
+    "author": "Bob bobby",
+    "license": "MIT",
+    "scripts": {
+        "build": "lm-build-tools --build --production",
+        "dev": "lm-build-tools --watch --launch --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "start": "lm-build-tools --launch --production --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "start:dev": "lm-build-tools --launch --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "clean": "lm-build-tools --cleanup",
+        "test": "jest -i",
+        "test-watch": "jest --watch -i",
+        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\"",
+        "prepare": "npm run build"
+    },
+    "dependencies": {},
+    "peerDependencies": {
+        "@launchmenu/core": "^0.1.4",
+        "model-react": "^4.0.1",
+        "react": "^17.0.0"
+    },
+    "devDependencies": {
+        "@launchmenu/core": "^0.1.4",
+        "@launchmenu/build-tools": "^0.1.0",
+        "@types/react": "^17.0.0",
+        "model-react": "^4.0.1",
+        "react": "^17.0.0",
+        "jest": "^26.0.1",
+        "ts-jest": "^26.1.0",
+        "@testing-library/jest-dom": "^5.5.0",
+        "@testing-library/react": "^10.0.3",
+        "@types/jest": "^26.0.0",
+        "electron": "^9.3.1",
+        "@launchmenu/applet-help": "^0.1.4",
+        "@launchmenu/applet-applet-manager": "^0.1.4",
+        "@launchmenu/applet-session-manager": "^0.1.4",
+        "@launchmenu/applet-settings-manager": "^0.1.4",
+        "@launchmenu/applet-window-manager": "^0.1.4",
+        "@launchmenu/applet-lm-recorder": "^0.1.4"
+    }
+}
+```
+
+These changes added 3 more scripts that we can use:
+
+-   `test` will be able to run all tests once, and report the results
+-   `test-watch` will be able to continuously rerun the tests as you're writing your code, allowing you to try and fix your components without having to manually retest for every change
+-   `test-watch-debug` wil do the same as `test-watch` but waits for you to attach a code debugger such as [node inspector manager](https://chrome.google.com/webstore/detail/nodejs-v8-inspector-manag/gnhhdgbaldcilmgcpfddgdbkhjohddkj?hl=en)
+
+Next we will want to install our newly added dependencies by calling:
+
+```
+npm install
+```
+
+The above mentioned `jest.config.js` file is configured to run code from dedicated `_tests` directories throughout your source code (it can be in any sub-folder). Additionally any test within this directory containing `.helper` or `.setup` won't be executed (E.g. `createMenu.helper.ts`). So we can now test whether this is working by adding a file at `src/_tests/someTest.ts`:
+
+```ts title=src/_tests/someTest.ts
+describe("myComponentOrFunction", () => {
+    it("Should do what I want it to do", () => {
+        const someResult = 2;
+        expect(someResult).toBe(2);
+    });
+});
+```
+
+Now we can run this test once by executing the following command:
+
+```
+npm run test
+```
+
+## Summary
+
+We now added all our configs and should be ready to go. Your directory should now contain at least the following files:
+
+```
+- package.json
+- tsconfig.json
+- data
+  - settings
+    - applets.json
+```
+
+```json title=package.json spoiler
+{
+    "name": "applet-hello-world",
+    "private": true,
+    "version": "0.0.0",
+    "description": "A hello-world application for LM",
+    "keywords": ["launchmenu-applet", "hello world"],
+    "author": "Bob bobby",
+    "license": "MIT",
+    "scripts": {
+        "build": "lm-build-tools --build --production",
+        "dev": "lm-build-tools --watch --launch --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "start": "lm-build-tools --launch --production --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "start:dev": "lm-build-tools --launch --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "clean": "lm-build-tools --cleanup",
+        "prepare": "npm run build"
+    },
+    "dependencies": {},
+    "peerDependencies": {
+        "@launchmenu/core": "^0.1.4",
+        "model-react": "^4.0.1",
+        "react": "^17.0.0"
+    },
+    "devDependencies": {
+        "@launchmenu/core": "^0.1.4",
+        "@launchmenu/build-tools": "^0.1.0",
+        "@types/react": "^17.0.0",
+        "model-react": "^4.0.1",
+        "react": "^17.0.0",
+        "electron": "^9.3.1",
+        "@launchmenu/applet-help": "^0.1.4",
+        "@launchmenu/applet-applet-manager": "^0.1.4",
+        "@launchmenu/applet-session-manager": "^0.1.4",
+        "@launchmenu/applet-settings-manager": "^0.1.4",
+        "@launchmenu/applet-window-manager": "^0.1.4",
+        "@launchmenu/applet-lm-recorder": "^0.1.4"
+    }
+}
+```
+
+```json title=tsconfig.json spoiler
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "outDir": "./build/",
+        "rootDir": "./src/",
+        "inlineSourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
+        "module": "commonjs",
+        "target": "ES2019",
+        "jsx": "react",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "preserveSymlinks": true,
+        "strictNullChecks": true,
+        "skipLibCheck": true,
+        "noImplicitAny": true
+    },
+    "types": ["node"]
+}
+```
+
+```json title=data/settings/applets.json spoiler
+{
+    "applet-applet-manager": "node_modules/@launchmenu/applet-applet-manager",
+    "applet-session-manager": "node_modules/@launchmenu/applet-session-manager",
+    "applet-settings-manager": "node_modules/@launchmenu/applet-settings-manager",
+    "applet-window-manager": "node_modules/@launchmenu/applet-window-manager",
+    "applet-lm-recorder": "node_modules/@launchmenu/applet-lm-recorder",
+    "applet-help": "node_modules/@launchmenu/applet-help",
+    "hello-world": "./"
+}
+```
+
+And in case you also followed the prettier and jest steps, it should look like this:
+
+```
+- package.json
+- tsconfig.json
+- data
+  - settings
+    - applets.json
+- .prettierrc.json
+- jest.config.js
+```
+
+```json title=package.json spoiler
+{
+    "name": "applet-hello-world",
+    "private": true,
+    "version": "0.0.0",
+    "description": "A hello-world application for LM",
+    "keywords": ["launchmenu-applet", "hello world"],
+    "author": "Bob bobby",
+    "license": "MIT",
+    "scripts": {
+        "build": "lm-build-tools --build --production",
+        "dev": "lm-build-tools --watch --launch --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "start": "lm-build-tools --launch --production --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "start:dev": "lm-build-tools --launch --entry ../node_modules/@launchmenu/core/build/startup.js",
+        "clean": "lm-build-tools --cleanup",
+        "test": "jest -i",
+        "test-watch": "jest --watch -i",
+        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\"",
+        "prepare": "npm run build"
+    },
+    "dependencies": {},
+    "peerDependencies": {
+        "@launchmenu/core": "^0.1.4",
+        "model-react": "^4.0.1",
+        "react": "^17.0.0"
+    },
+    "devDependencies": {
+        "@launchmenu/core": "^0.1.4",
+        "@launchmenu/build-tools": "^0.1.0",
+        "@types/react": "^17.0.0",
+        "model-react": "^4.0.1",
+        "react": "^17.0.0",
+        "jest": "^26.0.1",
+        "ts-jest": "^26.1.0",
+        "@testing-library/jest-dom": "^5.5.0",
+        "@testing-library/react": "^10.0.3",
+        "@types/jest": "^26.0.0",
+        "electron": "^9.3.1",
+        "@launchmenu/applet-help": "^0.1.4",
+        "@launchmenu/applet-applet-manager": "^0.1.4",
+        "@launchmenu/applet-session-manager": "^0.1.4",
+        "@launchmenu/applet-settings-manager": "^0.1.4",
+        "@launchmenu/applet-window-manager": "^0.1.4",
+        "@launchmenu/applet-lm-recorder": "^0.1.4"
+    }
+}
+```
+
+```json title=package.json spoiler
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "outDir": "./build/",
+        "rootDir": "./src/",
+        "inlineSourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
+        "module": "commonjs",
+        "target": "ES2019",
+        "jsx": "react",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "preserveSymlinks": true,
+        "strictNullChecks": true,
+        "skipLibCheck": true,
+        "noImplicitAny": true
+    },
+    "types": ["node"]
+}
+```
+
+```json title=data/settings/applets.json spoiler
+{
+    "applet-applet-manager": "node_modules/@launchmenu/applet-applet-manager",
+    "applet-session-manager": "node_modules/@launchmenu/applet-session-manager",
+    "applet-settings-manager": "node_modules/@launchmenu/applet-settings-manager",
+    "applet-window-manager": "node_modules/@launchmenu/applet-window-manager",
+    "applet-lm-recorder": "node_modules/@launchmenu/applet-lm-recorder",
+    "applet-help": "node_modules/@launchmenu/applet-help",
+    "hello-world": "./"
+}
+```
+
+```json title=.prettierrc.json spoiler
+{
+    "tabWidth": 4,
+    "arrowParens": "avoid",
+    "bracketSpacing": false,
+    "singleQuote": false,
+    "trailingComma": "es5",
+    "jsxBracketSameLine": true,
+    "printWidth": 90
+}
+```
+
+```js title=jest.config.js spoiler
+module.exports = {
+    roots: ["<rootDir>/src"],
+    transform: {
+        "^.+\\.tsx?$": "ts-jest",
+    },
+    testRegex: ["./_tests/.*(?<!\\.helper|\\.setup)\\.tsx?"], // Any ts or tsx file in a _tests folder that doesn't end with .helper.ts
+    verbose: false,
+    globals: {
+        "ts-jest": {
+            tsConfig: "tsconfig.json",
+            diagnostics: false,
+        },
+    },
+    coverageReporters: ["json", "html-spa", "text"],
+    coveragePathIgnorePatterns: [".helper."],
+    coverageDirectory: ".coverage",
+    automock: false,
+    moduleFileExtensions: ["ts", "tsx", "js"],
+    transformIgnorePatterns: [],
+    testEnvironment: "node",
+    moduleNameMapper: {
+        "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$":
+            "<rootDir>/src/_tests/fakeStaticFile.helper.ts",
+    },
+};
+```
+
+And now that all of that is out of the way, we can finally start creating our first applet!
+
+<GuideNav prev="guide/1.-overview" next="guide/3.-applet-interface" />

@@ -1,0 +1,218 @@
+# Items and searches
+
+We will now start adding some actual search results to our applet.
+
+## Menu items
+
+In order to search for results, we must first have some results to find. These results are so called 'menu items'.
+
+Menu items are fairly simple in essence, they consist of a `view` and `actionBindings`. The view is the react component which is used to visualize the item in the menu, while the actionBindings provide a means to programmatically interact with the item and provide extra data.
+
+The following is a simple (but not so great) example of a menu item:
+
+```tsx title=minimalMenuItemExample.tsx
+const menuItem = {
+    view: () => <div> Hello world </div>,
+    actionBindings: [],
+};
+```
+
+This menu item doesn't follow any of the standard LaunchMenu styling, and thus won't look too nice in our program. It also doesn't contain any action bindings, which means it doesn't even contain any information which can be used to search for it. We will come back to these action bindings on a later page, but for now we can use a built-in item factory that takes care of many of our common needs:
+
+```ts title=standardMenuItemExample.ts
+import {createStandardMenuItem} from "@launchmenu/core";
+
+const menuItem = createStandardMenuItem({
+    name: "Hello world",
+    onExecute: () => alert("Hello!"),
+});
+```
+
+This menu item will follow LaunchMenu's visual standards such as highlighting the item when it's selected as well as provide a callback that handles item execution, and means to search for it.
+
+### Dynamic data
+
+Menu items can also can also contain dynamic data that changes over time. LaunchMenu makes use of [model-react](https://github.com/TarVK/model-react) to synchronize with data like this.
+
+You can learn more about model-react at the provided link, but we will explain the basics with the example below.
+
+```ts title=dynamicStandardMenuItemExample.ts
+import {createStandardMenuItem} from "@launchmenu/core";
+import {field} from "model-react";
+
+const field = new Field("Hello world");
+const menuItem = createStandardMenuItem({
+    name: h => field.get(h),
+    onExecute: () => field.set(field.get() + "!"),
+});
+```
+
+With model-react you can create data sources, and have pieces of code subscribe to changes. These data sources have `get` functions which take in a special 'data hook' argument. Some standard menu item properties such as `name` can be set to a function which will be called with such a data hook. Then whenever a data source updates its information this data hook will be informed about it and can update its contents.
+
+### Advanced
+
+The `createStandardMenuItem` factory accepts many more configuration fields. Some of these we will see in the remainder of the guide, but to learn about all of them you can check the in-depth [menu items page](/docs/concepts/ui/menuitems).
+
+This page also describes how to create your own entirely custom menu item from the ground up.
+
+## Searches
+
+In order to actually see any menu items, we will have to add some to our applet and provide a means to search for them.
+
+The simplest way to achieve this is to create some menu items that have search support (which items created by `createStandardMenuItem` have) and use the `searchAction`. This same search action is also used to search in other menus. So when adding our own menus in a later section of the guide, searching capability is already taken care of.
+
+```tsx title=index.tsx highlight=4:4,6:6,22:31,36:40
+import {
+    createSettings,
+    createSettingsFolder,
+    createStandardMenuItem,
+    declare,
+    searchAction,
+} from "@launchmenu/core";
+
+const info = {
+    name: "HelloWorld",
+    description: "A minimal example applet",
+    version: "0.0.0",
+    icon: "applets" as const,
+    tags: ["cool"],
+};
+
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () => createSettingsFolder({...info, children: {}}),
+});
+
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello!"),
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye!"),
+    }),
+];
+
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get(items),
+        };
+    },
+});
+```
+
+The search action will now take care of finding items that match a provided query.
+
+You can test this by querying for `world` in LaunchMenu. You should also be able to execute these items now, and see how they show an alert.
+
+### Search patterns
+
+Searches are not only able to find item results, but also pattern matches. These represent that the given query matches some kind of 'pattern'. One such pattern is the `settings: [someSetting]` pattern used to search for settings. Whenever a pattern is found, all items that don't match a single pattern will automatically be hidden. This allows the user to easily search within a specific category of items.
+
+These patterns also allow you to provide highlighting data for the search field. Pattern matchers can be passed to the `createStandardMenuItem` function in order to attach a pattern to it. The simplest way of creating a pattern matcher is with the `createStandardSearchPatternMatcher` factory function:
+
+```tsx title=index.tsx highlight=5:5,23:26,32:32,37:37
+import {
+    createSettings,
+    createSettingsFolder,
+    createStandardMenuItem,
+    createStandardSearchPatternMatcher,
+    declare,
+    searchAction,
+} from "@launchmenu/core";
+
+const info = {
+    name: "HelloWorld",
+    description: "A minimal example applet",
+    version: "0.0.0",
+    icon: "applets" as const,
+    tags: ["cool"],
+};
+
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () => createSettingsFolder({...info, children: {}}),
+});
+
+const helloWorldPattern = createStandardSearchPatternMatcher({
+    name: "Hello world",
+    matcher: /^world: /,
+});
+
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello!"),
+        searchPattern: helloWorldPattern,
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye!"),
+        searchPattern: helloWorldPattern,
+    }),
+];
+
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get(items),
+        };
+    },
+});
+```
+
+Now if you search for `world: w`, the `world:` section will be highlighted and all items not matching a pattern will be hidden.
+
+### Nested searches
+
+LaunchMenu also provides a `createFolderMenuItem` menu item factory function. This can be used to create a menu item that opens another menu of items when executed. A menu item constructed this way will by default allow searches made using `searchAction` to also find sub-items that are contained in this menu.
+
+```ts title=folderMenuItemExample.ts spoiler
+const folderMenuItem = createFolderMenuItem({
+    name: "Some folder",
+    children: [
+        createStandardMenuItem({
+            name: "Hello world",
+            onExecute: () => alert("Hello!"),
+        }),
+        createStandardMenuItem({
+            name: "Bye world",
+            onExecute: () => alert("Bye!"),
+        }),
+    ],
+});
+
+const namedFolderMenuItem = createFolderMenuItem({
+    name: "Some other folder",
+    children: {
+        hello: createStandardMenuItem({
+            name: "Hello world",
+            onExecute: () => alert("Hello!"),
+        }),
+        bye: createStandardMenuItem({
+            name: "Bye world",
+            onExecute: () => alert("Bye!"),
+        }),
+    },
+});
+const helloItem = namedFolderMenuItem.children.hello;
+```
+
+You can learn more about this on the in-depth [menu items page](/docs/concepts/ui/menuitems).
+
+### Advanced
+
+The search action is a convenient way of providing search results, but you can make more efficient searches yourself, or searches with special behavior. This is recommended in case you have a large collection of data to search through.
+
+You can learn more about the search format/system on the in-depth [Search system page](/docs/concepts/interaction/search-system).
+
+<GuideNav
+    prev="guide/3.-applet-interface"
+    next="guide/5.-content-and-theming"
+/>

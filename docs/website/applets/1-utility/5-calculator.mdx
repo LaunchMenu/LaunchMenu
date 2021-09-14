@@ -1,0 +1,41 @@
+# Calculator
+
+<StatusNotice />
+
+## Roadmap
+
+The exact features of this applet have yet to be determined, but it will provide some calculator functionalities.
+
+### MVP
+
+As an MVP, it could just provide answers for simple calculations such as
+
+```
+5 + 9 * sin(3.4) =
+```
+
+When such a query is entered, a menu item with the result could appear in the menu.
+
+### Advanced
+
+There is a lot more advanced functionality that could be added to a calculator applet like this. Some ideas are deescribed below.
+
+#### Plotting
+
+It could provide simple plotting capabilities, for formulas involving 1 variable such as:
+
+```
+x + 9 * sin(x) =
+```
+
+in which case we also have to consider how the plot result will be nevigated (translation + zoom)
+
+This idea could even be taken a step further by making an environment simular to the one found in [desmos](https://www.desmos.com/calculator). This would obviously be a large undertaking however. When making such an advanced system you would probably also want to be able to save the environment and such.
+
+#### Derivatives/integrals
+
+The calculator may provide some way of calculating derivatives and integrals including their derivation steps, similar to [derivative-calculator.net](https://www.derivative-calculator.net/) and [integral-calculator.net](https://www.integral-calculator.net/).
+
+#### Wolfram alpha
+
+Depending on available apis, it would be amazing if a service similar to [wolfram alpha](#https://www.wolframalpha.com/) could provide some advanced analytical data that wouldn't be feasible for us to implement in javascript.

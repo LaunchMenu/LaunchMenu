@@ -1,0 +1,133 @@
+# LaunchMenu
+
+The `LaunchMenu` class is the base class from which the rest of the application gets controlled. The running instance of this class can be obtained in an applet as described on the [applet format page](/docs/concepts/applet-format#init).
+
+Additionally, the running instance is available at `window.LaunchMenu`, which can be used for debugging/testing using chrome devtools. This should however never be used anywhere within an actual applet.
+
+## Interface
+
+LaunchMenu contains several properties that can be used to control core aspects of LaunchMenu:
+
+```ts title=LaunchMenu.tsx source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/application/LaunchMenu.tsx
+export class LaunchMenu {
+    /** The view component to render all of LM */
+    public view: JSX.Element;
+
+    /***
+     * Creates a new instance of the LaunchMenu application,
+     * requires setup to be called before doing anything.
+     */
+    public constructor();
+    /**
+     * Disposes of all runtime data
+     */
+    public destroy();
+    // Initialization
+    /**
+     * A method to initialize LaunchMenu
+     */
+    public async setup(): Promise<void>;
+    // Dev mode
+    /**
+     * Changes whether LaunchMenu is running in dev-mode
+     * @param enabled Whether in dev-mode
+     */
+    public setDevMode(enabled: boolean): void;
+    /**
+     * Retrieves whether LaunchMenu is running in dev-mode
+     * @param hook The hook to subscribe to changes
+     * @returns Whether dev mode is enabled
+     */
+    public isInDevMode(hook?: IDataHook): boolean;
+    // Window
+    /**
+     * Retrieves whether the LaunchMenu window is currently opened
+     * @param hook The hook to subscribe to changes
+     * @returns Whether the window should be opened
+     */
+    public isWindowOpen(hook?: IDataHook): boolean;
+    /**
+     * Sets whether the window should be opened
+     * @param open Whether the window should be opened
+     */
+    public async setWindowOpen(open: boolean): Promise<void>;
+    /**
+     * Sets the frame component to wrap all LM sessions in
+     * @param frame The component to use
+     */
+    public setWindowFrame(frame: FC<IWindowFrameProps>): void;
+    /**
+     * Retrieves the currently used frame component
+     * @param hook The hook to subscribe to changes
+     * @returns The functional component to use as the window frame
+     */
+    public getWindowFrame(hook?: IDataHook): FC<IWindowFrameProps>;
+    // Utils
+    /**
+     * Fully restarts the LaunchMenu window
+     */
+    public restart(): void;
+    /**
+     * Fully shutdown LaunchMenu
+     */
+    public shutdown(): void;
+    // General getters
+    /**
+     * Retrieves the key handler that listens for keyboard events and dispatches them
+     * @returns The key handler
+     */
+    public getKeyHandler(): KeyHandler;
+    /**
+     * Retrieves the directory that all settings are stored in
+     * @returns The settings directory path
+     */
+    public getSettingsDirectory(): string;
+    /**
+     * Retrieves the applet manager that loads all applets
+     * @returns The applet manager
+     */
+    public getAppletManager(): AppletManager;
+    /**
+     * Retrieves the session manager that manages the opened sessions
+     * @returns The session manager
+     */
+    public getSessionManager(): SessionManager;
+    /**
+     * Retrieves the settings manager that manages all applet and global settings
+     * @returns The settings manager
+     */
+    public getSettingsManager(): SettingsManager;
+    /**
+     * Retrieves the global key handler that can be used to register keyboard callbacks even when LM is hidden
+     * @returns The global keyboard handler
+     */
+    public getGlobalKeyHandler(): GlobalKeyHandler;
+}
+```
+
+Note that `setWindowOpen` doesn't actually make LM open or close the window itself. Instead a window-manager core-applet listens to the `isWindowOpen` value and takes care of opening and closing the window.
+
+Below is an example applet showing off a potential usage of the `LaunchMenu` instance - hiding the window:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/baseLaunchMenu
+export default declare({
+    info,
+    settings,
+    init({LM}) {
+        const items = [
+            createStandardMenuItem({
+                name: "Hide window",
+                onExecute: () => LM.setWindowOpen(false),
+            }),
+        ];
+
+        return {
+            async search(query, hook) {
+                return {
+                    children: searchAction.get(items),
+                };
+            },
+        };
+    },
+});
+```

@@ -1,0 +1,243 @@
+# Settings
+
+We've already seen that you must provide settings for your applet when declaring it. We will now see how to add settings, and how to use them.
+
+The settings structure is created by using menu item folders, together with so-called field menu items. Field menu items are simply menu items, that also contain a field to store a single value. Using this system you declare a UI structure that the user can use to navigate and alter settings, as well as a logical structure that you can use to access setting values.
+
+Below is an example of such a settings structure:
+
+```ts title=settingsExample.ts
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                someString: createStringSetting({
+                    name: "Some string",
+                    init: "orange",
+                }),
+                someDir: createSettingsFolder({
+                    name: "Some dir",
+                    children: {
+                        someNumber: createNumberSetting({
+                            name: "Some number",
+                            init: 3,
+                        }),
+                    },
+                }),
+            },
+        }),
+});
+```
+
+These `create[Type]Setting` functions are simply factory functions that create menu items with relevant controls to update the value, and a field to store the value. Any menu item with a field is allowed, allowing you to specify custom setting types too.
+
+Several setting types are already built-in however:
+
+-   `createBooleanSetting`
+-   `createStringSetting`
+-   `createColorSetting`
+-   `createKeyPatternSetting`: allowing the user to specify controls and shortcuts, see the [key handler page](/docs/concepts/interaction/key-handlers) for more information
+-   `createGlobalKeyPatternSetting`: allowing the user to specific global shortcuts when LM is hidden, see the [key handler page](/docs/concepts/interaction/key-handlers) for more information
+-   `createFileSetting`
+-   `createOptionSetting`: allowing the user to choose one of the provided options
+
+## Using settings
+
+Once you've declared your settings you can extract their current value from the IO context. The io context is accessible in many ways, it's included in many of the callbacks such as the `onExecute` callback, and can be obtained in React components using the `useIOContext` hook.
+
+Once you obtained the IO context, you can access your settings using `context.settings.get(yourSettingsVariable)`. This will return the logical structure of your settings which you can access. The values are stored in [model-react fields](https://tarvk.github.io/model-react/examples/build/#Field) allowing you to subscribe to value changes using data hooks.
+
+We can now for instance add a username setting to our applet, and show this in the item content:
+
+```tsx title=index.tsx highlight=2:2,9:9,14:14,28:33,42:48
+import React, {FC} from "react";
+import {useDataHook} from "model-react";
+import {
+    Box,
+    createSettings,
+    createSettingsFolder,
+    createStandardMenuItem,
+    createStandardSearchPatternMatcher,
+    createStringSetting,
+    declare,
+    Menu,
+    searchAction,
+    UILayer,
+    useIOContext,
+} from "@launchmenu/core";
+
+const info = {
+    name: "HelloWorld",
+    description: "A minimal example applet",
+    version: "0.0.0",
+    icon: "applets" as const,
+    tags: ["cool"],
+};
+
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                username: createStringSetting({name: "User name", init: "Bob"}),
+            },
+        }),
+});
+
+const helloWorldPattern = createStandardSearchPatternMatcher({
+    name: "Hello world",
+    matcher: /^world: /,
+});
+
+const Content: FC<{text: string}> = ({text}) => {
+    const context = useIOContext();
+    const [hook] = useDataHook();
+    const name = context?.settings.get(settings).username.get(hook);
+    return (
+        <Box color="primary">
+            {text} {name}!
+        </Box>
+    );
+};
+
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello!"),
+        content: <Content text="Hello" />,
+        searchPattern: helloWorldPattern,
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye!"),
+        content: <Content text="Bye" />,
+        searchPattern: helloWorldPattern,
+    }),
+];
+
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get(items),
+        };
+    },
+    open({context, onClose}) {
+        context.open(
+            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                path: "Hello world",
+            })
+        );
+    },
+});
+```
+
+You should now be able to open your applet in the settings manager to reveal all of your applet settings, or search for your user name setting by using the settings prefix: `setting: user name`.
+When you update the value of this setting, you will notice that your content automatically changes with it.
+
+## Version control
+
+You may at some point update your applet, and possibly add or remove options. When doing this, the old values that the user has stored on disk for your settings may no longer be valid. This is why you have to provide a version number in the settings declaration.
+
+LaunchMenu currently doesn't support any functionality for automatic setting updating, but we do allow you to do this manually using an `updater` property. This updater should be a function that converts the stored JSON data with a certain old version number to valid JSON for the current version number.
+
+Below is an example of how your settings may evolve between 3 different versions:
+
+```ts title=settings1.ts
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                username: createStringSetting({name: "User name", init: "Bob"}),
+            },
+        }),
+});
+```
+
+```ts title=settings2.ts highlight=7:8,11:20
+const settings = createSettings({
+    version: "0.0.1",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                nickname: createStringSetting({name: "User name", init: "Bob"}),
+                something: createNumberSetting({name: "Some number", init: 14}),
+            },
+        }),
+    updater: (version: string, data: any) => {
+        switch (version) {
+            case "0.0.0": {
+                data = {
+                    nickname: data.username,
+                };
+            }
+        }
+        return data;
+    },
+});
+```
+
+```ts title=settings3.ts highlight=7:20,30:41
+const settings = createSettings({
+    version: "0.0.2",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                personalia: createSettingsFolder({
+                    name: "Personalia",
+                    children: {
+                        nickname: createStringSetting({
+                            name: "User name",
+                            init: "Bob",
+                        }),
+                        age: createNumberSetting({name: "Age", init: 20}),
+                    },
+                }),
+                doSomething: createBooleanSetting({
+                    name: "Do something",
+                    init: false,
+                }),
+            },
+        }),
+    updater: (version: string, data: any) => {
+        switch (version) {
+            case "0.0.0": {
+                data = {
+                    nickname: data.username,
+                };
+            }
+            case "0.0.1": {
+                data = {
+                    personalia: {
+                        nickname: data.nickname,
+                        // something may not be present (if updating from v0.0.0 to v0.0.2 directly)
+                        // so we shouldn't initialize it to undefined if this is the case
+                        ...(data.something != undefined && {
+                            age: data.something,
+                        }),
+                    },
+                };
+            }
+        }
+        return data;
+    },
+});
+```
+
+This is rather involved, and as you can see keeping things strictly typed is difficult too. We used a (rather nasty) shortcut here by declaring `data` to be of type `any`. This basically tells TypeScript that the value can be of any type, meaning that TS can't provide us with any relevant information, or prevent any mistakes.
+
+So overall we recommend to try and change the structure of your settings as little as possible, and instead just augment it whenever possible (for which no special updater is needed). In case you do have to make some changes however, the above approach could be used.
+
+## Advanced
+
+If you want to learn how to make your own settings, or see some examples of where you can access the settings, you can check the in-depth [settings page](/docs/concepts/settings).
+
+<GuideNav prev="guide/6.-uilayers-and-menus" next="guide/8.-actions" />

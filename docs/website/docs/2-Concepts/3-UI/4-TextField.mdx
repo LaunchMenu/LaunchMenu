@@ -1,0 +1,445 @@
+# TextField
+
+Text fields provide users with the ability to enter textual input. Text fields consist of 3 separate components:
+
+-   model: A data model
+-   view: A react component to visualize the data
+-   controller: A key handler to interact with the data
+
+When talking about text fields we're either talking about the data model, or the entire setup that includes all 3 aspects. There is only a single standard implementation provided for the data model, but for both the controller and view several implementations are available: a standard view and controller, as well as a more advanced view and controller as can be seen in [the multiline section](#multiline).
+
+The data model is rather simple, and takes care of the following functionality:
+
+-   Track the textual value
+-   Track the text selection/cursor
+-   Possibly provide a resource for locking this field to allow only 1 edit at a time
+
+```tsx title=ITextField.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/textFields/_types/ITextField.ts
+export type ITextField = {
+    /** The lock for this text resource */
+    resource?: Resource;
+
+    /**
+     * Sets the value of the text field
+     * @param text The new text
+     */
+    set(text: string): void;
+
+    /**
+     * Retrieves the value of the text field
+     * @param hook The hook to subscribe to changes
+     * @returns The current text
+     */
+    get(hook?: IDataHook): string;
+
+    /**
+     * Sets the selection range
+     * @param selection The new selection
+     */
+    setSelection(selection: ITextSelection): void;
+
+    /**
+     * Retrieves the selected range (or cursor if start==end)
+     * @param hook The hook to subscribe to changes
+     * @returns The selected range
+     */
+    getSelection(hook?: IDataHook): ITextSelection;
+};
+```
+
+The views are pretty advanced react components and take care of the following functionality:
+
+-   Visualize the entered text
+-   Visualize the cursor and selection
+-   Handle mouse text selection
+-   Perform syntax highlighting
+
+Finally the controller is a simple [key handler](/docs/concepts/interaction/key-handlers) and takes care of these aspects:
+
+-   Text entering
+-   Text deletion
+-   Cursor movement/text selection (arrows + home/end, ctrl, shift)
+-   Text copy and paste
+
+For simple usage of a text field, all you have to do is create the data structure and open it using a [UILayer](/docs/concepts/ui/uilayers) class instance, which will take care of creating the `createStandardTextFieldKeyHandler` and `TextFieldView`:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textField video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textField/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        const field = new TextField();
+        context.open(
+            new UILayer(
+                () => ({
+                    field,
+                    icon: "edit",
+                    handleClose: true,
+                    onClose: () => {
+                        alert(field.get());
+                        onClose();
+                    },
+                }),
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+Now whenever the `example` applet is opened, it will open a new text field. When the UILayer is exited, it will alert the result of what was entered.
+
+## View
+
+The text view is quite complex and entirely custom. We use this custom solution rather than a standard html text field in order to have better control over the text selection and properties such as blink speed, as well as allow for [syntax highlighting](#highlight).
+
+It is possible to create a custom view from scratch, but it will be quite some effort. The standard view is built-up from several nested components however, so it may be possible to use part of the existing code. Feel free to check the [source code](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/components/fields/TextFieldView.tsx) to find out more. We recommend to try to minimize customizations, and possibly just change some css like in the example below:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textFieldCustomView video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textFieldCustomView/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        const field = new TextField();
+        context.open(
+            new UILayer(
+                () => ({
+                    field,
+                    fieldView: (
+                        <TextFieldView
+                            field={field}
+                            css={{
+                                fontWeight: "bold",
+                                ".selection": {backgroundColor: "purple"},
+                            }}
+                        />
+                    ),
+                    handleClose: true,
+                    onClose,
+                }),
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+Now whenever the `example` applet is opened, it will show a text field where the entered text is bold, and the text selection is purple.
+
+## Controller
+
+The keyboard handler is relatively simple an can easily be augmented and customized because of its modularity. In order to customize it, simply copy [the source code](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/textFields/interaction/keyHandler/createStandardTextFieldKeyHandler.ts) and take out what you don't need. To augment it, wrap it in your own key handler like in the example below:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textFieldCustomController video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textFieldCustomController/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        context.open(
+            new UILayer(
+                (context, close) => {
+                    const field = new TextField();
+                    const baseHandler = createStandardTextFieldKeyHandler(
+                        field,
+                        context,
+                        {onExit: close}
+                    );
+                    const handler: IKeyEventListener = event => {
+                        const index = event.key.char
+                            ? "abcdefghijklmnopqrstuvwxyz".indexOf(
+                                  event.key.char
+                              )
+                            : -1;
+                        if (
+                            index != -1 &&
+                            ["down", "repeat"].includes(event.type)
+                        ) {
+                            new InsertTextCommand(field, index + "").execute();
+                            return true;
+                        }
+
+                        return baseHandler(event);
+                    };
+
+                    return {
+                        field,
+                        fieldHandler: handler,
+                        onClose,
+                    };
+                },
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+Now whenever the `example` applet is opened, it will show a text field with custom keyhandler. This key handler replaces typed characters with their 0-based index in the alphabet.
+
+## Multiline
+
+As mentioned before, multiple view and controller implementations exist. Apart from the simple text field setup we considered the use case of wanting a more advanced multiline setup. For this purpose the `createAdvancedTextFieldKeyHandler` factory and `EditorField` component exist. Note however that both of these are still somewhat experimental, and not as stable as our main controller and view. For instance: line wrapping is supported, but keyboard navigation won't consider the line as wrapped.
+
+The `createAdvancedTextFieldKeyHandler` factory function creates a handler that allows for entering of multiple lines, and also allows for undoing of text changes.
+
+The `EditorField` component is a wrapper for the [ace text editor](https://ace.c9.io/) and supports some of its options, and all of its syntax highlighters.
+
+Since the text field area of LaunchMenu has a fixed height, it's not suited for a multiline setup. We can however pass these views and handlers as content data just fine:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textFieldMultiline video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textFieldMultiline/recordings/demo.webm
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        context.open(
+            new UILayer(
+                (context, close) => {
+                    const field = new TextField();
+                    const handler = createAdvancedTextFieldKeyHandler(
+                        field,
+                        context,
+                        {
+                            onExit: close,
+                        }
+                    );
+                    const view = (
+                        <EditorField
+                            field={field}
+                            options={{mode: "ace/mode/javascript"}}
+                        />
+                    );
+
+                    return {
+                        contentView: view,
+                        contentHandler: handler,
+                        onClose,
+                    };
+                },
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+Now whenever the `example` applet is opened, it will show content that acts as a multiline textfield. `ctrl+z` and `ctrl+y` can be used for undo and redo.
+
+## Highlight
+
+The default `TextFieldView` component allows you to pass a syntax highlighter. This highlighter must have the following interface:
+
+```ts title=IHighlighter.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/textFields/syntax/_types/IHighlighter.ts
+export type IHighlighter = {
+    /**
+     * Extracts the highlight data from the given syntax
+     * @param syntax The syntax to highlight
+     * @param hook The hook to subscribe to changes
+     * @returns The highlight nodes and possibly syntax and or semantic errors
+     */
+    highlight(
+        syntax: string,
+        hook?: IDataHook
+    ): {nodes: IHighlightNode[]; errors: IHighlightError[]};
+};
+
+type IHighlightNode = {
+    /** The tags for the highlighting */
+    tags: string[];
+    /** The start of the node */
+    start: number;
+    /** The end of the node */
+    end: number;
+    /** The text of the node */
+    text: string;
+    /** Optional css styling to force (use with care, it's better to assign tags in order to allow for theming as well as node merging) */
+    style?: CSSProperties;
+};
+
+type IHighlightError = {
+    /** The human readable error message */
+    message: string;
+    /** An identifier type that can be used to recognize the kind of error */
+    type: any;
+    /** The range of the text that caused the error */
+    syntaxRange: {
+        start: number;
+        end: number;
+        text: string;
+    };
+};
+```
+
+### Lexer
+
+In order to perform syntax highlighting, you will have to do some lexical analysis of the input. The easiest way to do this is to use our `createHighlightTokens` function and `HighlightLexer` class. This lexer class is simply a light wrapper of [Chevrotain's Lexer class](https://chevrotain.io/docs/tutorial/step1_lexing.html#introduction) to also allow for highlighting.
+
+Below is an example of a simple math lexer:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textFieldHighlightLexer video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textFieldHighlightLexer/recordings/demo.webm
+const {tokenList} = createHighlightTokens({
+    lBracket: {
+        pattern: /\(/,
+        tags: [highlightTags.bracket, highlightTags.left],
+    },
+    rBracket: {
+        pattern: /\)/,
+        tags: [highlightTags.bracket, highlightTags.right],
+    },
+    add: {pattern: /\+/, tags: [highlightTags.operator]},
+    sub: {pattern: /\-/, tags: [highlightTags.operator]},
+    mul: {pattern: /\*/, tags: [highlightTags.operator]},
+    div: {pattern: /\//, tags: [highlightTags.operator]},
+    value: {
+        pattern: /[0-9]+/,
+        tags: [highlightTags.literal, highlightTags.number],
+    },
+    whiteSpace: {
+        pattern: /\s+/,
+        tags: [highlightTags.whiteSpace],
+        group: Lexer.SKIPPED,
+    },
+});
+
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        const field = new TextField();
+        context.open(
+            new UILayer(
+                () => ({
+                    field,
+                    highlighter: new HighlightLexer(tokenList),
+                    handleClose: true,
+                }),
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+Now whenever the `example` applet is opened, it will show a text field that highlights its input according to the highlight theme. Additionally it will mark unmatched pieces of text as errors.
+
+### Grammar
+
+In order to augment the syntax highlighting with some grammar validation, the `HighlightParser` class can be used, which is a light wrap around [Chevrotain's EmbeddedActionsParser class](https://chevrotain.io/docs/tutorial/step3b_adding_actions_embedded.html#simple-example) to allow for highlighting. This will act similar to the [HighlightLexer](#lexer) class in terms of highlighting, but also marks syntax errors in red.
+
+This parser can also immediately be used to parse the user's input and turn it into some structured output. Below is an example of a simple calculator:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textFieldHighlightGrammar video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textFieldHighlightGrammar/recordings/demo.webm spoiler
+const {tokens, tokenList} = createHighlightTokens({
+    lBracket: {
+        pattern: /\(/,
+        tags: [highlightTags.bracket, highlightTags.left],
+    },
+    rBracket: {
+        pattern: /\)/,
+        tags: [highlightTags.bracket, highlightTags.right],
+    },
+    add: {pattern: /\+/, tags: [highlightTags.operator]},
+    sub: {pattern: /\-/, tags: [highlightTags.operator]},
+    mul: {pattern: /\*/, tags: [highlightTags.operator]},
+    div: {pattern: /\//, tags: [highlightTags.operator]},
+    value: {
+        pattern: /[0-9]+/,
+        tags: [highlightTags.literal, highlightTags.number],
+    },
+    whiteSpace: {
+        pattern: /\s+/,
+        tags: [highlightTags.whiteSpace],
+        group: Lexer.SKIPPED,
+    },
+});
+
+class MathParser extends HighlightParser<number> {
+    constructor() {
+        super(tokenList);
+        this.performSelfAnalysis();
+    }
+
+    // Note that by default the first defined rule becomes the start rule
+    // (this can be change by passing a config to the constructor)
+    protected expression = this.RULE("expression", () => {
+        let result: number = this.SUBRULE(this.term);
+        this.MANY(() => {
+            const {tokenType} = this.OR([
+                {ALT: () => this.CONSUME(tokens.add)}, //
+                {ALT: () => this.CONSUME(tokens.sub)},
+            ]);
+            const value = this.SUBRULE2(this.term);
+            result = tokenType == tokens.add ? result + value : result - value;
+        });
+        return result;
+    });
+    protected term = this.RULE("term", () => {
+        let result = this.SUBRULE(this.factor);
+        this.MANY(() => {
+            const {tokenType} = this.OR([
+                {ALT: () => this.CONSUME(tokens.mul)}, //
+                {ALT: () => this.CONSUME(tokens.div)},
+            ]);
+            const value = this.SUBRULE2(this.factor);
+            result = tokenType == tokens.mul ? result * value : result / value;
+        });
+        return result;
+    });
+    protected factor = this.RULE("factor", () =>
+        this.OR([
+            {
+                ALT: () => {
+                    this.CONSUME(tokens.lBracket);
+                    const value = this.SUBRULE(this.expression);
+                    this.CONSUME(tokens.rBracket);
+                    return value;
+                },
+            },
+            {
+                ALT: () => {
+                    const {image} = this.CONSUME(tokens.value);
+                    return parseInt(image);
+                },
+            },
+        ])
+    );
+}
+
+export default declare({
+    info,
+    settings,
+    open({context, onClose}) {
+        const field = new TextField();
+        const parser = new MathParser();
+        context.open(
+            new UILayer(
+                () => ({
+                    field,
+                    highlighter: parser,
+                    handleClose: true,
+                    onClose: () => {
+                        const res = parser.execute(field.get());
+                        if (res.result) alert(res.result);
+                        else alert("Parsing error!");
+                        onClose();
+                    },
+                }),
+                {
+                    path: "Example",
+                }
+            )
+        );
+    },
+});
+```
+
+Now whenever the `example` applet is opened, it will show a text field that highlights its input according to the highlight theme. Additionally it will mark unmatched pieces of text or grammatic mistakes (such as missing brackets) as errors. Finally when the field is exited, if it was provided with a valid input, the result of the calculation will be prompted.

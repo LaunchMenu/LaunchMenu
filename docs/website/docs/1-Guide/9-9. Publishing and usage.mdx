@@ -1,0 +1,242 @@
+# Publishing and usage
+
+You've now (hopefully) successfully finished your first test applet. Now it's time to start creating your own applets! After you've finished your applet, you can look at this section for how to publish it.
+
+## API overview
+
+We currently don't have any full API reference, but we do have an [API overview](/docs/API-overview). Here the most useful components are listed, which you can explorer when you're after specific behavior. Additionally you're always welcome to ask us for help on [github or element]().
+
+## Publishing
+
+Applets can simply be published to NPM. In order for them to qualify as LaunchMenu applets, you will have to make sure the special `"launchmenu-applet"` keyword is present in your `package.json`. Additionally you will have to get rid of the `"private": true` property in order to successfully publish your applet.
+
+Publishing will just follow the standard NPM procedure, so instructions can be found at [npmjs.com](https://docs.npmjs.com/creating-and-publishing-unscoped-public-packages).
+
+As of right now, users don't have the capability of installing your applet from within LaunchMenu yet. But this functionality will be added in the very near future. Meanwhile you can already work on perfecting your applet.
+
+### Promoting
+
+In order to create nice promotional videos, the [LM-recorder](/applets/core/lm-recorder) applet can be used. This applet allows you to programmatically script and record a video.
+
+Below is an example of what such a script could look like:
+
+```tsx title=recording/myVideo.tsx
+import React from "react";
+import {declareVideoScript, TitleScreen} from "@launchmenu/applet-lm-recorder";
+
+export default declareVideoScript(
+    async ({controller, recorder, visualizer, keyVisualizer, LM}) => {
+        await controller.resetLM();
+        const recordings = `${__dirname}/../../recordings`;
+        const recording = await recorder.recordLM(`${recordings}/demo.webm`);
+
+        await visualizer.show(<TitleScreen title="Hello world" />, {
+            duration: 3000,
+        });
+        await controller.wait(500);
+
+        await controller.type("Hello");
+        await controller.wait(5500);
+
+        await recording.stop();
+    }
+);
+```
+
+This script can then be executed from within LaunchMenu using the LM-recorder applet. Simply search for `record: my video` and it should appear in the results. When executed, this script will produce a video that you can distribute to promote your applet.
+
+Note that non of your other code should directly or indirectly (E.g. by importing this video script) reference the lm-recorder applet, since this is is only a development dependency.
+
+You can learn more about video recording on the [LM-recorder](/applets/core/lm-recorder) applet's own page.
+
+The quickstart repository also contains such a script, which was used to generate the video shown in this guide: [src/recordScripts/demo](https://github.com/LaunchMenu/LM-applet-quickstart/blob/main/src/recordScripts/demo.tsx).
+
+## Personal usage
+
+In case you want to properly test your applet before publishing, or don't want to publish it at all, you can install your applet straight to your own installed version of LaunchMenu as well. In the future we will scripts to accomplish this in a dedicated applet-testing module, but for now you can manually copy the required scripts. The [LM-applet-quickstart](https://github.com/LaunchMenu/LM-applet-quickstart) comes with these script already configured.
+
+To add it to your own project, you can simply add the following two files:
+
+```js title=scripts/installLocal.js spoiler
+const FS = require("fs");
+const Path = require("path");
+const {dialog, app} = require("electron");
+const {exec} = require("child_process");
+
+function execLogged(cmd, options) {
+    return new Promise((res, rej) =>
+        exec(cmd, options, err => {
+            if (err) rej(err);
+            else res();
+        }).stdout.pipe(process.stdout)
+    );
+}
+
+module.exports = (async () => {
+    // Get the directory path
+    const installDataPath = Path.join(__dirname, "installPath.json");
+    let installData;
+    if (FS.existsSync(installDataPath)) {
+        installData = JSON.parse(FS.readFileSync(installDataPath, "utf8"));
+    } else {
+        await app.whenReady();
+        console.log("Please select the directory LM is located at.");
+        const result = await dialog.showOpenDialog({
+            properties: ["openDirectory"],
+            defaultPath:
+                process.platform == "win32"
+                    ? "C:\\Program Files\\LaunchMenu"
+                    : undefined,
+        });
+        const path = result.filePaths[0];
+        FS.writeFileSync(installDataPath, JSON.stringify(path), "utf8");
+
+        installData = path;
+    }
+
+    // Retrieve the package data
+    const package = require("../package.json");
+    const {name, version} = package;
+    const strippedName = name.replace("@", "").replace(/\//g, "-");
+
+    // Package this module
+    await execLogged("npm pack");
+    const fileName = `${strippedName}-${version}.tgz`;
+
+    // Add dependency to the LM installation package.json
+    const LMPackagePath = Path.join(installData, "package.json");
+    const LMPackage = require(LMPackagePath);
+    LMPackage.dependencies[name] = `file:${Path.join(
+        process.cwd(),
+        fileName
+    ).replace(/\\\\/, "/")}`;
+    FS.writeFileSync(LMPackagePath, JSON.stringify(LMPackage, null, 4), "utf8");
+
+    // Install the dependencies
+    await execLogged("npm install", {
+        cwd: installData,
+    });
+
+    // Add this module to the settings
+    const installedPath = Path.join(installData, "node_modules", name);
+    const appletSettingsPath = Path.join(
+        installData,
+        "data",
+        "settings",
+        "applets.json"
+    );
+    const appletSettings = require(appletSettingsPath);
+    appletSettings[strippedName] = installedPath;
+    FS.writeFileSync(
+        appletSettingsPath,
+        JSON.stringify(appletSettings, null, 4),
+        "utf8"
+    );
+
+    console.log("applet installed successfully");
+})()
+    .catch(e => {
+        console.error(e);
+        console.log("failed to install applet");
+    })
+    .finally(() => {
+        app.exit();
+    });
+```
+
+```js title=scripts/uninstallLocal.js spoiler
+const FS = require("fs");
+const Path = require("path");
+const {dialog, app} = require("electron");
+const {exec} = require("child_process");
+
+function execLogged(cmd, options) {
+    return new Promise((res, rej) =>
+        exec(cmd, options, err => {
+            if (err) rej(err);
+            else res();
+        }).stdout.pipe(process.stdout)
+    );
+}
+
+module.exports = (async () => {
+    // Get the directory path
+    const installDataPath = Path.join(__dirname, "installPath.json");
+    let installData;
+    if (FS.existsSync(installDataPath)) {
+        installData = JSON.parse(FS.readFileSync(installDataPath, "utf8"));
+    } else {
+        await app.whenReady();
+        console.log("Please select the directory LM is located at.");
+        const result = await dialog.showOpenDialog({
+            properties: ["openDirectory"],
+            defaultPath:
+                process.platform == "win32"
+                    ? "C:\\Program Files\\LaunchMenu"
+                    : undefined,
+        });
+        const path = result.filePaths[0];
+        FS.writeFileSync(installDataPath, JSON.stringify(path), "utf8");
+
+        installData = path;
+    }
+
+    // Retrieve the package data
+    const package = require("../package.json");
+    const {name} = package;
+    const strippedName = name.replace("@", "").replace(/\//g, "-");
+
+    // Remove dependency from the LM installation package.json
+    const LMPackagePath = Path.join(installData, "package.json");
+    const LMPackage = require(LMPackagePath);
+    delete LMPackage.dependencies[name];
+    FS.writeFileSync(LMPackagePath, JSON.stringify(LMPackage, null, 4), "utf8");
+
+    // Remove this module from the settings
+    const appletSettingsPath = Path.join(
+        installData,
+        "data",
+        "settings",
+        "applets.json"
+    );
+    const appletSettings = require(appletSettingsPath);
+    delete appletSettings[strippedName];
+    FS.writeFileSync(
+        appletSettingsPath,
+        JSON.stringify(appletSettings, null, 4),
+        "utf8"
+    );
+
+    console.log("applet uninstalled successfully");
+})()
+    .catch(e => {
+        console.error(e);
+        console.log("failed to uninstall applet");
+    })
+    .finally(() => {
+        app.exit();
+    });
+```
+
+And add the following scripts to your package.json:
+
+```json title=package.json
+{
+    "scripts": {
+        "install-local": "electron scripts/installLocal.js",
+        "uninstall-local": "electron scripts/uninstallLocal.js"
+    }
+}
+```
+
+Now you can locally install your applet by running:
+
+```
+npm run install-local
+```
+
+This will ask you to select the directory that LaunchMenu is installed the first time that you run this (and it's saved in `script/installPath.json` for later use), and install your applet locally. The `uninstall-local` script can later be used to uninstall it again.
+
+Depending on where LaunchMenu is installed, you may have to run the terminal with admin privileges.
+
+<GuideNav prev="guide/8.-actions" />

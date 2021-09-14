@@ -1,3 +1,0 @@
-- Make menus require a context to be defined, which can be used in item actions
-- Make menus and text fields have an option view property to attach default rendering
-- Replace init by view count tracker

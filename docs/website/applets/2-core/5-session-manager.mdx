@@ -1,0 +1,68 @@
+# Session manager
+
+LaunchMenu allows for opening of multiple sessions. These sessions can be compared to tabs in a webbrowser. The primary difference is that the session in LaunchMenu are a little more hidden, but they can still be switched between.
+
+This functionality is primarily useful once there are more applets for LaunchMenu with deeply nested menus. Tabs are perfect in cases where the user wants to quickly switch between two applets without losing either state.
+
+<ScreenShot
+    src="/applets/session-manager/banner.png"
+    alt="Session-manager banner"
+/>
+
+## Features
+
+### Reset session
+
+The currently active session can be reset at any point by executing "go home" from the global context menu.
+This clears the current search and opened menus.
+
+<ScreenRecording src="/applets/session-manager/resetSession.webm" />
+
+### Switch sessions
+
+The user can easily switch between the last 2 sessions that were accessed using <Key>ctrl</Key>+<Key>w</Key>.
+
+A new session can also be opened at any point by pressing <Key>ctrl</Key>+<Key>t</Key>.
+
+### Manage sessions
+
+A menu to manage the sessions is available throught the global context menu.
+Here the user can:
+
+-   Preview sessions before switching to them
+-   Create new sessions
+-   Delete sessions
+
+<ScreenRecording src="/applets/session-manager/manageSessions.webm" />
+
+## Settings
+
+The session manager doesn't provide many settings.
+
+<ScreenShot
+    src="/applets/session-manager/settings.png"
+    alt="Settings overview"
+/>
+
+### Controls
+
+The shortcuts can be customized just like other controls in LaunchMenu.
+
+<ScreenShot
+    src="/applets/session-manager/controls.png"
+    alt="Control settings"
+/>
+
+### Automatic session closing
+
+It's not very useful to have multiple empty sessions open. For that reason empty sessions are automatically closed by default, when the user switches from the empty session to another session.
+
+However, if someone wants to setup a bunch of empty sessions for whatever reason, this functionality can be disabled.
+
+## Roadmap
+
+## Labeling of sessions
+
+It would be nice to be able to tag sessions with custom names, rather than the automatically generated names.
+
+In addition sessions may be able to have an associated color such that the currently active session color could also be visible when not in the session menu.

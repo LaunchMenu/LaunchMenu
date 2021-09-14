@@ -1,0 +1,336 @@
+# Actions
+
+Actions might be the most difficult aspect of LaunchMenu to grasp, but it also makes for one of its coolest features.
+
+Actions provide a means for menu items to dynamically interface with other aspects of your application, while still providing full intellisense. They are used for all interaction with menu items, except for rendering them:
+
+-   Performing the item's primary execute action
+-   Retrieving the item's menu category
+-   Retrieving the item's data to display in the content section
+-   Retrieving actions to show in the context menu of the selected items
+-   Handling events such as `onSelect` or `onCursor`
+
+Actions are constructed in such a way that one action `A` can specialize another action `B`. We refer to such a specialization `A` as a handler of action `B`, since it handles some of the implementation details. A handler action can also be made for another handler action. We will however only introduce the basics on this page, to learn more about handlers checkout the in-depth [actions page](/docs/concepts/interaction/actions).
+
+I will demonstrate the basic idea of actions with an isolated example:
+
+```ts title=actionExample.ts
+const mostImportantAction = createAction({
+    name: "Most important data",
+    core: (data: {importance: number; value: string}[]) => {
+        let highestImportance = 0;
+        let bestValue = "";
+
+        for (let {importance, value} of data) {
+            if (importance > highestImportance) {
+                highestImportance = importance;
+                bestValue = value;
+            }
+        }
+
+        return {
+            result: bestValue,
+        };
+    },
+});
+
+const items = [
+    createStandardMenuItem({
+        name: "Not so important",
+        actionBindings: [
+            mostImportantAction.createBinding({importance: 1, value: "Hoi"}),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "Very important",
+        actionBindings: [
+            mostImportantAction.createBinding({
+                importance: 5,
+                value: "The cake is a lie",
+            }),
+        ],
+    }),
+    createStandardMenuItem({
+        name: "What's importance?",
+    }),
+];
+
+const result = mostImportantAction.get(items); // = "The cake is a lie"
+```
+
+Actions require to have a name, which is mostly useful for debugging, as well as a `core`. This core is the real workhorse of the action, it always takes in a list of values and outputs some result. You can decide what the exact shape of each of the argument values is, in this case we specified object `{importance: number, value: string}`.
+
+This core will then perform some kind of transformation on this input list, and output some result. In this case we wrote some code that finds the item with the highest importance, and return the value associated with that item as a result.
+
+Menu items can now create `bindings` to your action. This binding essentially provides one of the values that will used as the input to `core`. We can then apply our action to a list of items by calling `get` on the action, and providing the items list as an argument. Items that don't have any binding for the action will simply be ignored. In this example you see that the returned value will be `"The cake is a lie"` since this was the entry with the highest importance.
+
+These actions might seem a little confusing and unnecessarily complex, but they have a couple of important properties:
+
+-   Action bindings can't clash with each other like keys on an object would (yes I know this could alternatively be achieved using symbols)
+-   Actions don't need to know anything about the items they operate on, they don't depend on bindings being present or not
+-   Actions are completely strictly typed
+-   Actions can be specialized/extended, you can learn more about this on the in-depth [actions page](/docs/concepts/interaction/actions)
+-   Actions can operate on multiple items at once
+
+## Context actions
+
+LaunchMenu has a built-in `contextMenuAction` used to obtain the actions to be shown in the context menu for a selection of items. Using the specialization property of actions, we can create our own action that can show up in these context menus. There is a general way of specializing actions, but because creation of context menu actions is so common, a dedicated factory function is provided: `createContextAction`.
+
+This function works the same as `createAction`, except it also allows for configuration of the item to show in the context menu.
+
+For our hello world applet we will create an `alertAction` that shows up in the context menu, and can be used to perform multiple alerts together.
+
+```tsx title=index.tsx highlight=5:5,42:55,74:74,81:81
+import React, {FC} from "react";
+import {useDataHook} from "model-react";
+import {
+    Box,
+    createContextAction,
+    createSettings,
+    createSettingsFolder,
+    createStandardMenuItem,
+    createStandardSearchPatternMatcher,
+    createStringSetting,
+    declare,
+    Menu,
+    searchAction,
+    UILayer,
+    useIOContext,
+} from "@launchmenu/core";
+
+const info = {
+    name: "HelloWorld",
+    description: "A minimal example applet",
+    version: "0.0.0",
+    icon: "applets" as const,
+    tags: ["cool"],
+};
+
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                username: createStringSetting({name: "User name", init: "Bob"}),
+            },
+        }),
+});
+
+const helloWorldPattern = createStandardSearchPatternMatcher({
+    name: "Hello world",
+    matcher: /^world: /,
+});
+
+const alertCombined = createContextAction({
+    name: "Alert",
+    core: (texts: string[]) => ({
+        execute: ({context}) => {
+            const name = context?.settings.get(settings).username.get();
+            const prefix = texts.reduce((total, text, i) => {
+                const dist = texts.length - i - 1;
+                const spacer = dist == 0 ? "" : dist == 1 ? " and " : ", ";
+                return total + (i > 0 ? text.toLowerCase() : text) + spacer;
+            }, "");
+            alert(`${prefix} ${name}`);
+        },
+    }),
+});
+
+const Content: FC<{text: string}> = ({text}) => {
+    const context = useIOContext();
+    const [hook] = useDataHook();
+    const name = context?.settings.get(settings).username.get(hook);
+    return (
+        <Box color="primary">
+            {text} {name}!
+        </Box>
+    );
+};
+
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello!"),
+        content: <Content text="Hello" />,
+        searchPattern: helloWorldPattern,
+        actionBindings: [alertCombined.createBinding("Hello")],
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye!"),
+        content: <Content text="Bye" />,
+        searchPattern: helloWorldPattern,
+        actionBindings: [alertCombined.createBinding("Bye")],
+    }),
+];
+
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get(items),
+        };
+    },
+    open({context, onClose}) {
+        context.open(
+            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                path: "Hello world",
+            })
+        );
+    },
+});
+```
+
+In the response of `core` of `alertCombined` we can still provide a `result` property, but we can additionally return a `execute` function now. This function will be invoked when the action's item in the context menu is triggered.
+
+Now when you:
+
+1. Search for `world`
+2. Select both "Hello world" and "Bye world" by holding shift while moving your selection from one item to another
+3. Open the context menu by hitting `tab`
+
+You will see an `Alert` item in the menu. When this is invoked it will say "Hello and bye [your name]". In case you only select "Hello world" and execute the same context menu item, it will say "Hello [your name]" instead.
+
+### Item customization
+
+The context action's menu item can also be customized using the `contextItem` property, and we recommend that you provide some priority for your action, such that it can consistently be ordered in the context menu.
+
+The priority is represented as an array of numbers, where we start at the first index and the next index is only used on collisions (the current index of two priorities have the same value). When an index is not present, it's considered as medium. The `Priority` enum can be used to provide standardized values, but any number is valid. E.g.:
+
+-   `[Priority.HIGH] > [Priority.MEDIUM]`
+-   `[Priority.LOW] < [Priority.MEDIUM]`
+-   `[Priority.MEDIUM] = [Priority.MEDIUM]`
+-   `[Priority.MEDIUM, Priority.HIGH] > [Priority.MEDIUM, Priority.MEDIUM]`
+-   `[Priority.LOW, Priority.HIGH] < [Priority.MEDIUM, Priority.MEDIUM]`
+-   `[Priority.MEDIUM, Priority.LOW] < [Priority.MEDIUM]`
+-   `[Priority.MEDIUM, Priority.MEDIUM, Priority.MEDIUM, Priority.HIGH] > [Priority.MEDIUM, Priority.MEDIUM, Priority.MEDIUM, Priority.MEDIUM]`
+-   `[12, 8] < [12, 12]`
+
+You can learn more about these priorities on the in-depth [search page](/docs/concepts/interaction/search-system#priorities) (priorities are also very important for search results).
+
+The `contextItem` support several more properties, or even a completely custom item. One particularly interesting property is the shortcut property, which allows you to attach a shortcut that can trigger this action when the item is selected:
+
+```tsx title=index.tsx highlight=6:6,36:39,51:55 video=https://raw.github.com/LaunchMenu/LM-applet-quickstart/main/recordings/demo.webm
+import React, {FC} from "react";
+import {useDataHook} from "model-react";
+import {
+    Box,
+    createContextAction,
+    createKeyPatternSetting,
+    createSettings,
+    createSettingsFolder,
+    createStandardMenuItem,
+    createStandardSearchPatternMatcher,
+    createStringSetting,
+    declare,
+    KeyPattern,
+    Menu,
+    Priority,
+    searchAction,
+    UILayer,
+    useIOContext,
+} from "@launchmenu/core";
+
+const info = {
+    name: "HelloWorld",
+    description: "A minimal example applet",
+    version: "0.0.0",
+    icon: "applets" as const,
+    tags: ["cool"],
+};
+
+const settings = createSettings({
+    version: "0.0.0",
+    settings: () =>
+        createSettingsFolder({
+            ...info,
+            children: {
+                username: createStringSetting({name: "User name", init: "Bob"}),
+                alert: createKeyPatternSetting({
+                    name: "Alert shortcut",
+                    init: new KeyPattern("ctrl+g"),
+                }),
+            },
+        }),
+});
+
+const helloWorldPattern = createStandardSearchPatternMatcher({
+    name: "Hello world",
+    matcher: /^world: /,
+});
+
+const alertCombined = createContextAction({
+    name: "Alert",
+    contextItem: {
+        icon: "send",
+        priority: [Priority.HIGH],
+        shortcut: context => context.settings.get(settings).alert.get(),
+    },
+    core: (texts: string[]) => ({
+        execute: ({context}) => {
+            const name = context?.settings.get(settings).username.get();
+            const prefix = texts.reduce((total, text, i) => {
+                const dist = texts.length - i - 1;
+                const spacer = dist == 0 ? "" : dist == 1 ? " and " : ", ";
+                return total + (i > 0 ? text.toLowerCase() : text) + spacer;
+            }, "");
+            alert(`${prefix} ${name}`);
+        },
+    }),
+});
+
+const Content: FC<{text: string}> = ({text}) => {
+    const context = useIOContext();
+    const [hook] = useDataHook();
+    const name = context?.settings.get(settings).username.get(hook);
+    return (
+        <Box color="primary">
+            {text} {name}!
+        </Box>
+    );
+};
+
+const items = [
+    createStandardMenuItem({
+        name: "Hello world",
+        onExecute: () => alert("Hello!"),
+        content: <Content text="Hello" />,
+        searchPattern: helloWorldPattern,
+        actionBindings: [alertCombined.createBinding("Hello")],
+    }),
+    createStandardMenuItem({
+        name: "Bye world",
+        onExecute: () => alert("Bye!"),
+        content: <Content text="Bye" />,
+        searchPattern: helloWorldPattern,
+        actionBindings: [alertCombined.createBinding("Bye")],
+    }),
+];
+
+export default declare({
+    info,
+    settings,
+    async search(query, hook) {
+        return {
+            children: searchAction.get(items),
+        };
+    },
+    open({context, onClose}) {
+        context.open(
+            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                path: "Hello world",
+            })
+        );
+    },
+});
+```
+
+Now when you search for `world` and have a selection of items, you can execute the `alertAction` directly by pressing `ctrl+g`. And this shortcut is easily modifiable by the user.
+
+## Advanced
+
+Actions are very powerful and allow you to do much more than just adding new context items. If you wan to learn more about them, check the in-depth [actions page](/docs/concepts/interaction/actions).
+
+<GuideNav prev="guide/7.-settings" next="guide/9.-publishing-and-usage" />

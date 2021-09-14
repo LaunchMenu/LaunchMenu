@@ -1,0 +1,984 @@
+# Actions
+
+Actions are a way of dynamically adding data to menu items, which also allow data to be extracted from a selection of items at a time.
+
+Actions are a little difficult to grasp, but very powerful and flexible. This page will talk about the general concept of actions, while the [common actions page](/docs/concepts/interaction/common-actions) goes over specific action instances used in LaunchMenu.
+
+## Justification
+
+In order for LaunchMenu to be as flexible as we wanted it to be, we had to come up with an appropriate way of interacting with menu items. Below is a list of requirements we came up with, based on usage scenarios that we considered. These scenarios are almost all centered around the context-menu, which the primary execution action also falls under:
+
+1. <Tooltip title="Reason: we can't predict what context items other applets will have">
+       Dynamic: Items should be able to dynamically define their context-items,
+       rather than choosing from a predetermined list
+   </Tooltip>
+2. <Tooltip title="Reason: you can open a context-menu with more items selected and we don't want to see duplicate context-items but instead execute the same action on both items at once">
+       Identifiable: We should be able to detect whether two context-items are
+       the same/represent the same action
+   </Tooltip>
+3. <Tooltip title="Reason: when trying to copy a selection of items, performing multiple copies in sequence wouldn't have the desired effect">
+       Mergeable: context-items representing the same action should be able to
+       run combined behavior when executed, rather than just running multiple
+       times sequence
+   </Tooltip>
+4. <Tooltip title="Reason: the execution of an item could do anything, so applets should be able to make it do anything and still be able to make use of property 3">
+       Extensible: the action represented by a context-item should be able to be
+       extended
+   </Tooltip>
+
+### Options exploration
+
+<details>
+<summary>    
+In case you want some more background on the system and see where simpler approaches may fall short, you can read the section below. It describes more or less the progression that we went through when designing the action system.
+</summary>
+
+In all these examples we only focus on providing the functionality from the item's perspective, we ignore all the aspects that LaunchMenu would have to coordinate to connect these pieces of data.
+
+To start off with, we could try to simply use objects as menu items and have them contain a set of callbacks. Then we can have the menu and context-menu make use of those callbacks E.g.:
+
+```tsx title=callbackItems.tsx
+const myItem = {
+    view: () => <div>Hello</div>,
+    onExecute: () => alert("Hello"),
+    onCopy: () => clipboard.copy("Hello"),
+};
+```
+
+This however does obviously not satisfy requirement 1, it's not dynamic. In this case we would have to hard-code all available context-items ahead of time, which can then read these callbacks.
+
+Another option would be to specify callbacks together with the context-menu items. These context-menu items can then be loaded into the context-menu dynamically based on the selected item:
+
+```tsx title=independentActionListItems.tsx
+const myItem = {
+    view: () => <div>Hello</div>,
+    onExecute: () => alert("Hello"),
+    actions: [
+        {
+            view: () => <div>Copy</div>,
+            onExecute: () => clipboard.copy("Hello"),
+        },
+    ],
+};
+const myItem2 = {
+    view: () => <div>Bye</div>,
+    onExecute: () => alert("Bye"),
+    actions: [
+        {
+            view: () => <div>Copy</div>,
+            onExecute: () => clipboard.copy("Bye"),
+        },
+    ],
+};
+```
+
+This allows items to specify arbitrary context-menu items, but still doesn't satisfy requirement 2. We can't tell what each action of an item represents, and thus have no way of removing duplicate items (when multiple items are selected when opening the context menu).
+
+This could be solved by separating the 'view' part, I.e. the actual thing that will be rendered in the context-menu:
+
+```tsx title=sharedActionListItems.tsx
+const copy = () => <div>Copy</div>;
+const myItem = {
+    view: () => <div>Hello</div>,
+    onExecute: () => alert("Hello"),
+    actions: [
+        {
+            view: copy,
+            onExecute: () => clipboard.copy("Hello"),
+        },
+    ],
+};
+const myItem2 = {
+    view: () => <div>Bye</div>,
+    onExecute: () => alert("Bye"),
+    actions: [
+        {
+            view: copy,
+            onExecute: () => clipboard.copy("Bye"),
+        },
+    ],
+};
+```
+
+Now the two views are equivalent based on their identity, so we can detect that these actions represent the same functionality. Requirement 3 still isn't fulfilled however, since this would only allow one `onExecute` to run before the other, never resulting in both texts being in the clipboard at once.
+
+If we instead specify the data to copy, rather than how to copy it, we could solve this issue. We make the copy `action` also specify how to perform the copy, based on a list of data. This data would be retrieved from the list of selected items in the menu:
+
+```tsx title=separatedActionListItems.tsx
+const copy = {
+    view: ()=>(<div>Copy</div>)
+    onExecute: (data: string[])=>
+        clipboard.copy(data.join(","))
+};
+const myItem = {
+    view: ()=>(<div>Hello</div>),
+    onExecute: ()=>alert("Hello"),
+    actionBindings: [
+        {
+            action: copy,
+            data: "Hello"
+        }
+    ]
+};
+const myItem2 = {
+    view: ()=>(<div>Bye</div>),
+    onExecute: ()=>alert("Bye"),
+    actionBindings: [
+        {
+            action: copy,
+            data: "Bye"
+        }
+    ]
+};
+```
+
+This now also fulfills requirement 3, since we can now copy the data of multiple items at once. It however doesn't fulfill requirement 4 yet. If we for instance wanted to have some items of which only the longest word is copied when you execute the copy action, we would have to modify the `copy` action itself. This action may however be defined outside of our applet, for instance in LaunchMenu core.
+
+If we allow these actions to specify a parent and return data to be used by their parent, this issue could be solved:
+
+```tsx title=separatedHierarchicalActionListItems.tsx
+const copy = {
+    view: ()=>(<div>Copy</div>)
+    onExecute: (data: string[])=>
+        clipboard.copy(data.join(","))
+};
+const copyLongest = {
+    parent: copy,
+    onExecute: (data: string[])=>
+        data.reduce((a,b)=>a.length>b.length?a:b)
+};
+const myItem = {
+    view: ()=>(<div>Hello</div>),
+    onExecute: ()=>alert("Hello"),
+    actionBindings: [
+        {
+            action: copy,
+            data: "Hello"
+        }
+    ]
+};
+const myItem2 = {
+    view: ()=>(<div>Bye</div>),
+    onExecute: ()=>alert("Bye"),
+    actionBindings: [
+        {
+            action: copyLongest,
+            data: "Bye"
+        }
+    ]
+};
+const myItem3 = {
+    view: ()=>(<div>Bye ok?</div>),
+    onExecute: ()=>alert("Bye ok?"),
+    actionBindings: [
+        {
+            action: copyLongest,
+            data: "Bye ok?"
+        }
+    ]
+};
+```
+
+Now this fulfills all 4 of our requirements. when `copyLongest` is executed, it will result in 1 string, and pass this string to its parent to be used. Then `copy` would execute to copy the selected data. So running the copy action on these 3 items would result in `"Hello, Bye ok?"` being copied.
+
+As you can see things became a little complex by now, but it's also super flexible. The actual action system is slightly different, actions don't have inherent 'views' and items use actions for `onExecute` too, but the basic premise is the same. The real action system just generalizes yet a bit further. So let's have a look at how to use the actual action system!
+
+</details>
+
+## Basics
+
+We will try to explain actions from the bottom up, meaning that the concepts can be rather abstract. But in the end you can see how these aspects come together in common actions for menu items. The [justification section](#justification) can already give you a slight background in why some of this functionality is desirable.
+
+In its most basic form, actions can be seen as a way of extracting data satisfying a given interface from a collection of items. These items can be anything, but are typically menu items.
+
+We can for instance have an 'interface' for names of items:
+
+```ts title=actionDeclaration.ts
+const names = createAction({
+    name: "names",
+    core: (names: string[]) => ({result: names}),
+});
+```
+
+When we create an action, we must provide a name for it. This name is only used for debugging, and should typically be the same as the variable you store it in.
+
+Additionally each action has a `core` which describes what to do with the data. This core needs to return an object with a `result` property which contains the output of the action.
+In this very basic example, we simply directly return the exact data that was obtained from the items.
+
+Now we can create some items to use the action on. All items to apply any kind of actions on should have a property `actionBindings`. This is an array of action bindings, which essentially specify the target action together with the data for it:
+
+```ts title=actionBindings.ts highlight=6:9
+const names = createAction({
+    name: "names",
+    core: (names: string[]) => ({result: names}),
+});
+
+const item1 = {actionBindings: [names.createBinding("item1")]};
+const item2 = {actionBindings: [names.createBinding("item2")]};
+
+const items = [item1, item2];
+```
+
+Note that the data passed in the binding is of type string, while we expect a string array in our action.
+This is the case because the action will retrieve multiple bindings at once, so the type of the input data will always be an array.
+
+Now we can apply the action to these items, in order to extract all the names of the items:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionBasics highlight=10:10
+const names = createAction({
+    name: "names",
+    core: (names: string[]) => ({result: names}),
+});
+
+const item1 = {actionBindings: [names.createBinding("item1")]};
+const item2 = {actionBindings: [names.createBinding("item2")]};
+
+const items = [item1, item2];
+console.log(names.get(items)); // == ["item1", "item2"]
+```
+
+Not every item that you apply the action on needs to have a binding to the action, and one item may even have multiple bindings to the same action, so from the result there is no way of figuring how it corresponds to the items. E.g. we can't just assume that the first item of items has name "item1", as can be seen in the following example:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionIndependentBindings highlight=6:15
+const names = createAction({
+    name: "names",
+    core: (names: string[]) => ({result: names}),
+});
+
+const item1 = {actionBindings: []};
+const item2 = {
+    actionBindings: [
+        names.createBinding("item1"),
+        names.createBinding("item1Alt"),
+    ],
+};
+const item3 = {actionBindings: [names.createBinding("item2")]};
+
+const items = [item1, item2, item3];
+console.log(names.get(items)); // == ["item1", "item1Alt", "item2"]
+```
+
+### Multiple actions example
+
+These actions are mainly useful because they allow you to extract data from an object (item) you know next to nothing about. You know an item must contain some kind of bindings array, but you don't know the exact data.
+Yet the action is able to extract the relevant data in a way that's intellisense friendly (we always know the result type of the get method of actions) and doesn't interfere with other actions.
+
+We can for instance introduce a second action 'ages' in addition to our 'names' action:
+
+```ts title=multipleActions.ts
+const names = createAction({
+    name: "names",
+    core: (names: string[]) => ({result: names}),
+});
+const ages = createAction({
+    name: "ages",
+    core: (ages: number[]) => ({result: ages}),
+});
+```
+
+And create and check bindings for some arbitrary items:
+
+```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionsMultiple highlight=10:22
+const names = createAction({
+    name: "names",
+    core: (names: string[]) => ({result: names}),
+});
+const ages = createAction({
+    name: "ages",
+    core: (ages: number[]) => ({result: ages}),
+});
+
+const item1 = {
+    actionBindings: [
+        names.createBinding("John"),
+        names.createBinding("Johny"),
+        ages.createBinding(12),
+    ],
+};
+const item2 = {actionBindings: [ages.createBinding(5)]};
+const item3 = {actionBindings: [names.createBinding("Bob")]};
+
+const items = [item1, item2, item3];
+console.log(names.get(items)); // == ["John", "Johny", "Bob"]
+console.log(ages.get(items)); // == [12, 5]
+```
+
+The data in these actions can be anything. For demonstration purposes we separated the two interface but in this particular case it might have made more sense to combine the data into 1 action, such that we always get name-age pairs:
+
+```ts title=moreComplexActionData.tsx
+const profiles = createAction({
+    name: "profiles",
+    core: (profiles: {name: string; age: number}[]) => ({result: profiles}),
+});
+
+const item1 = {
+    actionBindings: [profiles.createBinding({name: "John", age: 12})],
+};
+const item2 = {
+    actionBindings: [profiles.createBinding({name: "Bob", age: 92})],
+};
+const item3 = {
+    actionBindings: [profiles.createBinding({name: "Emma", age: 19})],
+};
+
+const items = [item1, item2, item3];
+console.log(profiles.get(items)); // == [{name: "John", age: 12}, {name: "Bob", age: 92}, {name: "Emma", age: 19}]
+```
+
+## Reducers
+
+The examples so far have been simple examples where actions just straight up return the data, but we can do more elaborate things.
+Because core is a function, we can transform and return the input data in whatever way we want.
+
+We could for instance create some 'list' interface, which will create a nicely formatted string to list the selection of items:
+
+```ts title=actionReducer.ts
+const list = createAction({
+    name: "list",
+    core: (names: string[]) => {
+        const bulletPointNames = names.map(name => `• ${name}`);
+        const bulletPointNamesString = bulletPointNames.join("\n");
+        return {result: bulletPointNamesString};
+    },
+});
+```
+
+Now we can create some items with bindings to this action, and obtain a nice overview string for these items:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionReducers highlight=10:14
+const list = createAction({
+    name: "list",
+    core: (names: string[]) => {
+        const bulletPointNames = names.map(name => `• ${name}`);
+        const bulletPointNamesString = bulletPointNames.join("\n");
+        return {result: bulletPointNamesString};
+    },
+});
+
+const item1 = {actionBindings: [list.createBinding("item1")]};
+const item2 = {actionBindings: [list.createBinding("item2")]};
+const item3 = {actionBindings: [list.createBinding("item3")]};
+
+console.log(list.get([item1, item2, item3])); // == "• item1\n• item2\n• item3"
+```
+
+## Action handlers
+
+Action handlers are actions that extend other actions. This way an action can be specialized, keeping the main action 'interface' as generic as possible.
+
+### Mapping
+
+If we make actions take as generic of an input as possible, we make sure that items have the most amount of flexibility in how they decide they want to be used for a given action.
+
+For instance in the previous list example, we decided to put a bullet point in front of all names. However, it might make sense to put another symbol in front of another name.
+So it may be a better idea to instead only perform the joining of the strings in the list action:
+
+```js title=listAction.ts
+const list = createAction({
+    name: "list",
+    core: (names: string[]) => {
+        const namesString = names.join("\n");
+        return {result: namesString};
+    },
+});
+```
+
+But this means we would need to specify the bullet for each of the items, which seems a bit redundant:
+
+```ts title=duplicateItemLogic.ts
+const item1 = {actionBindings: [names.createBinding("• item1")]};
+const item2 = {actionBindings: [names.createBinding("• item2")]};
+const item3 = {actionBindings: [names.createBinding("• item3")]};
+list.get([item1, item2, item3]); // == "• item1\n• item2\n• item3"
+```
+
+To solve this issue, as well as some others, action handlers exist. Action handlers are really just actions themselves, but also specialize some existing 'parent' action.
+We do this by making an action return bindings for said parent action, as well as (optionally) its own result
+
+```ts title=listBulletPointHandler.ts
+const listBulletPointHandler = createAction({
+    name: "listBulletPointHandler",
+    parents: [list],
+    core: (names: string[]) => {
+        const bulletPointNames = names.map(name => `• ${name}`);
+        return {
+            children: bulletPointNames.map(bulletPointName =>
+                list.createBinding(bulletPointName)
+            ),
+            result: bulletPointNames,
+        };
+    },
+});
+```
+
+You can see 2 important changes compared to regular actions;
+
+-   We specify the parent in the static structure
+-   We return a list of children, which is a list of bindings to the parent
+
+Now, bindings to `listBulletPointHandler`'s core function will automatically be transformed to bindings for `list`.
+
+```ts title=listBulletPointHandlerUsage.ts
+const item1 = {actionBindings: [listBulletPointHandler.createBinding("item1")]};
+const item2 = {actionBindings: [listBulletPointHandler.createBinding("item2")]};
+const item3 = {actionBindings: [names.createBinding("- item3")]};
+console.log(list.get([item1, item2, item3])); // == "• item1\n• item2\n- item3"
+```
+
+This allows us to remove the duplicated code, while still allowing instances to deviate from the norm.
+We can also obtain the result of `listBulletPointHandler` itself, for cases where purely this data is valuable:
+
+```ts title=handlerInterfaceUsage.ts
+console.log(listBulletPointHandler.get([item1, item2, item3])); // == ["• item1", "• item2"]
+```
+
+And we can also introduce different extra standards in the form of additional handlers:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionHandlers
+const listDashHandler = createAction({
+    name: "listDashHandler",
+    parents: [list],
+    core: (names: string[]) => {
+        const bulletPointNames = names.map(name => `- ${name}`);
+        return {
+            children: bulletPointNames.map(bulletPointName =>
+                list.createBinding(bulletPointName)
+            ),
+            result: bulletPointNames,
+        };
+    },
+});
+
+const item1 = {actionBindings: [listBulletPointHandler.createBinding("item1")]};
+const item2 = {actionBindings: [listBulletPointHandler.createBinding("item2")]};
+const item3 = {actionBindings: [listDashHandler.createBinding("item3")]};
+console.log(list.get([item1, item2, item3])); // == "• item1\n• item2\n- item3"
+```
+
+### Reducing
+
+In the previous example, we could've simply used functions to preprocess the data passed to the list bindings, e.g.:
+
+```ts title=preprocessedBindings.ts
+const item1 = {actionBindings: [list.createBinding(withBulletPoint("item1"))]};
+const item2 = {actionBindings: [list.createBinding(withBulletPoint("item2"))]};
+const item3 = {actionBindings: [list.createBinding(withDash("item3"))]};
+list.get([item1, item2, item3]); // == "• item1\n• item2\n- item3"
+```
+
+However, if we want to combine sets of data, this wouldn't be possible. This is where the action handlers become very useful. Imagine we have certain items that are 'special' and in the listing we want to show them all together under a label 'special'.
+This is possible when we create a new action handler for this:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionHandlerReducers
+const specialListItemsHandler = createAction({
+    name: "specialListItemsHandler",
+    parents: [listBulletPointHandler], // Notice that we can create handlers, for handlers
+    core: (names: string[]) => {
+        const bulletPointNames = names.map(name => `  * ${name}`);
+        const specialList = ["special:", ...bulletPointNames].join("\n");
+        return {
+            children: [listBulletPointHandler.createBinding(specialList)],
+            // Note that we don't return a result, thus specialListItemsHandler.get([...]) on its own is useless
+        };
+    },
+});
+
+const item1 = {
+    actionBindings: [specialListItemsHandler.createBinding("item1")],
+};
+const item2 = {actionBindings: [listBulletPointHandler.createBinding("item2")]};
+const item3 = {actionBindings: [listDashHandler.createBinding("item3")]};
+const item4 = {
+    actionBindings: [specialListItemsHandler.createBinding("item4")],
+};
+console.log(list.get([item1, item2, item3, item4]));
+```
+
+Now the result of this get call - with all new lines as actual line feeds - will be:
+
+```
+• special:
+  * item1
+  * item4
+• item2
+- item3
+```
+
+When we call the getter without having any bindings for `specialListItemsHandler` it will never get used, and thus not show up in the listing:
+
+```ts title=handlersOptional.ts
+console.log(list.get([item2, item3])); // == "• item2\n- item3"
+```
+
+### Input ordering
+
+Where the result of a handler is placed within the sequence of inputs to an action is based on where in the sequence its inputs were located.
+In the `specialListItemsHandler` example data, the first item had a binding for `specialListItemsHandler`, and therefor the special items came at the start.
+
+Generally when handlers reduce actions, their result will get the same location in the sequence as their first input had.
+Handlers that purely map data, will also automatically map the input sequence (as could be seen with the list bullet points and dashes).
+
+Here is an example for some other data for the `specialListItemsHandlers` setup, to show the idea:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionOrders
+const item1 = {
+    actionBindings: [specialListItemsHandler.createBinding("item1")],
+};
+const item2 = {actionBindings: [listBulletPointHandler.createBinding("item2")]};
+const item3 = {actionBindings: [listDashHandler.createBinding("item3")]};
+const item4 = {
+    actionBindings: [specialListItemsHandler.createBinding("item4")],
+};
+
+console.log(list.get([item2, item1, item3, item4])); // Notice some items are swapped
+```
+
+The above will log:
+
+```
+• item2
+• special:
+  * item1
+  * item4
+- item3
+```
+
+---
+
+```ts showHeader=false
+console.log(list.get([item2, item4, item3, item1])); // Notice some items are swapped
+```
+
+The above will log:
+
+```
+• item2
+• special:
+  * item4
+  * item1
+- item3
+```
+
+---
+
+```ts showHeader=false
+console.log(list.get([item2, item3, item4, item1])); // Notice some items are swapped
+```
+
+The above will log:
+
+```
+• item2
+- item3
+• special:
+  * item4
+  * item1
+```
+
+Actions can also decide on how to handle indexing themselves however. `core` receives its inputs' indices as a second argument, and the standard `createBinding` method allows for passing of an index to override the default.
+This way we can for instance specify that all bullet point items should show up in 1 continuous sequence after the first bullet point item:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionOrdersCustom
+const listBulletPointHandler = createAction({
+    name: "listBulletPointHandler",
+    parents: [list],
+    core: (names: string[], indices: number[]) => {
+        const bulletPointNames = names.map(name => `• ${name}`);
+        return {
+            children: bulletPointNames.map(bulletPointName =>
+                list.createBinding({data: bulletPointName, index: indices[0]})
+            ),
+            result: bulletPointNames,
+        };
+    },
+});
+
+const item1 = {actionBindings: [listDashHandler.createBinding("item1")]};
+const item2 = {actionBindings: [listBulletPointHandler.createBinding("item2")]};
+const item3 = {actionBindings: [listBulletPointHandler.createBinding("item3")]};
+const item4 = {actionBindings: [listDashHandler.createBinding("item4")]};
+const item5 = {actionBindings: [listBulletPointHandler.createBinding("item5")]};
+
+console.log(list.get([item1, item2, item3, item4, item5]));
+```
+
+=>
+
+```
+- item1
+• item2
+• item3
+• item5
+- item4
+```
+
+### Multiple parents
+
+Actions can also have multiple parents. This allows a single binding to be used in multiple situations.
+We can for instance create an action handler that creates bindings for both the `names` and `list` actions of earlier:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionMultipleParents
+const namesAndBulletPointListHandler = createAction({
+    name: "namesAndBulletPointListHandler",
+    parents: [names, listBulletPointHandler],
+    core: (inpNames: string[]) => ({
+        children: [
+            ...inpNames.map(name => listBulletPointHandler.createBinding(name)),
+            ...inpNames.map(name => names.createBinding(name)),
+        ],
+    }),
+});
+
+const item1 = {
+    actionBindings: [namesAndBulletPointListHandler.createBinding("item1")],
+};
+const item2 = {
+    actionBindings: [namesAndBulletPointListHandler.createBinding("item2")],
+};
+const item3 = {
+    actionBindings: [namesAndBulletPointListHandler.createBinding("item3")],
+};
+console.log(list.get([item1, item2, item3])); // == "• item1\n• item2\n• item3"
+console.log(names.get([item1, item2, item3])); // == ["item1", "item2", "item3"]
+```
+
+## Efficiency
+
+The process of retrieving the correct result for a given action is rather complex.
+It involves:
+
+-   Going through all items and their action bindings
+-   Mapping out the static action graph
+-   Determining a sequence of executing the required handlers
+-   Executing the actions in this sequence, to arrive at the final result
+
+Because of this, the system is relatively slow and has a lot of overhead. In some cases where efficiency is important, this system should be avoided.
+In some of these situations where efficiency is important, it could still be used however. If you will make multiple repeated calls, but these calls are all on the same data, the action system will pose minimal overhead since the structure is only used once.
+
+### Factories
+
+This brings us to a common action pattern in LaunchMenu; function factories:
+
+```ts title=functionFactory.ts
+type Func = {
+    /** @returns Whether the function was successful */
+    execute: () => boolean;
+};
+
+const doSomething = createAction({
+    name: "doSomething",
+    core: (funcs: Func[]) => ({
+        result: {
+            execute: () =>
+                funcs.reduce(
+                    (allPassed, func) => allPassed && func.execute(),
+                    true
+                ),
+        },
+    }),
+});
+```
+
+This action will obtain an object with an 'execute' function, and returns whether all items executed successfully.
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionFunctionFactories
+const item1 = {
+    actionBindings: [
+        doSomething.createBinding({
+            execute: () => {
+                console.log("hoi");
+                return true;
+            },
+        }),
+    ],
+};
+const item2 = {
+    actionBindings: [
+        doSomething.createBinding({
+            execute: () => {
+                console.log("bye");
+                return true;
+            },
+        }),
+    ],
+};
+const executer = doSomething.get([item1, item2]);
+executer.execute(); // == true  and logs "hoi" followed by "bye"
+```
+
+This way we can call execute however often we want, with barely any overhead. And an added bonus of this technique is that the `get` function is side-effect free (which is what you expect from a getter). Instead all side-effects happen whenever the retriever function is called.
+
+This function factory pattern is fully combinable with all previous discussed topics. The ideas of actions handlers and ordering, etc apply in exactly the same way.
+
+## Subscribing to data
+
+Not all items are necessarily immutable. So their action bindings might also change over time.
+As mentioned before, getting results of actions is kind of performance heavy, so polling items to check for these changes would be quite bad.
+
+For that reason, [model-react](https://tarvk.github.io/model-react/examples/build/) is used in order to allow for listening to changes. Items can change their bindings in two ways:
+
+-   Updating the data of a specific binding
+-   Adding/removing bindings
+
+The first one will require only the action that the binding is for to recompute. The latter one will require all the actions that the item has bindings for to recompute, and is thus rather heavy. But this fortunately only occurs when the item changes, rather than on a continuous loop.
+
+### Specific binding change
+
+In order to change the data of a specific binding, we must have some sort of data source to store the data in.
+The most straight forward data source is a `Field`. We can then make a binding with a function as input, which will forward a data hook to subscribe to changes:
+
+```ts
+const item1Name = new Field("item1");
+const item1 = {
+    actionBindings: [
+        listDashHandler.createBinding({
+            subscribableData: h => item1Name.get(h),
+        }),
+    ],
+};
+const item2 = {actionBindings: [listDashHandler.createBinding("item2")]};
+```
+
+Now we can use one of multiple ways to listen to the data. The `get` method of all actions allow a hook to be passed, which will then be forwarded to the items. We can for instance use an `Observer` to create a sort of stream:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionSubscribableBindings
+const listObserver = new Observer(h => list.get([item1, item2], h)).listen(
+    listing => {
+        console.log(listing);
+    },
+    true
+);
+
+item1Name.set("bob");
+```
+
+This will result in 2 calls, one initial call because we specified `true` for whether to create an initial call when adding a listener (the second argument), and one when we change item1's name to "bob":
+
+-   `"- item1\n- item2"`
+-   `"- bob\n- item2"`
+
+### Adding/removing bindings
+
+In order to add or remove bindings, we must make the list of bindings itself subscribable. We can do this by storing the list of bindings in some data source, and pass a retriever for this as the action bindings:
+
+```ts
+const item1Bindings = new Field([listDashHandler.createBinding("item1")]);
+const item1 = {actionBindings: (h: IDataHook) => item1Bindings.get(h)};
+const item2 = {actionBindings: [listDashHandler.createBinding("item2")]};
+```
+
+Now we can use one of multiple ways to listen to the data. The `get` method of all actions allow a hook to be passed, which will then be forwarded to the items. We can for instance use an `Observer` to create a sort of stream:
+
+```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionSubscribableBindingList
+const listObserver = new Observer(h => list.get([item1, item2], h)).listen(
+    listing => {
+        console.log(listing);
+    },
+    true
+);
+
+item1Bindings.set([]);
+```
+
+This will result in 2 calls, one initial call because we specified `true` for whether to create an initial call when adding a listener, and one when we change item1's bindings change:
+
+-   `"- item1\n- item2"`
+-   `"- item2"`
+
+## Interface
+
+<details>
+<summary>
+This section provides some more information about the exact interfaces related to actions. You generally won't have to consider these however, since the existing createAction function should cover most of your needs.
+</summary>
+
+The interface of an action is relatively straight forward:
+
+```ts title=IAction.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/_types/IAction.ts
+export type IAction<
+    /** Input data type */
+    I = any,
+    /** Output data type */
+    O = any,
+    /** Union of parents */
+    P extends IAction | void = any
+> = {
+    /**
+     * The name of this action, useful for debugging
+     */
+    readonly name: string;
+
+    /**
+     * The parents of this action, the actions that this action is a handler for
+     */
+    readonly parents: P[];
+
+    /**
+     * Applies this action transformer to the given bindings, used internally for the `get` method
+     * @param bindingData The data of bindings to apply the transformer to
+     * @param indices The indices of the passed data, which can be used to compute the indices for child bindings
+     * @param hook A data hook to listen for changes
+     * @param items The input items that actions can use to extract extra data
+     * @returns The action result and any possible child bindings
+     */
+    transform(
+        bindingData: I[],
+        indices: number[],
+        hook: IDataHook | undefined,
+        items: IActionTarget[]
+    ): IActionResult<P extends IAction ? IActionBinding<P> : void, O>;
+
+    /**
+     * Retrieves the action result for the given targets
+     * @param targets The targets to get the result for
+     * @param hook A data hook to listen for changes
+     * @returns The action result
+     */
+    get(targets: IActionTarget[], hook?: IDataHook): O;
+};
+```
+
+`.transform` is only required internally, and generally doesn't have to be used directly. The `.get` function will take care of reducing all bindings into a single final result.
+
+The interface of the standard `createAction` factory to create these actions is however a bit more complex. It essentially accepts the following properties within a config object:
+
+-   `name`: The string name of the action
+-   `parents`: The optional list of parent actions that this action returns bindings for
+-   `core`: The core function that transforms the binding data into the final result
+-   `createBinding`: An optional override for how to create a binding for this action (can be specified for additional type checking)
+-   `extras`: An optional object with extra properties and methods to add to the created action
+
+The exact interface looks as follows:
+
+```ts title=createAction.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/createAction.ts spoiler
+/**
+ * Creates an action that conforms to all constraints of a proper action
+ * @param actionInput The data to construct the action from
+ * @returns The created action
+ */
+export function createAction<
+    /** The input data type */
+    I,
+    /** The result data type */
+    O = never,
+    /** The parent actions types (union of parents) */
+    P extends IAction | void = void,
+    /** The possible resulting bindings of this action */
+    K extends P extends IAction ? IActionBinding<TPureAction<P>> : void = never,
+    /** The create binding function, which may want to specify generic types for more elaborate interfaces */
+    CB = IBindingCreator<I, O, P>,
+    /** The remaining functions specified on the object */
+    EXTRAS = unknown
+>(actionInput: {
+    /** The name of the action */
+    name: string;
+    /** The parent actions of this action */
+    parents?: P[];
+    /** The core transformer of the action */
+    core: IActionTransformer<I, O, K>;
+    /** A custom binding creator in case generic types are needed */
+    createBinding?: CB;
+    /** Extra data to set on the created action */
+    extras?: EXTRAS;
+}): /** The action as well as an interface to create bindings for this action with */
+IAction<I, O, P> & {
+    createBinding: CB;
+} & (/** For whatever reason, in some contexts EXTRAS becomes never */
+    EXTRAS extends never
+        ? unknown
+        : EXTRAS);
+```
+
+Actions created using this factory will automatically contain a `.createBinding` method that can be used to create a binding for this action. Action bindings follow a quite simple interface:
+
+```ts title=IActionBinding.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/_types/IActionBinding.ts
+export type IActionBinding<A extends IAction = IAction> = {
+    /** The action that this binding is for */
+    action: A;
+} & (
+    | {
+          /** The actual action input data */
+          data: A extends IAction<infer I, any, any> ? I : never;
+      }
+    | {
+          /** A function to retrieve the actual action input data */
+          subscribableData: (
+              hook?: IDataHook
+          ) => A extends IAction<infer I, any, any> ? I : never;
+      }
+);
+```
+
+Below is an example of an actual valid binding for the previously discussed `list` action:
+
+```ts showHeader=false
+const item1 = {actionBindings: [{action: list, data: "item1"}]};
+```
+
+As you can see, this is quite simple to use, so in the regard a `.createBinding` method isn't really required. This style of declaration however can't perform type checking. If we specified `data: 3`, we would get no compile time error, only possibly a runtime error or otherwise unexpected behavior. So making use of `.createBinding` on actions is generally a lot safer, and also a bit more convenient in my opinion.
+
+The `extras` property can just be used to provide some extra functionality for your action. We could for instance have a function that changes the bullet point symbol on our `listBulletPointHandler`:
+
+```ts title=extraActionMethods.ts
+let bullet = "•";
+const listBulletPointHandler = createAction({
+    name: "listBulletPointHandler",
+    parents: [list],
+    core: (names: string[]) => {
+        const bulletPointNames = names.map(name => `${bullet} ${name}`);
+        return {
+            children: bulletPointNames.map(bulletPointName =>
+                list.createBinding(bulletPointName)
+            ),
+            result: bulletPointNames,
+        };
+    },
+    extras: {
+        /**
+         * Sets the bullet points to be used
+         * @param bulletPoint The string to use as a bullet point
+         */
+        setBulletPoint(bulletPoint: string): void {
+            bullet = bulletPoint;
+        }
+    }
+});
+
+...
+
+listBulletPointHandler.setBulletPoint("*");
+```
+
+In addition to binding data, the `core` function actually also receives: the binding indices, model-react date hook; and items `.get` was called on:
+
+```ts title=IActionTransformer.ts source=https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/actions/_types/IActionTransformer.ts
+export type IActionTransformer<I, O, AB extends IActionBinding | void> = {
+    /**
+     * Applies this action transformer to the given bindings, used internally for the `get` method
+     * @param bindingData The data of bindings to apply the transformer to
+     * @param indices The indices of the passed data, which can be used to compute the indices for child bindings
+     * @param hook A data hook to listen for changes
+     * @param items The input items that actions can use to extract extra data
+     * @returns The action result and any possible child bindings
+     */
+    (
+        bindingData: I[],
+        indices: number[],
+        hook: IDataHook,
+        items: IActionTarget[]
+    ): IActionResult<AB, O>;
+};
+
+type IActionResult<AB extends IActionBinding | void, O> = {
+    /** bindings for parent actions */
+    children?: AB[];
+    /** The direct result of applying this action */
+    result?: O;
+};
+```
+
+</details>
+
+## Common LaunchMenu usage
+
+Actions have several common usages within LaunchMenu, all related to menu items. The different kinds of uses are discussed on the [common actions page](/docs/concepts/interaction/common-actions).

@@ -1,0 +1,73 @@
+# Dictionary
+
+The dictionary allows users to:
+
+-   Check spelling of words
+-   Check the definition of words
+-   Get usage examples of words
+
+The dictionary also has limited multi-language support.
+
+<ScreenShot src="/applets/dictionary/search.png" alt="Dictionary banner" />
+
+This applet displays data obtained from [Wiktionary](https://www.wiktionary.org/). Thanks to all the contributors at Wiktionary who made this possible!
+
+![Powered by wiktionary](/applets/dictionary/wiktionaryBanner.png)
+
+## Usage example
+
+<Video src="/applets/dictionary/usage.webm" volumeControls={false} />
+
+## Features
+
+### Search for words
+
+Simply enter your query in the main search field, and find any similar results!
+
+<ScreenShot src="/applets/dictionary/search.png" alt="Search words" />
+
+In addition, the pattern `define:` followed by your query can be used to only get definition results.
+
+<ScreenShot
+    src="/applets/dictionary/patternSearch.png"
+    alt="Search only definitions"
+    section="field"
+/>
+
+Finally, you can also search for only definitions by opening Dictionary using the [applet-manager](/applets/core/applet-manager).
+
+<ScreenRecording src="/applets/dictionary/openApplet.webm" />
+
+### Navigate definition
+
+Open the context menu on a definition item, this will show the definitions folder.
+
+This will list different types of definitions (e.g. noun, verb, interjection etc.). Open this to list a set of definitions for this usage of the word.
+
+### Find usage examples
+
+When opening a context menu on a definition, there is an examples menu which can be used to find examples of using that word.
+
+### Paste results
+
+The default action of all things in this applet will copy the content to the clipboard and pastes it in the previously active window.
+
+### Search words in other languages
+
+Dictionary has limited functionality for finding words in other languages. Some definitions are available for other languages, but descriptions will still be presented in English.
+
+You can search words in different languages using the `define:` syntax with an additional country code or name. For example to search the definition of `hallo` in German we can use `define de: hallo`.
+
+You can also change the default language of Dictionary using the `Default language` setting.
+
+## Roadmap
+
+We would like to support many more features in the future, but these were too eleborate for the initial release.
+
+### Wiktionary document scraping utility
+
+The developement of a system to asynchronously load similar words (e.g. synonyms and antonyms) to the LaunchMenu results. This was what we [initially used](https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/applets/dictionary/src/scraper) before using the dedicated Wiktionary API, however it was slow. This wouldn't matter if it was only adding additional information. This could also act as a stepping stone towards a better Wiktionary API.
+
+### Better Wiktionary API
+
+Contribute to Wiktionary's API to allow for extraction of more data such as antonyms and synonyms in a simple way.

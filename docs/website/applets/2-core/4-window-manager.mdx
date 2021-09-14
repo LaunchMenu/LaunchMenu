@@ -1,0 +1,110 @@
+# Window manager
+
+The window manager is used to control several aspects of the LaunchMenu window
+
+-   Position of the window
+-   Size of the window
+-   Opening the window
+-   Closing the window
+-   Automatic startup
+
+<ScreenShot
+    src="/applets/window-manager/banner.png"
+    alt="Window-manager banner"
+/>
+
+## Features
+
+### Window opening
+
+LaunchMenu can be opened by this applet using a shortcut <Key>ctrl</Key> + <Key>o</Key>
+or by click the LaunchMenu icon in the tray.
+
+### Window closing
+
+The window automatically closes when focus is lost, when closing all UI using the "back" control, or when a dedicated close control is used.
+
+There are 2 controls dedicated to closing LaunchMenu:
+
+-   <Key>ctrl</Key>+<Key>q</Key>: Closes LaunchMenu and resets the session,
+    clearing the current search and closing menus
+-   <Key>ctrl</Key>+<Key>shift</Key>+<Key>q</Key>: Closes LaunchMenu without
+    resetting the session
+
+### Automatic startup
+
+The window manager also makes sure that LaunchMenu automatically runs on startup. This way you can instantly access it at any moment, without having to manually launch it first.
+
+### Context menu
+
+The closing controls described in the [closing](#window-closing) section are present within the global context menu, together with restart and shutdown controls to either restart LaunchMenu or quit LaunchMenu completely.
+
+<ScreenRecording src="/applets/window-manager/contextMenu.webm" />
+
+### Tray icon
+
+Right clicking the tray icon will reveal some additional options.
+
+![Tray menu](/applets/window-manager/trayMenu.png)
+
+The restart option is mostly useful in cases LaunchMenu is acting strangely or crashed during development.
+
+## Settings
+
+The window manager contains several settings that can be used for customization.
+
+<ScreenShot
+    src="/applets/window-manager/settings.png"
+    alt="Settings overview"
+/>
+
+### Window position
+
+The window manager contains settings that allow you to change the position of LaunchMenu on the screen.
+
+<ScreenShot
+    src="/applets/window-manager/windowPosition.png"
+    alt="LaunchMenu position"
+/>
+
+In addition LaunchMenu can be dragged around by clicking in the right half of the searchfield. While the ability of dragging the window like this isn't provided by the window-manager, the window-manager is in charge of saving the position on disk and restoring it on startup.
+
+### Window size
+
+The widnow manager also contains settings to adjust the window size.
+
+<ScreenShot
+    src="/applets/window-manager/windowSize.png"
+    alt="LaunchMenu size"
+/>
+
+Adjusting the window size is however not recommended, since applets will mostly be tested using the default size of LaunchMenu. Changing the window size might result in content wrapping strangely or other elements of the UI behaving in unexpected ways.
+
+### Controls
+
+Any of the controls can be changed, but the controls to open LaunchMneu are a bit special.
+
+These controls can't make use of the regular controls system, since they need to listen to key events even when LaunchMenu isn't the focused program. To properly configure these controls, the pattern has to be typed out manually. See [Electron's docs](https://www.electronjs.org/docs/api/accelerator) for valid patterns.
+
+### Visibility
+
+The automatic hiding of LaunchMenu can be disabled in case you want to keep LaunchMenu visible on some monitor as a reference.
+
+In order to debug any issues within LaunchMenu, chromiums development console can also be revealed.
+
+<ScreenShot
+    src="/applets/window-manager/visibility.png"
+    alt="Visiblity controls"
+/>
+
+### Automatic startup
+
+Automatic startup can be disabled too, in case you don't use LaunchMenu too frequently and you would rather manually control when it's running.
+
+## Roadmap
+
+Most of the features of the window manager are complete, but OS support has to been improved.
+
+### OS support
+
+Currently automatic startup only works on Windows. Support has to be added for both mac and Linux. As far as I understand this is particularly challenging on linux, since it's not consistent betweem distros how automatic startup is managed.
