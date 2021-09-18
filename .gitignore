@@ -109,10 +109,9 @@ build/
 dist/
 
 packages/core/data
-recordings/
+packages/**/recordings/
 
 eslintLog.tap
 
 .DS_Store
-recordings/
 

@@ -1,0 +1,51 @@
+{
+    "version": "0.0.0",
+    "data": {
+        "position": {
+            "x": 610,
+            "y": 315
+        },
+        "size": {
+            "width": 700,
+            "height": 450
+        },
+        "windowShadow": true,
+        "visibility": {
+            "hideOnBlur": false,
+            "showDebugger": "if running dev"
+        },
+        "controls": {
+            "open": [
+                {
+                    "type": "down",
+                    "pattern": [
+                        "ctrl",
+                        "o"
+                    ]
+                }
+            ],
+            "exit": [
+                {
+                    "type": "down",
+                    "pattern": [
+                        "ctrl",
+                        "q"
+                    ]
+                }
+            ],
+            "exitState": [
+                {
+                    "type": "down",
+                    "pattern": [
+                        "ctrl",
+                        "shift",
+                        "q"
+                    ]
+                }
+            ],
+            "restart": [],
+            "shutdown": []
+        },
+        "automaticStartup": true
+    }
+}
