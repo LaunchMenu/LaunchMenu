@@ -4,30 +4,11 @@ Applets should have one default export at their entry, which is an object adheri
 
 The following is a basic example of a valid minimal applet declaration:
 
-```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormat video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/appletFormat/recordings/demo.webm
-import {createSettings, createSettingsFolder, declare} from "@launchmenu/core";
-
-const info = {
-    name: "Example",
-    description: "A minimal example applet",
-    version: "0.0.0",
-    icon: "applets" as const,
-};
-
-const settings = createSettings({
-    version: "0.0.0",
-    settings: () =>
-        createSettingsFolder({
-            ...info,
-            children: {},
-        }),
-});
-
-export default declare({
-    info,
-    settings,
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/appletFormat/src/index.tsx"
+    video="examples/appletFormat/recordings/demo.webm"
+/>
 
 ## Functionality
 
@@ -173,9 +154,7 @@ export default declare({
                 context.open(
                     new UILayer(
                         () => ({
-                            menu: new ProxiedMenu(context, hook =>
-                                items.get(hook)
-                            ),
+                            menu: new ProxiedMenu(context, hook => items.get(hook)),
                             onClose,
                         }),
                         {
@@ -226,12 +205,9 @@ export default declare({
             },
             open({context, onClose}) {
                 context.open(
-                    new UILayer(
-                        () => ({menu: new Menu(context, items), onClose}),
-                        {
-                            path: "Example",
-                        }
-                    )
+                    new UILayer(() => ({menu: new Menu(context, items), onClose}), {
+                        path: "Example",
+                    })
                 );
             },
         };
