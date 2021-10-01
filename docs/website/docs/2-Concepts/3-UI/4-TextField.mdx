@@ -63,31 +63,12 @@ Finally the controller is a simple [key handler](/docs/concepts/interaction/key-
 
 For simple usage of a text field, all you have to do is create the data structure and open it using a [UILayer](/docs/concepts/ui/uilayers) class instance, which will take care of creating the `createStandardTextFieldKeyHandler` and `TextFieldView`:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textField video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textField/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        const field = new TextField();
-        context.open(
-            new UILayer(
-                () => ({
-                    field,
-                    icon: "edit",
-                    handleClose: true,
-                    onClose: () => {
-                        alert(field.get());
-                        onClose();
-                    },
-                }),
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/textField/src/index.tsx"
+    video="examples/textField/recordings/demo.webm"
+    sections={[[25, 47]]}
+/>
 
 Now whenever the `example` applet is opened, it will open a new text field. When the UILayer is exited, it will alert the result of what was entered.
 
@@ -97,36 +78,12 @@ The text view is quite complex and entirely custom. We use this custom solution 
 
 It is possible to create a custom view from scratch, but it will be quite some effort. The standard view is built-up from several nested components however, so it may be possible to use part of the existing code. Feel free to check the [source code](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/components/fields/TextFieldView.tsx) to find out more. We recommend to try to minimize customizations, and possibly just change some css like in the example below:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textFieldCustomView video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textFieldCustomView/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        const field = new TextField();
-        context.open(
-            new UILayer(
-                () => ({
-                    field,
-                    fieldView: (
-                        <TextFieldView
-                            field={field}
-                            css={{
-                                fontWeight: "bold",
-                                ".selection": {backgroundColor: "purple"},
-                            }}
-                        />
-                    ),
-                    handleClose: true,
-                    onClose,
-                }),
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/textFieldCustomView/src/index.tsx"
+    video="examples/textFieldCustomView/recordings/demo.webm"
+    sections={[[27, 54]]}
+/>
 
 Now whenever the `example` applet is opened, it will show a text field where the entered text is bold, and the text selection is purple.
 
@@ -134,51 +91,12 @@ Now whenever the `example` applet is opened, it will show a text field where the
 
 The keyboard handler is relatively simple an can easily be augmented and customized because of its modularity. In order to customize it, simply copy [the source code](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/textFields/interaction/keyHandler/createStandardTextFieldKeyHandler.ts) and take out what you don't need. To augment it, wrap it in your own key handler like in the example below:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textFieldCustomController video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textFieldCustomController/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        context.open(
-            new UILayer(
-                (context, close) => {
-                    const field = new TextField();
-                    const baseHandler = createStandardTextFieldKeyHandler(
-                        field,
-                        context,
-                        {onExit: close}
-                    );
-                    const handler: IKeyEventListener = event => {
-                        const index = event.key.char
-                            ? "abcdefghijklmnopqrstuvwxyz".indexOf(
-                                  event.key.char
-                              )
-                            : -1;
-                        if (
-                            index != -1 &&
-                            ["down", "repeat"].includes(event.type)
-                        ) {
-                            new InsertTextCommand(field, index + "").execute();
-                            return true;
-                        }
-
-                        return baseHandler(event);
-                    };
-
-                    return {
-                        field,
-                        fieldHandler: handler,
-                        onClose,
-                    };
-                },
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/textFieldCustomController/src/index.tsx"
+    video="examples/textFieldCustomController/recordings/demo.webm"
+    sections={[[28, 65]]}
+/>
 
 Now whenever the `example` applet is opened, it will show a text field with custom keyhandler. This key handler replaces typed characters with their 0-based index in the alphabet.
 
@@ -192,43 +110,12 @@ The `EditorField` component is a wrapper for the [ace text editor](https://ace.c
 
 Since the text field area of LaunchMenu has a fixed height, it's not suited for a multiline setup. We can however pass these views and handlers as content data just fine:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textFieldMultiline video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textFieldMultiline/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        context.open(
-            new UILayer(
-                (context, close) => {
-                    const field = new TextField();
-                    const handler = createAdvancedTextFieldKeyHandler(
-                        field,
-                        context,
-                        {
-                            onExit: close,
-                        }
-                    );
-                    const view = (
-                        <EditorField
-                            field={field}
-                            options={{mode: "ace/mode/javascript"}}
-                        />
-                    );
-
-                    return {
-                        contentView: view,
-                        contentHandler: handler,
-                        onClose,
-                    };
-                },
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/textFieldMultiline/src/index.tsx"
+    video="examples/textFieldMultiline/recordings/demo.webm"
+    sections={[[28, 54]]}
+/>
 
 Now whenever the `example` applet is opened, it will show content that acts as a multiline textfield. `ctrl+z` and `ctrl+y` can be used for undo and redo.
 
@@ -283,51 +170,12 @@ In order to perform syntax highlighting, you will have to do some lexical analys
 
 Below is an example of a simple math lexer:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textFieldHighlightLexer video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textFieldHighlightLexer/recordings/demo.webm
-const {tokenList} = createHighlightTokens({
-    lBracket: {
-        pattern: /\(/,
-        tags: [highlightTags.bracket, highlightTags.left],
-    },
-    rBracket: {
-        pattern: /\)/,
-        tags: [highlightTags.bracket, highlightTags.right],
-    },
-    add: {pattern: /\+/, tags: [highlightTags.operator]},
-    sub: {pattern: /\-/, tags: [highlightTags.operator]},
-    mul: {pattern: /\*/, tags: [highlightTags.operator]},
-    div: {pattern: /\//, tags: [highlightTags.operator]},
-    value: {
-        pattern: /[0-9]+/,
-        tags: [highlightTags.literal, highlightTags.number],
-    },
-    whiteSpace: {
-        pattern: /\s+/,
-        tags: [highlightTags.whiteSpace],
-        group: Lexer.SKIPPED,
-    },
-});
-
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        const field = new TextField();
-        context.open(
-            new UILayer(
-                () => ({
-                    field,
-                    highlighter: new HighlightLexer(tokenList),
-                    handleClose: true,
-                }),
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/textFieldHighlightLexer/src/index.tsx"
+    video="examples/textFieldHighlightLexer/recordings/demo.webm"
+    sections={[[30, 63]]}
+/>
 
 Now whenever the `example` applet is opened, it will show a text field that highlights its input according to the highlight theme. Additionally it will mark unmatched pieces of text as errors.
 
@@ -337,109 +185,12 @@ In order to augment the syntax highlighting with some grammar validation, the `H
 
 This parser can also immediately be used to parse the user's input and turn it into some structured output. Below is an example of a simple calculator:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/textFieldHighlightGrammar video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/textFieldHighlightGrammar/recordings/demo.webm spoiler
-const {tokens, tokenList} = createHighlightTokens({
-    lBracket: {
-        pattern: /\(/,
-        tags: [highlightTags.bracket, highlightTags.left],
-    },
-    rBracket: {
-        pattern: /\)/,
-        tags: [highlightTags.bracket, highlightTags.right],
-    },
-    add: {pattern: /\+/, tags: [highlightTags.operator]},
-    sub: {pattern: /\-/, tags: [highlightTags.operator]},
-    mul: {pattern: /\*/, tags: [highlightTags.operator]},
-    div: {pattern: /\//, tags: [highlightTags.operator]},
-    value: {
-        pattern: /[0-9]+/,
-        tags: [highlightTags.literal, highlightTags.number],
-    },
-    whiteSpace: {
-        pattern: /\s+/,
-        tags: [highlightTags.whiteSpace],
-        group: Lexer.SKIPPED,
-    },
-});
-
-class MathParser extends HighlightParser<number> {
-    constructor() {
-        super(tokenList);
-        this.performSelfAnalysis();
-    }
-
-    // Note that by default the first defined rule becomes the start rule
-    // (this can be change by passing a config to the constructor)
-    protected expression = this.RULE("expression", () => {
-        let result: number = this.SUBRULE(this.term);
-        this.MANY(() => {
-            const {tokenType} = this.OR([
-                {ALT: () => this.CONSUME(tokens.add)}, //
-                {ALT: () => this.CONSUME(tokens.sub)},
-            ]);
-            const value = this.SUBRULE2(this.term);
-            result = tokenType == tokens.add ? result + value : result - value;
-        });
-        return result;
-    });
-    protected term = this.RULE("term", () => {
-        let result = this.SUBRULE(this.factor);
-        this.MANY(() => {
-            const {tokenType} = this.OR([
-                {ALT: () => this.CONSUME(tokens.mul)}, //
-                {ALT: () => this.CONSUME(tokens.div)},
-            ]);
-            const value = this.SUBRULE2(this.factor);
-            result = tokenType == tokens.mul ? result * value : result / value;
-        });
-        return result;
-    });
-    protected factor = this.RULE("factor", () =>
-        this.OR([
-            {
-                ALT: () => {
-                    this.CONSUME(tokens.lBracket);
-                    const value = this.SUBRULE(this.expression);
-                    this.CONSUME(tokens.rBracket);
-                    return value;
-                },
-            },
-            {
-                ALT: () => {
-                    const {image} = this.CONSUME(tokens.value);
-                    return parseInt(image);
-                },
-            },
-        ])
-    );
-}
-
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        const field = new TextField();
-        const parser = new MathParser();
-        context.open(
-            new UILayer(
-                () => ({
-                    field,
-                    highlighter: parser,
-                    handleClose: true,
-                    onClose: () => {
-                        const res = parser.execute(field.get());
-                        if (res.result) alert(res.result);
-                        else alert("Parsing error!");
-                        onClose();
-                    },
-                }),
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    spoiler
+    source="examples/textFieldHighlightGrammar/src/index.tsx"
+    video="examples/textFieldHighlightGrammar/recordings/demo.webm"
+    sections={[[30, 122]]}
+/>
 
 Now whenever the `example` applet is opened, it will show a text field that highlights its input according to the highlight theme. Additionally it will mark unmatched pieces of text or grammatic mistakes (such as missing brackets) as errors. Finally when the field is exited, if it was provided with a valid input, the result of the calculation will be prompted.

@@ -72,9 +72,7 @@ export type IStandardMenuItemData = {
     actionBindings?: ISubscribable<IActionBinding[]>;
 
     /** Bindings to additional actions that  use the item's identity */
-    identityActionBindings?: (
-        identityID: IUUID
-    ) => ISubscribable<IActionBinding[]>;
+    identityActionBindings?: (identityID: IUUID) => ISubscribable<IActionBinding[]>;
 
     /** A pattern matcher that can be used to capture patterns in a search and highlight them */
     searchPattern?: ISimpleSearchPatternMatcher;
@@ -102,87 +100,23 @@ export type IStandardMenuItemData = {
 
 We can then make use of these factories in order to create simple menu items for our applets:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuItemsStandard video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuItemsStandard/recordings/demo.webm
-const items = [
-    createStandardMenuItem({
-        name: "Hello world",
-        description:
-            "I would like to welcome you to the marvelous world of LaunchMenu applets!",
-        tags: ["This text can be searched, but isn't visible"],
-        onExecute: () => alert("Hello!"),
-    }),
-    createStandardMenuItem({
-        name: "Bye world",
-        content: <Box padding="small">This content here isn't searchable</Box>,
-        icon: (
-            <img
-                height={30}
-                src={Path.join(__dirname, "..", "images", "icon.png")}
-            />
-        ),
-        onExecute: () => alert("Bye!"),
-    }),
-];
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuItemsStandard/src/index.tsx"
+    video="examples/menuItemsStandard/recordings/demo.webm"
+    sections={[[30, 44]]}
+/>
 
 ## Custom menu items
 
 In case our standard menu item doesn't fit your needs, you can build one from scratch. You're still able to reuse some of components of the [standard menu item factory](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/createStandardMenuItem.tsx).
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuItemsCustom video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuItemsCustom/recordings/demo.webm
-function createImageMenuItem({
-    name,
-    image,
-    onExecute,
-}: {
-    name: string;
-    image: string;
-    onExecute: () => void;
-}): IMenuItem {
-    const bindings = createStandardActionBindings(
-        {
-            name,
-            onExecute,
-        },
-        () => item
-    );
-
-    const item: IMenuItem = {
-        view: memo(({highlight, ...props}) => {
-            return (
-                <MenuItemFrame {...props}>
-                    <MenuItemLayout
-                        name={
-                            <Box font="header">
-                                <simpleSearchHandler.Highlighter
-                                    query={highlight}>
-                                    {name}
-                                </simpleSearchHandler.Highlighter>
-                            </Box>
-                        }
-                    />
-                    <Box
-                        display="flex"
-                        justifyContent="center"
-                        padding="medium">
-                        <img src={image} height={200} />
-                    </Box>
-                </MenuItemFrame>
-            );
-        }),
-        actionBindings: bindings,
-    };
-    return item;
-}
-
-const items = [
-    createImageMenuItem({
-        name: "Hello world",
-        image: Path.join(__dirname, "..", "images", "icon.png"),
-        onExecute: () => alert("hoi"),
-    }),
-];
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuItemsCustom/src/index.tsx"
+    video="examples/menuItemsCustom/recordings/demo.webm"
+    sections={[[34, 81]]}
+/>
 
 In the example above, you will see that the created item follows most of the normal LM conventions, but also has a big image below the name of the item.
 
@@ -200,57 +134,12 @@ Children of menu items can be expressed in 3 ways:
 -   A list of children, if it's not important to later invidual access children
 -   A [data retriever/virtual data source](https://tarvk.github.io/model-react/examples/build/#Virtual_data_sources) list of children, if your data changes dynamically
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuItemsFolder video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuItemsFolder/recordings/demo.webm
-// Object children
-const people = createFolderMenuItem({
-    name: "People",
-    children: {
-        Bob: createStandardMenuItem({
-            name: "Bob",
-            onExecute: () => alert("I'm Bob!"),
-        }),
-        Emma: createStandardMenuItem({
-            name: "Emma",
-            onExecute: () => alert("I'm Emma!"),
-        }),
-    },
-});
-
-// Dynamic children
-const createDog = (name: string) => {
-    const item = createStandardMenuItem({
-        name,
-        // Delete the dog on execution
-        onExecute: () =>
-            dogsList.set(dogsList.get().filter(dog => dog != item)),
-    });
-    return item;
-};
-const dogsList = new Field([createDog("Max"), createDog("Jit")]);
-const dogs = createFolderMenuItem({
-    name: "Dogs",
-    children: h => dogsList.get(h),
-});
-
-export default declare({
-    info,
-    settings,
-    async search(query, hook) {
-        return {
-            children: searchAction.get([people, dogs]),
-        };
-    },
-    open({context, onClose}) {
-        // Only show "Bob" in the menu
-        const items = [people.children.Bob];
-        context.open(
-            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
-                path: "Example",
-            })
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuItemsFolder/src/index.tsx"
+    video="examples/menuItemsFolder/recordings/demo.webm"
+    sections={[[32, 79]]}
+/>
 
 In this example we show the two most interesting ways of defining children:
 
@@ -263,75 +152,12 @@ Lastly we have a menu item type that can be used to store data at the same time 
 
 These field menu items allow us to easily create a menu of properties that the user can update. LaunchMenu comes with several built-in types of field items, but also has a [`createFieldMenuItem` factory function](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/menus/items/inputs/createFieldMenuItem.tsx) to create your own.
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuItemsCustomField video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuItemsCustomField/recordings/demo.webm
-function createCheckboxMenuItem({
-    init,
-    tags = [],
-    actionBindings = [],
-    ...rest
-}: {init: boolean} & IInputTypeMenuItemData) {
-    return createFieldMenuItem({
-        init,
-        data: field => ({
-            valueView: (
-                <Loader>
-                    {h => (
-                        <input
-                            type="checkbox"
-                            checked={field.get(h)}
-                            readOnly
-                        />
-                    )}
-                </Loader>
-            ),
-            tags: adjustSubscribable(tags, (tags, h) => [
-                "field",
-                ...tags,
-                field.get(h).toString(),
-            ]),
-            actionBindings: adjustBindings(actionBindings, [
-                editExecuteHandler.createBinding(() => {
-                    field.set(!field.get());
-                }),
-            ]),
-            ...rest,
-        }),
-    });
-}
-
-const goal = createCheckboxMenuItem({
-    init: true,
-    resetable: true,
-    name: "Take over the world",
-});
-const openable = createCheckboxMenuItem({
-    init: false,
-    name: "Openable",
-});
-const items = [goal, openable];
-
-export default declare({
-    info,
-    settings,
-    async search(query, hook) {
-        return {
-            children: searchAction.get(items),
-        };
-    },
-    open({context, onClose}) {
-        if (!openable.get()) {
-            alert("Example can't be opened without toggling openable");
-            return;
-        }
-
-        context.open(
-            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
-                path: "Example",
-            })
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuItemsCustomField/src/index.tsx"
+    video="examples/menuItemsCustomField/recordings/demo.webm"
+    sections={[[36, 96]]}
+/>
 
 This example shows how a custom "checkbox" field item is created, and can then be used as both a menu item and a field.
 

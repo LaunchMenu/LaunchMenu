@@ -25,7 +25,7 @@ const info = {
     icon: "applets" as const,
 };
 
-type IStringMenuItemData = {
+type IDateMenuItemData = {
     /** The default value for the field */
     init: Date;
 } & IInputTypeMenuItemData;
@@ -44,7 +44,7 @@ function createDateSetting({
     tags = [],
     resetUndoable = undoable,
     ...rest
-}: IStringMenuItemData): IFieldMenuItem<Date, string> {
+}: IDateMenuItemData): IFieldMenuItem<Date, string> {
     const field = new Field(init);
     const serializableField = {
         get: (h: IDataHook) => field.get(h),
