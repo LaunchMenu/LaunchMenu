@@ -98,6 +98,7 @@ const Content: FC<{query: string; result: JSX.Element}> = ({query, result}) => {
                     textAlign="center"
                     display="flex"
                     justifyContent="center"
+                    alignItems="center"
                     flexWrap="wrap">
                     {prettyPrint}{" "}
                     <Box display="inline-block" marginLeft="small">
