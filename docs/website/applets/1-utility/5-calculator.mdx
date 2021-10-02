@@ -1,24 +1,67 @@
 # Calculator
 
-<StatusNotice />
+The calculator allows users to:
+
+-   Perform simple calculations
+-   Perform unit conversion
+
+<ScreenShot src="/applets/calculator/search.png" alt="Calculator banner" />
+
+## Usage example
+
+<Video src="/applets/calculator/usage.webm" volumeControls={false} />
+
+## Features
+
+### All Math.js features
+
+The applet currently uses Mathjs, meaning supports all official Mathjs features.
+
+This includes:
+
+-   Basic arithmetic, E.g.: `5 + (12 * 10)`
+-   Unit conversion, E.g.: `25cm in inches`
+-   Variables, E.g.: `width = 25; area = width * width`
+-   Matrices, E.g.: `[1, 2; 3, 4] * [5, 6; 7, 8]`
+-   Imaginary numbers, E.g.: `sqrt(-1)`
+
+The full range of features can be found at [Mathjs' website](https://mathjs.org/).
+
+### Error reporting
+
+By default when a calculation is performed that includes an error, the calculator applet simply won't return anything, since the performed search may not have been a calculation at all:
+
+<ScreenShot src="/applets/calculator/noErrorReporting.png" alt="Calculator banner" />
+
+However, when the dedicated calculation search pattern is used, the item will always appear and mention the error. All you have to do to accomplish this, is add a `=` in front of your query:
+
+<ScreenShot src="/applets/calculator/errorReporting.png" alt="Calculator banner" />
+
+## Settings
+
+The calculator applet contains a couple of simple settings to customize how the calculations are displayed.
+
+<ScreenShot src="/applets/calculator/settingsOverview.png" alt="Settings overview" />
 
 ## Roadmap
 
-The exact features of this applet have yet to be determined, but it will provide some calculator functionalities.
+We're currently using Mathjs, but this library doesn't have some basic functions that we would love for our applet:
 
-### MVP
+-   More precise error reporting (highlight the mistake in the input field)
+-   Simple notation for american length unit (feet+inches, E.g. 6'3')
+-   Date manipulation
+-   Intuitive percentage usage (E.g. 100 \* 25%)
+-   Mismatched bracket error recovery
 
-As an MVP, it could just provide answers for simple calculations such as
+For that reason we started our own math parser, but this hasn't been finished, and might need to be redone completely as the code is already rather messy.
 
-```
-5 + 9 * sin(3.4) =
-```
-
-When such a query is entered, a menu item with the result could appear in the menu.
+For the forseeable future we will stick with Mathjs, but eventually we hope our own more math parser - that fits this applet better - will be used instead.
 
 ### Advanced
 
-There is a lot more advanced functionality that could be added to a calculator applet like this. Some ideas are deescribed below.
+There is a lot more advanced functionality that could be added to a calculator applet like this. Some ideas are described below.
+
+For some ideas we're however not sure if they should be part of this applet, or a 'advanced calculator' applet. We want to make sure that this applet remains very simple and intuitive to use, for every day tasks.
 
 #### Plotting
 
@@ -28,9 +71,9 @@ It could provide simple plotting capabilities, for formulas involving 1 variable
 x + 9 * sin(x) =
 ```
 
-in which case we also have to consider how the plot result will be nevigated (translation + zoom)
+in which case we also have to consider how the plot result will be navigated (translation + zoom)
 
-This idea could even be taken a step further by making an environment simular to the one found in [desmos](https://www.desmos.com/calculator). This would obviously be a large undertaking however. When making such an advanced system you would probably also want to be able to save the environment and such.
+This idea could even be taken a step further by making an environment similar to the one found in [desmos](https://www.desmos.com/calculator). This would obviously be a large undertaking however. When making such an advanced system you would probably also want to be able to save the environment and such.
 
 #### Derivatives/integrals
 
