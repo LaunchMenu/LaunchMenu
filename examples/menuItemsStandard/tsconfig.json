@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "outDir": "./build/",
+        "rootDir": "./src/",
+        "inlineSourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
+        "module": "commonjs",
+        "target": "ES2019",
+        "jsx": "react",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "preserveSymlinks": true,
+        "strictNullChecks": true,
+        "skipLibCheck": true,
+        "noImplicitAny": true
+    },
+    "types": ["node"]
+}

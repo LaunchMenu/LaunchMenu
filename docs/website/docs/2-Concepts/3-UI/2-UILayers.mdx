@@ -57,10 +57,7 @@ export type IUILayer = {
     onOpen(
         context: IIOContext,
         close: () => void
-    ):
-        | void
-        | (() => void | Promise<void>)
-        | Promise<void | (() => void | Promise<void>)>;
+    ): void | (() => void | Promise<void>) | Promise<void | (() => void | Promise<void>)>;
 };
 ```
 
@@ -180,34 +177,12 @@ UI layers can specify a path to give the user a rough idea of where in the appli
 
 Below is an example showing some paths specified to a `UILayer` instance, which extends `AbstractUILayer`:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerPath video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerPath/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    async open({context, onClose}) {
-        // Add `Example` and `oranges` to the previous path (which was empty)
-        await context.open(
-            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
-                path: "Example/oranges",
-            })
-        );
-
-        // Remove the last item from the previous path, add `something`
-        await context.open(
-            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
-                path: "../something",
-            })
-        );
-
-        // Don't change the path, but indicate that this layer belongs to the same path now
-        await context.open(
-            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
-                path: ".",
-            })
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/UILayerPath/src/index.tsx"
+    video="examples/UILayerPath/recordings/demo.webm"
+    sections={[[37, 62]]}
+/>
 
 When this example is opened, 3 layers are added to the context. You will see that when you exit out of the top layer, the path doesn't actually change. This is because the third item didn't add anything to the path. When we exit out of the second layer, you will see that `"something"` is replaced with `"oranges"`. This is because the top layer has the path `"example/oranges"` but the second layer removed the top `"oranges"` and added `"something"` to it.
 
@@ -313,22 +288,12 @@ Whenever a `IMenu` -, `ITextField` -, or `IContent` instance is passed to the UI
 
 The generated key handlers can take care of automatically closing the layer and calling `onClose` too, if `handleClose` is set to true. `handleClose` defaults to false for provided field and content instances, but defaults to true if a menu is present.
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerModelCompletion video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerModelCompletion/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        const field = new TextField("Bob", {start: 3, end: 3});
-        const content = new Content(<Loader>{h => field.get(h)}</Loader>);
-
-        context.open(
-            new UILayer(() => ({field, content, handleClose: true, onClose}), {
-                path: "Example",
-            })
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/UILayerModelCompletion/src/index.tsx"
+    video="examples/UILayerModelCompletion/recordings/demo.webm"
+    sections={[[28, 41]]}
+/>
 
 This example simply opens up a text field and content with the same text as the field whenever the example applet is opened.
 
@@ -344,29 +309,12 @@ By default a menu opened by a `UILayer` is searchable. This is achieved by using
 
 We can easily stop a menu from being searched, by specifying `searchable: false`:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerSearching video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerSearching/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    async open({context, onClose}) {
-        const menu = new Menu(context, items);
-        await context.open(
-            new UILayer(() => ({menu, onClose}), {
-                path: "Example searchable",
-            })
-        );
-
-        await context.open(
-            new UILayer(
-                {menu, searchable: false, destroyOnClose: false},
-                {
-                    path: "Example not searchable",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/UILayerSearching/src/index.tsx"
+    video="examples/UILayerSearching/recordings/demo.webm"
+    sections={[[37, 57]]}
+/>
 
 In this example, whenever you open the `example` applet, it will add 2 UILayers. The first UILayer won't be searchable. But when that's exited using the back key (`esc` by default), we will enter the same menu but now in searchable form.
 
@@ -376,40 +324,12 @@ In this example, whenever you open the `example` applet, it will add 2 UILayers.
 
 Any menu opened by a `UILayer` will automatically show the selected item's content in the content area. This content will override the content that was provided separately, unless `hideItemContent: true` is supplied.
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerMenuContent video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerMenuContent/recordings/demo.webm
-const items = [
-    createStandardMenuItem({
-        name: "Hello world",
-        content: <div>hoi</div>,
-        onExecute: () => alert("Hello!"),
-    }),
-    createStandardMenuItem({
-        name: "Bye world",
-        onExecute: () => alert("Bye!"),
-    }),
-];
-
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        context.open(
-            new UILayer(
-                () => ({
-                    menu: new Menu(context, items),
-                    content: new Content(
-                        <Box background="secondary">Super cool example</Box>
-                    ),
-                    onClose,
-                }),
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/UILayerMenuContent/src/index.tsx"
+    video="examples/UILayerMenuContent/recordings/demo.webm"
+    sections={[[30, 61]]}
+/>
 
 Here when we open the `example` applet, we can see how the item's content animates in and out of view as we select and deselect the item.
 
@@ -419,96 +339,13 @@ A somewhat advanced concept is the concept of overlays. The premise is quite sim
 
 This simple idea however leaves us with 1 problem: when we open multiple layers that all have an overlay for the content, the content below becomes increasingly less visible. This isn't a huge problem, but still not favorable in our opinion. This is why we added the concept of `overlayGroups`. These groups are simply JavaScript symbols, specifying some group identifier. Then when we have multiple views of the same group stacked on top of each other, only the bottom view belonging to this group will be rendered.
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerOverlays video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerOverlays/recordings/demo.webm spoiler
-export default declare({
-    info,
-    settings,
-    async open({context, onClose}) {
-        const menu = new Menu(context, items);
-        // Don't use overlays
-        await context.open(
-            new UILayer(() => ({menu, searchable: false, onClose}), {
-                path: "Layer 1",
-                showNodataOverlay: false,
-            })
-        );
-
-        // Use default overlays
-        await context.open(
-            new UILayer(
-                {menu, searchable: false, destroyOnClose: false},
-                {
-                    path: "Layer 2",
-                }
-            )
-        );
-
-        // Add a field view, but use the overlay group
-        await context.open(
-            new UILayer(
-                [
-                    {
-                        overlayGroup: standardOverlayGroup,
-                        fieldView: (
-                            <FillBox background="primary" opacity={0.5} />
-                        ),
-                    },
-                    {menu, searchable: false, destroyOnClose: false},
-                ],
-                {
-                    path: "Layer 3",
-                    showNodataOverlay: false, // don't use default overlays
-                }
-            )
-        );
-
-        // Add a field overlay but add custom overlay group
-        const group = Symbol("new group");
-        await context.open(
-            new UILayer(
-                [
-                    {
-                        overlayGroup: group,
-                        fieldView: {
-                            view: (
-                                <FillBox background="primary" opacity={0.5} />
-                            ),
-                            transparent: true,
-                        },
-                    },
-                    {menu, searchable: false, destroyOnClose: false},
-                ],
-                {
-                    path: "Layer 4",
-                    showNodataOverlay: false, // don't use default overlays
-                }
-            )
-        );
-
-        // Add another field overlay but use same custom overlay group
-        await context.open(
-            new UILayer(
-                [
-                    {
-                        overlayGroup: group,
-                        fieldView: {
-                            view: (
-                                <FillBox background="secondary" opacity={0.5} />
-                            ),
-                            transparent: true,
-                        },
-                    },
-                    {menu, searchable: false, destroyOnClose: false},
-                ],
-                {
-                    path: "Layer 5",
-                    showNodataOverlay: false, // don't use default overlays
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    spoiler
+    source="examples/UILayerOverlays/src/index.tsx"
+    video="examples/UILayerOverlays/recordings/demo.webm"
+    sections={[[40, 121]]}
+/>
 
 In this example, whenever the `example` applet is opened, it will add 5 layers to the context. The menu content it adds can be ignored, it's mostly about the overlays that are visible in the field section.
 
@@ -524,75 +361,13 @@ These visual overlays are independent of keyboard interaction, which is addresse
 
 By default any UILayer will catch all events that are emitted. This is to prevent things in other layers from accidentally triggering. There are however several situations in which you do want things in layers below to trigger, which is why you can explicitly disable this by specifying `catchAllKeys: false`.
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerKeyBarrier video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerKeyBarrier/recordings/demo.webm spoiler
-export default declare({
-    info,
-    settings,
-    async open({context, onClose}) {
-        const back = context.settings.get(baseSettings).controls.common.back;
-        const handleClose = (event: KeyEvent, close: () => void) => {
-            if (back.get().matches(event)) {
-                close();
-                return true;
-            }
-        };
-
-        await context.open(
-            new UILayer(
-                (context, close) => ({
-                    onClose,
-                    contentView: <div>Layer 1</div>,
-                    contentHandler: event => {
-                        if (handleClose(event, close)) return true;
-                        if (event.matches("1")) {
-                            alert("Detected 1");
-                            return true;
-                        }
-                    },
-                }),
-                {path: "Layer 1"}
-            )
-        );
-
-        // Open up a layer above that doesn't capture all events
-        await context.open(
-            new UILayer(
-                (context, close) => ({
-                    contentView: <div>Layer 2</div>,
-                    contentHandler: event => {
-                        if (handleClose(event, close)) return true;
-                        if (event.matches("2")) {
-                            alert("Detected 2");
-                            return true;
-                        }
-                    },
-                }),
-                {
-                    path: "Layer 2",
-                    catchAllKeys: false,
-                }
-            )
-        );
-
-        // Open up a layer that does capture all events (defaults to capturing all)
-        await context.open(
-            new UILayer(
-                (context, close) => ({
-                    contentView: <div>Layer 3</div>,
-                    contentHandler: event => {
-                        if (handleClose(event, close)) return true;
-                        if (event.matches("3")) {
-                            alert("Detected 3");
-                            return true;
-                        }
-                    },
-                }),
-                {path: "Layer 3"}
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    spoiler
+    source="examples/UILayerKeyBarrier/src/index.tsx"
+    video="examples/UILayerKeyBarrier/recordings/demo.webm"
+    sections={[[27, 93]]}
+/>
 
 In this example, whenever the `example` applet is opened, it will add 3 layers to the context. You will notice that both pressing `3` will open an alert box, but pressing `1` and `2` won't do this. This is because layer 3 doesn't specify `catchAllKeys: false` and thus catches all keys by default. When we exit layer 3, you will notice that both `1` and `2` will open alert boxes. This is because layer 2 allows events to sink down, since we specified `catchAllKeys: false`.
 
@@ -609,215 +384,13 @@ You can make a `IUILayer` totally from scratch if you like, and implement the en
 
 In the example below, we created a custom `GambleLayer` which can take care of providing a view and key handlers for a given menu. The UI provided for the menu is quite custom and rather special however, since you can no longer navigate with the up and down keys, and have to use a 'launcher' instead using the space bar.
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerCustomLayer video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerCustomLayer/recordings/demo.webm spoiler
-const items = new Array(30).fill(0).map((_, i) =>
-    createStandardMenuItem({
-        name: `Item ${i}`,
-        onExecute: () => alert(`Activated ${i}`),
-    })
-);
-
-class GambleLayer extends AbstractUILayer {
-    protected menu: IMenu;
-    protected data = new Field([] as IUILayerMenuData[]);
-    protected charge = {
-        chargeSpeed: 0.05,
-        minCharge: 0.3,
-        decay: 0.03,
-        speed: 1,
-    };
-
-    /**
-     * Creates a new menu gambling layer
-     * @param menu The menu that the layer is for
-     * @param config The base layer config
-     */
-    public constructor(menu: IMenu, config: IUILayerBaseConfig) {
-        super(config);
-        this.menu = menu;
-    }
-
-    /** @override */
-    protected initialize(context: IIOContext, close: () => void): () => void {
-        const handler = this.getMenuHandler(this.menu, close);
-        const view = this.getMenuUI(this.menu, handler.getCharge);
-        this.data.set([
-            {
-                ID: uuid(),
-                menu: this.menu,
-                menuView: view,
-                menuHandler: handler.handler,
-            },
-        ]);
-
-        return () => handler.destroy();
-    }
-
-    /**
-     * Creates the UI for the given menu
-     * @param menu The menu to visualize
-     * @param getCharge The function to retrieve the current charge
-     * @returns The view element
-     */
-    protected getMenuUI(
-        menu: IMenu,
-        getCharge: IDataRetriever<number>
-    ): JSX.Element {
-        return (
-            <Box display="flex" flexDirection="column" height="100%">
-                <Loader>
-                    {h => (
-                        <Box
-                            height={10}
-                            width={`${Math.round(10 + getCharge(h) * 90)}%`}
-                            css={{backgroundColor: "red"}}
-                        />
-                    )}
-                </Loader>
-                <Box flexGrow={1} position="relative">
-                    <MenuView menu={menu} />
-                </Box>
-            </Box>
-        );
-    }
-
-    /**
-     * Retrieves the key handler for a menu
-     * @param menu The menu to create the handler for
-     * @param onExit The function to execute when receiving an exit command
-     * @returns The key listener
-     */
-    protected getMenuHandler(
-        menu: IMenu,
-        onExit: () => void
-    ): {getCharge: IDataRetriever<number>} & IDisposableKeyEventListener {
-        const context = menu.getContext();
-        const controls = context.settings.get(baseSettings).controls;
-        const launchKey = context.settings.get(settings).launch;
-        const fieldSettings = controls.menu;
-        const launcher = this.setupLauncher(() => {
-            const items = menu.getItems();
-            const cursor = menu.getCursor();
-            const index = cursor
-                ? (items.indexOf(cursor) + 1) % items.length
-                : 0;
-            if (items.length > 0) menu.setCursor(items[index]);
-        });
-
-        // Setup handlers
-        let {
-            handler: handleItemKeyListeners,
-            destroy: destroyItemListenersHandler,
-        } = setupItemKeyListenerHandler(menu);
-        const {handler: handleContextMenu, destroy: destroyContextMenuHandler} =
-            setupContextMenuHandler(menu, {
-                useContextItemKeyHandlers: true,
-                pattern: () => fieldSettings.openContextMenu.get(),
-            });
-
-        // Return the listener
-        return {
-            handler: async (e: KeyEvent) => {
-                if (await handleItemKeyListeners?.(e)) return true;
-                if (await handleContextMenu(e)) return true;
-                if (
-                    handleExecuteInput(
-                        e,
-                        menu,
-                        undefined,
-                        fieldSettings.execute.get()
-                    )
-                )
-                    return true;
-                if (launchKey.get().matches(e)) {
-                    launcher.fire();
-                    return true;
-                }
-
-                const back = controls.common.back.get();
-                if (handleDeselectInput(e, menu, back)) return true;
-                if (onExit && back.matches(e)) {
-                    onExit();
-                    return true;
-                }
-            },
-            destroy: () => {
-                destroyItemListenersHandler?.();
-                destroyContextMenuHandler();
-                launcher.destroy();
-            },
-            getCharge: launcher.getCharge,
-        };
-    }
-
-    /**
-     * Creates the launcher function
-     * @param selectNext The function to call to select the next item in the menu
-     * @returns The data to manage the launcher
-     */
-    protected setupLauncher(selectNext: () => void): {
-        getCharge: IDataRetriever<number>;
-        destroy: () => void;
-        fire: () => void;
-    } {
-        const charge = new Field(0);
-
-        let up = true;
-        const chargeIntervalID = setInterval(() => {
-            let value = Math.max(
-                0,
-                Math.min(
-                    charge.get() + (up ? 1 : -1) * this.charge.chargeSpeed,
-                    1
-                )
-            );
-            charge.set(value);
-            if (value == 0 || value == 1) up = !up;
-        }, 50);
-
-        return {
-            getCharge: h => charge.get(h),
-            destroy: () => {
-                clearInterval(chargeIntervalID);
-            },
-            fire: () => {
-                let speed = charge.get() + this.charge.minCharge;
-                let pos = 0;
-                const intervalID = setInterval(() => {
-                    speed = Math.max(0, speed - this.charge.decay);
-                    pos += this.charge.speed * speed;
-                    while (pos > 1) {
-                        pos--;
-                        selectNext();
-                    }
-                    if (speed == 0) clearInterval(intervalID);
-                }, 50);
-            },
-        };
-    }
-
-    /** @override */
-    public getMenuData(
-        hook?: IDataHook,
-        extendData: IUILayerMenuData[] = []
-    ): IUILayerMenuData[] {
-        return super.getMenuData(hook, [...this.data.get(hook), ...extendData]);
-    }
-}
-
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        context.open(
-            new GambleLayer(new Menu(context, items), {
-                path: "Example",
-            }),
-            {onClose}
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    spoiler
+    source="examples/UILayerCustomLayer/src/index.tsx"
+    video="examples/UILayerCustomLayer/recordings/demo.webm"
+    sections={[[50, 228]]}
+/>
 
 In this example, whenever the `example` applet is opened, it will open our `GambleLayer`. You will see a charge bar cycling up and down, and whenever space is pressed the cursor will be launched down. The launch speed depends on the charge amount when the cursor was launched.
 
@@ -838,80 +411,12 @@ The only drawback of this system is that all sections are combined in one list, 
 
 Below is an example of a custom layer that represents an applet, and makes use of the `MenuSearch` layer to allow for searching:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/UILayerReuseLayer video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/UILayerReuseLayer/recordings/demo.webm
-class MyApplication extends UnifiedAbstractUILayer {
-    protected data = new Field([] as IUILayerData[]);
-
-    /** Creates a new cool application thing */
-    public constructor() {
-        super({path: "My cool example"});
-    }
-
-    /** @override */
-    public getAll(hook?: IDataHook): IUILayerData[] {
-        return this.data.get(hook);
-    }
-
-    /** @override */
-    protected initialize(context: IIOContext, close: () => void): () => void {
-        // Setup menu
-        const items = [
-            createStandardMenuItem({
-                name: "Hello world",
-                onExecute: () => alert("Hello!"),
-            }),
-            createStandardMenuItem({
-                name: "Bye world",
-                onExecute: () => alert("Bye!"),
-            }),
-        ];
-
-        const menu = new Menu(context, items);
-        const {handler: menuHandler, destroy: destroyMenuHandler} =
-            createStandardMenuKeyHandler(menu, {onExit: close});
-        const menuData = {
-            ID: uuid(),
-            menu,
-            menuView: <MenuView menu={menu} />,
-            menuHandler: menuHandler,
-        };
-
-        // Setup a search field + menu by reusing the menu search layer
-        const menuSearch = new MenuSearch({
-            menu,
-        });
-
-        // Setup some content
-        const content = new Content(
-            <Box>This is a great applet, very useful.</Box>
-        );
-        const contentHandler = createStandardContentKeyHandler(
-            content,
-            context
-        );
-        const contentData = {
-            ID: uuid(),
-            content,
-            contentView: <ContentView content={content} />,
-            contentHandler,
-        };
-
-        // Set all the data (in the appropriate order, search on top)
-        this.data.set([menuData, contentData, menuSearch]);
-
-        // Return a function that can be invoked to dispose all data
-        return () => destroyMenuHandler();
-    }
-}
-
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        context.open(new MyApplication(), {onClose});
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/UILayerReuseLayer/src/index.tsx"
+    video="examples/UILayerReuseLayer/recordings/demo.webm"
+    sections={[[42, 112]]}
+/>
 
 In this example, whenever the `example` applet is opened, it will open our `MyApplication` layer. This layer will simply show a searchable menu, and some content.
 
@@ -933,9 +438,7 @@ class MyApplication extends UILayer {
                         onExecute: () => alert("Bye!"),
                     }),
                 ]),
-                content: new Content(
-                    <Box>This is a great applet, very useful.</Box>
-                ),
+                content: new Content(<Box>This is a great applet, very useful.</Box>),
             }),
             {path: "My cool example"}
         );
@@ -1169,9 +672,7 @@ type IMultiSelectConfig<T> = {
     /** Menu category configuration for the search results */
     categoryConfig?: IPrioritizedMenuConfig;
     /** The item to use for custom input */
-    createCustomView?: (
-        getText: (hook?: IDataHook) => string | null
-    ) => IMenuItem;
+    createCustomView?: (getText: (hook?: IDataHook) => string | null) => IMenuItem;
     /** Checks whether the given input is valid */
     checkValidity?: (v: string) => IInputError | undefined;
     /** The function to transform the field value into a string */

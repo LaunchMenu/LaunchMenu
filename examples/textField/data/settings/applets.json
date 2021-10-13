@@ -1,0 +1,9 @@
+{
+    "applet-applet-manager": "../../node_modules/@launchmenu/applet-applet-manager",
+    "applet-session-manager": "../../node_modules/@launchmenu/applet-session-manager",
+    "applet-settings-manager": "../../node_modules/@launchmenu/applet-settings-manager",
+    "applet-window-manager": "../../node_modules/@launchmenu/applet-window-manager",
+    "applet-help": "../../node_modules/@launchmenu/applet-help",
+    "applet-lm-recorder": "../../node_modules/@launchmenu/applet-lm-recorder",
+    "example": "./"
+}

@@ -5,7 +5,8 @@
         "packages/core",
         "packages/applets/*",
         "packages/core-applets/*",
-        "packages/launcher*"
+        "packages/launcher*",
+        "examples/*"
     ],
     "scripts": {
         "updated": "lerna updated",
