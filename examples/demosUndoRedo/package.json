@@ -1,0 +1,23 @@
+{
+    "name": "demos-undo-redo",
+    "private": true,
+    "version": "0.0.0",
+    "types": "build/index.d.ts",
+    "files": [
+        "build/**/*.{js,d.ts}"
+    ],
+    "main": "build/index.js",
+    "scripts": {
+        "build": "lm-build-tools --build --production",
+        "dev": "lm-build-tools --watch --launch --entry ../../../node_modules/@launchmenu/core/build/startup.js",
+        "start": "lm-build-tools --launch --production --entry ../../../node_modules/@launchmenu/core/build/startup.js",
+        "start:dev": "lm-build-tools --launch --entry ../../../node_modules/@launchmenu/core/build/startup.js",
+        "clean": "lm-build-tools --cleanup",
+        "test": "jest -i",
+        "test-watch": "jest --watch -i",
+        "test-watch-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch --config=\"jest.config.js\"",
+        "prepare": "npm run build"
+    },
+    "author": "Tar van Krieken",
+    "license": "MIT"
+}

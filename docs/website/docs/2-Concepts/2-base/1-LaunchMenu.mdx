@@ -109,25 +109,8 @@ Note that `setWindowOpen` doesn't actually make LM open or close the window itse
 
 Below is an example applet showing off a potential usage of the `LaunchMenu` instance - hiding the window:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/baseLaunchMenu
-export default declare({
-    info,
-    settings,
-    init({LM}) {
-        const items = [
-            createStandardMenuItem({
-                name: "Hide window",
-                onExecute: () => LM.setWindowOpen(false),
-            }),
-        ];
-
-        return {
-            async search(query, hook) {
-                return {
-                    children: searchAction.get(items),
-                };
-            },
-        };
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/baseLaunchMenu/src/index.tsx"
+    sections={[[25, 44]]}
+/>

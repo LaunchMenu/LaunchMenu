@@ -9,50 +9,12 @@ The execute action also has built-in support for command execution, which you ca
 
 Below is an example of using one of the simplest built-in commands, the `SetFieldCommand`:
 
-```tsx title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/undoRedo video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/undoRedo/recordings/demo.webm
-const count = new Field(0);
-const content = <Loader>{h => count.get(h)}</Loader>;
-const items = [
-    createStandardMenuItem({
-        name: "Increment random",
-        content,
-        onExecute: () =>
-            new SetFieldCommand(
-                count,
-                count.get() + Math.floor(Math.random() * 5 + 1)
-            ),
-    }),
-    createStandardMenuItem({
-        name: "Decrement random",
-        content,
-        onExecute: () =>
-            new SetFieldCommand(
-                count,
-                count.get() - Math.floor(Math.random() * 5 + 1)
-            ),
-    }),
-];
-
-export default declare({
-    info,
-    settings,
-    async search(query, hook) {
-        return {
-            children: searchAction.get(items),
-        };
-    },
-    open({context, onClose}) {
-        context.open(
-            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
-                path: "Example",
-            })
-        );
-    },
-
-    // There is currently no standard undo/redo applet yet, so we have to provide some controls oureselves for testing
-    withSession: setupUndoRedoControls,
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/undoRedo/src/index.tsx"
+    video="examples/undoRedo/recordings/demo.webm"
+    sections={[[67, 102]]}
+/>
 
 ```ts title=setupUndoRedoControls spoiler
 const setupUndoRedoControls: IAppletSessionInitializer = session => {
@@ -133,80 +95,12 @@ The easiest way of taking care of this state tracking and ensuring commands are 
 
 Below is ane example of how one can create a custom command:
 
-```tsx title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/undoRedoCommands video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/undoRedoCommands/recordings/demo.webm
-class RandomIncrementCommand extends Command {
-    public metadata = {
-        name: "Random increment",
-    };
-
-    protected field: IField<number>;
-    protected max: number;
-    protected newVal: number;
-    protected oldVal: number;
-
-    /**
-     * Creates a new increment command
-     * @param field The field to increment
-     * @param max The maximum amount to increment by (can be negative to decrement)
-     */
-    public constructor(field: IField<number>, max: number = 5) {
-        super();
-        this.field = field;
-        this.max = max;
-    }
-
-    /** @override */
-    protected onExecute() {
-        if (!this.newVal)
-            this.newVal =
-                this.field.get() +
-                (this.max > 0 ? 1 : -1) *
-                    Math.floor(Math.random() * Math.abs(this.max) + 1);
-        this.oldVal = this.field.get();
-        this.field.set(this.newVal);
-    }
-
-    /** @override */
-    protected onRevert() {
-        this.field.set(this.oldVal);
-    }
-}
-
-const count = new Field(0);
-const content = <Loader>{h => count.get(h)}</Loader>;
-const items = [
-    createStandardMenuItem({
-        name: "Increment random",
-        content,
-        onExecute: () => new RandomIncrementCommand(count, 5),
-    }),
-    createStandardMenuItem({
-        name: "Decrement random",
-        content,
-        onExecute: () => new RandomIncrementCommand(count, -5),
-    }),
-];
-
-export default declare({
-    info,
-    settings,
-    async search(query, hook) {
-        return {
-            children: searchAction.get(items),
-        };
-    },
-    open({context, onClose}) {
-        context.open(
-            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
-                path: "Example",
-            })
-        );
-    },
-
-    // There is currently no standard undo/redo applet yet, so we have to provide some controls oureselves for testing
-    withSession: setupUndoRedoControls,
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/undoRedoCommands/src/index.tsx"
+    video="examples/undoRedoCommands/recordings/demo.webm"
+    sections={[[69, 140]]}
+/>
 
 Now `Increment random` and `Decrement random` can be used to change the value of `count`, but these changes can be undone and redone using `ctrl+z` and `ctrl+y`. This implementation is almost equivalent to the one using the `SetFieldCommand` except for one important difference: The set field command is meant for setting data to an absolute value, so if you create 5 of these commands at once and then execute them all afterwards, it wouldn't have incremented 5 times. This is the case because every command stored a value increment of the value the field had when it was created, rather then when the command was executed. Our custom `RandomIncrementCommand` handles this properly however, only calculating the new value to be used when it's first executed. We have to store this value for future usage in order to make sure the command behaves consistently when executed multiple times (when undone and then redone).
 
@@ -216,60 +110,12 @@ Compound commands can be used to combine multiple commands into one. This way, w
 
 Below is an example of how to use these compound commands:
 
-```tsx title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/undoRedoCompoundCommand video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/undoRedoCompoundCommand/recordings/demo.webm
-const count1 = new Field(0);
-const count2 = new Field(0);
-const content = (
-    <Loader>
-        {h => (
-            <>
-                count1: {count1.get(h)}, count2: {count2.get(h)}
-            </>
-        )}
-    </Loader>
-);
-const getRandom = () => Math.floor(Math.random() * 5 + 1);
-const items = [
-    createStandardMenuItem({
-        name: "Increment random",
-        content,
-        onExecute: () =>
-            new CompoundCommand({name: "Increment"}, [
-                new SetFieldCommand(count1, count1.get() + getRandom()),
-                new SetFieldCommand(count2, count2.get() + getRandom()),
-            ]),
-    }),
-    createStandardMenuItem({
-        name: "Decrement random",
-        content,
-        onExecute: () =>
-            new CompoundCommand({name: "Decrement"}, [
-                new SetFieldCommand(count1, count1.get() - getRandom()),
-                new SetFieldCommand(count2, count2.get() - getRandom()),
-            ]),
-    }),
-];
-
-export default declare({
-    info,
-    settings,
-    async search(query, hook) {
-        return {
-            children: searchAction.get(items),
-        };
-    },
-    open({context, onClose}) {
-        context.open(
-            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
-                path: "Example",
-            })
-        );
-    },
-
-    // There is currently no standard undo/redo applet yet, so we have to provide some controls ourselves for testing
-    withSession: setupUndoRedoControls,
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/undoRedoCompoundCommand/src/index.tsx"
+    video="examples/undoRedoCompoundCommand/recordings/demo.webm"
+    sections={[[68, 119]]}
+/>
 
 Now `Increment random` and `Decrement random` can be used to change the value of `count1` and `count2` at once, but these changes can be undone and redone using `ctrl+z` and `ctrl+y`.
 
@@ -285,110 +131,12 @@ The `preparingForExecution` and `preparingForRevert` states mentioned in the [co
 
 Below is an example that shows off usage of 2 independent resources.
 
-```tsx title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/undoRedoResources video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/undoRedoResources/recordings/demo.webm
-class DelayedRandomIncrementCommand extends Command {
-    public metadata = {
-        name: "Random increment",
-    };
-
-    protected readonly dependencies: Resource[];
-
-    protected field: IField<number>;
-    protected max: number;
-    protected newVal: number;
-    protected oldVal: number;
-
-    /**
-     * Creates a new increment command
-     * @param resource The resource that this command is dependent on
-     * @param field The field to increment
-     * @param max The maximum amount to increment by (can be negative to decrement)
-     */
-    public constructor(
-        resource: Resource,
-        field: IField<number>,
-        max: number = 5
-    ) {
-        super();
-        this.field = field;
-        this.max = max;
-
-        this.dependencies = [resource];
-    }
-
-    /** @override */
-    protected async onExecute() {
-        await new Promise(res => setTimeout(res, 1000));
-        if (!this.newVal)
-            this.newVal =
-                this.field.get() +
-                (this.max > 0 ? 1 : -1) *
-                    Math.floor(Math.random() * Math.abs(this.max) + 1);
-        this.oldVal = this.field.get();
-        this.field.set(this.newVal);
-    }
-
-    /** @override */
-    protected async onRevert() {
-        await new Promise(res => setTimeout(res, 1000));
-        this.field.set(this.oldVal);
-    }
-}
-
-const count1 = new Field(0);
-const count2 = new Field(0);
-const count1Resource = new Resource();
-const count2Resource = new Resource();
-const content = (
-    <Loader>
-        {h => (
-            <>
-                count1: {count1.get(h)}, count2: {count2.get(h)}
-            </>
-        )}
-    </Loader>
-);
-const items = [
-    createStandardMenuItem({
-        name: "Increment parallelized",
-        content,
-        onExecute: () =>
-            new CompoundCommand({name: "Increment"}, [
-                new DelayedRandomIncrementCommand(count1Resource, count1),
-                new DelayedRandomIncrementCommand(count2Resource, count2),
-            ]),
-    }),
-    createStandardMenuItem({
-        name: "Increment serialized",
-        content,
-        onExecute: () =>
-            new CompoundCommand({name: "Increment"}, [
-                new DelayedRandomIncrementCommand(applicationResource, count1),
-                new DelayedRandomIncrementCommand(applicationResource, count2),
-            ]),
-    }),
-];
-
-export default declare({
-    info,
-    settings,
-    async search(query, hook) {
-        return {
-            children: searchAction.get(items),
-        };
-    },
-    open({context, onClose}) {
-        context.open(
-            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
-                path: "Example",
-            })
-        );
-    },
-
-    // There is currently no standard undo/redo applet yet, so we have to provide some controls oureselves for testing
-    withSession: setupUndoRedoControls,
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/undoRedoResources/src/index.tsx"
+    video="examples/undoRedoResources/recordings/demo.webm"
+    sections={[[73, 170]]}
+/>
 
 Now `Increment parallelized` and `Increment serialized` can both be used to change the value of `count1` and `count2` at once. These commands now have a fake delay however, and you will notice it takes some time for the values to update. When using `Increment parallelized` both the commands will receive a different resource, allowing them to be executed at the same time. When this button is spammed, you will see that execution will start lagging behind, since each resource still only allow 1 active command at a time. When `Increment serialized` the default `applicationResource` that `Command` instances usually have is used, meaning that everything is entirely sequential.
 
@@ -398,6 +146,6 @@ Note that when undo/redo is spammed after having used both the serialized and pa
 
 Currently in order to prevent possible deadlocks, resources should be claimed in a fixed order. For instance if you have a resource `A` and a resource `B`, `A` should always be specified before `B` (or vice-versa). See [the dining philosophers problem](https://en.wikipedia.org/wiki/Dining_philosophers_problem#:~:text=Each%20philosopher%20must%20alternately%20think,being%20used%20by%20another%20philosopher.) for more information.
 
-I believe for the scenario where you let the `Command` class take care of your dependencies this isn't relevant, as no other can can be executed in between you claiming your first and second resource (the js equivalent of 'context switches' only occurs on the `await` keyword or callbacks), but this requires further investigation.
+I believe for the scenario where you let the `Command` class take care of your dependencies this isn't relevant, as no other command can be executed in between you claiming your first and second resource (the js equivalent of 'context switches' only occurs on the `await` keyword or callbacks), but this requires further investigation.
 
 Additionally, I think that we could automate fixed order resource claiming in a future release of LaunchMenu if required, by automatically sorting resources. The order that they are sorted in is irrelevant, as long as it's consistent. So this order could simply be determined by assigning the resource an incremental ID the first time it's used.

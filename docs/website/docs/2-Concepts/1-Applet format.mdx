@@ -4,30 +4,12 @@ Applets should have one default export at their entry, which is an object adheri
 
 The following is a basic example of a valid minimal applet declaration:
 
-```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormat video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/appletFormat/recordings/demo.webm
-import {createSettings, createSettingsFolder, declare} from "@launchmenu/core";
-
-const info = {
-    name: "Example",
-    description: "A minimal example applet",
-    version: "0.0.0",
-    icon: "applets" as const,
-};
-
-const settings = createSettings({
-    version: "0.0.0",
-    settings: () =>
-        createSettingsFolder({
-            ...info,
-            children: {},
-        }),
-});
-
-export default declare({
-    info,
-    settings,
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/appletFormat/src/index.tsx"
+    video="examples/appletFormat/recordings/demo.webm"
+    sections={[[3, 8]]}
+/>
 
 ## Functionality
 
@@ -58,54 +40,19 @@ Finally an applet is able to globally augment the context menu. This works by pr
 
 Below are two examples of how these bindings can be used:
 
-```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormatGlobalContextBinding video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/appletFormatGlobalContextBinding/recordings/demo.webm
-const myAction = createContextAction({
-    name: "My action",
-    contextItem: {
-        priority: Priority.HIGH,
-    },
-    // Add the item to the global folder
-    folder: globalContextFolderHandler,
-    // Don't show count for this action, since it can be present without items being selected
-    preventCountCategory: true,
-    // We can just specify `void` if the action takes no data
-    core: (data: void[]) => {
-        return {
-            execute: () => alert("Hello"),
-        };
-    },
-});
+<CodeReference
+    title="src/index.ts"
+    source="examples/appletFormatGlobalContextBinding/src/index.tsx"
+    video="examples/appletFormatGlobalContextBinding/recordings/demo.webm"
+    sections={[[26, 47]]}
+/>
 
-export default declare({
-    info,
-    settings,
-    globalContextMenuBindings: [myAction.createBinding()],
-});
-```
-
-```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormatGlobalContextBindingDirect video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/appletFormatGlobalContextBindingDirect/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    globalContextMenuBindings: [
-        globalContextFolderHandler.createBinding({
-            item: {
-                // End your priority array with a random number, to help prevent collisions
-                priority: [Priority.HIGH, 34],
-                // Specify any menu item you like
-                item: createStandardMenuItem({
-                    name: "My action",
-                    onExecute: () => alert("Hello"),
-                }),
-            },
-            // Don't show count for this action, since presence isn't related to selected items
-            preventCountCategory: true,
-            // There is no action that this menu item is for
-            action: null,
-        }),
-    ],
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/appletFormatGlobalContextBindingDirect/src/index.tsx"
+    video="examples/appletFormatGlobalContextBindingDirect/recordings/demo.webm"
+    sections={[[26, 46]]}
+/>
 
 Note that in the second example we created a binding for `globalContextFolderHandler`. You can create bindings to other folders in a similar way, or directly for `contextMenuAction`.
 
@@ -131,66 +78,12 @@ Both of these functions expect you to return a partial applet config, which can 
 
 The below example will initialize a file watcher, and dispose it on reload. The `LaunchMenu` instance isn't used.
 
-```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormatInit video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/appletFormatInit/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    init: ({LM}) => {
-        const path = Path.join(__dirname, "..", "myJsonDataFile.json");
-
-        // Create some way of mapping the file to menu items
-        const items = new Field<IMenuItem[]>([]);
-        const updateItems = () =>
-            FS.readFile(path, "utf8", (err, data) => {
-                if (err) return console.error(err);
-
-                try {
-                    const ar = JSON.parse(data) as string[];
-                    items.set(
-                        ar.map(text =>
-                            createStandardMenuItem({
-                                name: text,
-                                onExecute: () => alert(text),
-                            })
-                        )
-                    );
-                } catch (e) {
-                    console.error(e);
-                }
-            });
-
-        // initialize the menu items, and update them on file changes
-        const watcher = FS.watch(path, updateItems);
-        updateItems();
-
-        return {
-            async search(query, hook) {
-                return {
-                    children: searchAction.get(items.get(hook)),
-                };
-            },
-            open({context, onClose}) {
-                context.open(
-                    new UILayer(
-                        () => ({
-                            menu: new ProxiedMenu(context, hook =>
-                                items.get(hook)
-                            ),
-                            onClose,
-                        }),
-                        {
-                            path: "Example",
-                        }
-                    )
-                );
-            },
-
-            // Close the watcher when the applet is stopped
-            onDispose: () => watcher.close(),
-        };
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/appletFormatInit/src/index.tsx"
+    video="examples/appletFormatInit/recordings/demo.webm"
+    sections={[[31, 86]]}
+/>
 
 To learn more about the `LaunchMenu` instance, see the in-depth [LaunchMenu page](/docs/concepts/base/launchmenu).
 
@@ -200,44 +93,12 @@ To learn more about the `LaunchMenu` instance, see the in-depth [LaunchMenu page
 
 The below example will be able to change the search field value of the session on execution of the items:
 
-```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormatWithSession video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/appletFormatWithSession/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    withSession: session => {
-        const items = [
-            createStandardMenuItem({
-                name: "Hello world",
-                // Adjust the session search on execution
-                onExecute: () => session.searchField.set("Hi"),
-            }),
-            createStandardMenuItem({
-                name: "Bye world",
-                // Adjust the session search on execution
-                onExecute: () => session.searchField.set("Goodbye"),
-            }),
-        ];
-
-        return {
-            async search(query, hook) {
-                return {
-                    children: searchAction.get(items),
-                };
-            },
-            open({context, onClose}) {
-                context.open(
-                    new UILayer(
-                        () => ({menu: new Menu(context, items), onClose}),
-                        {
-                            path: "Example",
-                        }
-                    )
-                );
-            },
-        };
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/appletFormatWithSession/src/index.tsx"
+    video="examples/appletFormatWithSession/recordings/demo.webm"
+    sections={[[27, 59]]}
+/>
 
 To learn more about sessions, see the in-depth [sessions page](/docs/concepts/base/session).
 
@@ -318,44 +179,10 @@ The configuration also has a `development` property you can specify, which shoul
 
 All these properties can be used to improve your live reload experience. You could for instance make it so some menu you're trying to test automatically closes the old version and opens up the updated instance afterwards:
 
-```ts title=src/index.ts source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/appletFormatReloadCallback
-export default declare({
-    info,
-    settings,
-    withSession: session => {
-        function openMenu(context: IOContext, onClose?: () => void) {
-            context.open(
-                new UILayer(() => ({menu: new Menu(context, items), onClose}), {
-                    path: "Example",
-                })
-            );
-        }
-
-        // Return the same config as you usually would, with the addition of `development`
-        return {
-            async search(query, hook) {
-                return {
-                    children: searchAction.get(items),
-                };
-            },
-            open({context, onClose}) {
-                openMenu(context, onClose);
-            },
-
-            development: {
-                onReload: () => {
-                    // Open the new version of the menu
-                    session.goHome();
-                    openMenu(session.context);
-
-                    return () => {
-                        // Dispose some stuff before the next reload if required
-                    };
-                },
-            },
-        };
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/appletFormatReloadCallback/src/index.tsx"
+    sections={[[39, 75]]}
+/>
 
 The session will give you access most the things you might desire for simple automation during testing.

@@ -9,21 +9,20 @@ Actions are a little difficult to grasp, but very powerful and flexible. This pa
 In order for LaunchMenu to be as flexible as we wanted it to be, we had to come up with an appropriate way of interacting with menu items. Below is a list of requirements we came up with, based on usage scenarios that we considered. These scenarios are almost all centered around the context-menu, which the primary execution action also falls under:
 
 1. <Tooltip title="Reason: we can't predict what context items other applets will have">
-       Dynamic: Items should be able to dynamically define their context-items,
-       rather than choosing from a predetermined list
+       Dynamic: Items should be able to dynamically define their context-items, rather
+       than choosing from a predetermined list
    </Tooltip>
 2. <Tooltip title="Reason: you can open a context-menu with more items selected and we don't want to see duplicate context-items but instead execute the same action on both items at once">
-       Identifiable: We should be able to detect whether two context-items are
-       the same/represent the same action
+       Identifiable: We should be able to detect whether two context-items are the
+       same/represent the same action
    </Tooltip>
 3. <Tooltip title="Reason: when trying to copy a selection of items, performing multiple copies in sequence wouldn't have the desired effect">
-       Mergeable: context-items representing the same action should be able to
-       run combined behavior when executed, rather than just running multiple
-       times sequence
+       Mergeable: context-items representing the same action should be able to run
+       combined behavior when executed, rather than just running multiple times in
+       sequence
    </Tooltip>
 4. <Tooltip title="Reason: the execution of an item could do anything, so applets should be able to make it do anything and still be able to make use of property 3">
-       Extensible: the action represented by a context-item should be able to be
-       extended
+       Extensible: the action represented by a context-item should be able to be extended
    </Tooltip>
 
 ### Options exploration
@@ -224,39 +223,21 @@ This is the case because the action will retrieve multiple bindings at once, so 
 
 Now we can apply the action to these items, in order to extract all the names of the items:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionBasics highlight=10:10
-const names = createAction({
-    name: "names",
-    core: (names: string[]) => ({result: names}),
-});
-
-const item1 = {actionBindings: [names.createBinding("item1")]};
-const item2 = {actionBindings: [names.createBinding("item2")]};
-
-const items = [item1, item2];
-console.log(names.get(items)); // == ["item1", "item2"]
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionBasics/src/index.tsx"
+    highlight={[[10, 10]]}
+    sections={[[8, 17]]}
+/>
 
 Not every item that you apply the action on needs to have a binding to the action, and one item may even have multiple bindings to the same action, so from the result there is no way of figuring how it corresponds to the items. E.g. we can't just assume that the first item of items has name "item1", as can be seen in the following example:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionIndependentBindings highlight=6:15
-const names = createAction({
-    name: "names",
-    core: (names: string[]) => ({result: names}),
-});
-
-const item1 = {actionBindings: []};
-const item2 = {
-    actionBindings: [
-        names.createBinding("item1"),
-        names.createBinding("item1Alt"),
-    ],
-};
-const item3 = {actionBindings: [names.createBinding("item2")]};
-
-const items = [item1, item2, item3];
-console.log(names.get(items)); // == ["item1", "item1Alt", "item2"]
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionIndependentBindings/src/index.tsx"
+    highlight={[[6, 15]]}
+    sections={[[8, 20]]}
+/>
 
 ### Multiple actions example
 
@@ -278,30 +259,12 @@ const ages = createAction({
 
 And create and check bindings for some arbitrary items:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionsMultiple highlight=10:22
-const names = createAction({
-    name: "names",
-    core: (names: string[]) => ({result: names}),
-});
-const ages = createAction({
-    name: "ages",
-    core: (ages: number[]) => ({result: ages}),
-});
-
-const item1 = {
-    actionBindings: [
-        names.createBinding("John"),
-        names.createBinding("Johny"),
-        ages.createBinding(12),
-    ],
-};
-const item2 = {actionBindings: [ages.createBinding(5)]};
-const item3 = {actionBindings: [names.createBinding("Bob")]};
-
-const items = [item1, item2, item3];
-console.log(names.get(items)); // == ["John", "Johny", "Bob"]
-console.log(ages.get(items)); // == [12, 5]
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionsMultiple/src/index.tsx"
+    highlight={[[10, 22]]}
+    sections={[[8, 29]]}
+/>
 
 The data in these actions can be anything. For demonstration purposes we separated the two interface but in this particular case it might have made more sense to combine the data into 1 action, such that we always get name-age pairs:
 
@@ -345,22 +308,12 @@ const list = createAction({
 
 Now we can create some items with bindings to this action, and obtain a nice overview string for these items:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionReducers highlight=10:14
-const list = createAction({
-    name: "list",
-    core: (names: string[]) => {
-        const bulletPointNames = names.map(name => `• ${name}`);
-        const bulletPointNamesString = bulletPointNames.join("\n");
-        return {result: bulletPointNamesString};
-    },
-});
-
-const item1 = {actionBindings: [list.createBinding("item1")]};
-const item2 = {actionBindings: [list.createBinding("item2")]};
-const item3 = {actionBindings: [list.createBinding("item3")]};
-
-console.log(list.get([item1, item2, item3])); // == "• item1\n• item2\n• item3"
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionReducers/src/index.tsx"
+    highlight={[[12, 15]]}
+    sections={[[8, 22]]}
+/>
 
 ## Action handlers
 
@@ -434,26 +387,11 @@ console.log(listBulletPointHandler.get([item1, item2, item3])); // == ["• item
 
 And we can also introduce different extra standards in the form of additional handlers:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionHandlers
-const listDashHandler = createAction({
-    name: "listDashHandler",
-    parents: [list],
-    core: (names: string[]) => {
-        const bulletPointNames = names.map(name => `- ${name}`);
-        return {
-            children: bulletPointNames.map(bulletPointName =>
-                list.createBinding(bulletPointName)
-            ),
-            result: bulletPointNames,
-        };
-    },
-});
-
-const item1 = {actionBindings: [listBulletPointHandler.createBinding("item1")]};
-const item2 = {actionBindings: [listBulletPointHandler.createBinding("item2")]};
-const item3 = {actionBindings: [listDashHandler.createBinding("item3")]};
-console.log(list.get([item1, item2, item3])); // == "• item1\n• item2\n- item3"
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionHandlers/src/index.tsx"
+    sections={[[30, 47]]}
+/>
 
 ### Reducing
 
@@ -469,30 +407,11 @@ list.get([item1, item2, item3]); // == "• item1\n• item2\n- item3"
 However, if we want to combine sets of data, this wouldn't be possible. This is where the action handlers become very useful. Imagine we have certain items that are 'special' and in the listing we want to show them all together under a label 'special'.
 This is possible when we create a new action handler for this:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionHandlerReducers
-const specialListItemsHandler = createAction({
-    name: "specialListItemsHandler",
-    parents: [listBulletPointHandler], // Notice that we can create handlers, for handlers
-    core: (names: string[]) => {
-        const bulletPointNames = names.map(name => `  * ${name}`);
-        const specialList = ["special:", ...bulletPointNames].join("\n");
-        return {
-            children: [listBulletPointHandler.createBinding(specialList)],
-            // Note that we don't return a result, thus specialListItemsHandler.get([...]) on its own is useless
-        };
-    },
-});
-
-const item1 = {
-    actionBindings: [specialListItemsHandler.createBinding("item1")],
-};
-const item2 = {actionBindings: [listBulletPointHandler.createBinding("item2")]};
-const item3 = {actionBindings: [listDashHandler.createBinding("item3")]};
-const item4 = {
-    actionBindings: [specialListItemsHandler.createBinding("item4")],
-};
-console.log(list.get([item1, item2, item3, item4]));
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionHandlerReducers/src/index.tsx"
+    sections={[[44, 65]]}
+/>
 
 Now the result of this get call - with all new lines as actual line feeds - will be:
 
@@ -520,18 +439,11 @@ Handlers that purely map data, will also automatically map the input sequence (a
 
 Here is an example for some other data for the `specialListItemsHandlers` setup, to show the idea:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionOrders
-const item1 = {
-    actionBindings: [specialListItemsHandler.createBinding("item1")],
-};
-const item2 = {actionBindings: [listBulletPointHandler.createBinding("item2")]};
-const item3 = {actionBindings: [listDashHandler.createBinding("item3")]};
-const item4 = {
-    actionBindings: [specialListItemsHandler.createBinding("item4")],
-};
-
-console.log(list.get([item2, item1, item3, item4])); // Notice some items are swapped
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionOrders/src/index.tsx"
+    sections={[[57, 66]]}
+/>
 
 The above will log:
 
@@ -578,29 +490,11 @@ The above will log:
 Actions can also decide on how to handle indexing themselves however. `core` receives its inputs' indices as a second argument, and the standard `createBinding` method allows for passing of an index to override the default.
 This way we can for instance specify that all bullet point items should show up in 1 continuous sequence after the first bullet point item:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionOrdersCustom
-const listBulletPointHandler = createAction({
-    name: "listBulletPointHandler",
-    parents: [list],
-    core: (names: string[], indices: number[]) => {
-        const bulletPointNames = names.map(name => `• ${name}`);
-        return {
-            children: bulletPointNames.map(bulletPointName =>
-                list.createBinding({data: bulletPointName, index: indices[0]})
-            ),
-            result: bulletPointNames,
-        };
-    },
-});
-
-const item1 = {actionBindings: [listDashHandler.createBinding("item1")]};
-const item2 = {actionBindings: [listBulletPointHandler.createBinding("item2")]};
-const item3 = {actionBindings: [listBulletPointHandler.createBinding("item3")]};
-const item4 = {actionBindings: [listDashHandler.createBinding("item4")]};
-const item5 = {actionBindings: [listBulletPointHandler.createBinding("item5")]};
-
-console.log(list.get([item1, item2, item3, item4, item5]));
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionOrdersCustom/src/index.tsx"
+    sections={[[30, 50]]}
+/>
 
 =>
 
@@ -617,30 +511,11 @@ console.log(list.get([item1, item2, item3, item4, item5]));
 Actions can also have multiple parents. This allows a single binding to be used in multiple situations.
 We can for instance create an action handler that creates bindings for both the `names` and `list` actions of earlier:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionMultipleParents
-const namesAndBulletPointListHandler = createAction({
-    name: "namesAndBulletPointListHandler",
-    parents: [names, listBulletPointHandler],
-    core: (inpNames: string[]) => ({
-        children: [
-            ...inpNames.map(name => listBulletPointHandler.createBinding(name)),
-            ...inpNames.map(name => names.createBinding(name)),
-        ],
-    }),
-});
-
-const item1 = {
-    actionBindings: [namesAndBulletPointListHandler.createBinding("item1")],
-};
-const item2 = {
-    actionBindings: [namesAndBulletPointListHandler.createBinding("item2")],
-};
-const item3 = {
-    actionBindings: [namesAndBulletPointListHandler.createBinding("item3")],
-};
-console.log(list.get([item1, item2, item3])); // == "• item1\n• item2\n• item3"
-console.log(names.get([item1, item2, item3])); // == ["item1", "item2", "item3"]
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionsMultipleParents/src/index.tsx"
+    sections={[[35, 50]]}
+/>
 
 ## Efficiency
 
@@ -657,7 +532,7 @@ In some of these situations where efficiency is important, it could still be use
 
 ### Factories
 
-This brings us to a common action pattern in LaunchMenu; function factories:
+This brings us to a common action pattern in LaunchMenu, function factories:
 
 ```ts title=functionFactory.ts
 type Func = {
@@ -670,10 +545,7 @@ const doSomething = createAction({
     core: (funcs: Func[]) => ({
         result: {
             execute: () =>
-                funcs.reduce(
-                    (allPassed, func) => allPassed && func.execute(),
-                    true
-                ),
+                funcs.reduce((allPassed, func) => allPassed && func.execute(), true),
         },
     }),
 });
@@ -681,30 +553,11 @@ const doSomething = createAction({
 
 This action will obtain an object with an 'execute' function, and returns whether all items executed successfully.
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionFunctionFactories
-const item1 = {
-    actionBindings: [
-        doSomething.createBinding({
-            execute: () => {
-                console.log("hoi");
-                return true;
-            },
-        }),
-    ],
-};
-const item2 = {
-    actionBindings: [
-        doSomething.createBinding({
-            execute: () => {
-                console.log("bye");
-                return true;
-            },
-        }),
-    ],
-};
-const executer = doSomething.get([item1, item2]);
-executer.execute(); // == true  and logs "hoi" followed by "bye"
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionFunctionFactories/src/index.tsx"
+    sections={[[23, 44]]}
+/>
 
 This way we can call execute however often we want, with barely any overhead. And an added bonus of this technique is that the `get` function is side-effect free (which is what you expect from a getter). Instead all side-effects happen whenever the retriever function is called.
 
@@ -741,16 +594,11 @@ const item2 = {actionBindings: [listDashHandler.createBinding("item2")]};
 
 Now we can use one of multiple ways to listen to the data. The `get` method of all actions allow a hook to be passed, which will then be forwarded to the items. We can for instance use an `Observer` to create a sort of stream:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionSubscribableBindings
-const listObserver = new Observer(h => list.get([item1, item2], h)).listen(
-    listing => {
-        console.log(listing);
-    },
-    true
-);
-
-item1Name.set("bob");
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionSubscribableBindings/src/index.tsx"
+    sections={[[39, 43]]}
+/>
 
 This will result in 2 calls, one initial call because we specified `true` for whether to create an initial call when adding a listener (the second argument), and one when we change item1's name to "bob":
 
@@ -769,16 +617,11 @@ const item2 = {actionBindings: [listDashHandler.createBinding("item2")]};
 
 Now we can use one of multiple ways to listen to the data. The `get` method of all actions allow a hook to be passed, which will then be forwarded to the items. We can for instance use an `Observer` to create a sort of stream:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/actionSubscribableBindingList
-const listObserver = new Observer(h => list.get([item1, item2], h)).listen(
-    listing => {
-        console.log(listing);
-    },
-    true
-);
-
-item1Bindings.set([]);
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/actionSubscribableBindingList/src/index.tsx"
+    sections={[[35, 39]]}
+/>
 
 This will result in 2 calls, one initial call because we specified `true` for whether to create an initial call when adding a listener, and one when we change item1's bindings change:
 

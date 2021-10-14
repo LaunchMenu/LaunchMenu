@@ -6,42 +6,12 @@ Instead of using the normal `createFolderMenuItem` and e.g. `createBooleanMenuIt
 
 We then use the `createSettings` function to simply declare our settings together with some additional version management data. From then on these settings can be accessed from various places. Below is an example using a simple string setting.
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/settings video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/settings/recordings/demo.webm
-const settings = createSettings({
-    version: "0.0.0",
-    settings: () =>
-        createSettingsFolder({
-            ...info,
-            children: {
-                username: createStringSetting({name: "Name", init: "Bob"}),
-            },
-        }),
-});
-
-const Content: FC<{text: string}> = ({text}) => {
-    const context = useIOContext();
-    const [hook] = useDataHook();
-    const name = context?.settings.get(settings).username.get(hook);
-    return (
-        <Box color="primary">
-            {text} {name}!
-        </Box>
-    );
-};
-
-const items = [
-    createStandardMenuItem({
-        name: "Hello world",
-        content: <Content text="Hello" />,
-        onExecute: () => alert("Hello!"),
-    }),
-    createStandardMenuItem({
-        name: "Bye world",
-        content: <Content text="Bye" />,
-        onExecute: () => alert("Bye!"),
-    }),
-];
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/settings/src/index.tsx"
+    video="examples/settings/recordings/demo.webm"
+    sections={[[21, 54]]}
+/>
 
 Now the `Hello world` and `Bye world` items both have content that uses the `username` setting which the user can customize.
 
@@ -125,67 +95,12 @@ You can create your own instance of a `SettingsContext` and add it to an `IOCont
 
 Below is an example showing off how some base settings can be overridden locally:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/settingsOverride video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/settingsOverride/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        // Create custom controls
-        const customMenuControls = {
-            up: createKeyPatternSetting({
-                name: "Up",
-                init: new KeyPattern("ctrl+i"),
-            }),
-            down: createKeyPatternSetting({
-                name: "Down",
-                init: new KeyPattern("ctrl+k"),
-            }),
-        } as const;
-
-        // Make a copy of the regular base settings, with the custom controls replaced
-        const base = context.settings.getUI(baseSettings);
-        const settingsContext = context.settings.augment(
-            baseSettings,
-            createSettingsFolder({
-                name: "Base settings",
-                children: {
-                    ...base.children,
-                    controls: createSettingsFolder({
-                        name: "Controls",
-                        children: {
-                            ...base.children.controls.children,
-                            menu: createSettingsFolder({
-                                name: "Menu",
-                                children: {
-                                    ...base.children.controls.children.menu
-                                        .children,
-                                    ...customMenuControls,
-                                },
-                            }),
-                        },
-                    }),
-                },
-            })
-        );
-
-        // Create a new  context with these settings replaced
-        const customContext = new IOContext({
-            parent: context,
-            settings: settingsContext,
-        });
-
-        // Open the layer (one you possibly don't have control over) in the custom context
-        customContext.open(
-            new UILayer(
-                () => ({menu: new Menu(customContext, items), onClose}),
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/settingsOverride/src/index.tsx"
+    video="examples/settingsOverride/recordings/demo.webm"
+    sections={[[41, 95]]}
+/>
 
 When you open the `example` applet you will notice that you can no longer navigate the menu using the up and down arrow keys, and instead have to use the `ctrl+i` and `ctrl+k` controls. As you can see, recreating the whole settings structure is a little annoying, so we will look into a better solution in the future. This example overrides settings in an entirely immutable fashion however, making sure that your local changes won't interfere with any other applets.
 
@@ -519,107 +434,12 @@ export type IColorMenuItemData = {
 
 Since settings are just field menu items, we can easily create our own custom setting types. The values of these settings aren't even limited to JSON, as we are allowed to specify a serialized getter and setter for data storage.
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/settingsCustom video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/settingsCustom/recordings/demo.webm
-type IStringMenuItemData = {
-    /** The default value for the field */
-    init: Date;
-} & IInputTypeMenuItemData;
-
-/**
- * Creates a new date setting
- * @param date The configuration data of the setting
- * @returns The menu item setting
- */
-function createDateSetting({
-    init,
-    name,
-    liveUpdate,
-    undoable,
-    actionBindings = [],
-    tags = [],
-    resetUndoable = undoable,
-    ...rest
-}: IStringMenuItemData): IFieldMenuItem<Date, string> {
-    const field = new Field(init);
-    const serializableField = {
-        get: (h: IDataHook) => field.get(h),
-        set: (value: Date) => field.set(value),
-        getSerialized: (h: IDataHook) => field.get(h).toDateString(),
-        setSerialized: (value: string) => field.set(new Date(value)),
-    };
-
-    return createFieldMenuItem({
-        field: serializableField,
-        data: field => ({
-            name,
-            valueView: <Loader>{h => field.get(h).toDateString()}</Loader>,
-            tags: adjustSubscribable(tags, (tags, h) => [
-                "field",
-                ...tags,
-                field.get(h).toString(),
-            ]),
-            resetUndoable,
-            actionBindings: adjustSubscribable(actionBindings, bindings => [
-                ...bindings,
-                promptInputExecuteHandler.createBinding({
-                    field: {
-                        get: serializableField.getSerialized,
-                        set: serializableField.setSerialized,
-                    },
-                    liveUpdate,
-                    undoable,
-                    checkValidity: input =>
-                        isNaN(new Date(input).getMilliseconds())
-                            ? {message: "Invalid date"}
-                            : undefined,
-                }),
-            ]),
-
-            // Setting specific properties
-            icon: "settings",
-            searchPattern: settingPatternMatcher,
-            resetable: true,
-
-            // Allow for overrides
-            ...rest,
-        }),
-    });
-}
-
-const settings = createSettings({
-    version: "0.0.0",
-    settings: () =>
-        createSettingsFolder({
-            ...info,
-            children: {
-                dateOfBirth: createDateSetting({
-                    name: "Date of birth",
-                    init: new Date(),
-                }),
-            },
-        }),
-});
-
-const Content: LFC = () => {
-    const context = useIOContext();
-    const [hook] = useDataHook();
-    const date = context?.settings.get(settings).dateOfBirth.get(hook);
-    return <Box color="primary">Date of birth: {date?.toUTCString()}!</Box>;
-};
-
-const items = [
-    createStandardMenuItem({
-        name: "Hello world",
-        content: <Content />,
-        onExecute: () => alert("Hello!"),
-    }),
-    createStandardMenuItem({
-        name: "Bye world",
-        content: <Content />,
-        onExecute: () => alert("Bye!"),
-    }),
-];
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/settingsCustom/src/index.tsx"
+    video="examples/settingsCustom/recordings/demo.webm"
+    sections={[[28, 126]]}
+/>
 
 Now when we open the `example` applet, we can search for `hello world` and see that the content contains a date. We can then go into the settings and change `Date of birth` (by for instance searching for `"setting: date"`) and we will see the date in the content update. We could probably create a nicer interface for entering dates, but for this example we kept it rather simplistic.
 

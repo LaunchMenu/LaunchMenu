@@ -131,30 +131,12 @@ The main item search that queries all applets ignores these categories however, 
 
 A standard factory exists for creating categories with appropriate menu item styling called `createStandardCategory`. The example below shows how items can make use of these categories, when using the standard item factory:
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuCategories video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuCategories/recordings/demo.webm
-const category = createStandardCategory({
-    name: "My category",
-    /** Metadata that's not displayed */
-    description: "A category for demonstration purposes",
-});
-
-const items = [
-    createStandardMenuItem({
-        name: "Hello world",
-        onExecute: () => alert("Hello!"),
-    }),
-    createStandardMenuItem({
-        name: "Just world",
-        category,
-        onExecute: () => alert("Just!"),
-    }),
-    createStandardMenuItem({
-        name: "Bye world",
-        category,
-        onExecute: () => alert("Bye!"),
-    }),
-];
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuCategories/src/index.tsx"
+    video="examples/menuCategories/recordings/demo.webm"
+    sections={[[28, 49]]}
+/>
 
 Now whenever the `example` applet is opened, it will show `"Just world"` and `"Bye world"` together in their own section.
 
@@ -167,29 +149,12 @@ This factory will create items that also have some styling to appropriately visu
 
 The example below shows off a very basic interactive category, but the possible config data is roughly equivalent to what can be passed to [`createStandardMenuItem`](/docs/concepts/ui/menuitems#standard-menu-items).
 
-```ts title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuAdvancedCategories video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuAdvancedCategories/recordings/demo.webm
-const interactiveCategory = createAdvancedCategory({
-    name: "My category",
-    onExecute: () => alert("Category!"),
-});
-
-const items = [
-    createStandardMenuItem({
-        name: "Hello world",
-        onExecute: () => alert("Hello!"),
-    }),
-    createStandardMenuItem({
-        name: "Just world",
-        category: interactiveCategory,
-        onExecute: () => alert("Just!"),
-    }),
-    createStandardMenuItem({
-        name: "Bye world",
-        category: interactiveCategory,
-        onExecute: () => alert("Bye!"),
-    }),
-];
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuAdvancedCategories/src/index.tsx"
+    video="examples/menuAdvancedCategories/recordings/demo.webm"
+    sections={[[28, 48]]}
+/>
 
 We can also add whatever other action bindings to the advanced categories, meaning that they can also have their own context menu with additional actions.
 
@@ -199,132 +164,13 @@ There is only 1 standard view for menus as of right now: `MenuView`. This is sim
 
 The example below is rather extensive, but shows off how a loading indicator could be added to a menu. The [`SearchMenu`](#searchmenu) (an implementation of `IMenu`) automatically adds a loading state metadata to `getItems`, allowing the view to show whether the menu is still searching. This metadata is transferred through the [model-react data hooks](https://tarvk.github.io/model-react/examples/build/).
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuViews video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuViews/recordings/demo.webm spoiler
-const subitems = [
-    createStandardMenuItem({
-        name: "Potaters",
-        onExecute: () => alert("Potaters"),
-    }),
-    createStandardMenuItem({
-        name: "Orange",
-        onExecute: () => alert("Orange"),
-    }),
-];
-
-const items = [
-    createStandardMenuItem({
-        name: "Hello world",
-        onExecute: () => alert("Hello!"),
-    }),
-    createStandardMenuItem({
-        name: "Bye world",
-        onExecute: () => alert("Bye!"),
-        actionBindings: [
-            searchAction.createBinding({
-                ID: uuid(),
-                async search(query) {
-                    // Add a random delay of 1s, simulating some data fetch
-                    await new Promise(res => setTimeout(res, 2000));
-
-                    // Return the sub searchables if the query contains "r"
-                    return query.search.includes("r")
-                        ? {children: searchAction.get(subitems)}
-                        : {};
-                },
-            }),
-        ],
-    }),
-];
-
-const LoadingMenuView: FC<IMenuViewProps> = ({
-    menu,
-    onExecute,
-    containerProps,
-    ...rest
-}) => (
-    <Box display="flex" flexDirection="column" {...containerProps}>
-        <MenuView
-            containerProps={{flexGrow: 1, flexShrink: 1, position: "relative"}}
-            menu={menu}
-            onExecute={onExecute}
-            {...rest}
-        />
-        <Box display="flex" justifyContent="center">
-            <Loader>
-                {h => {
-                    menu.getItems(h);
-                    // Never actually display any data, just capture the loading state
-                    return undefined;
-                }}
-            </Loader>
-        </Box>
-    </Box>
-);
-
-export class LoadingMenuSearch extends MenuSearch {
-    /** @override */
-    protected getMenuView(menu: SearchMenu): IViewStackItem {
-        return {
-            transitions: {
-                Open: InstantOpenTransition,
-                Close: InstantCloseTransition,
-            },
-            view: (
-                <LoadingMenuView menu={menu} onExecute={this.data.onExecute} />
-            ),
-        };
-    }
-
-    // The normal MenuSearch is meant as a sub-layer, so doesn't handle its own layer closing.
-    // This handler augmentation allows for layer closing when the search is empty and esc is pressed
-    /** @override */
-    protected getFieldHandler(
-        field: ITextField,
-        context: IIOContext
-    ): IKeyEventListener {
-        const handler = super.getFieldHandler(field, context);
-        const back = context.settings.get(baseSettings).controls.common.back;
-
-        return async event => {
-            if (
-                back.get().matches(event) &&
-                this.fieldData.get()?.field?.get() == ""
-            ) {
-                this.closers.forEach(close => close());
-                return true;
-            }
-            return handler(event);
-        };
-    }
-}
-
-export default declare({
-    info,
-    settings,
-    async search(query, hook) {
-        return {
-            children: searchAction.get(items),
-        };
-    },
-    open({context, onClose}) {
-        const menu = new Menu(context, items);
-        const searchMenu = new LoadingMenuSearch({
-            menu,
-            // THe content to show when no search is entered
-            defaultMenu: {
-                ID: uuid(),
-                menuView: (
-                    <FillBox padding="small" background="bgTertiary">
-                        Please enter a query
-                    </FillBox>
-                ),
-            },
-        });
-
-        context.open(searchMenu, {onClose});
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    spoiler
+    source="examples/menuViews/src/index.tsx"
+    video="examples/menuViews/recordings/demo.webm"
+    sections={[[42, 157]]}
+/>
 
 When the `example` applet is opened, any searches will show a spinner as long as a search is going on. By providing a custom search binding for our items we are able to simulate some asynchronous data loading. In this case it will allow `subitems` to be found only if the query contains the character `r`. To learn more about the search system, check the [search page](/docs/concepts/interaction/search-system). Our custom `LoadingMenuView` then uses the model-react `Loader`component supplied with a simple spinner to show as long as data is loading.
 
@@ -334,44 +180,12 @@ The `IMenu` interface also may specify a `getHighlight` function. When present, 
 
 The example below uses this to highlight some random text:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuSearchHighlight video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuSearchHighlight/recordings/demo.webm
-class HighlightMenu extends Menu {
-    protected search: IQuery;
-
-    /**
-     * Creates a new menu
-     * @param context The context to be used by menu items
-     * @param items The initial items to store
-     * @param categoryConfig The configuration for category options
-     */
-    constructor(
-        context: IIOContext,
-        items: IMenuItem[],
-        categoryConfig: {search: string} & IMenuCategoryConfig
-    ) {
-        super(context, items, categoryConfig);
-        this.search = {search: categoryConfig.search, context};
-    }
-
-    /** @override */
-    public getHighlight() {
-        return this.search;
-    }
-}
-
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        const menu = new HighlightMenu(context, items, {search: "world"});
-        context.open(
-            new UILayer(() => ({menu, onClose}), {
-                path: "Example",
-            })
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuSearchHighlight/src/index.tsx"
+    video="examples/menuSearchHighlight/recordings/demo.webm"
+    sections={[[43, 78]]}
+/>
 
 Now when `example` is opened, it will automatically highlight `world` in its items when no search is entered. When any search is entered this will open up a new menu in which the actual search is highlighted.
 
@@ -379,82 +193,12 @@ Now when `example` is opened, it will automatically highlight `world` in its ite
 
 most of the interaction with the menu is performed through keyboard controls. We have one primary factory called `createStandardMenuKeyHandler` which allows you to create a standard keyboard controller for any menu. When using the [`UILayer` class](/docs/concepts/ui/uilayers#uilayer-class) this controller will automatically be created for any specified menus without views, but it's also possible to create your own controller or customize this standard controller:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuKeyHandler video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuKeyHandler/recordings/demo.webm
-const settings = createSettings({
-    version: "0.0.0",
-    settings: () =>
-        createSettingsFolder({
-            ...info,
-            children: {
-                selectAll: createKeyPatternSetting({
-                    name: "Select all",
-                    init: new KeyPattern("ctrl+shift+a"),
-                }),
-            },
-        }),
-});
-
-/**
- * Creates a menu key handler that allows for selecting all items at once
- * @param menu The menu to control
- * @param config Extra config for the handler
- * @returns The created key handler and dispose function
- */
-function createKeyHandler(
-    menu: IMenu,
-    config?: IMenuKeyHandlerConfig
-): IDisposableKeyEventListener {
-    const {handler, destroy} = createStandardMenuKeyHandler(menu, config);
-    const {selectAll} = menu.getContext().settings.get(settings);
-
-    return {
-        handler: key => {
-            if (selectAll.get().matches(key)) {
-                menu.getItems()?.forEach(item => menu.setSelected(item, true));
-                return true;
-            }
-            return handler(key);
-        },
-        destroy: () => {
-            return destroy();
-        },
-    };
-}
-
-export default declare({
-    info,
-    settings,
-    async search(query, hook) {
-        return {
-            children: searchAction.get(items),
-        };
-    },
-    open({context, onClose}) {
-        context.open(
-            new UILayer(
-                (context, close) => {
-                    const menu = new Menu(context, items);
-                    // Note that this custom key handler won't be used in the search menu. To do this, you should extend the MenuSearch layer and override the `getMenuHandler` function.
-                    const {handler, destroy} = createKeyHandler(menu, {
-                        onExit: close,
-                    });
-                    return {
-                        menu: menu,
-                        menuHandler: handler,
-                        onClose: () => {
-                            destroy();
-                            onClose();
-                        },
-                    };
-                },
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuKeyHandler/src/index.tsx"
+    video="examples/menuKeyHandler/recordings/demo.webm"
+    sections={[[47, 118]]}
+/>
 
 In this example we've added a keyboard control for selecting all items in a menu. When you open the `example` applet, you will be able to press `ctrl+shift+a` to select all items. As noted in the comment, this handler won't automatically be used when performing a search in this menu. For that a custom `MenuSearch` should be used, where [`getMenuHandler`](https://github.com/LaunchMenu/LaunchMenu/blob/master/packages/core/src/uiLayers/types/menuSearch/MenuSearch.tsx#L178) is overridden.
 
@@ -482,10 +226,7 @@ export type IMenuCategoryConfig = {
      * @param hook The hook to subscribe to changes
      * @returns The category to group this item under, if any
      */
-    readonly getCategory?: (
-        item: IMenuItem,
-        hook?: IDataHook
-    ) => ICategory | undefined;
+    readonly getCategory?: (item: IMenuItem, hook?: IDataHook) => ICategory | undefined;
 
     /**
      * Retrieves the order of the categories
@@ -521,10 +262,7 @@ export class Menu extends AbstractMenu {
      * @param context The context to be used by menu items
      * @param categoryConfig The configuration for category options
      */
-    public constructor(
-        context: IIOContext,
-        categoryConfig?: IMenuCategoryConfig
-    );
+    public constructor(context: IIOContext, categoryConfig?: IMenuCategoryConfig);
 
     /**
      * Creates a new menu
@@ -565,10 +303,7 @@ export class Menu extends AbstractMenu {
      * @param oldCategory The category that item was in (null to use the items' latest category)
      * @returns Whether any item was in the menu (and now removed)
      */
-    public removeItems(
-        items: IMenuItem[],
-        oldCategory: ICategory | null = null
-    ): boolean;
+    public removeItems(items: IMenuItem[], oldCategory: ICategory | null = null): boolean;
 
     // Item retrieval
     /**
@@ -589,19 +324,12 @@ export class Menu extends AbstractMenu {
 
 We've used the standard `Menu` implementation in most of our examples, but here it is again:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuMenu video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuMenu/recordings/demo.webm
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        context.open(
-            new UILayer(() => ({menu: new Menu(context, items), onClose}), {
-                path: "Example",
-            })
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuMenu/src/index.tsx"
+    video="examples/menuMenu/recordings/demo.webm"
+    sections={[[37, 47]]}
+/>
 
 ### ProxiedMenu
 
@@ -640,39 +368,12 @@ export class ProxiedMenu extends AbstractMenu {
 
 The example below shows how the source of menu items can be setup before creating a menu, and even maintain itself without having to know about the menu:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuProxiedMenu video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuProxiedMenu/recordings/demo.webm
-function createItem(name: string): IMenuItem {
-    const item = createStandardMenuItem({
-        name,
-        onExecute: () => items.set(items.get().filter(i => item != i)),
-    });
-    return item;
-}
-
-const items = new Field(
-    ["potatoe", "oranges", "slices", "napkins", "water"].map(name =>
-        createItem(name)
-    )
-);
-
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        context.open(
-            new UILayer(
-                () => ({
-                    menu: new ProxiedMenu(context, h => items.get(h)),
-                    onClose,
-                }),
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuProxiedMenu/src/index.tsx"
+    video="examples/menuProxiedMenu/recordings/demo.webm"
+    sections={[[28, 53]]}
+/>
 
 When you open `example` you will see a list of items, and whenever executing an item it will be removed from the list.
 
@@ -758,39 +459,12 @@ export class PrioritizedMenu extends AbstractMenu {
 
 The example below shows basic usage of the `PrioritizedMenu` and `IPrioritizedMenuItem`s:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuPrioritizedMenu video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuPrioritizedMenu/recordings/demo.webm
-const items = [
-    {
-        priority: Priority.MEDIUM,
-        item: createStandardMenuItem({
-            name: "Hello world",
-            onExecute: () => alert("Hello!"),
-        }),
-    },
-    {
-        priority: Priority.HIGH,
-        item: createStandardMenuItem({
-            name: "Bye world",
-            onExecute: () => alert("Bye!"),
-        }),
-    },
-];
-
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        context.open(
-            new UILayer(
-                () => ({menu: new PrioritizedMenu(context, items), onClose}),
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuPrioritizedMenu/src/index.tsx"
+    video="examples/menuPrioritizedMenu/recordings/demo.webm"
+    sections={[[27, 54]]}
+/>
 
 When you open `example` you will see two items sorted by their priority. Items with higher priorities will appear higher in the menu.
 
@@ -816,44 +490,12 @@ export class ProxiedPrioritizedMenu extends PrioritizedMenu {
 
 The example below shows how the source of menu items can be setup before creating a menu, and even maintain itself without having to know about the menu:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuProxiedPrioritizedMenu video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuProxiedPrioritizedMenu/recordings/demo.webm
-function createItem(name: string): IPrioritizedMenuItem {
-    const item: IPrioritizedMenuItem = {
-        priority: Math.random(),
-        item: createStandardMenuItem({
-            name,
-            onExecute: () => items.set(items.get().filter(i => item != i)),
-        }),
-    };
-    return item;
-}
-
-const items = new Field(
-    ["potatoe", "oranges", "slices", "napkins", "water"].map(name =>
-        createItem(name)
-    )
-);
-
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        context.open(
-            new UILayer(
-                () => ({
-                    menu: new ProxiedPrioritizedMenu(context, h =>
-                        items.get(h)
-                    ),
-                    onClose,
-                }),
-                {
-                    path: "Example",
-                }
-            )
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuProxiedPrioritizedMenu/src/index.tsx"
+    video="examples/menuProxiedPrioritizedMenu/recordings/demo.webm"
+    sections={[[31, 62]]}
+/>
 
 When you open `example` you will see two items sorted by their priority. Items with higher priorities will appear higher in the menu. Whenever an item is executed, it will automatically be removed from the list.
 
@@ -935,33 +577,11 @@ export class SearchMenu extends PrioritizedMenu {
 
 The example below shows how you can use the search menu to search for a given term within a selection of items:
 
-```tsx title=src/index.tsx source=https://github.com/LaunchMenu/LM-applet-examples/tree/main/examples/menuSearchMenu video=https://raw.github.com/LaunchMenu/LM-applet-examples/main/examples/menuSearchMenu/recordings/demo.webm
-const items = [
-    createStandardMenuItem({
-        name: "Hello world",
-        onExecute: () => alert("Hello!"),
-    }),
-    createStandardMenuItem({
-        name: "Bye world",
-        onExecute: () => alert("Bye!"),
-    }),
-];
-
-export default declare({
-    info,
-    settings,
-    open({context, onClose}) {
-        const searchMenu = new SearchMenu(context);
-        items.forEach(item => searchMenu.addSearchItem(item));
-        searchMenu.setSearch("hell");
-
-        context.open(
-            new UILayer(() => ({menu: searchMenu, onClose}), {
-                path: "Example",
-            })
-        );
-    },
-});
-```
+<CodeReference
+    title="src/index.ts"
+    source="examples/menuSearchMenu/src/index.tsx"
+    video="examples/menuSearchMenu/recordings/demo.webm"
+    sections={[[28, 53]]}
+/>
 
 When you open `example` you will see that only `Hello world` was found, and that `Hell` was highlighted. Since we didn't indicate `searchable: false` on the UILayer, we can still search within this menu too. You can learn more about this on the [`UILayer` page ](/docs/concepts/ui/uilayers#searchable-menu).
