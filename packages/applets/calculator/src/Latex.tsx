@@ -1,5 +1,5 @@
 import React, {ReactNode, useLayoutEffect, useState} from "react";
-import {Box, constGetter, IBoxProps, LFC} from "@launchmenu/core";
+import {Box, constGetter, IBoxProps, LFC, mergeStyles} from "@launchmenu/core";
 import {ClassNames} from "@emotion/react";
 import Path from "path";
 import FS from "fs";
@@ -48,6 +48,7 @@ export const Latex: LFC<{latex: string; fallback?: ReactNode} & IBoxProps> = ({
                             : rest.elRef),
                     ]}
                     {...rest}
+                    css={mergeStyles({lineHeight: 0}, rest.css)}
                     className={
                         css(getKatexCss()) + (rest.className ? " " + rest.className : "")
                     }>

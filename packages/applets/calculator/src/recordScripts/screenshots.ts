@@ -6,8 +6,13 @@ export default declareVideoScript(
         keyVisualizer.setListenerEnabled(false);
         const recordings = `${__dirname}/../../recordings`;
 
+        /* Demo */
+        await controller.type("(500meter + 0.25km) in meter");
+        await recorder.screenshotLM(`${recordings}/search.png`);
+
         /* Settings */
         // Overview
+        await controller.hold(["shift", "esc"]);
         await controller.type("settings");
         await controller.navigate([/^Settings manager$/im, /Calculator/im]);
         await recorder.screenshotLM(`${recordings}/settingsOverview.png`);
