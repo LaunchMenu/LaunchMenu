@@ -31,6 +31,7 @@ export class LaunchMenu {
     protected settingsDirectory: string;
 
     public view: JSX.Element;
+    public readonly version: string; // TODO: initialize this based on the package that's running
 
     protected keyHandler: KeyHandler;
     protected globalKeyHandler: GlobalKeyHandler;

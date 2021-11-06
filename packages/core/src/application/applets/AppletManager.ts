@@ -13,6 +13,9 @@ import {JSONFile} from "../../settings/storage/fileTypes/JSONFile";
 import {ICategory} from "../../actions/types/category/_types/ICategory";
 import {ISettingsTree} from "../../settings/_types/ISettingsTree";
 import {IAppletData} from "./_types/IAppletData";
+import {IAppletSearchData} from "./_types/IAppletSearchData";
+import {IAppletSearchResponse} from "./_types/IAppletSearchResponse";
+import {searchApplets} from "./utils/searchApplets";
 
 type ISettingsConfig = {
     /** The directory that settings should be stored */
@@ -33,6 +36,8 @@ export class AppletManager {
 
     protected destroyed = new Field(false);
     protected sourceFile: JSONFile;
+
+    protected registryUrl = "https://registry.npmjs.com/";
 
     /** A field that can be used to dynamically add any applets to the manager (does require some manual maintenance) */
     public extraApplets = new Field([] as IAppletData[]); // TODO: make helper methods to manager the extra applets
@@ -290,4 +295,15 @@ export class AppletManager {
 
         return applets;
     });
+
+    /**
+     * Searches for apples satisfying the given conditions
+     * @param search The data to be used to search for
+     * @returns The list of applets
+     */
+    public async searchApplets(
+        search: IAppletSearchData = {}
+    ): Promise<IAppletSearchResponse | {error: string}> {
+        return searchApplets(this.registryUrl, this.LM.version, search);
+    }
 }
