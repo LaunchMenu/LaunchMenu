@@ -53,10 +53,7 @@ export async function searchApplets(
     );
     const validPackages = fullPackages.filter(({fullPackage: {dependencies}}) => {
         const requiredLMVersion = dependencies?.[lmPackage];
-        if (!requiredLMVersion) return false;
-        return search.hideIncompatible
-            ? Semver.satisfies(LMVersion, requiredLMVersion)
-            : true;
+        return !!requiredLMVersion;
     });
 
     // Format the applet data
@@ -69,6 +66,7 @@ export async function searchApplets(
             name,
             version,
             LMCompatibleVersion: dependencies![lmPackage]!,
+            isCompatible: Semver.satisfies(LMVersion, dependencies![lmPackage]!),
             description: description ?? "",
             icon,
             readme,

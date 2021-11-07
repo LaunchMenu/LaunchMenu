@@ -16,6 +16,11 @@ import {IAppletData} from "./_types/IAppletData";
 import {IAppletSearchData} from "./_types/IAppletSearchData";
 import {IAppletSearchResponse} from "./_types/IAppletSearchResponse";
 import {searchApplets} from "./utils/searchApplets";
+import {IAppletInstallResult} from "./_types/IAppletInstallResult";
+import {JSONSchemaForNPMPackageJsonFiles} from "@schemastore/package";
+import Semver from "semver";
+import OS from "os";
+import {PackageInstaller} from "./utils/PackageInstaller";
 
 type ISettingsConfig = {
     /** The directory that settings should be stored */
@@ -305,5 +310,39 @@ export class AppletManager {
         search: IAppletSearchData = {}
     ): Promise<IAppletSearchResponse | {error: string}> {
         return searchApplets(this.registryUrl, this.LM.version, search);
+    }
+
+    /**
+     * Installs the applet with the given name
+     * @param applet The name of the applet to be installed
+     * @param version The version of the applet to be installed
+     * @returns The result of installation, and any possible errors that occurred
+     */
+    public async installApplet(
+        applet: string,
+        version: string = "latest"
+    ): Promise<IAppletInstallResult> {
+        // Perform rudimentary checks to see if the specified package is an applet
+        const packageResponse = await fetch(`${this.registryUrl}/${applet}/${version}`);
+        const packageData: JSONSchemaForNPMPackageJsonFiles =
+            await packageResponse.json();
+
+        const requiredLMVersion = packageData.dependencies!["@launchmenu/core"];
+        if (!requiredLMVersion)
+            return {
+                type: "notAnAppletError",
+            };
+        const matchesVersion = Semver.satisfies(this.LM.version, requiredLMVersion);
+        if (!matchesVersion)
+            return {
+                type: "versionError",
+                expectedLMRange: requiredLMVersion,
+            };
+
+        // Install the applet
+
+        return {
+            type: "successful",
+        };
     }
 }

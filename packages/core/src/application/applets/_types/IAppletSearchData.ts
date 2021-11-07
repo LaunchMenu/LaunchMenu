@@ -1,6 +1,4 @@
 export type IAppletSearchData = {
-    /** Whether to hide applets that are incompatible with the currently installed LaunchMenu version, defaults to false */
-    hideIncompatible?: boolean;
     /** The term to search for */
     search?: string;
     /** Keywords to search for */

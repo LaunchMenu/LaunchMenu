@@ -2,7 +2,7 @@ import {searchApplets} from "../utils/searchApplets";
 
 describe("searchApplets", () => {
     const registryUrl = "https://registry.npmjs.com/";
-    const LMVersion = "^1.0.0";
+    const LMVersion = "^0.0.0";
     (global as any).fetch = require("node-fetch/lib");
 
     it("Can find existing applets", async () => {

@@ -20,6 +20,7 @@ import {IWindowFrameProps} from "./components/_types/IWindowFrameProps";
 import {IApplicationConfig} from "../windowController/_types/IApplicationConfig";
 import {ErrorBoundary} from "../components/error/ErrorBoundary";
 import {ErrorBoundaryController} from "../components/error/ErrorBoundaryController";
+import {JSONSchemaForNPMPackageJsonFiles} from "@schemastore/package";
 
 /**
  * The main LM class
@@ -88,6 +89,10 @@ export class LaunchMenu {
      */
     public async setup(): Promise<void> {
         if (this.keyHandler as any) throw Error("Instance has already been set up");
+
+        const version: JSONSchemaForNPMPackageJsonFiles = require("../../package.json");
+        (this.version as any) = version.version || "0.0.0";
+
         this.setupKeyHandler();
         this.setupTheme();
         this.setupSettings();
