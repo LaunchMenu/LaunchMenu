@@ -36,7 +36,7 @@
     },
     "homepage": "https://github.com/LaunchMenu/LaunchMenu/tree/master/packages/core-applets/window-manager#readme",
     "peerDependencies": {
-        "electron": "^11.2.1",
+        "electron": "^13.6.6",
         "model-react": "^4.0.2",
         "react": "^17.0.0"
     },
@@ -46,7 +46,7 @@
         "@types/auto-launch": "^5.0.1",
         "@types/jest": "^26.0.0",
         "@types/react": "^17.0.0",
-        "electron": "^11.2.1",
+        "electron": "^13.6.6",
         "jest": "^26.0.1",
         "model-react": "^4.0.2",
         "react": "^17.0.0",
